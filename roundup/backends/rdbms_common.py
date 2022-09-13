@@ -52,28 +52,36 @@ the same name.
 __docformat__ = 'restructuredtext'
 
 # standard python modules
-import os, time, re, weakref, copy, logging, datetime
+import copy
+import datetime
+import logging
+import os
+import re
+import time
+
+from hashlib import md5
 
 # roundup modules
 from roundup import hyperdb, date, password, roundupdb, security, support
-from roundup.hyperdb import String, Password, Date, Interval, Link, \
-    Multilink, DatabaseError, Boolean, Number, Integer
-from roundup.i18n import _
-
-# support
+from roundup.anypy.strings import b2s, bs2b, us2s, repr_export, eval_import
 from roundup.backends.blobfiles import FileStorage
 from roundup.backends.indexer_common import get_indexer
 from roundup.backends.indexer_common import Indexer as CommonIndexer
 from roundup.backends.sessions_rdbms import Sessions, OneTimeKeys
 from roundup.date import Range
-
+from roundup.hyperdb import String, Password, Date, Interval, Link, \
+    Multilink, DatabaseError, Boolean, Number, Integer
+from roundup.i18n import _
 from roundup.mlink_expr import compile_expression
-from roundup.anypy.strings import b2s, bs2b, us2s, repr_export, eval_import
-
-from hashlib import md5
 
 # dummy value meaning "argument not passed"
 _marker = []
+
+# python 3 doesn't have a unicode type
+try:
+    unicode  # noqa: F821
+except NameError:
+    unicode = str
 
 
 def _num_cvt(num):
@@ -141,7 +149,7 @@ class IdListOptimizer:
         ranges = self.ranges
         singles = self.singles
 
-        if not singles and not ranges: return "(1=0)", []
+        if not singles and not ranges: return "(1=0)", []   # noqa: E701
 
         if ranges:
             between = '%s BETWEEN %s AND %s' % (
@@ -272,7 +280,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         while True:
             row = self.cursor.fetchone()
-            if not row: break
+            if not row: break   # noqa: E701
             yield row
 
     def search_stringquote(self, value):
@@ -428,8 +436,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for cn, klass in self.classes.items():
             c.execute('select id from _%s where __retired__<>0' % (cn,))
             for (id,) in c.fetchall():
-                c.execute('update _%s set __retired__=%s where id=%s' % (cn,
-                                               self.arg, self.arg), (id, id))
+                c.execute('update _%s set __retired__=%s where id=%s' % (
+                    cn,
+                    self.arg, self.arg), (id, id))
 
             if klass.key:
                 self.add_class_key_required_unique_constraint(cn, klass.key)
@@ -542,14 +551,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     implements_double_precision = True
 
     hyperdb_to_sql_datatypes = {
-        hyperdb.String    : 'TEXT',
-        hyperdb.Date      : 'TIMESTAMP',
-        hyperdb.Link      : 'INTEGER',
-        hyperdb.Interval  : 'VARCHAR(255)',
-        hyperdb.Password  : 'VARCHAR(255)',
-        hyperdb.Boolean   : 'BOOLEAN',
-        hyperdb.Number    : 'REAL',
-        hyperdb.Integer   : 'INTEGER',
+        hyperdb.String    : 'TEXT',                   # noqa: E203
+        hyperdb.Date      : 'TIMESTAMP',              # noqa: E203
+        hyperdb.Link      : 'INTEGER',                # noqa: E203
+        hyperdb.Interval  : 'VARCHAR(255)',           # noqa: E203
+        hyperdb.Password  : 'VARCHAR(255)',           # noqa: E203
+        hyperdb.Boolean   : 'BOOLEAN',                # noqa: E203
+        hyperdb.Number    : 'REAL',                   # noqa: E203
+        hyperdb.Integer   : 'INTEGER',                # noqa: E203
     }
 
     def hyperdb_to_sql_datatype(self, propclass, prop=None):
@@ -620,7 +629,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         if not self.config.RDBMS_ALLOW_ALTER:
             raise DatabaseError(_(
-                'ALTER operation disallowed: %(old)r -> %(new)r.'% {
+                'ALTER operation disallowed: %(old)r -> %(new)r.' % {
                     'old': old_spec, 'new': new_spec}))
 
         logger = logging.getLogger('roundup.hyperdb.backend')
@@ -796,12 +805,11 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             already-determined cols
         """
         # journal table
-        cols = ','.join(['%s varchar' % x
-                         for x in 'nodeid date tag action params'.split()])
         sql = """create table %s__journal (
             nodeid integer, date %s, tag varchar(255),
-            action varchar(255), params text)""" % (spec.classname,
-                                    self.hyperdb_to_sql_datatype(hyperdb.Date))
+            action varchar(255), params text)""" % (
+                spec.classname,
+                self.hyperdb_to_sql_datatype(hyperdb.Date))
         self.sql(sql)
         self.create_journal_table_indexes(spec)
 
@@ -917,17 +925,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         cn = cl.classname
         if cn in self.classes:
-            raise ValueError(_('Class "%s" already defined.'%cn))
+            raise ValueError(_('Class "%s" already defined.' % cn))
         self.classes[cn] = cl
 
         # add default Edit and View permissions
-        self.security.addPermission(name="Create", klass=cn,
+        self.security.addPermission(
+            name="Create", klass=cn,
             description="User is allowed to create "+cn)
-        self.security.addPermission(name="Edit", klass=cn,
+        self.security.addPermission(
+            name="Edit", klass=cn,
             description="User is allowed to edit "+cn)
-        self.security.addPermission(name="View", klass=cn,
+        self.security.addPermission(
+            name="View", klass=cn,
             description="User is allowed to access "+cn)
-        self.security.addPermission(name="Retire", klass=cn,
+        self.security.addPermission(
+            name="Retire", klass=cn,
             description="User is allowed to retire "+cn)
 
     def getclasses(self):
@@ -961,16 +973,18 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     #
 
     hyperdb_to_sql_value = {
-        hyperdb.String    : str,
+        hyperdb.String    : str,                         # noqa: E203
         # fractional seconds by default
-        hyperdb.Date      : lambda x: x.formal(sep=' ', sec='%06.3f'),
-        hyperdb.Link      : int,
-        hyperdb.Interval  : str,
-        hyperdb.Password  : str,
-        hyperdb.Boolean   : lambda x: x and 'TRUE' or 'FALSE',
-        hyperdb.Number    : lambda x: x,
-        hyperdb.Integer   : lambda x: x,
-        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
+        hyperdb.Date      : lambda x: x.formal(sep=' ',  # noqa: E203
+                                               sec='%06.3f'),
+        hyperdb.Link      : int,                         # noqa: E203
+        hyperdb.Interval  : str,                         # noqa: E203
+        hyperdb.Password  : str,                         # noqa: E203
+        hyperdb.Boolean   : lambda x: x and 'TRUE' or 'FALSE',  # noqa: E203
+        hyperdb.Number    : lambda x: x,                 # noqa: E203
+        hyperdb.Integer   : lambda x: x,                 # noqa: E203
+        # used in journal marshalling
+        hyperdb.Multilink : lambda x: x,                 # noqa: E203
     }
 
     def to_sql_value(self, propklass):
@@ -1073,9 +1087,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     t, self.arg, self.arg)
                 self.sql(sql, (entry, nodeid))
 
-    def setnode(self, classname, nodeid, values, multilink_changes={}):
+    def setnode(self, classname, nodeid, values, multilink_changes=None):
         """ Change the specified node.
         """
+        if multilink_changes is None: multilink_changes = {}   # noqa: E701
         self.log_debug('setnode %s%s %r' % (classname, nodeid, values))
 
         # clear this node out of the cache if it's in there
@@ -1161,8 +1176,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for col, (add, remove) in multilink_changes.items():
             tn = '%s_%s' % (classname, col)
             if add:
-                sql = 'insert into %s (nodeid, linkid) values (%s,%s)' % (tn,
-                    self.arg, self.arg)
+                sql = 'insert into %s (nodeid, linkid) values (%s,%s)' % (
+                    tn, self.arg, self.arg)
                 for addid in add:
                     # XXX numeric ids
                     self.sql(sql, (int(nodeid), int(addid)))
@@ -1174,16 +1189,17 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 self.sql(sql, [int(nodeid)] + remove)
 
     sql_to_hyperdb_value = {
-        hyperdb.String    : us2s,
-        hyperdb.Date      : date_to_hyperdb_value,
-#        hyperdb.Link   : int,      # XXX numeric ids
-        hyperdb.Link      : str,
-        hyperdb.Interval  : date.Interval,
-        hyperdb.Password  : lambda x: password.Password(encrypted=x),
-        hyperdb.Boolean   : _bool_cvt,
-        hyperdb.Number    : _num_cvt,
-        hyperdb.Integer   : int,
-        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
+        hyperdb.String    : us2s,                      # noqa: E203
+        hyperdb.Date      : date_to_hyperdb_value,     # noqa: E203
+        #        hyperdb.Link   : int,      # XXX numeric ids
+        hyperdb.Link      : str,                       # noqa: E203
+        hyperdb.Interval  : date.Interval,             # noqa: E203
+        hyperdb.Password  : lambda x: password.Password(encrypted=x),  # noqa: E203
+        hyperdb.Boolean   : _bool_cvt,                 # noqa: E203
+        hyperdb.Number    : _num_cvt,                  # noqa: E203
+        hyperdb.Integer   : int,                       # noqa: E203
+        # used in journal marshalling
+        hyperdb.Multilink : lambda x: x,               # noqa: E203
     }
 
     def to_hyperdb_value(self, propklass):
@@ -1203,22 +1219,22 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         if propname not in node:
             prop = self.getclass(classname).properties[propname]
-            tn  = prop.table_name
+            tn = prop.table_name
             lid = prop.linkid_name
             nid = prop.nodeid_name
-            w   = ''
+            w = ''
             joi = ''
             if prop.computed:
                 if isinstance(prop.rev_property, Link):
-                    w = ' and %s.__retired__=0'%tn
+                    w = ' and %s.__retired__=0' % tn
                 else:
                     tn2 = '_' + prop.classname
                     joi = ', %s' % tn2
-                    w = ' and %s.%s=%s.id and %s.__retired__=0'%(tn, lid,
-                        tn2, tn2)
+                    w = ' and %s.%s=%s.id and %s.__retired__=0' % (
+                        tn, lid, tn2, tn2)
             cursor = self.sql_new_cursor(name='_materialize_multilink')
-            sql = 'select %s from %s%s where %s=%s%s' %(lid, tn, joi, nid,
-                self.arg, w)
+            sql = 'select %s from %s%s where %s=%s%s' % (lid, tn, joi, nid,
+                                                         self.arg, w)
             self.sql(sql, (nodeid,), cursor)
             # Reduce this to only the first row (the ID), this can save a
             # lot of space for large query results (not using fetchall)
@@ -1644,7 +1660,8 @@ class Class(hyperdb.Class):
             database
         """
         return (self.key,
-          [(x, repr(y)) for x, y in self.properties.items() if not y.computed])
+                [(x, repr(y)) for x, y in
+                 self.properties.items() if not y.computed])
 
     def enableJournalling(self):
         """Turn journalling on for this class
@@ -1689,14 +1706,14 @@ class Class(hyperdb.Class):
             raise DatabaseError(_('Database open read-only'))
 
         if ('creator' in propvalues or 'actor' in propvalues or
-            'creation' in propvalues or 'activity' in propvalues):
+                'creation' in propvalues or 'activity' in propvalues):
             raise KeyError('"creator", "actor", "creation" and '
                            '"activity" are reserved')
 
         for p in propvalues:
             prop = self.properties[p]
             if prop.computed:
-                raise KeyError('"%s" is a computed property'%p)
+                raise KeyError('"%s" is a computed property' % p)
 
         # new node's id
         newid = self.db.newid(self.classname)
@@ -1779,48 +1796,48 @@ class Class(hyperdb.Class):
                                            (self.classname, newid, key))
 
             elif isinstance(prop, String):
-                if type(value) != type('') and type(value) != type(u''):
-                    raise TypeError('new property "%s" not a string'%key)
+                if not isinstance(value, (str, unicode)):
+                    raise TypeError('new property "%s" not a string' % key)
                 if prop.indexme:
                     self.db.indexer.add_text((self.classname, newid, key),
-                        value)
+                                             value)
 
             elif isinstance(prop, Password):
                 if not isinstance(value, password.Password):
-                    raise TypeError('new property "%s" not a Password'%key)
+                    raise TypeError('new property "%s" not a Password' % key)
 
             elif isinstance(prop, Date):
                 if value is not None and not isinstance(value, date.Date):
-                    raise TypeError('new property "%s" not a Date'%key)
+                    raise TypeError('new property "%s" not a Date' % key)
 
             elif isinstance(prop, Interval):
                 if value is not None and not isinstance(value, date.Interval):
-                    raise TypeError('new property "%s" not an Interval'%key)
+                    raise TypeError('new property "%s" not an Interval' % key)
 
             elif value is not None and isinstance(prop, Number):
                 try:
                     float(value)
                 except ValueError:
-                    raise TypeError('new property "%s" not numeric'%key)
+                    raise TypeError('new property "%s" not numeric' % key)
 
             elif value is not None and isinstance(prop, Integer):
                 try:
                     int(value)
                 except ValueError:
-                    raise TypeError('new property "%s" not integer'%key)
+                    raise TypeError('new property "%s" not integer' % key)
 
             elif value is not None and isinstance(prop, Boolean):
                 try:
                     int(value)
                 except ValueError:
-                    raise TypeError('new property "%s" not boolean'%key)
+                    raise TypeError('new property "%s" not boolean' % key)
 
         # make sure there's data where there needs to be
         for key, prop in self.properties.items():
             if key in propvalues:
                 continue
             if key == self.key:
-                raise ValueError('key property "%s" is required'%key)
+                raise ValueError('key property "%s" is required' % key)
             if isinstance(prop, Multilink):
                 propvalues[key] = []
             else:
@@ -1851,9 +1868,9 @@ class Class(hyperdb.Class):
         # handle common case -- that property is in dict -- first
         # if None and one of creator/creation actor/activity return None
         if propname in d:
-            r = d [propname]
+            r = d[propname]
             # return copy of our list
-            if isinstance (r, list):
+            if isinstance(r, list):
                 return r[:]
             if r is not None:
                 return r
@@ -1919,10 +1936,10 @@ class Class(hyperdb.Class):
         if not propvalues:
             return propvalues
 
-        if ('creator' in propvalues or 'actor' in propvalues or 
-             'creation' in propvalues or 'activity' in propvalues):
+        if ('creator' in propvalues or 'actor' in propvalues or
+                'creation' in propvalues or 'activity' in propvalues):
             raise KeyError('"creator", "actor", "creation" and '
-                '"activity" are reserved')
+                           '"activity" are reserved')
 
         if 'id' in propvalues:
             raise KeyError('"id" is reserved')
@@ -1930,7 +1947,7 @@ class Class(hyperdb.Class):
         for p in propvalues:
             prop = self.properties[p]
             if prop.computed:
-                raise KeyError('"%s" is a computed property'%p)
+                raise KeyError('"%s" is a computed property' % p)
 
         if self.db.journaltag is None:
             raise DatabaseError(_('Database open read-only'))
@@ -1961,7 +1978,7 @@ class Class(hyperdb.Class):
                 except KeyError:
                     pass
                 else:
-                    raise ValueError('node with key "%s" exists'%value)
+                    raise ValueError('node with key "%s" exists' % value)
 
             # this will raise the KeyError if the property isn't valid
             # ... we don't use getprops() here because we only care about
@@ -1969,7 +1986,7 @@ class Class(hyperdb.Class):
             try:
                 prop = self.properties[propname]
             except KeyError:
-                raise KeyError('"%s" has no property named "%s"'%(
+                raise KeyError('"%s" has no property named "%s"' % (
                     self.classname, propname))
 
             # if the value's the same as the existing value, no sense in
@@ -1984,52 +2001,54 @@ class Class(hyperdb.Class):
             if isinstance(prop, Link):
                 link_class = prop.classname
                 # if it isn't a number, it's a key
-                if value is not None and not isinstance(value, type('')):
-                    raise ValueError('property "%s" link value be a string'%(
+                if value is not None and not isinstance(value, str):
+                    raise ValueError('property "%s" link value be a string' % (
                         propname))
-                if isinstance(value, type('')) and not num_re.match(value):
+                if isinstance(value, str) and not num_re.match(value):
                     try:
                         value = self.db.classes[link_class].lookup(value)
                     except (TypeError, KeyError):
-                        raise IndexError('new property "%s": %s not a %s'%(
+                        raise IndexError('new property "%s": %s not a %s' % (
                             propname, value, prop.classname))
 
                 if (value is not None and
                         not self.db.getclass(link_class).hasnode(value)):
-                    raise IndexError('%s has no node %s'%(link_class,
-                        value))
+                    raise IndexError('%s has no node %s' % (link_class,
+                                                            value))
 
                 if self.do_journal and prop.do_journal:
                     # register the unlink with the old linked node
                     if node[propname] is not None:
-                        self.db.addjournal(link_class, node[propname],
+                        self.db.addjournal(
+                            link_class, node[propname],
                             ''"unlink", (self.classname, nodeid, propname))
 
                     # register the link with the newly linked node
                     if value is not None:
                         self.db.addjournal(link_class, value, ''"link",
-                            (self.classname, nodeid, propname))
+                                           (self.classname, nodeid, propname))
 
             elif isinstance(prop, Multilink):
                 if value is None:
                     value = []
-                if not hasattr(value, '__iter__') or type(value) == type(''):
+                if not hasattr(value, '__iter__') or isinstance(value, str):
                     raise TypeError('new property "%s" not an iterable of'
-                        ' ids'%propname)
+                                    ' ids' % propname)
                 link_class = self.properties[propname].classname
                 l = []
                 for entry in value:
                     # if it isn't a number, it's a key
-                    if type(entry) != type(''):
+                    if not isinstance(entry, str):
                         raise ValueError('new property "%s" link value '
-                            'must be a string'%propname)
+                                         'must be a string' % propname)
                     if not num_re.match(entry):
                         try:
                             entry = self.db.classes[link_class].lookup(entry)
                         except (TypeError, KeyError):
-                            raise IndexError('new property "%s": %s not a %s'%(
-                                propname, entry,
-                                self.properties[propname].classname))
+                            raise IndexError(
+                                'new property "%s": %s not a %s' % (
+                                    propname, entry,
+                                    self.properties[propname].classname))
                     l.append(entry)
                 value = l
                 propvalues[propname] = value
@@ -2049,7 +2068,7 @@ class Class(hyperdb.Class):
                     # register the unlink with the old linked node
                     if self.do_journal and self.properties[propname].do_journal:
                         self.db.addjournal(link_class, id, 'unlink',
-                            (self.classname, nodeid, propname))
+                                           (self.classname, nodeid, propname))
                     l.remove(id)
                     remove.append(id)
 
@@ -2065,12 +2084,12 @@ class Class(hyperdb.Class):
                     # result in a SQL query, it is more efficient to
                     # avoid the check if possible.
                     if not self.db.getclass(link_class).hasnode(id):
-                        raise IndexError('%s has no node %s'%(link_class,
-                            id))
+                        raise IndexError('%s has no node %s' % (link_class,
+                                                                id))
                     # register the link with the newly linked node
                     if self.do_journal and self.properties[propname].do_journal:
                         self.db.addjournal(link_class, id, 'link',
-                            (self.classname, nodeid, propname))
+                                           (self.classname, nodeid, propname))
                     l.append(id)
                     add.append(id)
 
@@ -2085,48 +2104,50 @@ class Class(hyperdb.Class):
                     journalvalues[propname] = tuple(l)
 
             elif isinstance(prop, String):
-                if value is not None and type(value) != type('') and type(value) != type(u''):
-                    raise TypeError('new property "%s" not a string'%propname)
+                if value is not None and not isinstance(value, (str, unicode)):
+                    raise TypeError(
+                        'new property "%s" not a string' % propname)
                 if prop.indexme:
-                    if value is None: value = ''
-                    self.db.indexer.add_text((self.classname, nodeid, propname),
-                        value)
+                    if value is None: value = ''              # noqa: E701
+                    self.db.indexer.add_text(
+                        (self.classname, nodeid, propname), value)
 
             elif isinstance(prop, Password):
                 if not isinstance(value, password.Password):
-                    raise TypeError('new property "%s" not a Password'%propname)
+                    raise TypeError(
+                        'new property "%s" not a Password' % propname)
                 propvalues[propname] = value
                 journalvalues[propname] = \
                     current and password.JournalPassword(current)
 
             elif value is not None and isinstance(prop, Date):
                 if not isinstance(value, date.Date):
-                    raise TypeError('new property "%s" not a Date'% propname)
+                    raise TypeError('new property "%s" not a Date' % propname)
                 propvalues[propname] = value
 
             elif value is not None and isinstance(prop, Interval):
                 if not isinstance(value, date.Interval):
                     raise TypeError('new property "%s" not an '
-                        'Interval'%propname)
+                                    'Interval' % propname)
                 propvalues[propname] = value
 
             elif value is not None and isinstance(prop, Number):
                 try:
                     float(value)
                 except ValueError:
-                    raise TypeError('new property "%s" not numeric'%propname)
+                    raise TypeError('new property "%s" not numeric' % propname)
 
             elif value is not None and isinstance(prop, Integer):
                 try:
                     int(value)
                 except ValueError:
-                    raise TypeError('new property "%s" not integer'%propname)
+                    raise TypeError('new property "%s" not integer' % propname)
 
             elif value is not None and isinstance(prop, Boolean):
                 try:
                     int(value)
                 except ValueError:
-                    raise TypeError('new property "%s" not boolean'%propname)
+                    raise TypeError('new property "%s" not boolean' % propname)
 
             # record quiet properties to omit from history/changelog
             if prop.quiet:
@@ -2174,8 +2195,8 @@ class Class(hyperdb.Class):
 
         # use the arg for __retired__ to cope with any odd database type
         # conversion (hello, sqlite)
-        sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
-            self.db.arg, self.db.arg)
+        sql = 'update _%s set __retired__=%s where id=%s' % (
+            self.classname, self.db.arg, self.db.arg)
         self.db.sql(sql, (nodeid, nodeid))
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, ''"retired", None)
@@ -2194,18 +2215,18 @@ class Class(hyperdb.Class):
         # check if key property was overrided
         key = self.getkey()
         try:
-            id = self.lookup(node[key])
+            self.lookup(node[key])
         except KeyError:
             pass
         else:
             raise KeyError("Key property (%s) of retired node clashes "
-                "with existing one (%s)" % (key, node[key]))
+                           "with existing one (%s)" % (key, node[key]))
 
         self.fireAuditors('restore', nodeid, None)
         # use the arg for __retired__ to cope with any odd database type
         # conversion (hello, sqlite)
-        sql = 'update _%s set __retired__=%s where id=%s'%(self.classname,
-            self.db.arg, self.db.arg)
+        sql = 'update _%s set __retired__=%s where id=%s' % (
+            self.classname, self.db.arg, self.db.arg)
         self.db.sql(sql, (0, nodeid))
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, ''"restored", None)
@@ -2215,8 +2236,8 @@ class Class(hyperdb.Class):
     def is_retired(self, nodeid):
         """Return true if the node is rerired
         """
-        sql = 'select __retired__ from _%s where id=%s'%(self.classname,
-            self.db.arg)
+        sql = 'select __retired__ from _%s where id=%s' % (self.classname,
+                                                           self.db.arg)
         self.db.sql(sql, (nodeid,))
         return int(self.db.sql_fetchone()[0]) > 0
 
@@ -2275,19 +2296,20 @@ class Class(hyperdb.Class):
         otherwise a KeyError is raised.
         """
         if not self.key:
-            raise TypeError('No key property set for class %s'%self.classname)
+            raise TypeError('No key property set for class %s' %
+                            self.classname)
 
         # use the arg to handle any odd database type conversion (hello,
         # sqlite)
-        sql = "select id from _%s where _%s=%s and __retired__=%s"%(
+        sql = "select id from _%s where _%s=%s and __retired__=%s" % (
             self.classname, self.key, self.db.arg, self.db.arg)
         self.db.sql(sql, (str(keyvalue), 0))
 
         # see if there was a result that's not retired
         row = self.db.sql_fetchone()
         if not row:
-            raise KeyError('No key (%s) value "%s" for "%s"'%(self.key,
-                keyvalue, self.classname))
+            raise KeyError('No key (%s) value "%s" for "%s"' % (
+                self.key, keyvalue, self.classname))
 
         # return the id
         # XXX numeric ids
@@ -2314,11 +2336,12 @@ class Class(hyperdb.Class):
 
         # validate the args
         props = self.getprops()
-        for propname, nodeids in propspec.items():
+        for propname, _nodeids in propspec.items():
             # check the prop is OK
             prop = props[propname]
             if not isinstance(prop, Link) and not isinstance(prop, Multilink):
-                raise TypeError("'%s' not a Link/Multilink property"%propname)
+                raise TypeError("'%s' not a Link/Multilink property" %
+                                propname)
 
         # first, links
         a = self.db.arg
@@ -2328,26 +2351,26 @@ class Class(hyperdb.Class):
         for prop, values in propspec.items():
             if not isinstance(props[prop], hyperdb.Link):
                 continue
-            if type(values) is type({}) and len(values) == 1:
+            if isinstance(values, dict) and len(values) == 1:
                 values = list(values)[0]
-            if type(values) is type(''):
+            if isinstance(values, str):
                 allvalues += (values,)
-                where.append('_%s = %s'%(prop, a))
+                where.append('_%s = %s' % (prop, a))
             elif values is None:
-                where.append('_%s is NULL'%prop)
+                where.append('_%s is NULL' % prop)
             else:
                 values = list(values)
                 s = ''
                 if None in values:
                     values.remove(None)
-                    s = '_%s is NULL or '%prop
+                    s = '_%s is NULL or ' % prop
                 allvalues += tuple(values)
-                s += '_%s in (%s)'%(prop, ','.join([a]*len(values)))
-                where.append('(' + s +')')
+                s += '_%s in (%s)' % (prop, ','.join([a]*len(values)))
+                where.append('(' + s + ')')
         if where:
             allvalues = (0, ) + allvalues
             sql.append("""select id from _%s where  __retired__=%s
-                and %s"""%(self.classname, a, ' and '.join(where)))
+                and %s""" % (self.classname, a, ' and '.join(where)))
 
         # now multilinks
         for prop, values in propspec.items():
@@ -2370,15 +2393,15 @@ class Class(hyperdb.Class):
                     allvalues += (0, )
                 dis = 'distinct '
                 ord = ' order by %s.id' % cn
-            if type(values) is type(''):
+            if isinstance(values, str):
                 allvalues += (values,)
                 s = a
             else:
                 allvalues += tuple(values)
                 s = ','.join([a]*len(values))
             sql.append("""select %s%s.id from %s, %s where  %s.__retired__=%s
-                  %sand %s.id = %s.%s and %s.%s in (%s)%s"""%(dis, cn, cn,
-                  tn, cn, a, ret, cn, tn, nn, tn, ln, s, ord))
+                  %sand %s.id = %s.%s and %s.%s in (%s)%s""" % (
+                      dis, cn, cn, tn, cn, a, ret, cn, tn, nn, tn, ln, s, ord))
 
         if not sql:
             return []
@@ -2401,13 +2424,14 @@ class Class(hyperdb.Class):
         for propname in requirements:
             prop = self.properties[propname]
             if not isinstance(prop, String):
-                raise TypeError("'%s' not a String property"%propname)
+                raise TypeError("'%s' not a String property" % propname)
             where.append(propname)
             args.append(requirements[propname].lower())
 
         # generate the where clause
-        s = ' and '.join(['lower(_%s)=%s'%(col, self.db.arg) for col in where])
-        sql = 'select id from _%s where %s and __retired__=%s'%(
+        s = ' and '.join(['lower(_%s)=%s' % (col,
+                                             self.db.arg) for col in where])
+        sql = 'select id from _%s where %s and __retired__=%s' % (
             self.classname, s, self.db.arg)
         args.append(0)
         self.db.sql(sql, tuple(args))
@@ -2433,11 +2457,11 @@ class Class(hyperdb.Class):
                 compare = '>'
             else:
                 compare = '='
-            sql = 'select id from _%s where __retired__%s%s'%(self.classname,
-                compare, self.db.arg)
+            sql = 'select id from _%s where __retired__%s%s' % (
+                self.classname, compare, self.db.arg)
         else:
             args = ()
-            sql = 'select id from _%s'%self.classname
+            sql = 'select id from _%s' % self.classname
         self.db.sql(sql, args)
         # XXX numeric ids
         ids = [str(x[0]) for x in self.db.cursor.fetchall()]
@@ -2450,21 +2474,21 @@ class Class(hyperdb.Class):
            backend.
         """
         multilink_table = proptree.propclass.table_name
-        nodeid_name     = proptree.propclass.nodeid_name
-        linkid_name     = proptree.propclass.linkid_name
+        nodeid_name = proptree.propclass.nodeid_name
+        linkid_name = proptree.propclass.linkid_name
         if parentname is None:
             parentname = '_' + proptree.parent.classname
 
         w = ''
         if proptree.need_retired:
-            w = ' where %s.__retired__=0'%(multilink_table)
+            w = ' where %s.__retired__=0' % (multilink_table)
         if proptree.need_child_retired:
             tn1 = multilink_table
             tn2 = '_' + proptree.classname
-            w = ', %s where %s.%s=%s.id and %s.__retired__=0'%(tn2,
-                tn1, linkid_name, tn2, tn2)
-        return '%s.id not in (select %s from %s%s)'%(parentname, nodeid_name,
-            multilink_table, w)
+            w = ', %s where %s.%s=%s.id and %s.__retired__=0' % (
+                tn2, tn1, linkid_name, tn2, tn2)
+        return '%s.id not in (select %s from %s%s)' % (
+            parentname, nodeid_name, multilink_table, w)
 
     def _filter_multilink_expression_fallback(self, proptree, expr):
         '''This is a fallback for database that do not support
@@ -2496,7 +2520,7 @@ class Class(hyperdb.Class):
         elif proptree.need_child_retired:
             tn2 = '_' + proptree.classname
             j = ' LEFT OUTER JOIN %s ON %s.id = m.%s' % (tn2, tn2, lid)
-            w = ' and %s.__retired__=0'%(tn2)
+            w = ' and %s.__retired__=0' % (tn2)
             s = '%s.id' % tn2
 
         stmnt = "SELECT c.id, %s FROM _%s as c " \
@@ -2512,12 +2536,12 @@ class Class(hyperdb.Class):
                     last_id = nodeid
                 else:
                     # we have all multilink items -> evaluate!
-                    if is_valid(kws): append(last_id)
+                    if is_valid(kws): append(last_id)    # noqa: E701
                     last_id, kws = nodeid, []
             if kw is not None:
                 kws.append(int(kw))
 
-        if last_id is not None and is_valid(kws): 
+        if last_id is not None and is_valid(kws):
             append(last_id)
 
         # we have ids of the classname table
@@ -2542,6 +2566,7 @@ class Class(hyperdb.Class):
             lambda_atom = lambda n: atom if n.x >= 0 else atom_nil
             values = []
             w = expr.generate(lambda_atom)
+
             def collect_values(n):
                 if n.x >= 0:
                     values.append(n.x)
@@ -2559,15 +2584,15 @@ class Class(hyperdb.Class):
             d[entry] = entry
         l = []
         if None in d or not d:
-            if None in d: del d[None]
-            l.append('_%s._%s is NULL'%(pln, prp))
+            if None in d: del d[None]      # noqa: E701
+            l.append('_%s._%s is NULL' % (pln, prp))
         if d:
             v = list(d)
             s = ','.join([self.db.arg for x in v])
-            l.append('(_%s._%s in (%s))'%(pln, prp, s))
+            l.append('(_%s._%s in (%s))' % (pln, prp, s))
             args = v
         if l:
-            where = '(' + ' or '.join(l) +')'
+            where = '(' + ' or '.join(l) + ')'
         return where, args
 
     def _filter_multilink_expression(self, proptree, v):
@@ -2595,16 +2620,17 @@ class Class(hyperdb.Class):
 
             w = j = ''
             if proptree.need_retired:
-                w = ' and %s.__retired__=0'%(multilink_table)
+                w = ' and %s.__retired__=0' % (multilink_table)
             elif proptree.need_child_retired:
                 tn1 = multilink_table
                 tn2 = '_' + proptree.classname
                 j = ', %s' % tn2
-                w = ' and %s.%s=%s.id and %s.__retired__=0'%(tn1, lid, tn2, tn2)
+                w = ' and %s.%s=%s.id and %s.__retired__=0' % (
+                    tn1, lid, tn2, tn2)
 
             atom = \
                 "%s IN(SELECT %s FROM %s%s WHERE %s=a.id%s)" % (
-                self.db.arg, lid, multilink_table, j, nid, w)
+                    self.db.arg, lid, multilink_table, j, nid, w)
             atom_nil = self._subselect(proptree, 'a')
 
             lambda_atom = lambda n: atom if n.x >= 0 else atom_nil
@@ -2612,10 +2638,11 @@ class Class(hyperdb.Class):
             intron = \
                 "_%(classname)s.id in (SELECT id " \
                 "FROM _%(classname)s AS a WHERE %(condition)s) " % {
-                    'classname' : classname,
-                    'condition' : expr.generate(lambda_atom) }
+                    'classname': classname,
+                    'condition': expr.generate(lambda_atom)}
 
             values = []
+
             def collect_values(n):
                 if n.x >= 0:
                     values.append(n.x)
@@ -2625,22 +2652,22 @@ class Class(hyperdb.Class):
         except:
             # fallback behavior when expression parsing above fails
             orclause = ''
-            if '-1' in v :
-                v = [x for x in v if int (x) > 0]
+            if '-1' in v:
+                v = [x for x in v if int(x) > 0]
                 orclause = self._subselect(proptree)
             where = []
             where.append("%s.%s in (%s)" % (multilink_table, lid,
-                ','.join([self.db.arg] * len(v))))
-            where.append('_%s.id=%s.%s'%(classname, multilink_table, nid))
-            where = ' and '.join (where)
-            if orclause :
-                where = '((' + ' or '.join ((where + ')', orclause)) + ')'
+                                            ','.join([self.db.arg] * len(v))))
+            where.append('_%s.id=%s.%s' % (classname, multilink_table, nid))
+            where = ' and '.join(where)
+            if orclause:
+                where = '((' + ' or '.join((where + ')', orclause)) + ')'
 
             return where, v
 
-    def _filter_sql (self, search_matches, filterspec, srt=[], grp=[], retr=0,
-                     retired=False, exact_match_spec={}, limit=None,
-                     offset=None):
+    def _filter_sql(self, search_matches, filterspec, srt=[], grp=[], retr=0,
+                    retired=False, exact_match_spec={}, limit=None,
+                    offset=None):
         """ Compute the proptree and the SQL/ARGS for a filter.
         For argument description see filter below.
         We return a 3-tuple, the proptree, the sql and the sql-args
@@ -2663,13 +2690,13 @@ class Class(hyperdb.Class):
 
         # figure the WHERE clause from the filterspec
         use_distinct = False  # Do we need a distinct clause?
-        sortattr = self._sortattr (group = grp, sort = srt)
+        sortattr = self._sortattr(group=grp, sort=srt)
         proptree = self._proptree(filterspec, exact_match_spec, sortattr, retr)
         mlseen = 0
         for pt in reversed(proptree.sortattr):
             p = pt
             while p.parent:
-                if isinstance (p.propclass, Multilink):
+                if isinstance(p.propclass, Multilink):
                     mlseen = True
                 if mlseen:
                     p.sort_ids_needed = True
@@ -2679,9 +2706,7 @@ class Class(hyperdb.Class):
                 pt.attr_sort_done = pt.tree_sort_done = True
         proptree.compute_sort_done()
 
-        cols = ['_%s.id'%icn]
-        mlsort = []
-        rhsnum = 0
+        cols = ['_%s.id' % icn]
         for p in proptree:
             rc = ac = oc = None
             cn = p.classname
@@ -2692,10 +2717,10 @@ class Class(hyperdb.Class):
             v = p.val
             propclass = p.propclass
             if p.parent == proptree and p.name == 'id' \
-                and 'retrieve' in p.need_for:
+                    and 'retrieve' in p.need_for:
                 p.sql_idx = 0
             if 'sort' in p.need_for or 'retrieve' in p.need_for:
-                rc = oc = ac = '_%s._%s'%(pln, k)
+                rc = oc = ac = '_%s._%s' % (pln, k)
             if isinstance(propclass, Multilink):
                 if 'search' in p.need_for:
                     # if we joining with Multilink tables we need distinct
@@ -2706,15 +2731,15 @@ class Class(hyperdb.Class):
                     frum.append(tn)
                     if p.children or p.need_child_retired:
                         frum.append('_%s as _%s' % (cn, ln))
-                        where.append('%s.%s=_%s.id'%(tn, lid, ln))
+                        where.append('%s.%s=_%s.id' % (tn, lid, ln))
                         if p.need_child_retired:
-                            where.append('_%s.__retired__=0'%(ln))
+                            where.append('_%s.__retired__=0' % (ln))
                     # Note: need the where-clause if p has
                     # children that compute additional restrictions
-                    if  (not p.has_values
-                         or (not isinstance(v, type([])) and v != '-1')
-                         or p.children):
-                        where.append('_%s.id=%s.%s'%(pln, tn, nid))
+                    if (not p.has_values or
+                            (not isinstance(v, type([])) and v != '-1') or
+                            p.children):
+                        where.append('_%s.id=%s.%s' % (pln, tn, nid))
                     if v in ('-1', ['-1'], []):
                         # only match rows that have count(linkid)=0 in the
                         # corresponding multilink table)
@@ -2728,11 +2753,11 @@ class Class(hyperdb.Class):
                                 where.append(w)
                                 args += arg
                             else:
-                                where.append('%s.%s=%s'%(tn, lid, a))
+                                where.append('%s.%s=%s' % (tn, lid, a))
                                 args.append(v)
                         # Don't match retired nodes if rev_multilink
                         if p.need_retired:
-                            where.append('%s.__retired__=0'%(tn))
+                            where.append('%s.__retired__=0' % (tn))
                 if 'sort' in p.need_for:
                     assert not p.attr_sort_done and not p.sort_ids_needed
             elif k == 'id':
@@ -2744,13 +2769,13 @@ class Class(hyperdb.Class):
                         if not v:
                             return None
                         s = ','.join([a for x in v])
-                        where.append('_%s.%s in (%s)'%(pln, k, s))
+                        where.append('_%s.%s in (%s)' % (pln, k, s))
                         args = args + v
                     else:
-                        where.append('_%s.%s=%s'%(pln, k, a))
+                        where.append('_%s.%s=%s' % (pln, k, a))
                         args.append(v)
                 if 'sort' in p.need_for or 'retrieve' in p.need_for:
-                    rc = oc = ac = '_%s.id'%pln
+                    rc = oc = ac = '_%s.id' % pln
             elif isinstance(propclass, String):
                 if 'search' in p.need_for:
                     exact = []
@@ -2775,16 +2800,16 @@ class Class(hyperdb.Class):
                     w = []
                     for vv, ex in zip(v, exact):
                         if ex:
-                            w.append("_%s._%s %s %s"%(
+                            w.append("_%s._%s %s %s" % (
                                 pln, k, self.case_sensitive_equal, a))
                             args.append(vv)
                         else:
-                            w.append("_%s._%s %s %s ESCAPE %s"%(
+                            w.append("_%s._%s %s %s ESCAPE %s" % (
                                 pln, k, self.case_insensitive_like, a, a))
                             args.extend((vv, '\\'))
-                    where.append ('(' + ' and '.join(w) + ')')
+                    where.append('(' + ' and '.join(w) + ')')
                 if 'sort' in p.need_for:
-                    oc = ac = 'lower(_%s._%s)'%(pln, k)
+                    oc = ac = 'lower(_%s._%s)' % (pln, k)
             elif isinstance(propclass, Link):
                 if 'search' in p.need_for:
                     if p.children:
@@ -2792,7 +2817,7 @@ class Class(hyperdb.Class):
                             frum.append('_%s as _%s' % (cn, ln))
                         c = [x for x in p.children if 'search' in x.need_for]
                         if c:
-                            where.append('_%s._%s=_%s.id'%(pln, k, ln))
+                            where.append('_%s._%s=_%s.id' % (pln, k, ln))
                     if p.has_values:
                         if isinstance(v, type([])):
                             w, arg = self._filter_link_expression(p, v)
@@ -2802,26 +2827,26 @@ class Class(hyperdb.Class):
                         else:
                             if v in ('-1', None):
                                 v = None
-                                where.append('_%s._%s is NULL'%(pln, k))
+                                where.append('_%s._%s is NULL' % (pln, k))
                             else:
-                                where.append('_%s._%s=%s'%(pln, k, a))
+                                where.append('_%s._%s=%s' % (pln, k, a))
                                 args.append(v)
                 if 'sort' in p.need_for:
                     lp = p.cls.labelprop()
-                    oc = ac = '_%s._%s'%(pln, k)
+                    oc = ac = '_%s._%s' % (pln, k)
                     if lp != 'id':
                         if p.tree_sort_done:
                             loj.append(
-                                'LEFT OUTER JOIN _%s as _%s on _%s._%s=_%s.id'%(
-                                cn, ln, pln, k, ln))
-                        oc = '_%s._%s'%(ln, lp)
+                                'LEFT OUTER JOIN _%s as _%s on _%s._%s=_%s.id' % (
+                                    cn, ln, pln, k, ln))
+                        oc = '_%s._%s' % (ln, lp)
                 if 'retrieve' in p.need_for:
-                    rc = '_%s._%s'%(pln, k)
+                    rc = '_%s._%s' % (pln, k)
             elif isinstance(propclass, Date) and 'search' in p.need_for:
                 dc = self.db.to_sql_value(hyperdb.Date)
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s._%s in (%s)'%(pln, k, s))
+                    where.append('_%s._%s in (%s)' % (pln, k, s))
                     args = args + [dc(date.Date(x)) for x in v]
                 else:
                     try:
@@ -2830,19 +2855,19 @@ class Class(hyperdb.Class):
                         for d in v.split(','):
                             w1 = []
                             if d == '-':
-                                wh.append('_%s._%s is NULL'%(pln, k))
+                                wh.append('_%s._%s is NULL' % (pln, k))
                                 continue
                             # Try to filter on range of dates
                             date_rng = propclass.range_from_raw(d, self.db)
                             if date_rng.from_value:
-                                w1.append('_%s._%s >= %s'%(pln, k, a))
+                                w1.append('_%s._%s >= %s' % (pln, k, a))
                                 ar.append(dc(date_rng.from_value))
                             if date_rng.to_value:
-                                w1.append('_%s._%s <= %s'%(pln, k, a))
+                                w1.append('_%s._%s <= %s' % (pln, k, a))
                                 ar.append(dc(date_rng.to_value))
-                            wh.append (' and '.join (w1))
-                        where.append ('(' + ' or '.join (wh) + ')')
-                        args.extend (ar)
+                            wh.append(' and '.join(w1))
+                        where.append('(' + ' or '.join(wh) + ')')
+                        args.extend(ar)
                     except ValueError:
                         # If range creation fails - ignore that search parameter
                         pass
@@ -2851,50 +2876,52 @@ class Class(hyperdb.Class):
                 if 'search' in p.need_for:
                     if isinstance(v, type([])):
                         s = ','.join([a for x in v])
-                        where.append('_%s.__%s_int__ in (%s)'%(pln, k, s))
+                        where.append('_%s.__%s_int__ in (%s)' % (pln, k, s))
                         args = args + [date.Interval(x).as_seconds() for x in v]
                     else:
                         try:
                             # Try to filter on range of intervals
                             date_rng = Range(v, date.Interval)
                             if date_rng.from_value:
-                                where.append('_%s.__%s_int__ >= %s'%(pln, k, a))
+                                where.append('_%s.__%s_int__ >= %s' % (
+                                    pln, k, a))
                                 args.append(date_rng.from_value.as_seconds())
                             if date_rng.to_value:
-                                where.append('_%s.__%s_int__ <= %s'%(pln, k, a))
+                                where.append('_%s.__%s_int__ <= %s' % (
+                                    pln, k, a))
                                 args.append(date_rng.to_value.as_seconds())
                         except ValueError:
                             # If range creation fails - ignore search parameter
                             pass
                 if 'sort' in p.need_for:
-                    oc = ac = '_%s.__%s_int__'%(pln,k)
+                    oc = ac = '_%s.__%s_int__' % (pln, k)
                 if 'retrieve' in p.need_for:
-                    rc = '_%s._%s'%(pln,k)
+                    rc = '_%s._%s' % (pln, k)
             elif isinstance(propclass, Boolean) and 'search' in p.need_for:
-                if type(v) == type(""):
+                if isinstance(v, str):
                     v = v.split(',')
-                if type(v) != type([]):
+                if not isinstance(v, list):
                     v = [v]
                 bv = []
                 for val in v:
-                    if type(val) is type(''):
-                        bv.append(propclass.from_raw (val))
+                    if isinstance(val, str):
+                        bv.append(propclass.from_raw(val))
                     else:
                         bv.append(bool(val))
                 if len(bv) == 1:
-                    where.append('_%s._%s=%s'%(pln, k, a))
+                    where.append('_%s._%s=%s' % (pln, k, a))
                     args = args + bv
                 else:
                     s = ','.join([a for x in v])
-                    where.append('_%s._%s in (%s)'%(pln, k, s))
+                    where.append('_%s._%s in (%s)' % (pln, k, s))
                     args = args + bv
             elif 'search' in p.need_for:
                 if isinstance(v, type([])):
                     s = ','.join([a for x in v])
-                    where.append('_%s._%s in (%s)'%(pln, k, s))
+                    where.append('_%s._%s in (%s)' % (pln, k, s))
                     args = args + v
                 else:
-                    where.append('_%s._%s=%s'%(pln, k, a))
+                    where.append('_%s._%s=%s' % (pln, k, a))
                     args.append(v)
             if oc:
                 if p.sort_ids_needed:
@@ -2904,8 +2931,8 @@ class Class(hyperdb.Class):
                     cols.append(ac)
                 if p.tree_sort_done and p.sort_direction:
                     # Don't select top-level id or multilink twice
-                    if (not p.sort_ids_needed or ac != oc) and (p.name != 'id'
-                        or p.parent != proptree):
+                    if (not p.sort_ids_needed or ac != oc) and (
+                            p.name != 'id' or p.parent != proptree):
                         if rc == oc:
                             p.sql_idx = len(cols)
                         cols.append(oc)
@@ -2919,7 +2946,7 @@ class Class(hyperdb.Class):
             if 'retrieve' in p.need_for and p.sql_idx is None:
                 assert(rc)
                 p.sql_idx = len(cols)
-                cols.append (rc)
+                cols.append(rc)
 
         props = self.getprops()
 
@@ -2928,12 +2955,12 @@ class Class(hyperdb.Class):
             op = '='
             if retired:
                 op = '!='
-            where.append('_%s.__retired__%s0'%(icn, op))
+            where.append('_%s.__retired__%s0' % (icn, op))
 
         # add results of full text search
         if search_matches is not None:
             s = ','.join([a for x in search_matches])
-            where.append('_%s.id in (%s)'%(icn, s))
+            where.append('_%s.id in (%s)' % (icn, s))
             args = args + [x for x in search_matches]
 
         # construct the SQL
@@ -2945,7 +2972,7 @@ class Class(hyperdb.Class):
             where = ''
         if use_distinct:
             # Avoid dupes
-            cols[0] = 'distinct(_%s.id)'%icn
+            cols[0] = 'distinct(_%s.id)' % icn
 
         order = []
         # keep correct sequence of order attributes.
@@ -2954,7 +2981,7 @@ class Class(hyperdb.Class):
                 continue
             order.extend(sa.orderby)
         if order:
-            order = ' order by %s'%(','.join(order))
+            order = ' order by %s' % (','.join(order))
         else:
             order = ''
 
@@ -2968,7 +2995,7 @@ class Class(hyperdb.Class):
             offset = ''
         cols = ','.join(cols)
         loj = ' '.join(loj)
-        sql = 'select %s from %s %s %s%s%s%s'%(
+        sql = 'select %s from %s %s %s%s%s%s' % (
             cols, frum, loj, where, order, limit, offset)
         args = tuple(args)
         __traceback_info__ = (sql, args)
@@ -2998,10 +3025,10 @@ class Class(hyperdb.Class):
         if __debug__:
             start_t = time.time()
 
-        sq = self._filter_sql (search_matches, filterspec, sort, group,
-                               retired=retired,
-                               exact_match_spec=exact_match_spec,
-                               limit=limit, offset=offset)
+        sq = self._filter_sql(search_matches, filterspec, sort, group,
+                              retired=retired,
+                              exact_match_spec=exact_match_spec,
+                              limit=limit, offset=offset)
         # nothing to match?
         if sq is None:
             return []
@@ -3024,9 +3051,9 @@ class Class(hyperdb.Class):
             for p in proptree:
                 if hasattr(p, 'auxcol'):
                     p.sort_ids = [row[p.auxcol] for row in l]
-                    p.sort_result = p._sort_repr \
-                        (p.propclass.sort_repr, p.sort_ids)
-            l = proptree.sort ([str(row[0]) for row in l])
+                    p.sort_result = p._sort_repr(
+                        p.propclass.sort_repr, p.sort_ids)
+            l = proptree.sort([str(row[0]) for row in l])
 
         if __debug__:
             self.db.stats['filtering'] += (time.time() - start_t)
@@ -3057,7 +3084,7 @@ class Class(hyperdb.Class):
         for p in proptree:
             if 'retrieve' in p.need_for:
                 cn = p.parent.classname
-                ptid = p.parent.id # not the nodeid!
+                ptid = p.parent.id  # not the nodeid!
                 key = (cn, ptid)
                 if key not in classes:
                     classes[key] = {}
@@ -3067,9 +3094,9 @@ class Class(hyperdb.Class):
                 p.to_hyperdb = self.db.to_hyperdb_value(p.propclass.__class__)
         while True:
             row = cursor.fetchone()
-            if not row: break
+            if not row: break                                # noqa: E701
             # populate cache with current items
-            for (classname, ptid), pt in classes.items():
+            for (classname, _ptid), pt in classes.items():
                 nodeid = str(row[pt['id'].sql_idx])
                 key = (classname, nodeid)
                 if key in self.db.cache:
@@ -3098,11 +3125,11 @@ class Class(hyperdb.Class):
             start_t = time.time()
 
         self.db.sql(sql)
-        l = self.db.sql_fetchall()
+        results = self.db.sql_fetchall()
 
         if __debug__:
             self.db.stats['filtering'] += (time.time() - start_t)
-        return l
+        return results
 
     def count(self):
         """Get the number of nodes in this class.
@@ -3148,7 +3175,7 @@ class Class(hyperdb.Class):
         for prop, propclass in self.getprops().items():
             if isinstance(propclass, String) and propclass.indexme:
                 self.db.indexer.add_text((self.classname, nodeid, prop),
-                    str(self.get(nodeid, prop)))
+                                         str(self.get(nodeid, prop)))
 
     #
     # import / export support
@@ -3158,7 +3185,7 @@ class Class(hyperdb.Class):
             specified by propnames for the given node.
         """
         properties = self.getprops()
-        l = []
+        return_list = []
         for prop in propnames:
             proptype = properties[prop]
             value = self.get(nodeid, prop)
@@ -3171,9 +3198,9 @@ class Class(hyperdb.Class):
                 value = value.get_tuple()
             elif isinstance(proptype, hyperdb.Password):
                 value = str(value)
-            l.append(repr_export(value))
-        l.append(repr_export(self.is_retired(nodeid)))
-        return l
+            return_list.append(repr_export(value))
+        return_list.append(repr_export(self.is_retired(nodeid)))
+        return return_list
 
     def import_list(self, propnames, proplist):
         """ Import a node - all information including "id" is present and
@@ -3193,7 +3220,7 @@ class Class(hyperdb.Class):
         # make the new node's property map
         d = {}
         retire = 0
-        if not "id" in propnames:
+        if "id" not in propnames:
             newid = self.db.newid(self.classname)
         else:
             newid = eval_import(proplist[propnames.index("id")])
@@ -3231,10 +3258,10 @@ class Class(hyperdb.Class):
                 value = us2s(value)
                 if not isinstance(value, str):
                     raise TypeError('new property "%(propname)s" not a '
-                        'string: %(value)r'%locals())
+                                    'string: %(value)r' % locals())
                 if prop.indexme:
                     self.db.indexer.add_text((self.classname, newid, propname),
-                        value)
+                                             value)
             d[propname] = value
 
         # get a new id if necessary
@@ -3246,7 +3273,7 @@ class Class(hyperdb.Class):
 
         # use the arg for __retired__ to cope with any odd database type
         # conversion (hello, sqlite)
-        retired_sql = 'update _%s set __retired__=%s where id=%s'%(
+        retired_sql = 'update _%s set __retired__=%s where id=%s' % (
             self.classname, self.db.arg, self.db.arg)
 
         # insert new node or update existing?
@@ -3254,9 +3281,9 @@ class Class(hyperdb.Class):
         try:
             has_node = self.hasnode(newid)
             if not has_node:
-                self.db.addnode(self.classname, newid, d) # insert
+                self.db.addnode(self.classname, newid, d)  # insert
             else:
-                self.db.setnode(self.classname, newid, d) # update
+                self.db.setnode(self.classname, newid, d)  # update
             self.db.checkpoint_data()
         # Blech, different db's return different exceptions
         # so I can't list them here as some might not be defined
@@ -3266,22 +3293,22 @@ class Class(hyperdb.Class):
         # undo the fixup and pass on the error.
         except Exception as e:  # nosec
             logger.info('Attempting to handle import exception '
-                        'for id %s: %s' % (newid,e))
+                        'for id %s: %s' % (newid, e))
 
             keyname = self.db.user.getkey()
             if has_node or not keyname:  # Not an integrity error
                 raise
             self.db.restore_connection_on_error()
             activeid = self.db.user.lookup(d[keyname])
-            self.db.sql(retired_sql, (-1, activeid)) # clear the active node
+            self.db.sql(retired_sql, (-1, activeid))  # clear the active node
             # this can only happen on an addnode, so retry
             try:
                 # if this raises an error, let it propagate upward
-                self.db.addnode(self.classname, newid, d) # insert
+                self.db.addnode(self.classname, newid, d)  # insert
             except Exception:
                 # undo the database change
-                self.db.sql(retired_sql, (0, activeid)) # clear the active node
-                raise # propagate
+                self.db.sql(retired_sql, (0, activeid))  # clear active node
+                raise  # propagate
             logger.info('Successfully handled import exception '
                         'for id %s which conflicted with %s' % (
                             newid, activeid))
@@ -3307,9 +3334,9 @@ class Class(hyperdb.Class):
         properties = self.getprops()
         r = []
         for nodeid in self.getnodeids():
-            for nodeid, date, user, action, params in self.history(nodeid,
-                            enforceperm=False, skipquiet=False):
-                date = date.get_tuple()
+            for nodeid, date_, user, action, params in self.history(
+                    nodeid, enforceperm=False, skipquiet=False):
+                date_ = date_.get_tuple()
                 if action == 'set':
                     export_data = {}
                     for propname, value in params.items():
@@ -3332,9 +3359,10 @@ class Class(hyperdb.Class):
                 elif action == 'create' and params:
                     # old tracker with data stored in the create!
                     params = {}
-                l = [nodeid, date, user, action, params]
+                l = [nodeid, date_, user, action, params]
                 r.append(list(map(repr_export, l)))
         return r
+
 
 class FileClass(hyperdb.FileClass, Class):
     """This class defines a large chunk of data. To support this, it has a
@@ -3378,7 +3406,7 @@ class FileClass(hyperdb.FileClass, Class):
             if bytes != str and isinstance(content, bytes):
                 index_content = content.decode('utf-8', errors='ignore')
             self.db.indexer.add_text((self.classname, newid, 'content'),
-                index_content, mime_type)
+                                     index_content, mime_type)
 
         # store off the content as a file
         self.db.storefile(self.classname, newid, None, bs2b(content))
@@ -3399,17 +3427,21 @@ class FileClass(hyperdb.FileClass, Class):
                 return b2s(self.db.getfile(self.classname, nodeid, None))
             except IOError as strerror:
                 # BUG: by catching this we donot see an error in the log.
-                return 'ERROR reading file: %s%s\n%s\n%s'%(
+                return 'ERROR reading file: %s%s\n%s\n%s' % (
                         self.classname, nodeid, poss_msg, strerror)
-            except UnicodeDecodeError as e:
+            except UnicodeDecodeError:
                 # if content is not text (e.g. jpeg file) we get
                 # unicode error trying to convert to string in python 3.
                 # trap it and supply an error message. Include md5sum
                 # of content as this string is included in the etag
                 # calculation of the object.
                 return ('%s%s is not text, retrieve using '
-                        'binary_content property. mdsum: %s')%(self.classname,
-                   nodeid, md5(self.db.getfile(self.classname, nodeid, None)).hexdigest())  # nosec - bandit md5 use ok
+                        'binary_content property. mdsum: %s') % (
+                            self.classname, nodeid,
+                            md5(self.db.getfile(
+                                self.classname,
+                                nodeid,
+                                None)).hexdigest())  # nosec - bandit md5 use ok
         elif propname == 'binary_content':
             return self.db.getfile(self.classname, nodeid, None)
 
@@ -3443,7 +3475,7 @@ class FileClass(hyperdb.FileClass, Class):
                 if bytes != str and isinstance(content, bytes):
                     index_content = content.decode('utf-8', errors='ignore')
                 self.db.indexer.add_text((self.classname, itemid, 'content'),
-                    index_content, mime_type)
+                                         index_content, mime_type)
             propvalues['content'] = content
 
         # fire reactors
@@ -3464,7 +3496,7 @@ class FileClass(hyperdb.FileClass, Class):
                     index_content = index_content.decode('utf-8',
                                                          errors='ignore')
                 self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                    index_content, mime_type)
+                                         index_content, mime_type)
             elif isinstance(propclass, hyperdb.String) and propclass.indexme:
                 # index them under (classname, nodeid, property)
                 try:
@@ -3473,6 +3505,7 @@ class FileClass(hyperdb.FileClass, Class):
                     # node has been destroyed
                     continue
                 self.db.indexer.add_text((self.classname, nodeid, prop), value)
+
 
 # XXX deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):
