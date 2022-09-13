@@ -1432,18 +1432,19 @@ class DBTest(commonDBTest):
         self.db.commit()
         journal = self.db.getjournal('issue', id)
         now     = date.Date('.')
-        sec     = date.Interval('0:00:01')
+        sec1    = date.Interval('0:00:01')
         sec2    = date.Interval('0:00:02')
+        sec3    = date.Interval('0:00:03')
         jp0 = dict(title = 'spam')
         # Non-existing property changed
         jp1 = dict(nonexisting = None)
-        journal.append ((id, now, '1', 'set', jp1))
+        journal.append ((id, now+sec1, '1', 'set', jp1))
         # Link from user-class to non-existing property
         jp2 = ('user', '1', 'xyzzy')
-        journal.append ((id, now+sec, '1', 'link', jp2))
+        journal.append ((id, now+sec2, '1', 'link', jp2))
         # Link from non-existing class
         jp3 = ('frobozz', '1', 'xyzzy')
-        journal.append ((id, now+sec2, '1', 'link', jp3))
+        journal.append ((id, now+sec3, '1', 'link', jp3))
         self.db.setjournal('issue', id, journal)
         self.db.commit()
         result=self.db.issue.history(id)
@@ -1460,6 +1461,9 @@ class DBTest(commonDBTest):
             print(result) # following test fails sometimes under sqlite
                           # in travis. Looks like an ordering issue
                           # in python 3.5. Print result to debug.
+                          # is system runs fast enough, timestamp can
+                          # be the same on two journal items. Ordering
+                          # in that case is random.
             self.assertEqual(result [2][4], jp1)
             self.assertEqual(result [3][4], jp2)
             self.assertEqual(result [4][4], jp3)
