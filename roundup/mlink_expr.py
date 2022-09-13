@@ -1,7 +1,7 @@
 #
 # Copyright: 2010 Intevation GmbH.
 #            2021 Ralf Schlatterbeck, rsc@runtux.com.
-# 
+#
 
 # This module is Free Software under the Roundup licensing,
 # see the COPYING.txt file coming with Roundup.
@@ -17,6 +17,7 @@ class Binary:
         self.x.visit(visitor)
         self.y.visit(visitor)
 
+
 class Unary:
 
     def __init__(self, x):
@@ -28,6 +29,7 @@ class Unary:
     def visit(self, visitor):
         self.x.visit(visitor)
 
+
 class Equals(Unary):
 
     def evaluate(self, v):
@@ -35,6 +37,7 @@ class Equals(Unary):
 
     def visit(self, visitor):
         visitor(self)
+
 
 class Empty(Unary):
 
@@ -44,6 +47,7 @@ class Empty(Unary):
     def visit(self, visitor):
         visitor(self)
 
+
 class Not(Unary):
 
     def evaluate(self, v):
@@ -51,6 +55,7 @@ class Not(Unary):
 
     def generate(self, atom):
         return "NOT(%s)" % self.x.generate(atom)
+
 
 class Or(Binary):
 
@@ -62,6 +67,7 @@ class Or(Binary):
             self.x.generate(atom),
             self.y.generate(atom))
 
+
 class And(Binary):
 
     def evaluate(self, v):
@@ -72,18 +78,20 @@ class And(Binary):
             self.x.generate(atom),
             self.y.generate(atom))
 
+
 def compile_expression(opcodes):
 
     stack = []
     push, pop = stack.append, stack.pop
     for opcode in opcodes:
-        if   opcode == -1: push(Empty(opcode))
-        elif opcode == -2: push(Not(pop()))
-        elif opcode == -3: push(And(pop(), pop()))
-        elif opcode == -4: push(Or(pop(), pop()))
-        else:              push(Equals(opcode))
+        if   opcode == -1: push(Empty(opcode))      # noqa: E271,E701
+        elif opcode == -2: push(Not(pop()))         # noqa: E701
+        elif opcode == -3: push(And(pop(), pop()))  # noqa: E701
+        elif opcode == -4: push(Or(pop(), pop()))   # noqa: E701
+        else:              push(Equals(opcode))     # noqa: E701
 
     return pop()
+
 
 class Expression:
 
@@ -99,7 +107,7 @@ class Expression:
                     x and [int(x)] or [])
             else:
                 self.evaluate = lambda x: compiled.evaluate([int(y) for y in x])
-        except:
+        except ValueError:
             if is_link:
                 v = [None if x == '-1' else x for x in v]
                 self.evaluate = lambda x: x in v
@@ -108,3 +116,5 @@ class Expression:
                 self.evaluate = lambda x: bool(set(x) & set(v)) or not x
             else:
                 self.evaluate = lambda x: bool(set(x) & set(v))
+        except BaseException:
+            raise
