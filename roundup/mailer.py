@@ -2,25 +2,30 @@
 """
 __docformat__ = 'restructuredtext'
 
-import time, os, socket, smtplib, sys, traceback, logging
-
-from roundup import __version__
-from roundup.date import get_timezone, Date
+import logging
+import os
+import smtplib
+import socket
+import sys
+import time
+import traceback
 
 from email import charset
-from email.utils import formatdate, specialsre, escapesre
 from email.charset import Charset
 from email.header import Header
 from email.mime.base import MIMEBase
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
+from email.mime.text import MIMEText
+from email.utils import formatdate, specialsre, escapesre
 
-from roundup.anypy import email_
+from roundup.anypy import email_                # noqa: F401 defines functions
 from roundup.anypy.strings import b2s, s2u
+from roundup import __version__
+from roundup.date import get_timezone, Date
 
 try:
-    import gpg, gpg.core
+    import gpg, gpg.core                        # noqa: E401
 except ImportError:
     gpg = None
 
@@ -171,7 +176,7 @@ class Mailer:
             to = None
         # see whether we should send to the dispatcher or not
         dispatcher_email = getattr(self.config, "DISPATCHER_EMAIL",
-                                   getattr(self.config, "ADMIN_EMAIL"))
+                                   self.config.ADMIN_EMAIL)
         error_messages_to = getattr(self.config, "ERROR_MESSAGES_TO", "user")
         if error_messages_to == "dispatcher":
             to = [dispatcher_email]
@@ -280,8 +285,8 @@ class Mailer:
             unixfrm = 'From %s %s' % (sender, Date('.').pretty(fmt))
             debug_fh = open(self.debug, 'a')
             debug_fh.write('%s\nFROM: %s\nTO: %s\n%s\n\n' %
-                                        (unixfrm, sender,
-                                         ', '.join(to), message))
+                           (unixfrm, sender,
+                            ', '.join(to), message))
             debug_fh.close()
         else:
             # now try to send the message
