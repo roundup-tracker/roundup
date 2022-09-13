@@ -33,7 +33,7 @@ else:
 
 from roundup.exceptions import RoundupException
 
-### Exceptions
+# Exceptions
 
 
 class ConfigurationError(RoundupException):
@@ -119,7 +119,7 @@ NODEFAULT = UnsetDefaultValue()
 def create_token(size=32):
     return b2s(binascii.b2a_base64(random_.token_bytes(size)).strip())
 
-### Option classes
+# Option classes
 
 
 class Option:
@@ -434,41 +434,41 @@ class IndexerOption(Option):
     #    SELECT cfgname FROM pg_ts_config;
     # on a postgresql 14.1 server.
     # So the best we can do is hardcode this.
-    valid_langs = [ "simple",
-                    "custom1",
-                    "custom2",
-                    "custom3",
-                    "custom4",
-                    "custom5",
-                    "arabic",
-                    "armenian",
-                    "basque",
-                    "catalan",
-                    "danish",
-                    "dutch",
-                    "english",
-                    "finnish",
-                    "french",
-                    "german",
-                    "greek",
-                    "hindi",
-                    "hungarian",
-                    "indonesian",
-                    "irish",
-                    "italian",
-                    "lithuanian",
-                    "nepali",
-                    "norwegian",
-                    "portuguese",
-                    "romanian",
-                    "russian",
-                    "serbian",
-                    "spanish",
-                    "swedish",
-                    "tamil",
-                    "turkish",
-                    "yiddish" ]
-                                                         
+    valid_langs = ["simple",
+                   "custom1",
+                   "custom2",
+                   "custom3",
+                   "custom4",
+                   "custom5",
+                   "arabic",
+                   "armenian",
+                   "basque",
+                   "catalan",
+                   "danish",
+                   "dutch",
+                   "english",
+                   "finnish",
+                   "french",
+                   "german",
+                   "greek",
+                   "hindi",
+                   "hungarian",
+                   "indonesian",
+                   "irish",
+                   "italian",
+                   "lithuanian",
+                   "nepali",
+                   "norwegian",
+                   "portuguese",
+                   "romanian",
+                   "russian",
+                   "serbian",
+                   "spanish",
+                   "swedish",
+                   "tamil",
+                   "turkish",
+                   "yiddish"]
+
     def str2value(self, value):
         _val = value.lower()
         if _val in self.allowed:
@@ -495,17 +495,18 @@ class IndexerOption(Option):
                                               lang_avail, 75,
                                               subsequent_indent="   ")
                     raise OptionValueError(options["INDEXER_LANGUAGE"],
-                                            lang, languages)
+                                           lang, languages)
 
         if self._value == "native-fts":
             lang = options["INDEXER_LANGUAGE"]._value
             if lang not in self.valid_langs:
                 import textwrap
                 languages = textwrap.fill(_("Expected languages: ") +
-                                            " ".join(self.valid_langs), 75,
-                                            subsequent_indent="   ")
+                                          " ".join(self.valid_langs), 75,
+                                          subsequent_indent="   ")
                 raise OptionValueError(options["INDEXER_LANGUAGE"],
                                        lang, languages)
+
 
 class MailAddressOption(Option):
 
@@ -540,6 +541,7 @@ class FilePathOption(Option):
             _val = os.path.join(self.config["HOME"], _val)
         return _val
 
+
 class SpaceSeparatedListOption(Option):
 
     """List of space seperated elements.
@@ -551,11 +553,12 @@ class SpaceSeparatedListOption(Option):
         pathlist = []
         _val = Option.get(self)
         for elem in _val.split():
-                pathlist.append(elem)
+            pathlist.append(elem)
         if pathlist:
             return pathlist
         else:
             return None
+
 
 class OriginHeadersListOption(Option):
 
@@ -564,17 +567,17 @@ class OriginHeadersListOption(Option):
 
     class_description = "A list of space separated case sensitive origin headers 'scheme://host'."
 
-
     def set(self, _val):
         pathlist = self._value = []
         for elem in _val.split():
-                pathlist.append(elem)
+            pathlist.append(elem)
         if '*' in pathlist and len(pathlist) != 1:
             raise OptionValueError(self, _val,
                                    "If using '*' it must be the only element.")
 
     def _value2str(self, value):
         return ','.join(value)
+
 
 class MultiFilePathOption(Option):
 
@@ -684,13 +687,14 @@ class SecretOption(Option):
 
     """
 
-    class_description = \
-      "A string that starts with 'file://' is interpreted as a file path \n" \
-      "relative to the tracker home. Using 'file:///' defines an absolute \n" \
-      "path. The first line of the file will be used as the value. Any \n" \
-      "string that does not start with 'file://' is used as is. It \n" \
-      "removes any whitespace at the end of the line, so a newline can \n" \
-      "be put in the file.\n"
+    class_description = (
+        "A string that starts with 'file://' is interpreted\n"
+        "as a file path relative to the tracker home. Using\n"
+        "'file:///' defines an absolute path. The first\n"
+        "line of the file will be used as the value. Any\n"
+        "string that does not start with 'file://' is used\n"
+        "as is. It removes any whitespace at the end of the\n"
+        "line, so a newline can be put in the file.\n")
 
     def get(self):
         _val = Option.get(self)
@@ -707,7 +711,8 @@ class SecretOption(Option):
                 if e.errno != errno.ENOENT:
                     raise
                 else:
-                    raise OptionValueError(self, _val,
+                    raise OptionValueError(
+                        self, _val,
                         "Unable to read value for %s. Error opening "
                         "%s: %s." % (self.name, e.filename, e.args[1]))
         return self.str2value(_val)
@@ -722,9 +727,10 @@ class SecretOption(Option):
                     self.get()
                 except OptionUnsetError:
                     # provide error message with link to MAIL_USERNAME
-                    raise OptionValueError(options["MAIL_PASSWORD"],
-                                           "not defined",
-                            "Mail username is set, so this must be defined.")
+                    raise OptionValueError(
+                        options["MAIL_PASSWORD"],
+                        "not defined",
+                        "Mail username is set, so this must be defined.")
         else:
             self.get()
 
@@ -802,6 +808,7 @@ class SecretNullableOption(NullableOption, SecretOption):
     get = SecretOption.get
     class_description = SecretOption.class_description
 
+
 class RedisUrlOption(SecretNullableOption):
     """Do required check to make sure known bad parameters are not
        put in the url.
@@ -810,7 +817,7 @@ class RedisUrlOption(SecretNullableOption):
        redis, rediss, unix? How many cycles to invest
        to keep users from their own mistakes?
     """
-       
+
     class_description = SecretNullableOption.class_description
 
     def str2value(self, value):
@@ -819,6 +826,7 @@ class RedisUrlOption(SecretNullableOption):
                                    "decode_responses. Please remove "
                                    "the option.")
         return value
+
 
 class SessiondbBackendOption(Option):
     """Make sure that sessiondb is compatile with the primary db.
@@ -852,32 +860,34 @@ class SessiondbBackendOption(Option):
 
             redis_available = False
             try:
-                import redis
+                import redis                                    # noqa: F401
                 redis_available = True
             except ImportError:
                 if sessiondb_backend == 'redis':
                     valid_session_backends = ', '.join(sorted(list(
-                        [ x[1] for x in self.compatibility_matrix 
-                              if x[0] == rdbms_backend and x[1] != 'redis'])
+                        [x[1] for x in self.compatibility_matrix
+                         if x[0] == rdbms_backend and x[1] != 'redis'])
                     ))
-                    raise OptionValueError(self, sessiondb_backend,
-                            "Unable to load redis module. Please install "
-                            "a redis library or choose\n an alternate "
-                            "session db: %(valid_session_backends)s"%locals())
+                    raise OptionValueError(
+                        self, sessiondb_backend,
+                        "Unable to load redis module. Please install "
+                        "a redis library or choose\n an alternate "
+                        "session db: %(valid_session_backends)s" % locals())
 
-            if ( (rdbms_backend, sessiondb_backend) not in 
-                 self.compatibility_matrix ):
+            if ((rdbms_backend, sessiondb_backend) not in
+                    self.compatibility_matrix):
 
                 valid_session_backends = ', '.join(sorted(list(
-                    set([ x[1] for x in self.compatibility_matrix 
-                          if x[0] == rdbms_backend and
-                            ( redis_available or x[1] != 'redis')])
+                    set([x[1] for x in self.compatibility_matrix
+                         if x[0] == rdbms_backend and
+                         (redis_available or x[1] != 'redis')])
                 )))
 
-                raise OptionValueError(self, sessiondb_backend,
+                raise OptionValueError(
+                    self, sessiondb_backend,
                     "You can not use session db type: %(sessiondb_backend)s "
                     "with %(rdbms_backend)s.\n  Valid session db types: "
-                    "%(valid_session_backends)s."%locals())
+                    "%(valid_session_backends)s." % locals())
 
 
 class TimezoneOption(Option):
@@ -900,8 +910,9 @@ class TimezoneOption(Option):
         try:
             roundup.date.get_timezone(value)
         except KeyError:
-            raise OptionValueError(self, value,
-                    "Timezone name or numeric hour offset required")
+            raise OptionValueError(
+                self, value,
+                "Timezone name or numeric hour offset required")
         return value
 
 
@@ -911,7 +922,8 @@ class HttpVersionOption(Option):
 
     def str2value(self, value):
         if value not in ["HTTP/1.0", "HTTP/1.1"]:
-            raise OptionValueError(self, value,
+            raise OptionValueError(
+                self, value,
                 "Valid vaues for -V or --http_version are: HTTP/1.0, HTTP/1.1")
         return value
 
@@ -947,13 +959,14 @@ class RegExpOption(Option):
                 value = value.decode("utf-8")
         return re.compile(value, self.flags)
 
-try:
-   import jinja2
-   jinja2_avail = "Available found"
-except ImportError:
-   jinja2_avail = "Unavailable needs"
 
-### Main configuration layout.
+try:
+    import jinja2                                           # noqa: F401
+    jinja2_avail = "Available found"
+except ImportError:
+    jinja2_avail = "Unavailable needs"
+
+# Main configuration layout.
 # Config is described as a sequence of sections,
 # where each section name is followed by a sequence
 # of Option definitions.  Each Option definition
@@ -973,7 +986,7 @@ SETTINGS = (
             "   'zopetal' for the old TAL engine ported from Zope,\n"
             "   'chameleon' for Chameleon,\n"
             "   'jinja2' for jinja2 templating.\n"
-            "      %s jinja2 module."%jinja2_avail),
+            "      %s jinja2 module." % jinja2_avail),
         (FilePathOption, "templates", "html",
             "Path to the HTML templates directory."),
         (MultiFilePathOption, "static_files", "",
@@ -1705,7 +1718,7 @@ always passes, so setting it less than 1 is not recommended."""),
     ), "Markdown rendering options."),
 )
 
-### Configuration classes
+# Configuration classes
 
 
 class Config:
@@ -2200,8 +2213,9 @@ class CoreConfig(Config):
     def init_logging(self):
         _file = self["LOGGING_CONFIG"]
         if _file and os.path.isfile(_file):
-            logging.config.fileConfig(_file,
-                   disable_existing_loggers=self["LOGGING_DISABLE_LOGGERS"])
+            logging.config.fileConfig(
+                _file,
+                disable_existing_loggers=self["LOGGING_DISABLE_LOGGERS"])
             return
 
         _file = self["LOGGING_FILENAME"]
