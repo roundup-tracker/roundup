@@ -107,7 +107,7 @@ class Expression:
                     x and [int(x)] or [])
             else:
                 self.evaluate = lambda x: compiled.evaluate([int(y) for y in x])
-        except ValueError:
+        except (ValueError, TypeError):
             if is_link:
                 v = [None if x == '-1' else x for x in v]
                 self.evaluate = lambda x: x in v
