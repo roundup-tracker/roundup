@@ -21,9 +21,13 @@
 __docformat__ = 'restructuredtext'
 
 # standard python modules
-import os, re, shutil, sys, weakref
-import traceback
 import logging
+import os
+import re
+import shutil
+import sys
+import traceback
+import weakref
 
 # roundup modules
 from . import date, password
@@ -58,13 +62,13 @@ class _Type(object):
         """The default value when creating a new instance of this property."""
         return self.__default_value
 
-    def register (self, cls, propname):
+    def register(self, cls, propname):
         """Register myself to the class of which we are a property
            the given propname is the name we have in our class.
         """
         assert not getattr(self, 'cls', None)
         self.name = propname
-        self.cls  = cls
+        self.cls = cls
 
     def sort_repr(self, cls, val, name):
         """Representation used for sorting. This should be a python
@@ -281,23 +285,23 @@ class Multilink(_Pointer):
                                         default_value=[], quiet=quiet,
                                         try_id_parsing=try_id_parsing,
                                         rev_multilink=rev_multilink)
-        self.rev_property  = rev_property
+        self.rev_property = rev_property
         self.rev_classname = None
-        self.rev_propname  = None
-        self.table_name    = None # computed in 'register' below
-        self.linkid_name   = 'linkid'
-        self.nodeid_name   = 'nodeid'
+        self.rev_propname = None
+        self.table_name = None  # computed in 'register' below
+        self.linkid_name = 'linkid'
+        self.nodeid_name = 'nodeid'
         if self.rev_property:
             # Do not allow updates if this is a reverse multilink
             self.computed = True
             self.rev_classname = rev_property.cls.classname
-            self.rev_propname  = rev_property.name
+            self.rev_propname = rev_property.name
             if isinstance(self.rev_property, Link):
-                self.table_name  = '_' + self.rev_classname
+                self.table_name = '_' + self.rev_classname
                 self.linkid_name = 'id'
                 self.nodeid_name = '_' + self.rev_propname
             else:
-                self.table_name  = self.rev_classname + '_' + self.rev_propname
+                self.table_name = self.rev_classname + '_' + self.rev_propname
                 self.linkid_name = 'nodeid'
                 self.nodeid_name = 'linkid'
 
@@ -326,7 +330,7 @@ class Multilink(_Pointer):
             item = item.strip()
 
             # skip blanks
-            if not item: continue
+            if not item: continue                                # noqa: E701
 
             # handle +/-
             remove = 0
@@ -438,8 +442,11 @@ class DesignatorError(ValueError):
     pass
 
 
+dre = re.compile(r'^([A-Za-z](?:[A-Za-z_0-9]*[A-Za-z_]+)?)(\d+)$')
+
+
 def splitDesignator(designator,
-                    dre=re.compile(r'^([A-Za-z](?:[A-Za-z_0-9]*[A-Za-z_]+)?)(\d+)$')):
+                    dre=dre):
     """ Take a foo123 and return ('foo', 123)
     """
     m = dre.match(designator)
@@ -520,7 +527,7 @@ class Proptree(object):
             pt = self.propdict[name]
             pt.need_for[need_for] = True
             # For now we do not recursively retrieve Link properties
-            #if retr and isinstance(pt.propclass, Link):
+            # if retr and isinstance(pt.propclass, Link):
             #    pt.append_retr_props()
             return pt
         propclass = self.props[name]
@@ -540,7 +547,7 @@ class Proptree(object):
         self.children.append(child)
         self.propdict[name] = child
         # For now we do not recursively retrieve Link properties
-        #if retr and isinstance(child.propclass, Link):
+        # if retr and isinstance(child.propclass, Link):
         #    child.append_retr_props()
         return child
 
@@ -590,7 +597,7 @@ class Proptree(object):
                 x = [c for c in p.children if 'search' in c.need_for]
                 if x:
                     p.search(sort=False)
-                if getattr(p.propclass,'rev_property',None):
+                if getattr(p.propclass, 'rev_property', None):
                     pn = p.propclass.rev_property.name
                     cl = p.propclass.rev_property.cls
                     if not isinstance(p.val, type([])):
@@ -612,10 +619,10 @@ class Proptree(object):
                             items |= s1.difference(s2)
                         if isinstance(p.propclass.rev_property, Link):
                             items |= set(cl.get(x, pn) for x in pval
-                                if not cl.is_retired(x))
+                                         if not cl.is_retired(x))
                         else:
                             items |= set().union(*(cl.get(x, pn) for x in pval
-                                if not cl.is_retired(x)))
+                                                   if not cl.is_retired(x)))
                     else:
                         # Expression: materialize rev multilinks and run
                         # expression on them
@@ -656,14 +663,14 @@ class Proptree(object):
                         exact_match_spec[p.name] = exact
                     if subst:
                         filterspec[p.name] = subst
-                    elif not exact: # don't set if we have exact criteria
+                    elif not exact:  # don't set if we have exact criteria
                         if p.has_result:
                             # A subquery already has found nothing. So
                             # it doesn't make sense to search further.
                             self.set_val([], force=True)
                             return self.val
                         else:
-                            filterspec[p.name] = ['-1'] # no match was found
+                            filterspec[p.name] = ['-1']  # no match was found
                 else:
                     assert not isinstance(p.val, Exact_Match)
                     filterspec[p.name] = p.val
@@ -810,7 +817,7 @@ class Proptree(object):
                     if is_expression:
                         # Tag on the ORed values with an AND
                         l = val
-                        for i in range(len(val)-1):
+                        for _i in range(len(val)-1):
                             l.append('-4')
                         l.append('-3')
                         self.val = self.val + l
@@ -958,14 +965,14 @@ All methods except __repr__ must be implemented by a concrete backend Database.
             # from .keys()
             for p in list(cl.properties.keys()):
                 prop = cl.properties[p]
-                if not isinstance (prop, (Link, Multilink)):
+                if not isinstance(prop, (Link, Multilink)):
                     continue
                 if prop.rev_multilink:
                     linkcls = self.getclass(prop.classname)
                     if prop.rev_multilink in linkcls.properties:
                         if not done:
                             raise ValueError(
-                                "%s already a property of class %s"%
+                                "%s already a property of class %s" %
                                 (prop.rev_multilink, linkcls.classname))
                     else:
                         linkcls.properties[prop.rev_multilink] = Multilink(
@@ -1105,6 +1112,7 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         """
         raise NotImplementedError
 
+
 def iter_roles(roles):
     ''' handle the text processing of turning the roles list
         into something python can use more easily
@@ -1173,7 +1181,7 @@ class Class:
            where self.classname isn't known yet if the error
            occurs during schema parsing.
         """
-        cn = getattr (self, 'classname', 'Unknown')
+        cn = getattr(self, 'classname', 'Unknown')
         return '<hyperdb.Class "%s">' % cn
 
     # Editing nodes:
@@ -1564,7 +1572,7 @@ class Class:
         """
         raise NotImplementedError
 
-    def _proptree(self, filterspec, exact_match_spec={}, sortattr=[],
+    def _proptree(self, filterspec, exact_match_spec=None, sortattr=None,
                   retr=False):
         """Build a tree of all transitive properties in the given
         exact_match_spec/filterspec.
@@ -1573,6 +1581,10 @@ class Class:
         """
         if filterspec is None:
             filterspec = {}
+        if exact_match_spec is None:
+            exact_match_spec = {}
+        if sortattr is None:
+            sortattr = []
 
         proptree = Proptree(self.db, self, '', self.getprops(), retr=retr)
         for exact, spec in enumerate((filterspec, exact_match_spec)):
@@ -1651,7 +1663,7 @@ class Class:
         sort last by id -- if id is not already in sortattr.
         """
         if sort is None:
-            sort = [(None,None)]
+            sort = [(None, None)]
         if group is None:
             group = [(None, None)]
 
@@ -1783,12 +1795,14 @@ class Class:
         """
         raise NotImplementedError
 
-    def get_required_props(self, propnames=[]):
+    def get_required_props(self, propnames=None):
         """Return a dict of property names mapping to property objects.
         All properties that have the "required" flag set will be
         returned in addition to all properties in the propnames
         parameter.
         """
+        if propnames is None:
+            propnames = []
         props = self.getprops(protected=False)
         pdict = dict([(p, props[p]) for p in propnames])
         pdict.update([(k, v) for k, v in props.items() if v.required])
@@ -1865,10 +1879,10 @@ class Class:
         id and then proceeded to import journals for each id."""
         properties = self.getprops()
         a = []
-        for l in entries:
+        for entry in entries:
             # first element in sorted list is the (numeric) id
             # in python2.4 and up we would use sorted with a key...
-            a.append((int(l[0].strip("'")), l))
+            a.append((int(entry[0].strip("'")), entry))
         a.sort()
 
         last = 0
@@ -1937,7 +1951,10 @@ class HyperdbValueError(ValueError):
     pass
 
 
-def convertLinkValue(db, propname, prop, value, idre=re.compile(r'^\d+$')):
+id_regex = re.compile(r'^\d+$')
+
+
+def convertLinkValue(db, propname, prop, value, idre=id_regex):
     """ Convert the link value (may be id or key value) to an id value. """
     linkcl = db.classes[prop.classname]
     if not idre or not idre.match(value):
@@ -2072,16 +2089,16 @@ class Node:
         return list(self.cl.getprops(protected=protected).keys())
 
     def values(self, protected=1):
-        l = []
+        value_list = []
         for name in self.cl.getprops(protected=protected).keys():
-            l.append(self.cl.get(self.nodeid, name))
-        return l
+            value_list.append(self.cl.get(self.nodeid, name))
+        return value_list
 
     def items(self, protected=1):
-        l = []
+        item_list = []
         for name in self.cl.getprops(protected=protected).keys():
-            l.append((name, self.cl.get(self.nodeid, name)))
-        return l
+            item_list.append((name, self.cl.get(self.nodeid, name)))
+        return item_list
 
     def has_key(self, name):
         return name in self.cl.getprops()
@@ -2132,4 +2149,3 @@ def Choice(name, db, *options):
     for i in range(len(options)):
         cl.create(name=options[i], order=i)
     return Link(name)
-
