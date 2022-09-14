@@ -8,20 +8,16 @@ import cgi
 import codecs
 import email.utils
 import errno
-import hashlib
 import logging
 import mimetypes
 import os
-import quopri
 import re
 import socket
 import stat
 import sys
 import time
 
-from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from traceback import format_exc
 try:
     from OpenSSL.SSL import SysCallError
@@ -29,13 +25,13 @@ except ImportError:
     class SysCallError(Exception):
         pass
 
-import roundup.anypy.email_
+import roundup.anypy.email_  # noqa: F401  -- patches for email library code
 import roundup.anypy.random_ as random_   # quality of random checked below
 
-from roundup import date, hyperdb, password, rest, roundupdb, xmlrpc
+from roundup import hyperdb, rest, xmlrpc
 
 from roundup.anypy import http_, urllib_, xmlrpc_
-from roundup.anypy.cookie_ import  BaseCookie, CookieError, get_cookie_date, \
+from roundup.anypy.cookie_ import BaseCookie, CookieError, get_cookie_date, \
     SimpleCookie
 from roundup.anypy.html import html_escape
 from roundup.anypy.strings import s2b, b2s, bs2b, uchr, is_us
@@ -76,7 +72,8 @@ def initialiseSecurity(security):
         description="User may access the rest interface")
     security.addPermissionToRole('Admin', p)
 
-    p = security.addPermission(name="Xmlrpc Access",
+    p = security.addPermission(
+        name="Xmlrpc Access",
         description="User may access the xmlrpc interface")
     security.addPermissionToRole('Admin', p)
 
@@ -600,7 +597,7 @@ class Client:
             # It will return True if everything is ok,
             # raises exception on check failure.
             csrf_ok = self.handle_csrf(api=True)
-        except (Unauthorised, UsageError) as msg:
+        except (Unauthorised, UsageError):
             # report exception back to server
             exc_type, exc_value, exc_tb = sys.exc_info()
             output = xmlrpc_.client.dumps(
@@ -639,7 +636,8 @@ class Client:
             return
 
         # allow preflight request even if unauthenticated
-        if (self.env['REQUEST_METHOD'] == "OPTIONS"
+        if (
+            self.env['REQUEST_METHOD'] == "OPTIONS"
             and self.request.headers.get("Access-Control-Request-Headers")
             and self.request.headers.get("Access-Control-Request-Method")
             and self.request.headers.get("Origin")
@@ -681,7 +679,7 @@ class Client:
         except (Unauthorised, UsageError) as msg:
             # FIXME should return what the client requests
             # via accept header.
-            output = s2b('{ "error": { "status": 400, "msg": "%s"}}' % 
+            output = s2b('{ "error": { "status": 400, "msg": "%s"}}' %
                          str(msg))
             self.response_code = 400
             self.setHeader("Content-Length", str(len(output)))
@@ -885,7 +883,8 @@ class Client:
                 self.response_code = 404
                 self.template = '404'
                 try:
-                    cl = self.db.getclass(self.classname)
+                    # generates keyerror if class does not exist
+                    self.db.getclass(self.classname)
                     self.write_html(self.renderContext())
                 except KeyError:
                     # we can't map the URL to a class we know about
@@ -913,7 +912,7 @@ class Client:
             else:
                 # in debug mode, only write error to screen.
                 self.write_html(e.html)
-        except Exception as e:
+        except Exception as e:  # noqa: F841
             # Something has gone badly wrong.  Therefore, we should
             # make sure that the response code indicates failure.
             if self.response_code == http_.client.OK:
@@ -984,7 +983,7 @@ class Client:
                 codecs.lookup(charset)
             except LookupError:
                 self.add_error_message(self._('Unrecognized charset: %r') %
-                                              charset)
+                                       charset)
 
                 charset_parameter = 0
             else:
@@ -1150,7 +1149,7 @@ class Client:
                         self.make_user_anonymous()
                         login = self.get_action_class('login')(self)
                         login.verifyLogin(username, password)
-                    except LoginError as err:
+                    except LoginError:
                         self.make_user_anonymous()
                         raise
                     user = username
@@ -2205,12 +2204,12 @@ class Client:
             # tracker-defined action
             action_klass = self.instance.cgi_actions[action_name]
         else:
-            # go with a default
-            for name, action_klass in self.actions:
+            # go with a default, action_klass used after end of loop
+            for name, action_klass in self.actions:  # noqa: B007
                 if name == action_name:
                     break
             else:
-                raise ValueError('No such action "%s"' % 
+                raise ValueError('No such action "%s"' %
                                  html_escape(action_name))
         return action_klass
 
