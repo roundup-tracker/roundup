@@ -1,5 +1,6 @@
 import shutil, errno, pytest, json, gzip, mimetypes, os, re
 
+from roundup import date as rdate
 from roundup import i18n
 from roundup import password
 from roundup.anypy.strings import b2s
@@ -94,6 +95,11 @@ class WsgiSetup(LiveServerTestCase):
         # also used for text searching.
         result = cls.db.issue.create(title="foo bar RESULT")
 
+        # add a message to allow retrieval
+        result = cls.db.msg.create(author = "1",
+                                   content = "a message foo bar RESULT",
+                                   date=rdate.Date(),
+                                   messageid="test-msg-id")
         cls.db.commit()
         cls.db.close()
         
@@ -191,12 +197,14 @@ class BaseTestCases(WsgiSetup):
         self.assertTrue(b'dauerhaft anmelden?' in f.content)
 
     def test_byte_Ranges(self):
-        """ Roundup only handles one simple two number range.
+        """ Roundup only handles one simple two number range, or
+            a single number to start from:
             Range: 10-20
-
-            The following are not supported.
-            Range: 10-20, 25-30
             Range: 10-
+
+            The following is not supported.
+            Range: 10-20, 25-30
+            Range: -10
 
             Also If-Range only supports strong etags not dates or weak etags.
 
@@ -220,7 +228,27 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.headers['content-range'],
                          "bytes 0-10/%s"%expected_length)
 
+        # get bytes 11-21 unconditionally (0 index really??)
+        hdrs = {"Range": "bytes=10-20"}
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 206)
+        self.assertEqual(f.content, b"ge styles *")
+        # compression disabled for length < 100, so we can use 11 here
+        self.assertEqual(f.headers['content-length'], '11')
+        self.assertEqual(f.headers['content-range'],
+                         "bytes 10-20/%s"%expected_length)
+
+        # get all bytest starting from 11
+        hdrs = {"Range": "bytes=11-"}
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 206)
+        self.assertEqual(f.headers['content-range'],
+                         "bytes 11-%s/%s"%(int(expected_length) - 1,
+                                           expected_length))
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
         # conditional request 11 bytes since etag matches 206 code
+        hdrs = {"Range": "bytes=0-10"}
         hdrs['If-Range'] = etag
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
@@ -262,7 +290,98 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 416)
         self.assertEqual(f.headers['content-range'],
                          "bytes */%s"%expected_length)
-        
+
+        # invalid range multiple ranges
+        hdrs['Range'] = "bytes=0-10, 20-45"
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
+        # invalid range is single number not number followed by -
+        hdrs['Range'] = "bytes=1"
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
+        # range is invalid first number not a number
+        hdrs['Range'] = "bytes=boom-99" # bad first value
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
+        # range is invalid last number not a number
+        hdrs['Range'] = "bytes=1-boom" # bad last value
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
+        # range is invalid first position empty
+        hdrs['Range'] = "bytes=-11" # missing first value
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
+        # range is invalid #2 < #1
+        hdrs['Range'] = "bytes=11-1" # inverted range
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
+        # range is invalid negative first number
+        hdrs['Range'] = "bytes=-1-11" # negative first number
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
+        # range is invalid negative second number
+        hdrs['Range'] = "bytes=1--11" # negative second number
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
+        # range is unsupported units
+        hdrs['Range'] = "badunits=1-11"
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+
+
+        # valid range, invalid file
+        hdrs['Range'] = "bytes=0-11"
+        print(hdrs)
+        f = requests.get(self.url_base() + "/@@file/style_nope.css",
+                         headers=hdrs)
+        self.assertEqual(f.status_code, 404)
+        self.assertNotIn('content-range', f.headers,
+                         'content-range should not be present')
+
     def test_rest_preflight_collection(self):
         # no auth for rest csrf preflight
         f = requests.options(self.url_base() + '/rest/data/user',
@@ -562,7 +681,22 @@ class BaseTestCases(WsgiSetup):
 
 
     def test_load_issue1(self):
-        f = requests.get(self.url_base() + '/issue1>',
+        import pdb; pdb.set_trace()
+        for tail in [
+                '/issue1',      # normal url
+                '/issue00001',  # leading 0's should be stripped from id
+                '/issue1>'      # surprise this works too, should it??
+        ]:
+            f = requests.get(self.url_base() + tail,
+                             headers = { 'Accept-Encoding': 'gzip',
+                                         'Accept': '*/*'})
+
+            self.assertIn(b'foo bar RESULT', f.content)
+            self.assertEqual(f.status_code, 200)
+
+    def test_load_msg1(self):
+        # leading 0's should be stripped from id
+        f = requests.get(self.url_base() + '/msg0001',
                          headers = { 'Accept-Encoding': 'gzip',
                                      'Accept': '*/*'})
 
@@ -1172,6 +1306,12 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         cls.db = cls.instance.open('admin')
 
         result = cls.db.issue.create(title="foo bar RESULT")
+
+        # add a message to allow retrieval
+        result = cls.db.msg.create(author = "1",
+                                   content = "a message foo bar RESULT",
+                                   date=rdate.Date(),
+                                   messageid="test-msg-id")
 
         cls.db.commit()
         cls.db.close()

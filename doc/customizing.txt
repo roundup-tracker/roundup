@@ -2232,6 +2232,12 @@ for specific object of issue class with id 1 will look like:
 
 8. ``/issue1``
 
+.. _strip_zeros:
+
+Note that a leading string of 0's will be stripped from the id part of
+the object designator in the URL. E.G. ``/issue001`` is the same as
+``/issue1``.  Similarly for ``/file01`` etc. However you should
+generate URL's without the extra zeros.
 
 Determining web context
 -----------------------
@@ -2262,6 +2268,7 @@ c. if there is something in the path (as in example 1, "issue"), it
    identifies the tracker class to display.
 d. if the path is an item designator (as in examples 2 and 4, "issue1"
    and "file1"), then we're to display a specific item.
+   :ref:`Note. <strip_zeros>`
 e. if the path starts with an item designator and is longer than one
    entry (as in example 5, "file1/kitten.png"), then we're assumed to be
    handling an item of a ``FileClass``, and the extra path information

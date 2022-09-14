@@ -1179,7 +1179,8 @@ class Client:
                             raise LoginError("Token roles are invalid.")
 
                     # will be used later to override the get_roles method
-                    override_get_roles = lambda self: iter_roles(
+                    # having it defined as truthy allows it to be used.
+                    override_get_roles = lambda self: iter_roles(  # noqa: E731
                         ','.join(token['roles']))
 
         # if user was not set by http authorization, try session lookup
@@ -1632,7 +1633,13 @@ class Client:
                 # we can no longer use it.
                 self.session_api = Session(self)
 
-    def determine_context(self, dre=re.compile(r'([^\d]+)0*(\d+)')):
+    # match designator in URL stripping leading 0's. So:
+    # https://issues.roundup-tracker.org/issue002551190 is the same as
+    # https://issues.roundup-tracker.org/issue2551190
+    # Note: id's are strings not numbers so "02" != "2" but 02 == 2
+    dre_url = re.compile(r'([^\d]+)0*(\d+)')
+
+    def determine_context(self, dre=dre_url):
         """Determine the context of this page from the URL:
 
         The URL path after the instance identifier is examined. The path
@@ -1743,7 +1750,11 @@ class Client:
         if template_override is not None:
             self.template = template_override
 
-    def serve_file(self, designator, dre=re.compile(r'([^\d]+)(\d+)')):
+    # re for splitting designator, see also dre_url above this one
+    # doesn't strip leading 0's from the id. Why not??
+    dre = re.compile(r'([^\d]+)(\d+)')
+
+    def serve_file(self, designator, dre=dre):
         """ Serve the file from the content property of the designated item.
         """
         m = dre.match(str(designator))
@@ -2514,6 +2525,8 @@ class Client:
         first = self.http_strip(pos[0])
         last = self.http_strip(pos[1])
         # We do not handle suffix ranges.
+        #   Note this also captures atempts to make first
+        #   element of range a negative number.
         if not first:
             return None
         # Convert the first and last positions to integers.
@@ -2527,6 +2540,8 @@ class Client:
             # The positions could not be parsed as integers.
             return None
         # Check that the range makes sense.
+        # Note, if range is -1-10, first = '', so this code will never
+        # be reached. if range = 1--10, this code is reached.
         if (first < 0 or last < 0 or last < first):
             return None
         if last >= length:
