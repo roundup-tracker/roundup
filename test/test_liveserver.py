@@ -245,7 +245,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.headers['content-range'],
                          "bytes 11-%s/%s"%(int(expected_length) - 1,
                                            expected_length))
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
         # conditional request 11 bytes since etag matches 206 code
         hdrs = {"Range": "bytes=0-10"}
@@ -298,7 +298,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertNotIn('content-range', f.headers,
                          'content-range should not be present')
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
         # invalid range is single number not number followed by -
         hdrs['Range'] = "bytes=1"
@@ -307,7 +307,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertNotIn('content-range', f.headers,
                          'content-range should not be present')
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
         # range is invalid first number not a number
         hdrs['Range'] = "bytes=boom-99" # bad first value
@@ -316,7 +316,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertNotIn('content-range', f.headers,
                          'content-range should not be present')
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
         # range is invalid last number not a number
         hdrs['Range'] = "bytes=1-boom" # bad last value
@@ -325,7 +325,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertNotIn('content-range', f.headers,
                          'content-range should not be present')
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
         # range is invalid first position empty
         hdrs['Range'] = "bytes=-11" # missing first value
@@ -334,7 +334,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertNotIn('content-range', f.headers,
                          'content-range should not be present')
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
         # range is invalid #2 < #1
         hdrs['Range'] = "bytes=11-1" # inverted range
@@ -343,7 +343,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertNotIn('content-range', f.headers,
                          'content-range should not be present')
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
         # range is invalid negative first number
         hdrs['Range'] = "bytes=-1-11" # negative first number
@@ -352,7 +352,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertNotIn('content-range', f.headers,
                          'content-range should not be present')
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
         # range is invalid negative second number
         hdrs['Range'] = "bytes=1--11" # negative second number
@@ -361,7 +361,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertNotIn('content-range', f.headers,
                          'content-range should not be present')
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
         # range is unsupported units
         hdrs['Range'] = "badunits=1-11"
@@ -370,7 +370,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 200)
         self.assertNotIn('content-range', f.headers,
                          'content-range should not be present')
-        self.assertIn("SHA:", f.content)  # detect sha sum at end of file
+        self.assertIn(b"SHA:", f.content)  # detect sha sum at end of file
 
 
         # valid range, invalid file
@@ -681,7 +681,6 @@ class BaseTestCases(WsgiSetup):
 
 
     def test_load_issue1(self):
-        import pdb; pdb.set_trace()
         for tail in [
                 '/issue1',      # normal url
                 '/issue00001',  # leading 0's should be stripped from id
