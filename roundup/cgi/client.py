@@ -2076,7 +2076,7 @@ class Client:
             return '<strong>%s</strong>' % html_escape(str(message))
         except templating.Unauthorised as message:
             raise Unauthorised(html_escape(str(message)))
-        except:
+        except Exception:
             # everything else
             if self.instance.config.WEB_DEBUG:
                 return cgitb.pt_html(i18n=self.translator)
@@ -2088,7 +2088,7 @@ class Client:
                 self.send_error_to_admin(subject, cgitb.pt_html(), format_exc())
                 # Now report the error to the user.
                 return self._(default_err_msg)
-            except:
+            except Exception:
                 # Reraise the original exception.  The user will
                 # receive an error message, and the adminstrator will
                 # receive a traceback, albeit with less information
@@ -2523,7 +2523,7 @@ class Client:
                 last = int(last)
             else:
                 last = length - 1
-        except:
+        except ValueError:
             # The positions could not be parsed as integers.
             return None
         # Check that the range makes sense.
