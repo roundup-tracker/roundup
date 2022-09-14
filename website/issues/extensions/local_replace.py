@@ -4,7 +4,7 @@ import re
 hg_url_base = r'http://sourceforge.net/p/roundup/code/ci/'
 
 substitutions = [ (re.compile(r'debian:\#(?P<id>\d+)'),
-                   r'<a href="http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=\g<id>">debian#\g<id></a>' ),
+                   r'<a href="https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=\g<id>">debian#\g<id></a>' ),
                   (re.compile(r'\#(?P<ws>\s*)(?P<id>\d+)'),
                    r"<a href='issue\g<id>'>#\g<ws>\g<id></a>" ),
                   (re.compile(r'(?P<prews>^|\s+)issue(?P<ws>\s*)(?P<id>\d+)'),
