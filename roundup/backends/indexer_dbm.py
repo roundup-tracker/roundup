@@ -1,11 +1,11 @@
 #
 # This module is derived from the module described at:
 #   http://gnosis.cx/publish/programming/charming_python_15.txt
-# 
+#
 # Author: David Mertz (mertz@gnosis.cx)
 # Thanks to: Pat Knight (p.knight@ktgroup.co.uk)
 #            Gregory Popovitch (greg@gpy.com)
-# 
+#
 # The original module was released under this license, and remains under
 # it:
 #
@@ -13,16 +13,22 @@
 #     appreciate it if you choose to keep derived works under terms
 #     that promote freedom, but obviously am giving up any rights
 #     to compel such.
-# 
+#
 '''This module provides an indexer class, RoundupIndexer, that stores text
 indices in a roundup instance.  This class makes searching the content of
 messages, string properties and text files possible.
 '''
 __docformat__ = 'restructuredtext'
 
-import os, shutil, re, mimetypes, marshal, zlib, errno
-from roundup.hyperdb import Link, Multilink
+import errno
+import marshal
+import os
+import re
+import shutil
+import zlib
+
 from roundup.backends.indexer_common import Indexer as IndexerBase
+
 
 class Indexer(IndexerBase):
     '''Indexes information from roundup's hyperdb to allow efficient
@@ -137,7 +143,7 @@ class Indexer(IndexerBase):
         """
         if not text:
             return []
-        
+
         # case insensitive
         text = text.upper()
 
@@ -163,7 +169,7 @@ class Indexer(IndexerBase):
             if self.is_stopword(word):
                 continue
             entry = self.words.get(word)    # For each word, get index
-            entries[word] = entry           #   of matching files
+            entries[word] = entry           # of matching files
             if not entry:                   # Nothing for this one word (fail)
                 return {}
             if hits is None:
@@ -182,19 +188,20 @@ class Indexer(IndexerBase):
         return list(hits.values())
 
     segments = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#_-!"
+
     def load_index(self, reload=0, wordlist=None):
         # Unless reload is indicated, do not load twice
         if self.index_loaded() and not reload:
             return 0
 
         # Ok, now let's actually load it
-        db = {'WORDS': {}, 'FILES': {'_TOP':(0,None)}, 'FILEIDS': {}}
+        db = {'WORDS': {}, 'FILES': {'_TOP': (0, None)}, 'FILEIDS': {}}
 
         # Identify the relevant word-dictionary segments
         if not wordlist:
             segments = self.segments
         else:
-            segments = ['-','#']
+            segments = ['-', '#']
             for word in wordlist:
                 initchar = word[0].upper()
                 if initchar not in self.segments:
@@ -207,7 +214,7 @@ class Indexer(IndexerBase):
                 f = open(self.indexdb + segment, 'rb')
             except IOError as error:
                 # probably just nonexistent segment index file
-                if error.errno != errno.ENOENT: raise
+                if error.errno != errno.ENOENT: raise          # noqa: E701
             else:
                 pickle_str = zlib.decompress(f.read())
                 f.close()
@@ -239,11 +246,11 @@ class Indexer(IndexerBase):
                 os.remove(self.indexdb + segment)
             except OSError as error:
                 # probably just nonexistent segment index file
-                if error.errno != errno.ENOENT: raise
+                if error.errno != errno.ENOENT: raise           # noqa: E701
 
         # First write the much simpler filename/fileid dictionaries
-        dbfil = {'WORDS':None, 'FILES':self.files, 'FILEIDS':self.fileids}
-        open(self.indexdb+'-','wb').write(zlib.compress(marshal.dumps(dbfil)))
+        dbfil = {'WORDS': None, 'FILES': self.files, 'FILEIDS': self.fileids}
+        open(self.indexdb+'-', 'wb').write(zlib.compress(marshal.dumps(dbfil)))
 
         # The hard part is splitting the word dictionary up, of course
         letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#_"
@@ -259,7 +266,7 @@ class Indexer(IndexerBase):
 
         # save
         for initchar in letters:
-            db = {'WORDS':segdicts[initchar], 'FILES':None, 'FILEIDS':None}
+            db = {'WORDS': segdicts[initchar], 'FILES': None, 'FILEIDS': None}
             pickle_str = marshal.dumps(db)
             filename = self.indexdb + initchar
             pickle_fh = open(filename, 'wb')
@@ -283,7 +290,7 @@ class Indexer(IndexerBase):
         del self.fileids[file_index]
 
         # The much harder part, cleanup the word index
-        for key, occurs in self.words.items():
+        for _key, occurs in self.words.items():
             if file_index in occurs:
                 del occurs[file_index]
 
@@ -291,8 +298,8 @@ class Indexer(IndexerBase):
         self.changed = 1
 
     def index_loaded(self):
-        return (hasattr(self,'fileids') and hasattr(self,'files') and
-            hasattr(self,'words'))
+        return (hasattr(self, 'fileids') and hasattr(self, 'files') and
+                hasattr(self, 'words'))
 
     def rollback(self):
         ''' load last saved index info. '''
