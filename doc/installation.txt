@@ -437,9 +437,11 @@ Configuring your first tracker
       will be stored in.
 
       You will now be directed to edit the tracker configuration and
-      initial schema.  At a minimum, you must set "main :: admin_email"
-      (that's the "admin_email" option in the "main" section) "mail ::
-      host", "tracker :: web" and "mail :: domain".  If you get stuck,
+      initial schema.  At a minimum, you must set "tracker :: web",
+      "mail :: host", and "mail :: domain". You should also
+      set "main :: admin_email" (that's the "admin_email" option in
+      the "main" section) to your local admin address to get email
+      on unusual occurances. If you get stuck,
       and get configuration file errors, then see the `tracker
       configuration`_ section of the `customisation documentation`_.
 
