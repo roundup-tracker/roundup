@@ -25,6 +25,9 @@ ARG appdir
 
 WORKDIR $appdir
 
+# Update to get security and other improvements;
+RUN apk --update-cache upgrade
+
 # Add packages needed to compile mysql, pgsql and other python modules.
 # Can't use apk to add them as that installs a 3.9 python version.
 #        g++ installs cc1plus needed by pip install
@@ -46,6 +49,9 @@ RUN apk add \
 # they are over 70MB of space.
 COPY scripts/Docker/sphinxdeps.txt .
 
+# suppress warning when running pip as root
+ENV PIP_ROOT_USER_ACTION=ignore
+
 RUN set -xv && CWD=$PWD && \
     VER=$(apk list -I 'xapian-core-dev' | \
           sed 's/^xapian-core-dev-\([0-9.]*\)-.*/\1/') && \
@@ -64,10 +70,6 @@ RUN set -xv && CWD=$PWD && \
 # ignore warnings from pip to use virtualenv
 COPY scripts/Docker/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Allow user to add more modules during build
-ARG pip_mod
-RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
 
 # copy the elements of the release directory to the docker image
 COPY setup.py install/
@@ -94,6 +96,10 @@ RUN set -xv && if [ "$source" = "local" ] ||  \
        cp -ril /usr/local/lib/python3.10/site-packages/usr/local/share/* \
 	   /usr/local/share; fi
 
+# Allow user to add more modules during build
+ARG pip_mod
+RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
+
 # build a new smaller docker image for execution. Build image above
 # is 1G in size.
 FROM python:3-alpine
@@ -103,18 +109,28 @@ ARG appdir
 
 WORKDIR $appdir
 
+# suppress warning when running pip as root
+ENV PIP_ROOT_USER_ACTION=ignore
+
+# upgrade to get any security updates; bundle with
+# rest of apk actions to reduce layers/wasted space 
 # add libraries needed to run gpg/mysql/pgsql/brotli
-RUN apk add \
+# clean out any caches to save space
+RUN apk --update-cache upgrade; \
+    apk add \
+     brotli-libs \
      gpgme \
      mariadb-connector-c \
      libpq \
      libstdc++ \
-     libxapian
+     libxapian \
+     zstd-libs; \
+    rm -f /var/cache/apk/*
 
 ARG source
 LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
-      "org.roundup-tracker.description"="Roundup Issue Tracker using sqlite" \
-      "version"="2.1.0 $source" \
+      "org.roundup-tracker.description"="Roundup Issue Tracker multi-backend" \
+      "version"="2.2.0 $source" \
       "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net"
 
 
