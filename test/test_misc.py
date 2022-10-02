@@ -128,13 +128,32 @@ NameError: name 'a' is not defined
 </table>
 <p>&nbsp;</p>"""
 
+        expected3_11 = """<h1>Templating Error</h1>
+<p><b>&lt;class 'NameError'&gt;</b>: name 'a' is not defined</p>
+<p class="help">Debugging information follows</p>
+<ol>
+
+</ol>
+<table style="font-size: 80%; color: gray">
+ <tr><th class="header" align="left">Full traceback:</th></tr>
+ <tr><td><pre>Traceback (most recent call last):
+  File "XX/test/test_misc.py", line XX, in test_pt_html
+    d = a + 4
+        ^
+NameError: name 'a' is not defined
+</pre></td></tr>
+</table>
+<p>&nbsp;</p>"""
+
         # allow file directory prefix and line number to change
         p = re.sub(r'(File ")/.*/(test/test_misc.py",)', r'\1XX/\2', p)
         p = re.sub(r'(", line )\d*,', r'\1XX,', p)
 
         print(p)
 
-        if sys.version_info > (3, 0, 0):
+        if sys.version_info > (3, 11, 0):
+            self.assertEqual(expected3_11, p)
+        elif sys.version_info > (3, 0, 0):
             self.assertEqual(expected3, p)
         else:
             self.assertEqual(expected2, p)
@@ -142,7 +161,7 @@ NameError: name 'a' is not defined
     def notest_html(self):
         """ templating error """
         # enabiling this will cause the test to fail as the variable
-        # is included in the live outpu but not in expected.
+        # is included in the live output but not in expected.
         # self.maxDiff = None
 
         try:
