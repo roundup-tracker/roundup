@@ -4,6 +4,7 @@ from cgi import FieldStorage, MiniFieldStorage
 
 from roundup.cgi.templating import *
 from .test_actions import MockNull, true
+from .html_norm import NormalizingHtmlParser
 
 
 import pytest
@@ -854,29 +855,20 @@ class MarkdownTests:
         self.assertEqual(p.markdown().strip().replace('\n\n', '\n'), u2s(u'<p>embedded code block &lt;pre&gt;</p>\n<pre><code>line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
 
     def test_string_markdown_code_block_attribute(self):
-        import sys
-
-        _py3 = sys.version_info[0] > 2
+        parser = NormalizingHtmlParser()
 
         ''' also verify that embedded html is escaped '''
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'embedded code block <pre>\n\n``` python\nline 1\nline 2\n```\n\nnew </pre> paragraph'))
-        m = p.markdown().strip()
+        m = parser.normalize(p.markdown())
+        parser.reset()
         print(m)
         if type(self) == MistuneTestCase:
-            self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="lang-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>')
+            self.assertEqual(m, parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="lang-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
         elif type(self) == MarkdownTestCase:
-            self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="language-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>')
+            self.assertEqual(m, parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="language-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
         else:
-            test_output = m.replace('\n\n', '\n')
-            if _py3:
-                nl = "\n"
-            else:
-                nl = ""
-            expected_result = '<p>embedded code block &lt;pre&gt;</p>\n<div class="codehilite">%(nl)s<pre><span></span><code><span class="n">line</span> <span class="mi">1</span>\n<span class="n">line</span> <span class="mi">2</span>\n</code></pre>%(nl)s</div>\n<p>new &lt;/pre&gt; paragraph</p>' % { 'nl': nl }
-            if  test_output != expected_result:
-                print("test_output:", test_output)
-                print("expected_result:", expected_result)
-            self.assertEqual( test_output, expected_result)
+            expected_result = parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<div class="codehilite"><pre><span></span><code><span class="n">line</span> <span class="mi">1</span>\n<span class="n">line</span> <span class="mi">2</span>\n</code></pre></div>\n<p>new &lt;/pre&gt; paragraph</p>')
+            self.assertEqual(m, expected_result)
 
     def test_markdown_return_text_on_exception(self):
         ''' string is invalid markdown. missing end of fenced code block '''
