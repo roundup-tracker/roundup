@@ -18,7 +18,10 @@ but again then BeautifulSoup would need to be instaled to run the
 tests.
 
 """
-from html.parser import HTMLParser
+try:
+    from html.parser import HTMLParser
+except ImportError:
+    from HTMLParser import HTMLParser  # python2
 
 try:
     from htmlentitydefs import name2codepoint
