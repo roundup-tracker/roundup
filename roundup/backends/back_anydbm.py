@@ -22,7 +22,13 @@ serious bugs, and is not available)
 """
 __docformat__ = 'restructuredtext'
 
-import os, marshal, re, weakref, string, copy, time, shutil, logging
+import copy
+import logging
+import marshal
+import os
+import re
+import shutil
+import time
 
 from roundup.anypy.dbm_ import anydbm, whichdb
 from roundup.anypy.strings import b2s, bs2b, repr_export, eval_import, is_us
@@ -1432,7 +1438,8 @@ class Class(hyperdb.Class):
         # check if key property was overrided
         key = self.getkey()
         try:
-            id = self.lookup(node[key])
+            # eval for exception side effect
+            id = self.lookup(node[key])  # noqa: F841
         except KeyError:
             pass
         else:
@@ -2152,9 +2159,9 @@ class Class(hyperdb.Class):
         properties = self.getprops()
         r = []
         for nodeid in self.getnodeids():
-            for nodeid, date, user, action, params in self.history(
+            for nodeid, date_, user, action, params in self.history(
                     nodeid, enforceperm=False, skipquiet=False):
-                date = date.get_tuple()
+                date_ = date_.get_tuple()
                 if action == 'set':
                     export_data = {}
                     for propname, value in params.items():
@@ -2178,7 +2185,7 @@ class Class(hyperdb.Class):
                             value = str(value)
                         export_data[propname] = value
                     params = export_data
-                r.append([repr_export(nodeid), repr_export(date),
+                r.append([repr_export(nodeid), repr_export(date_),
                           repr_export(user), repr_export(action),
                           repr_export(params)])
         return r
