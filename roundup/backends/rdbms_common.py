@@ -967,6 +967,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for cn in self.classes:
             sql = 'delete from _%s' % cn
             self.sql(sql)
+            sql = 'delete from %s__journal' % cn
+            self.sql(sql)
 
     #
     # Nodes
