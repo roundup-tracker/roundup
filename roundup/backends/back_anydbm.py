@@ -62,6 +62,18 @@ def db_exists(config):
 def db_nuke(config):
     shutil.rmtree(config.DATABASE)
 
+
+# python 3 doesn't have a unicode type
+try:
+    unicode  # noqa: F821
+except NameError:
+    unicode = str
+
+
+# marker used for an unspecified keyword argument
+_marker = []
+
+
 #
 # Now the database
 #
@@ -820,9 +832,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.lockfile = None
 
 
-_marker = []
-
-
 class Class(hyperdb.Class):
     """The handle to a particular class of nodes in a hyperdatabase."""
 
@@ -1321,7 +1330,7 @@ class Class(hyperdb.Class):
                     journalvalues[propname] = tuple(l)
 
             elif isinstance(prop, hyperdb.String):
-                if value is not None and type(value) != type('') and type(value) != type(u''):
+                if value is not None and not isinstance(value, (str, unicode)):
                     raise TypeError('new property "%s" not a '
                                     'string' % propname)
                 if prop.indexme:
@@ -1569,7 +1578,7 @@ class Class(hyperdb.Class):
                 if self.db.RETIRED_FLAG in item:
                     continue
                 for propname, itemids in propspec.items():
-                    if type(itemids) is not type({}):
+                    if not isinstance(itemids, dict):
                         if itemids is None or isinstance(itemids, type("")):
                             itemids = {itemids: 1}
                         else:
@@ -1750,7 +1759,7 @@ class Class(hyperdb.Class):
             for k, v in filtertype.items():
                 propclass = props[k]
                 if isinstance(propclass, hyperdb.Link):
-                    if type(v) is not type([]):
+                    if not isinstance(v, list):
                         v = [v]
                     l.append((LINK, k, v))
                 elif isinstance(propclass, hyperdb.Multilink):
@@ -1762,11 +1771,11 @@ class Class(hyperdb.Class):
                         # the value -1 is a special "not set" sentinel
                         if v in ('-1', ['-1']):
                             v = []
-                        elif type(v) is not type([]):
+                        elif not isinstance(v, list):
                             v = [v]
                         l.append((MULTILINK, k, v))
                 elif isinstance(propclass, hyperdb.String) and k != 'id':
-                    if type(v) is not type([]):
+                    if not isinstance(v, list):
                         v = [v]
                     for x in v:
                         if exact:
@@ -1799,25 +1808,25 @@ class Class(hyperdb.Class):
                         pass
 
                 elif isinstance(propclass, hyperdb.Boolean):
-                    if type(v) == type(""):
+                    if isinstance(v, str):
                         v = v.split(',')
-                    if type(v) != type([]):
+                    if not isinstance(v, list):
                         v = [v]
                     bv = []
                     for val in v:
-                        if type(val) is type(''):
+                        if isinstance(val, str):
                             bv.append(propclass.from_raw(val))
                         else:
                             bv.append(val)
                     l.append((OTHER, k, bv))
 
                 elif k == 'id':
-                    if type(v) != type([]):
+                    if not isinstance(v, list):
                         v = v.split(',')
                     l.append((OTHER, k, [str(int(val)) for val in v]))
 
                 elif isinstance(propclass, hyperdb.Number):
-                    if type(v) != type([]):
+                    if not isinstance(v, list):
                         try:
                             v = v.split(',')
                         except AttributeError:
@@ -1825,7 +1834,7 @@ class Class(hyperdb.Class):
                     l.append((OTHER, k, [float(val) for val in v]))
 
                 elif isinstance(propclass, hyperdb.Integer):
-                    if type(v) != type([]):
+                    if not isinstance(v, list):
                         try:
                             v = v.split(',')
                         except AttributeError:
