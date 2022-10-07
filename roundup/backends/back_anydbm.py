@@ -239,8 +239,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         logging.getLogger('roundup.hyperdb.backend').info('clear')
         for cn in self.classes:
-            for dummy in 'nodes', 'journals':
-                path = os.path.join(self.dir, 'journals.%s' % cn)
+            for data_type in 'nodes', 'journals':
+                path = os.path.join(self.dir, '%s.%s' % (data_type, cn))
                 if os.path.exists(path):
                     os.remove(path)
                 elif os.path.exists(path+'.db'):    # dbm appends .db
