@@ -906,7 +906,7 @@ class Class(hyperdb.Class):
                     self.classname, key))
 
             if value is not None and isinstance(prop, hyperdb.Link):
-                if type(value) != type(''):
+                if not isinstance(value, str):
                     raise ValueError('link value must be String')
                 link_class = self.properties[key].classname
                 # if it isn't a number, it's a key
@@ -930,7 +930,7 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Multilink):
                 if value is None:
                     value = []
-                if not hasattr(value, '__iter__') or type(value) == type(''):
+                if not hasattr(value, '__iter__') or isinstance(value, str):
                     raise TypeError(
                         'new property "%s" not an iterable of ids' % key)
 
@@ -938,7 +938,7 @@ class Class(hyperdb.Class):
                 link_class = self.properties[key].classname
                 l = []
                 for entry in value:
-                    if type(entry) != type(''):
+                    if not isinstance(entry, str):
                         raise ValueError('"%s" multilink value (%r) '
                                          'must contain Strings' % (key, value))
                     # if it isn't a number, it's a key
@@ -965,7 +965,7 @@ class Class(hyperdb.Class):
                                            (self.classname, newid, key))
 
             elif isinstance(prop, hyperdb.String):
-                if type(value) != type('') and type(value) != type(u''):
+                if not isinstance(value, (str, unicode)):
                     raise TypeError('new property "%s" not a string' % key)
                 if prop.indexme:
                     self.db.indexer.add_text(
@@ -1256,14 +1256,14 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Multilink):
                 if value is None:
                     value = []
-                if not hasattr(value, '__iter__') or type(value) == type(''):
+                if not hasattr(value, '__iter__') or isinstance(value, str):
                     raise TypeError('new property "%s" not an iterable of'
                                     ' ids' % propname)
                 link_class = self.properties[propname].classname
                 l = []
                 for entry in value:
                     # if it isn't a number, it's a key
-                    if type(entry) != type(''):
+                    if not isinstance(entry, str):
                         raise ValueError('new property "%s" link value '
                                          'must be a string' % propname)
                     if not num_re.match(entry):
