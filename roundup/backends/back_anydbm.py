@@ -50,6 +50,7 @@ from roundup.backends.indexer_common import get_indexer
 
 from hashlib import md5
 
+
 def db_exists(config):
     # check for the user db
     for db in 'nodes.user nodes.user.db'.split():
@@ -57,12 +58,15 @@ def db_exists(config):
             return 1
     return 0
 
+
 def db_nuke(config):
     shutil.rmtree(config.DATABASE)
 
 #
 # Now the database
 #
+
+
 class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     """A database for storing records containing flexible data types.
 
@@ -107,7 +111,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.classes = {}
         self.cache = {}         # cache of nodes loaded or created
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
-            'filtering': 0}
+                      'filtering': 0}
         self.dirtynodes = {}    # keep track of the dirty nodes by class
         self.newnodes = {}      # keep track of the new nodes by class
         self.destroyednodes = {}# keep track of the destroyed nodes by class
@@ -173,8 +177,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             classes = self.classes.values()
         for klass in classes:
             if show_progress:
-                for nodeid in support.Progress('Reindex %s'%klass.classname,
-                        klass.list()):
+                for nodeid in support.Progress('Reindex %s' %
+                                               klass.classname, klass.list()):
                     klass.index(nodeid)
             else:
                 for nodeid in klass.list():
@@ -182,7 +186,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.indexer.save_index()
 
     def __repr__(self):
-        return '<back_anydbm instance at %x>'%id(self)
+        return '<back_anydbm instance at %x>' % id(self)
 
     #
     # Classes
@@ -196,17 +200,21 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def addclass(self, cl):
         cn = cl.classname
         if cn in self.classes:
-            raise ValueError(_('Class "%s" already defined.'%cn))
+            raise ValueError(_('Class "%s" already defined.' % cn))
         self.classes[cn] = cl
 
         # add default Edit and View permissions
-        self.security.addPermission(name="Create", klass=cn,
+        self.security.addPermission(
+            name="Create", klass=cn,
             description="User is allowed to create "+cn)
-        self.security.addPermission(name="Edit", klass=cn,
+        self.security.addPermission(
+            name="Edit", klass=cn,
             description="User is allowed to edit "+cn)
-        self.security.addPermission(name="View", klass=cn,
+        self.security.addPermission(
+            name="View", klass=cn,
             description="User is allowed to access "+cn)
-        self.security.addPermission(name="Retire", klass=cn,
+        self.security.addPermission(
+            name="Retire", klass=cn,
             description="User is allowed to retire "+cn)
 
     def getclasses(self):
@@ -221,7 +229,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         try:
             return self.classes[classname]
         except KeyError:
-            raise KeyError('There is no class called "%s"'%classname)
+            raise KeyError('There is no class called "%s"' % classname)
 
     #
     # Class DBs
@@ -232,7 +240,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         logging.getLogger('roundup.hyperdb.backend').info('clear')
         for cn in self.classes:
             for dummy in 'nodes', 'journals':
-                path = os.path.join(self.dir, 'journals.%s'%cn)
+                path = os.path.join(self.dir, 'journals.%s' % cn)
                 if os.path.exists(path):
                     os.remove(path)
                 elif os.path.exists(path+'.db'):    # dbm appends .db
@@ -248,7 +256,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ grab a connection to the class db that will be used for
             multiple actions
         """
-        return self.opendb('nodes.%s'%classname, mode)
+        return self.opendb('nodes.%s' % classname, mode)
 
     def determine_db_type(self, path):
         """ determine which DB wrote the class file
@@ -278,7 +286,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if not db_type or hasattr(anydbm, 'whichdb'):
             if __debug__:
                 logging.getLogger('roundup.hyperdb.backend').debug(
-                    "opendb anydbm.open(%r, 'c')"%path)
+                    "opendb anydbm.open(%r, 'c')" % path)
             return anydbm.open(path, 'c')
 
         # in Python <3 it anydbm was a little dumb so manually open the
@@ -292,13 +300,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 except ImportError:
                     raise hyperdb.DatabaseError(_(
                         "Couldn't open database - the required module '%s' "
-                        "(as dbm.gnu) is not available")%db_type)
+                        "(as dbm.gnu) is not available") % db_type)
             else:
-                raise hyperdb.DatabaseError(_("Couldn't open database - the "
-                             "required module '%s' is not available")%db_type)
+                raise hyperdb.DatabaseError(_(
+                    "Couldn't open database - the "
+                    "required module '%s' is not available") % db_type)
         if __debug__:
             logging.getLogger('roundup.hyperdb.backend').debug(
-                "opendb %r.open(%r, %r)"%(db_type, path, mode))
+                "opendb %r.open(%r, %r)" % (db_type, path, mode))
         return dbm.open(path, mode)
 
     #
@@ -359,7 +368,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         if __debug__:
             logging.getLogger('roundup.hyperdb.backend').debug(
-                'save %s%s %r'%(classname, nodeid, node))
+                'save %s%s %r' % (classname, nodeid, node))
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
     def getnode(self, classname, nodeid, db=None, cache=1):
@@ -373,7 +382,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if nodeid in cache_dict:
             if __debug__:
                 logging.getLogger('roundup.hyperdb.backend').debug(
-                    'get %s%s cached'%(classname, nodeid))
+                    'get %s%s cached' % (classname, nodeid))
                 self.stats['cache_hits'] += 1
             return cache_dict[nodeid]
 
@@ -381,18 +390,18 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.stats['cache_misses'] += 1
             start_t = time.time()
             logging.getLogger('roundup.hyperdb.backend').debug(
-                'get %s%s'%(classname, nodeid))
+                'get %s%s' % (classname, nodeid))
 
         # get from the database and save in the cache
         if db is None:
             db = self.getclassdb(classname)
         if nodeid not in db:
-            raise IndexError("no such %s %s"%(classname, nodeid))
+            raise IndexError("no such %s %s" % (classname, nodeid))
 
         # check the uncommitted, destroyed nodes
         if (classname in self.destroyednodes and
                 nodeid in self.destroyednodes[classname]):
-            raise IndexError("no such %s %s"%(classname, nodeid))
+            raise IndexError("no such %s %s" % (classname, nodeid))
 
         # decode
         res = marshal.loads(db[nodeid])
@@ -414,7 +423,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
            destroy() method on Class.
         """
         logging.getLogger('roundup.hyperdb.backend').info(
-            'destroy %s%s'%(classname, nodeid))
+            'destroy %s%s' % (classname, nodeid))
 
         # remove from cache and newnodes if it's there
         if (classname in self.cache and nodeid in self.cache[classname]):
@@ -523,7 +532,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     # Journal
     #
     def addjournal(self, classname, nodeid, action, params, creator=None,
-            creation=None):
+                   creation=None):
         """ Journal the Action
         'action' may be:
 
@@ -538,20 +547,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         if __debug__:
             logging.getLogger('roundup.hyperdb.backend').debug(
-                'addjournal %s%s %s %r %s %r'%(classname,
-                nodeid, action, params, creator, creation))
+                'addjournal %s%s %s %r %s %r' % (
+                    classname, nodeid, action, params, creator, creation))
         if creator is None:
             creator = self.getuid()
-        self.transactions.append((self.doSaveJournal, (classname, nodeid,
-            action, params, creator, creation)))
+        self.transactions.append((self.doSaveJournal, (
+            classname, nodeid, action, params, creator, creation)))
 
     def setjournal(self, classname, nodeid, journal):
         """Set the journal to the "journal" list."""
         if __debug__:
             logging.getLogger('roundup.hyperdb.backend').debug(
-                'setjournal %s%s %r'%(classname, nodeid, journal))
+                'setjournal %s%s %r' % (classname, nodeid, journal))
         self.transactions.append((self.doSetJournal, (classname, nodeid,
-            journal)))
+                                                      journal)))
 
     def fix_journal(self, classname, journal):
         """ fix password entries to correct type """
@@ -590,22 +599,22 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 if not cache_creation:
                     cache_creation = date.Date()
                 res.append((cache_nodeid, cache_creation, cache_creator,
-                    cache_action, cache_params))
+                            cache_action, cache_params))
 
         # attempt to open the journal - in some rare cases, the journal may
         # not exist
         try:
-            db = self.opendb('journals.%s'%classname, 'r')
+            db = self.opendb('journals.%s' % classname, 'r')
         except anydbm.error as error:
             if str(error) == "need 'c' or 'n' flag to open new db":
-                raise IndexError('no such %s %s'%(classname, nodeid))
+                raise IndexError('no such %s %s' % (classname, nodeid))
             elif error.args[0] != 2:
                 # this isn't a "not found" error, be alarmed!
                 raise
             if res:
                 # we have unsaved journal entries, return them
                 return self.fix_journal (classname, res)
-            raise IndexError('no such %s %s'%(classname, nodeid))
+            raise IndexError('no such %s %s' % (classname, nodeid))
         try:
             journal = marshal.loads(db[nodeid])
         except KeyError:
@@ -613,7 +622,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if res:
                 # we have some unsaved journal entries, be happy!
                 return self.fix_journal (classname, res)
-            raise IndexError('no such %s %s'%(classname, nodeid))
+            raise IndexError('no such %s %s' % (classname, nodeid))
         db.close()
 
         # add all the saved journal entries for this node
@@ -628,7 +637,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         for classname in self.getclasses():
             packed = 0
             # get the journal db
-            db_name = 'journals.%s'%classname
+            db_name = 'journals.%s' % classname
             path = os.path.join(os.getcwd(), self.dir, classname)
             db_type = self.determine_db_type(path)
             db = self.opendb(db_name, 'w')
@@ -651,7 +660,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 db[key] = marshal.dumps(l)
 
                 logging.getLogger('roundup.hyperdb.backend').info(
-                    'packed %d %s items'%(packed, classname))
+                    'packed %d %s items' % (packed, classname))
 
             if db_type == 'gdbm':
                 db.reorganize()
@@ -667,8 +676,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         Save all data changed since the database was opened or since the
         last commit() or rollback().
         """
-        logging.getLogger('roundup.hyperdb.backend').info('commit %s transactions'%(
-            len(self.transactions)))
+        logging.getLogger('roundup.hyperdb.backend').info(
+            'commit %s transactions' % (len(self.transactions)))
 
         # keep a handle to all the database files opened
         self.databases = {}
@@ -712,7 +721,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ get the class db, looking in our cache of databases for commit
         """
         # get the database handle
-        db_name = 'nodes.%s'%classname
+        db_name = 'nodes.%s' % classname
         if db_name not in self.databases:
             self.databases[db_name] = self.getclassdb(classname, 'c')
         return self.databases[db_name]
@@ -730,13 +739,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ get the journal db, looking in our cache of databases for commit
         """
         # get the database handle
-        db_name = 'journals.%s'%classname
+        db_name = 'journals.%s' % classname
         if db_name not in self.databases:
             self.databases[db_name] = self.opendb(db_name, 'c')
         return self.databases[db_name]
 
     def doSaveJournal(self, classname, nodeid, action, params, creator,
-            creation):
+                      creation):
         # serialise the parameters now if necessary
         if isinstance(params, type({})):
             if action in ('set', 'create'):
@@ -792,8 +801,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def rollback(self):
         """ Reverse all actions from the current transaction.
         """
-        logging.getLogger('roundup.hyperdb.backend').info('rollback %s transactions'%(
-            len(self.transactions)))
+        logging.getLogger('roundup.hyperdb.backend').info(
+            'rollback %s transactions' % (len(self.transactions)))
 
         for method, args in self.transactions:
             # delete temporary files
@@ -814,6 +823,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.lockfile = None
 
 _marker = []
+
+
 class Class(hyperdb.Class):
     """The handle to a particular class of nodes in a hyperdatabase."""
 
@@ -869,12 +880,12 @@ class Class(hyperdb.Class):
         if ('creator' in propvalues or 'actor' in propvalues or 
              'creation' in propvalues or 'activity' in propvalues):
             raise KeyError('"creator", "actor", "creation" and '
-                '"activity" are reserved')
+                           '"activity" are reserved')
 
         for p in propvalues:
             prop = self.properties[p]
             if prop.computed:
-                raise KeyError('"%s" is a computed property'%p)
+                raise KeyError('"%s" is a computed property' % p)
 
         # new node's id
         newid = self.db.newid(self.classname)
@@ -888,14 +899,14 @@ class Class(hyperdb.Class):
                 except KeyError:
                     pass
                 else:
-                    raise ValueError('node with key "%s" exists'%value)
+                    raise ValueError('node with key "%s" exists' % value)
 
             # try to handle this property
             try:
                 prop = self.properties[key]
             except KeyError:
-                raise KeyError('"%s" has no property "%s"'%(self.classname,
-                    key))
+                raise KeyError('"%s" has no property "%s"' % (
+                    self.classname, key))
 
             if value is not None and isinstance(prop, hyperdb.Link):
                 if type(value) != type(''):
@@ -906,11 +917,10 @@ class Class(hyperdb.Class):
                     try:
                         value = self.db.classes[link_class].lookup(value)
                     except (TypeError, KeyError):
-                        raise IndexError('new property "%s": %s not a %s'%(
+                        raise IndexError('new property "%s": %s not a %s' % (
                             key, value, link_class))
                 elif not self.db.getclass(link_class).hasnode(value):
-                    raise IndexError('%s has no node %s'%(link_class,
-                        value))
+                    raise IndexError('%s has no node %s' % (link_class, value))
 
                 # save off the value
                 propvalues[key] = value
@@ -918,13 +928,14 @@ class Class(hyperdb.Class):
                 # register the link with the newly linked node
                 if self.do_journal and self.properties[key].do_journal:
                     self.db.addjournal(link_class, value, 'link',
-                        (self.classname, newid, key))
+                                       (self.classname, newid, key))
 
             elif isinstance(prop, hyperdb.Multilink):
                 if value is None:
                     value = []
                 if not hasattr(value, '__iter__') or type(value) == type(''):
-                    raise TypeError('new property "%s" not an iterable of ids'%key)
+                    raise TypeError(
+                        'new property "%s" not an iterable of ids' % key)
 
                 # clean up and validate the list of links
                 link_class = self.properties[key].classname
@@ -932,14 +943,16 @@ class Class(hyperdb.Class):
                 for entry in value:
                     if type(entry) != type(''):
                         raise ValueError('"%s" multilink value (%r) '\
-                            'must contain Strings'%(key, value))
+                                         'must contain Strings' % (key, value))
                     # if it isn't a number, it's a key
                     if not num_re.match(entry):
                         try:
                             entry = self.db.classes[link_class].lookup(entry)
                         except (TypeError, KeyError):
-                            raise IndexError('new property "%s": %s not a %s'%(
-                                key, entry, self.properties[key].classname))
+                            raise IndexError(
+                                'new property "%s": %s not a %s' % (
+                                    key, entry,
+                                    self.properties[key].classname))
                     l.append(entry)
                 value = l
                 propvalues[key] = value
@@ -947,56 +960,56 @@ class Class(hyperdb.Class):
                 # handle additions
                 for nodeid in value:
                     if not self.db.getclass(link_class).hasnode(nodeid):
-                        raise IndexError('%s has no node %s'%(link_class,
-                            nodeid))
+                        raise IndexError('%s has no node %s' % (
+                            link_class, nodeid))
                     # register the link with the newly linked node
                     if self.do_journal and self.properties[key].do_journal:
                         self.db.addjournal(link_class, nodeid, 'link',
-                            (self.classname, newid, key))
+                                           (self.classname, newid, key))
 
             elif isinstance(prop, hyperdb.String):
                 if type(value) != type('') and type(value) != type(u''):
-                    raise TypeError('new property "%s" not a string'%key)
+                    raise TypeError('new property "%s" not a string' % key)
                 if prop.indexme:
-                    self.db.indexer.add_text((self.classname, newid, key),
-                        value)
+                    self.db.indexer.add_text(
+                        (self.classname, newid, key), value)
 
             elif isinstance(prop, hyperdb.Password):
                 if not isinstance(value, password.Password):
-                    raise TypeError('new property "%s" not a Password'%key)
+                    raise TypeError('new property "%s" not a Password' % key)
 
             elif isinstance(prop, hyperdb.Date):
                 if value is not None and not isinstance(value, date.Date):
-                    raise TypeError('new property "%s" not a Date'%key)
+                    raise TypeError('new property "%s" not a Date' % key)
 
             elif isinstance(prop, hyperdb.Interval):
                 if value is not None and not isinstance(value, date.Interval):
-                    raise TypeError('new property "%s" not an Interval'%key)
+                    raise TypeError('new property "%s" not an Interval' % key)
 
             elif value is not None and isinstance(prop, hyperdb.Number):
                 try:
                     float(value)
                 except ValueError:
-                    raise TypeError('new property "%s" not numeric'%key)
+                    raise TypeError('new property "%s" not numeric' % key)
 
             elif value is not None and isinstance(prop, hyperdb.Integer):
                 try:
                     int(value)
                 except ValueError:
-                    raise TypeError('new property "%s" not an integer'%key)
+                    raise TypeError('new property "%s" not an integer' % key)
 
             elif value is not None and isinstance(prop, hyperdb.Boolean):
                 try:
                     int(value)
                 except ValueError:
-                    raise TypeError('new property "%s" not boolean'%key)
+                    raise TypeError('new property "%s" not boolean' % key)
 
         # make sure there's data where there needs to be
         for key, prop in self.properties.items():
             if key in propvalues:
                 continue
             if key == self.key:
-                raise ValueError('key property "%s" is required'%key)
+                raise ValueError('key property "%s" is required' % key)
             if isinstance(prop, hyperdb.Multilink):
                 propvalues[key] = []
 
@@ -1160,7 +1173,7 @@ class Class(hyperdb.Class):
         if ('creator' in propvalues or 'actor' in propvalues or 
              'creation' in propvalues or 'activity' in propvalues):
             raise KeyError('"creator", "actor", "creation" and '
-                '"activity" are reserved')
+                           '"activity" are reserved')
 
         if 'id' in propvalues:
             raise KeyError('"id" is reserved')
@@ -1168,7 +1181,7 @@ class Class(hyperdb.Class):
         for p in propvalues:
             prop = self.properties[p]
             if prop.computed:
-                raise KeyError('"%s" is a computed property'%p)
+                raise KeyError('"%s" is a computed property' % p)
 
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError(_('Database open read-only'))
@@ -1193,7 +1206,7 @@ class Class(hyperdb.Class):
                 except KeyError:
                     pass
                 else:
-                    raise ValueError('node with key "%s" exists'%value)
+                    raise ValueError('node with key "%s" exists' % value)
 
             # this will raise the KeyError if the property isn't valid
             # ... we don't use getprops() here because we only care about
@@ -1201,7 +1214,7 @@ class Class(hyperdb.Class):
             try:
                 prop = self.properties[propname]
             except KeyError:
-                raise KeyError('"%s" has no property named "%s"'%(
+                raise KeyError('"%s" has no property named "%s"' % (
                     self.classname, propname))
 
             # if the value's the same as the existing value, no sense in
@@ -1217,51 +1230,53 @@ class Class(hyperdb.Class):
                 link_class = prop.classname
                 # if it isn't a number, it's a key
                 if value is not None and not isinstance(value, type('')):
-                    raise ValueError('property "%s" link value be a string'%(
+                    raise ValueError('property "%s" link value be a string' % (
                         propname))
                 if isinstance(value, type('')) and not num_re.match(value):
                     try:
                         value = self.db.classes[link_class].lookup(value)
                     except (TypeError, KeyError):
-                        raise IndexError('new property "%s": %s not a %s'%(
+                        raise IndexError('new property "%s": %s not a %s' % (
                             propname, value, prop.classname))
 
                 if (value is not None and
                         not self.db.getclass(link_class).hasnode(value)):
-                    raise IndexError('%s has no node %s'%(link_class,
-                        value))
+                    raise IndexError('%s has no node %s' % (link_class,
+                                                            value))
 
                 if self.do_journal and prop.do_journal:
                     # register the unlink with the old linked node
                     if propname in node and node[propname] is not None:
-                        self.db.addjournal(link_class, node[propname], 'unlink',
-                            (self.classname, nodeid, propname))
+                        self.db.addjournal(link_class, node[propname],
+                                           'unlink',
+                                           (self.classname, nodeid, propname))
 
                     # register the link with the newly linked node
                     if value is not None:
                         self.db.addjournal(link_class, value, 'link',
-                            (self.classname, nodeid, propname))
+                                           (self.classname, nodeid, propname))
 
             elif isinstance(prop, hyperdb.Multilink):
                 if value is None:
                     value = []
                 if not hasattr(value, '__iter__') or type(value) == type(''):
                     raise TypeError('new property "%s" not an iterable of'
-                        ' ids'%propname)
+                                    ' ids' % propname)
                 link_class = self.properties[propname].classname
                 l = []
                 for entry in value:
                     # if it isn't a number, it's a key
                     if type(entry) != type(''):
                         raise ValueError('new property "%s" link value '
-                            'must be a string'%propname)
+                                         'must be a string' % propname)
                     if not num_re.match(entry):
                         try:
                             entry = self.db.classes[link_class].lookup(entry)
                         except (TypeError, KeyError):
-                            raise IndexError('new property "%s": %s not a %s'%(
-                                propname, entry,
-                                self.properties[propname].classname))
+                            raise IndexError(
+                                'new property "%s": %s not a %s' % (
+                                    propname, entry,
+                                    self.properties[propname].classname))
                     l.append(entry)
                 value = l
                 propvalues[propname] = value
@@ -1281,21 +1296,21 @@ class Class(hyperdb.Class):
                     # register the unlink with the old linked node
                     if self.do_journal and self.properties[propname].do_journal:
                         self.db.addjournal(link_class, id, 'unlink',
-                            (self.classname, nodeid, propname))
+                                           (self.classname, nodeid, propname))
                     l.remove(id)
                     remove.append(id)
 
                 # handle additions
                 for id in value:
                     if not self.db.getclass(link_class).hasnode(id):
-                        raise IndexError('%s has no node %s'%(link_class,
-                            id))
+                        raise IndexError('%s has no node %s' % (
+                            link_class, id))
                     if id in l:
                         continue
                     # register the link with the newly linked node
                     if self.do_journal and self.properties[propname].do_journal:
                         self.db.addjournal(link_class, id, 'link',
-                            (self.classname, nodeid, propname))
+                                           (self.classname, nodeid, propname))
                     l.append(id)
                     add.append(id)
 
@@ -1311,15 +1326,16 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.String):
                 if value is not None and type(value) != type('') and type(value) != type(u''):
                     raise TypeError('new property "%s" not a '
-                        'string'%propname)
+                                    'string' % propname)
                 if prop.indexme:
-                    self.db.indexer.add_text((self.classname, nodeid, propname),
+                    self.db.indexer.add_text(
+                        (self.classname, nodeid, propname),
                         value)
 
             elif isinstance(prop, hyperdb.Password):
                 if not isinstance(value, password.Password):
                     raise TypeError('new property "%s" not a '
-                        'Password'%propname)
+                                    'Password' % propname)
                 propvalues[propname] = value
                 journalvalues[propname] = \
                     current and password.JournalPassword(current)
@@ -1327,13 +1343,13 @@ class Class(hyperdb.Class):
             elif value is not None and isinstance(prop, hyperdb.Date):
                 if not isinstance(value, date.Date):
                     raise TypeError('new property "%s" not a '
-                        'Date'%propname)
+                                    'Date' % propname)
                 propvalues[propname] = value
 
             elif value is not None and isinstance(prop, hyperdb.Interval):
                 if not isinstance(value, date.Interval):
                     raise TypeError('new property "%s" not an '
-                        'Interval'%propname)
+                                    'Interval' % propname)
                 propvalues[propname] = value
 
             elif value is not None and isinstance(prop, hyperdb.Number):
@@ -1341,21 +1357,21 @@ class Class(hyperdb.Class):
                     float(value)
                 except ValueError:
                     raise TypeError('new property "%s" not '
-                        'numeric'%propname)
+                                    'numeric' % propname)
 
             elif value is not None and isinstance(prop, hyperdb.Integer):
                 try:
                     int(value)
                 except ValueError:
                     raise TypeError('new property "%s" not '
-                        'numeric'%propname)
+                                    'numeric' % propname)
 
             elif value is not None and isinstance(prop, hyperdb.Boolean):
                 try:
                     int(value)
                 except ValueError:
                     raise TypeError('new property "%s" not '
-                        'boolean'%propname)
+                                    'boolean' % propname)
 
             node[propname] = value
 
@@ -1427,7 +1443,7 @@ class Class(hyperdb.Class):
             pass
         else:
             raise KeyError("Key property (%s) of retired node clashes "
-                "with existing one (%s)" % (key, node[key]))
+                           "with existing one (%s)" % (key, node[key]))
         # Now we can safely restore node
         self.fireAuditors('restore', nodeid, None)
         del node[self.db.RETIRED_FLAG]
@@ -1499,7 +1515,7 @@ class Class(hyperdb.Class):
         """
         if not self.key:
             raise TypeError('No key property set for '
-                'class %s'%self.classname)
+                            'class %s' % self.classname)
         cldb = self.db.getclassdb(self.classname)
         try:
             for nodeid in self.getnodeids(cldb):
@@ -1512,8 +1528,8 @@ class Class(hyperdb.Class):
                     return nodeid
         finally:
             cldb.close()
-        raise KeyError('No key (%s) value "%s" for "%s"'%(self.key,
-            keyvalue, self.classname))
+        raise KeyError('No key (%s) value "%s" for "%s"' % (
+            self.key, keyvalue, self.classname))
 
     # change from spec - allows multiple props to match
     def find(self, **propspec):
@@ -1544,7 +1560,7 @@ class Class(hyperdb.Class):
             prop = props[propname]
             if not isinstance(prop, hyperdb.Link) and not isinstance(prop, hyperdb.Multilink):
                 raise TypeError("'%s' not a Link/Multilink "
-                    "property"%propname)
+                                "property" % propname)
 
         # ok, now do the find
         cldb = self.db.getclassdb(self.classname)
@@ -1611,7 +1627,7 @@ class Class(hyperdb.Class):
         for propname in requirements:
             prop = self.properties[propname]
             if not isinstance(prop, hyperdb.String):
-                raise TypeError("'%s' not a String property"%propname)
+                raise TypeError("'%s' not a String property" % propname)
             requirements[propname] = requirements[propname].lower()
         l = []
         cldb = self.db.getclassdb(self.classname)
@@ -1688,8 +1704,8 @@ class Class(hyperdb.Class):
         return res
 
     def _filter(self, search_matches, filterspec, proptree,
-            num_re = re.compile(r'^\d+$'), retired=False,
-            exact_match_spec={}):
+                num_re = re.compile(r'^\d+$'), retired=False,
+                exact_match_spec={}):
         """Return a list of the ids of the nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.
@@ -1921,7 +1937,7 @@ class Class(hyperdb.Class):
                 propclass = props[prop]
                 pt.sort_ids = []
                 is_pointer = isinstance(propclass,(hyperdb.Link,
-                    hyperdb.Multilink))
+                                                   hyperdb.Multilink))
                 if not is_pointer:
                     pt.sort_result = []
                 try:
@@ -2173,6 +2189,7 @@ class Class(hyperdb.Class):
                           repr_export(params)])
         return r
 
+
 class FileClass(hyperdb.FileClass, Class):
     """This class defines a large chunk of data. To support this, it has a
        mandatory String property "content" which is typically saved off
@@ -2228,7 +2245,7 @@ class FileClass(hyperdb.FileClass, Class):
                 return b2s(self.db.getfile(self.classname, nodeid, None))
             except IOError as strerror:
                 # XXX by catching this we don't see an error in the log.
-                return 'ERROR reading file: %s%s\n%s\n%s'%(
+                return 'ERROR reading file: %s%s\n%s\n%s' % (
                         self.classname, nodeid, poss_msg, strerror)
             except UnicodeDecodeError as e:
                 # if content is not text (e.g. jpeg file) we get
@@ -2237,8 +2254,10 @@ class FileClass(hyperdb.FileClass, Class):
                 # of content as this string is included in the etag
                 # calculation of the object.
                 return ('%s%s is not text, retrieve using '
-                        'binary_content property. mdsum: %s')%(self.classname,
-                   nodeid, md5(self.db.getfile(self.classname, nodeid, None)).hexdigest())  # nosec - bandit md5 use ok
+                        'binary_content property. mdsum: %s') % (
+                            self.classname, nodeid,
+                            md5(self.db.getfile(
+                                self.classname, nodeid, None)).hexdigest())  # nosec - bandit md5 use ok
         elif propname == 'binary_content':
             return self.db.getfile(self.classname, nodeid, None)
 
@@ -2281,7 +2300,7 @@ class FileClass(hyperdb.FileClass, Class):
                     index_content = content.decode('utf-8', errors='ignore')
                 mime_type = self.get(itemid, 'type', self.default_mime_type)
                 self.db.indexer.add_text((self.classname, itemid, 'content'),
-                    index_content, mime_type)
+                                         index_content, mime_type)
             propvalues['content'] = content
 
         # fire reactors
@@ -2302,7 +2321,7 @@ class FileClass(hyperdb.FileClass, Class):
                     index_content = index_content.decode('utf-8',
                                                          errors='ignore')
                 self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                    index_content, mime_type)
+                                         index_content, mime_type)
             elif isinstance(propclass, hyperdb.String) and propclass.indexme:
                 # index them under (classname, nodeid, property)
                 try:
@@ -2311,6 +2330,7 @@ class FileClass(hyperdb.FileClass, Class):
                     # node has been destroyed
                     continue
                 self.db.indexer.add_text((self.classname, nodeid, prop), value)
+
 
 # deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):
