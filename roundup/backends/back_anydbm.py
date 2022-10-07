@@ -567,7 +567,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         pwprops = {}
         for pn, prop in self.getclass(classname).properties.items():
             if isinstance(prop, hyperdb.Password):
-                pwprops [pn] = 1
+                pwprops[pn] = 1
         if not pwprops:
             return journal
         for j in journal:
@@ -613,7 +613,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 raise
             if res:
                 # we have unsaved journal entries, return them
-                return self.fix_journal (classname, res)
+                return self.fix_journal(classname, res)
             raise IndexError('no such %s %s' % (classname, nodeid))
         try:
             journal = marshal.loads(db[nodeid])
@@ -621,14 +621,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             db.close()
             if res:
                 # we have some unsaved journal entries, be happy!
-                return self.fix_journal (classname, res)
+                return self.fix_journal(classname, res)
             raise IndexError('no such %s %s' % (classname, nodeid))
         db.close()
 
         # add all the saved journal entries for this node
         for nodeid, date_stamp, user, action, params in journal:
             res.append((nodeid, date.Date(date_stamp), user, action, params))
-        return self.fix_journal (classname, res)
+        return self.fix_journal(classname, res)
 
     def pack(self, pack_before):
         """ Delete all journal entries except "create" before 'pack_before'.
@@ -1593,7 +1593,7 @@ class Class(hyperdb.Class):
                         break
                     elif isinstance(prop, hyperdb.Multilink):
                         if prop.rev_property:
-                            rev_multilinks.append ((prop, itemids))
+                            rev_multilinks.append((prop, itemids))
                             continue
                         hit = 0
                         for v in value:
@@ -1606,7 +1606,7 @@ class Class(hyperdb.Class):
             for prop, itemids in rev_multilinks:
                 rprop = prop.rev_property
                 fun = l.append
-                if isinstance (rprop, hyperdb.Multilink):
+                if isinstance(rprop, hyperdb.Multilink):
                     fun = l.extend
                 for id in itemids:
                     fun(rprop.cls.get(id, rprop.name))
@@ -1804,7 +1804,7 @@ class Class(hyperdb.Class):
                     bv = []
                     for val in v:
                         if type(val) is type(''):
-                            bv.append(propclass.from_raw (val))
+                            bv.append(propclass.from_raw(val))
                         else:
                             bv.append(val)
                     l.append((OTHER, k, bv))
@@ -1964,7 +1964,7 @@ class Class(hyperdb.Class):
                                 if isinstance(propclass, hyperdb.Multilink):
                                     v = []
                                 if prop == 'id':
-                                    v = int (itemid)
+                                    v = int(itemid)
                                 pt.sort_ids.append(v)
                                 if not is_pointer:
                                     pt.sort_result.append(v)
