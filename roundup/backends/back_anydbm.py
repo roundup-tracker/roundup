@@ -112,9 +112,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.cache = {}         # cache of nodes loaded or created
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
                       'filtering': 0}
-        self.dirtynodes = {}    # keep track of the dirty nodes by class
-        self.newnodes = {}      # keep track of the new nodes by class
-        self.destroyednodes = {}# keep track of the destroyed nodes by class
+        self.dirtynodes = {}      # keep track of the dirty nodes by class
+        self.newnodes = {}        # keep track of the new nodes by class
+        self.destroyednodes = {}  # keep track of the destroyed nodes by class
         self.transactions = []
         self.indexer = get_indexer(config, self)
         self.security = security.Security(self)
@@ -131,7 +131,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         self.lockfile.flush()
 
         self.Session = None
-        self.Otk     = None
+        self.Otk = None
 
     def post_init(self):
         """Called once the schema initialisation has finished.
@@ -1572,7 +1572,7 @@ class Class(hyperdb.Class):
                 for propname, itemids in propspec.items():
                     if type(itemids) is not type({}):
                         if itemids is None or isinstance(itemids, type("")):
-                            itemids = {itemids:1}
+                            itemids = {itemids: 1}
                         else:
                             itemids = dict.fromkeys(itemids)
 
@@ -1702,7 +1702,7 @@ class Class(hyperdb.Class):
         return res
 
     def _filter(self, search_matches, filterspec, proptree,
-                num_re = re.compile(r'^\d+$'), retired=False,
+                num_re=re.compile(r'^\d+$'), retired=False,
                 exact_match_spec={}):
         """Return a list of the ids of the nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
@@ -1814,17 +1814,17 @@ class Class(hyperdb.Class):
 
                 elif isinstance(propclass, hyperdb.Number):
                     if type(v) != type([]):
-                        try :
+                        try:
                             v = v.split(',')
-                        except AttributeError :
+                        except AttributeError:
                             v = [v]
                     l.append((OTHER, k, [float(val) for val in v]))
 
                 elif isinstance(propclass, hyperdb.Integer):
                     if type(v) != type([]):
-                        try :
+                        try:
                             v = v.split(',')
-                        except AttributeError :
+                        except AttributeError:
                             v = [v]
                     l.append((OTHER, k, [int(val) for val in v]))
 
@@ -1924,7 +1924,7 @@ class Class(hyperdb.Class):
                 matches = k
 
             # add sorting information to the proptree
-            JPROPS = {'actor':1, 'activity':1, 'creator':1, 'creation':1}
+            JPROPS = {'actor': 1, 'activity': 1, 'creator': 1, 'creation': 1}
             children = []
             if proptree:
                 children = proptree.sortable_children()
@@ -1934,8 +1934,8 @@ class Class(hyperdb.Class):
                 assert (dir and prop)
                 propclass = props[prop]
                 pt.sort_ids = []
-                is_pointer = isinstance(propclass,(hyperdb.Link,
-                                                   hyperdb.Multilink))
+                is_pointer = isinstance(propclass, (hyperdb.Link,
+                                                    hyperdb.Multilink))
                 if not is_pointer:
                     pt.sort_result = []
                 try:
@@ -1980,7 +1980,7 @@ class Class(hyperdb.Class):
                             link = self.db.classes[lcn]
                             key = link.orderprop()
                             child = pt.propdict[key]
-                            if key!='id':
+                            if key != 'id':
                                 if v not in lcache:
                                     # open the link class db if it's not already
                                     if lcldb is None:
