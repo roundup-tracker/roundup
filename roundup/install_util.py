@@ -150,7 +150,7 @@ def test():
 
         mod = open(testfile, 'r+b')
         mod.seek(0)
-        mod.write('# changed!')
+        mod.write(s2b('# changed!'))
         mod.close()
 
         assert not checkDigest(testfile), "digest fails after modification"

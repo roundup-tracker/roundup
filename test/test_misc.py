@@ -9,7 +9,7 @@ import roundup.anypy.cmp_
 from roundup.anypy.strings import StringIO  # define StringIO
 from roundup.cgi import cgitb
 from roundup.cgi.accept_language import parse
-
+from roundup import install_util
 
 class AcceptLanguageTest(unittest.TestCase):
     def testParse(self):
@@ -207,3 +207,7 @@ NameError: name 'a' is not defined
             self.assertEqual(expected3, h)
         else:
             self.assertEqual(expected2, h)
+
+class InstallUtilTest(unittest.TestCase):
+    def test_run_test(self):
+        install_util.test()
