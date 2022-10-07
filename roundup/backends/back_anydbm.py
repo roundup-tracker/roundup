@@ -644,7 +644,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             for key in map(b2s, db.keys()):
                 # get the journal for this db entry
                 journal = marshal.loads(db[key])
-                l = []
+                kept_entries = []
                 for entry in journal:
                     # unpack the entry
                     (nodeid, date_stamp, self.journaltag, action,
@@ -652,10 +652,10 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     # if the entry is after the pack date, _or_ the initial
                     # create entry, then it stays
                     if date_stamp > pack_before or action == 'create':
-                        l.append(entry)
+                        kept_entries.append(entry)
                     else:
                         packed += 1
-                db[key] = marshal.dumps(l)
+                db[key] = marshal.dumps(kept_entries)
 
                 logging.getLogger('roundup.hyperdb.backend').info(
                     'packed %d %s items' % (packed, classname))
