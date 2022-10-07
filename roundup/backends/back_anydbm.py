@@ -645,7 +645,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 # get the journal for this db entry
                 journal = marshal.loads(db[key])
                 l = []
-                last_set_entry = None
                 for entry in journal:
                     # unpack the entry
                     (nodeid, date_stamp, self.journaltag, action,
