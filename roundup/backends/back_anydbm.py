@@ -523,7 +523,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             db = self.getclassdb(classname)
         return count + len(db)
 
-
     #
     # Files - special node properties
     # inherited from FileStorage
@@ -665,7 +664,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if db_type == 'gdbm':
                 db.reorganize()
             db.close()
-
 
     #
     # Basic transaction support
@@ -822,6 +820,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.lockfile.close()
             self.lockfile = None
 
+
 _marker = []
 
 
@@ -876,9 +875,8 @@ class Class(hyperdb.Class):
         if self.db.journaltag is None:
             raise hyperdb.DatabaseError(_('Database open read-only'))
 
-
-        if ('creator' in propvalues or 'actor' in propvalues or 
-             'creation' in propvalues or 'activity' in propvalues):
+        if ('creator' in propvalues or 'actor' in propvalues or
+                'creation' in propvalues or 'activity' in propvalues):
             raise KeyError('"creator", "actor", "creation" and '
                            '"activity" are reserved')
 
@@ -1170,8 +1168,8 @@ class Class(hyperdb.Class):
         if not propvalues:
             return propvalues
 
-        if ('creator' in propvalues or 'actor' in propvalues or 
-             'creation' in propvalues or 'activity' in propvalues):
+        if ('creator' in propvalues or 'actor' in propvalues or
+                'creation' in propvalues or 'activity' in propvalues):
             raise KeyError('"creator", "actor", "creation" and '
                            '"activity" are reserved')
 
