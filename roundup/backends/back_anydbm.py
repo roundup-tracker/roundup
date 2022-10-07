@@ -940,7 +940,7 @@ class Class(hyperdb.Class):
                 l = []
                 for entry in value:
                     if type(entry) != type(''):
-                        raise ValueError('"%s" multilink value (%r) '\
+                        raise ValueError('"%s" multilink value (%r) '
                                          'must contain Strings' % (key, value))
                     # if it isn't a number, it's a key
                     if not num_re.match(entry):
