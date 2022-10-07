@@ -1700,9 +1700,11 @@ class Class(hyperdb.Class):
                 db.close()
         return res
 
+    num_re = re.compile(r'^\d+$')
+
     def _filter(self, search_matches, filterspec, proptree,
-                num_re=re.compile(r'^\d+$'), retired=False,
-                exact_match_spec={}):
+                num_re=num_re, retired=False,
+                exact_match_spec=_marker):
         """Return a list of the ids of the nodes in this class that
         match the 'filter' spec, sorted by the group spec and then the
         sort spec.
@@ -1728,6 +1730,9 @@ class Class(hyperdb.Class):
         """
         if __debug__:
             start_t = time.time()
+
+        if exact_match_spec is _marker:
+            exact_match_spec = {}
 
         cn = self.classname
 
