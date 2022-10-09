@@ -215,7 +215,7 @@ def anti_csrf_nonce(client, lifetime=None):
         by the csrf validator that runs in the client::inner_main
         module/function.
     '''
-    otks=client.db.getOTKManager()
+    otks = client.db.getOTKManager()
     key = otks.getUniqueKey()
     # lifetime is in minutes.
     if lifetime is None:
@@ -623,10 +623,10 @@ class HTMLInputMixin(object):
             html_version = self._client.instance.config.HTML_VERSION
         if html_version == 'xhtml':
             self.input = input_xhtml
-            self.cgi_escape_attrs=xhtml_cgi_escape_attrs
+            self.cgi_escape_attrs = xhtml_cgi_escape_attrs
         else:
             self.input = input_html4
-            self.cgi_escape_attrs=html4_cgi_escape_attrs
+            self.cgi_escape_attrs = html4_cgi_escape_attrs
         # self._context is used for translations.
         # will be initialized by the first call to .gettext()
         self._context = None
@@ -773,8 +773,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             search.
         """
         l = []
-        canSearch=self._db.security.hasSearchPermission
-        userid=self._client.userid
+        canSearch = self._db.security.hasSearchPermission
+        userid = self._client.userid
         for name, prop in self._props.items():
             if cansearch and \
                not canSearch(userid, self._classname, name):
@@ -921,7 +921,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if form:
             form = '&amp;form=%s'%form
         if inputtype:
-            type= '&amp;type=%s'%inputtype
+            type = '&amp;type=%s'%inputtype
         if filter:
             filterprops = filter.split(';')
             filtervalues = []
@@ -1688,7 +1688,7 @@ class StringHTMLProperty(HTMLProperty):
         id = match.group('id')
         fragment = match.group('fragment')
         if fragment is None:
-            fragment=""
+            fragment = ""
         try:
             # make sure cls is a valid tracker classname
             cl = self._db.getclass(cls)
@@ -2119,7 +2119,7 @@ class BooleanHTMLProperty(HTMLProperty):
             y_rb = self.input(type="radio", name=self._formname, value="yes",
                 checked="checked", id="%s_%s"%(self._formname, 'yes'), **kwargs)
 
-            n_rb =self.input(type="radio", name=self._formname,  value="no",
+            n_rb = self.input(type="radio", name=self._formname,  value="no",
                            id="%s_%s"%(self._formname, 'no'), **kwargs)
         else:
             y_rb = self.input(type="radio", name=self._formname, value="yes",
@@ -2136,12 +2136,12 @@ class BooleanHTMLProperty(HTMLProperty):
         else:
             # don't generate a trivalue radiobutton.
             u_label = ''
-            u_rb=''
+            u_rb = ''
 
         if (labelfirst):
             s = u_label + u_rb + y_label + y_rb + n_label + n_rb
         else:
-            s = u_label + u_rb +y_rb + y_label + n_rb + n_label
+            s = u_label + u_rb + y_rb + y_label + n_rb + n_label
 
         return s
 
@@ -2578,7 +2578,7 @@ class LinkHTMLProperty(HTMLProperty):
             # figure if this option is selected
             s = ''
             # record the marker for the selected item if requested
-            selected_mark=''
+            selected_mark = ''
 
             if value in [optionid, option]:
                 s = 'selected="selected" '
@@ -2768,7 +2768,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             value = self._value[:]
             # map the id to the label property
             if not linkcl.getkey():
-                showid=1
+                showid = 1
             if not showid:
                 k = linkcl.labelprop(1)
                 value = lookupKeys(linkcl, k, value)
