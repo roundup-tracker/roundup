@@ -70,7 +70,9 @@ def _import_markdown2():
 
         class Markdown(markdown2.Markdown):
             # don't allow disabled protocols in links
-            _safe_protocols = re.compile('(?!' + ':|'.join([re.escape(s) for s in _disable_url_schemes]) + ':)', re.IGNORECASE)
+            _safe_protocols = re.compile('(?!' + ':|'.join([
+                re.escape(s) for s in _disable_url_schemes])
+                                         + ':)', re.IGNORECASE)
 
         def _extras(config):
             extras = {'fenced-code-blocks': {}, 'nofollow': None}
@@ -939,10 +941,12 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                    group, sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
-        return '<a class="classhelp" data-helpurl="%s" data-width="%s" data-height="%s" href="%s" onclick="%s" %s>%s</a>' % \
-               (help_url, width, height,
-                help_url, onclick, self.cgi_escape_attrs(**html_kwargs),
-                self._(label))
+        return ('<a class="classhelp" data-helpurl="%s" '
+                'data-width="%s" data-height="%s" href="%s" '
+                'onclick="%s" %s>%s</a>') % (
+                    help_url, width, height,
+                    help_url, onclick, self.cgi_escape_attrs(**html_kwargs),
+                    self._(label))
 
     def submit(self, label=''"Submit New Entry", action="new", html_kwargs={}):
         """ Generate a submit button (and action hidden element)
@@ -2334,7 +2338,8 @@ class DateHTMLProperty(HTMLProperty):
             date = ""
 
         data_attr = {
-            "data-calurl": '%s?@template=calendar&amp;property=%s&amp;form=%s%s' % (self._classname, self._name, form, date),
+            "data-calurl": '%s?@template=calendar&amp;property=%s&amp;form=%s%s' % (
+                self._classname, self._name, form, date),
             "data-width": width,
             "data-height": height
         }
