@@ -20,7 +20,7 @@ todo = """
 __docformat__ = 'restructuredtext'
 
 # List of schemes that are not rendered as links in rst and markdown.
-_disable_url_schemes = [ 'javascript', 'data' ]
+_disable_url_schemes = ['javascript', 'data']
 
 import base64, cgi, re, os.path, mimetypes, csv, string
 import calendar
@@ -71,7 +71,7 @@ def _import_markdown2():
             _safe_protocols = re.compile('(?!' + ':|'.join([re.escape(s) for s in _disable_url_schemes]) + ':)', re.IGNORECASE)
 
         def _extras(config):
-            extras = { 'fenced-code-blocks' : {}, 'nofollow': None }
+            extras = {'fenced-code-blocks' : {}, 'nofollow': None}
             if config['MARKDOWN_BREAK_ON_NEWLINE']:
                 extras['break-on-newline'] = True
             return extras
@@ -149,7 +149,7 @@ def _import_mistune():
         import mistune
         from mistune import Renderer, escape_link, escape
 
-        mistune._scheme_blacklist = [ s + ':' for s in _disable_url_schemes ]
+        mistune._scheme_blacklist = [s + ':' for s in _disable_url_schemes]
 
         class LinkRendererWithRel(Renderer):
             ''' Rendering class that sets the rel="nofollow noreferer"
@@ -162,7 +162,8 @@ def _import_mistune():
                 text = link = escape_link(link)
                 if is_email:
                     link = 'mailto:%s' % link
-                    return '<a href="%(href)s">%(text)s</a>' % { 'href': link, 'text': text }
+                    return '<a href="%(href)s">%(text)s</a>' % {
+                        'href': link, 'text': text}
                 return '<a href="%(href)s" rel="%(rel)s">%(href)s</a>' % {
                     'rel': self.rel_value, 'href': escape_link(link)}
 
@@ -217,7 +218,7 @@ def anti_csrf_nonce(client, lifetime=None):
     ts = otks.lifetime(lifetime * 60)
     otks.set(key, uid=client.db.getuid(),
              sid=client.session_api._sid,
-             __timestamp=ts )
+             __timestamp=ts)
     otks.commit()
     return key
 
@@ -886,7 +887,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             properties = sorted(self._klass.getprops(protected=0).keys())
             properties = ','.join(properties)
         if sort is None:
-            if 'username' in properties.split( ',' ):
+            if 'username' in properties.split(','):
                 sort = 'username'
             else:
                 sort = self._klass.orderprop()
@@ -1106,7 +1107,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         return []
 
     def history(self, direction='descending', dre=re.compile(r'^\d+$'),
-                limit=None, showall=False ):
+                limit=None, showall=False):
         """Create an html view of the journal for the item.
 
            Display property changes for all properties that does not have quiet set.
@@ -1331,7 +1332,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
                 arg_s = '<br />'.join(cell)
             else:
-                if action in ( 'retired', 'restored' ):
+                if action in ('retired', 'restored'):
                     # args = None for these actions
                     pass
                 else:
@@ -1607,7 +1608,7 @@ class StringHTMLProperty(HTMLProperty):
                     'raw_enabled': 0,
                     '_disable_config': 1}
 
-    valid_schemes = { }
+    valid_schemes = {}
 
     def _hyper_repl(self, match):
         if match.group('url'):
@@ -2066,12 +2067,12 @@ class BooleanHTMLProperty(HTMLProperty):
             value = value.strip().lower() in ('checked', 'yes', 'true',
                 'on', '1')
 
-        if ( not y_label ):
+        if (not y_label):
             y_label = '<label class="rblabel" for="%s_%s">'%(self._formname, 'yes')
             y_label += self._('Yes')
             y_label += '</label>'
 
-        if ( not n_label ):
+        if (not n_label):
             n_label = '<label class="rblabel" for="%s_%s">'%(self._formname, 'no')
             n_label += self._('No')
             n_label += '</label>'
@@ -2090,7 +2091,7 @@ class BooleanHTMLProperty(HTMLProperty):
             n_rb = self.input(type="radio", name=self._formname,  value="no",
                 checked="checked", id="%s_%s"%(self._formname, 'no'), **kwargs)
 
-        if ( u_label ):
+        if (u_label):
             if (u_label is True): # it was set via u_label=True
                 u_label = '' # make it empty but a string not boolean
             u_rb = self.input(type="radio", name=self._formname,  value="",
@@ -2100,7 +2101,7 @@ class BooleanHTMLProperty(HTMLProperty):
             u_label = ''
             u_rb=''
             
-        if ( labelfirst ):
+        if (labelfirst):
             s = u_label + u_rb + y_label + y_rb + n_label + n_rb
         else:
             s = u_label + u_rb +y_rb + y_label +  n_rb + n_label
@@ -2540,7 +2541,7 @@ class LinkHTMLProperty(HTMLProperty):
 
             if value in [optionid, option]:
                 s = 'selected="selected" '
-                if ( showdef ):
+                if (showdef):
                     selected_mark = showdef
 
             # figure the label
@@ -3237,7 +3238,7 @@ env: %(env)s
         q = urllib_.quote
         sc = self.special_char
         l = ['%s=%s'%(k,is_us(v) and q(v) or v)
-             for k,v in args.items() if v != None ]
+             for k,v in args.items() if v != None]
         # pull out the special values (prefixed by @ or :)
         specials = {}
         for key in args.keys():
