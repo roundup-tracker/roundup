@@ -1698,7 +1698,6 @@ class StringHTMLProperty(HTMLProperty):
         except KeyError:
             return item
 
-
     def _hyper_repl_rst(self, match):
         if match.group('url'):
             s = match.group('url')
@@ -2611,8 +2610,8 @@ class LinkHTMLProperty(HTMLProperty):
             l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
         l.append('</select>')
         return '\n'.join(l)
-#    def checklist(self, ...)
 
+#    def checklist(self, ...)
 
 
 class MultilinkHTMLProperty(HTMLProperty):
