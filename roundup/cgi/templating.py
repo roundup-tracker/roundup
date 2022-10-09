@@ -1,7 +1,7 @@
 """Implements the API used in the HTML templating for the web interface.
 """
 
-todo = """
+__todo__ = """
 - Document parameters to Template.render() method
 - Add tests for Loader.load() method
 - Most methods should have a "default" arg to supply a value
@@ -19,32 +19,22 @@ todo = """
 
 __docformat__ = 'restructuredtext'
 
-# List of schemes that are not rendered as links in rst and markdown.
-_disable_url_schemes = ['javascript', 'data']
-
-import base64, cgi, re, os.path, mimetypes, csv, string
 import calendar
+import cgi
+import csv
+import os.path
+import re
 import textwrap
-import time, hashlib
 
-from roundup.anypy.html import html_escape
-
-from roundup.anypy import urllib_
 from roundup import hyperdb, date, support
-from roundup import i18n
-from roundup.i18n import _
-from roundup.anypy.strings import is_us, b2s, s2b, us2s, s2u, u2s, StringIO
-
+from roundup.anypy import urllib_
+from roundup.anypy.html import html_escape
+from roundup.anypy.strings import is_us, us2s, s2u, u2s, StringIO
+from roundup.cgi import TranslationService, ZTUtils
+from roundup.cgi.timestamp import pack_timestamp
+from roundup.exceptions import RoundupException
 from .KeywordsExpr import render_keywords_expression_editor
 
-from roundup.cgi.timestamp import pack_timestamp
-from roundup.cgi import TranslationService
-
-import roundup.anypy.random_ as random_
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 try:
     from StructuredText.StructuredText import HTML as StructuredText
 except ImportError:
@@ -61,12 +51,15 @@ try:
 except ImportError:
     from itertools import izip_longest as zip_longest
 
-from roundup.exceptions import RoundupException
+
+# List of schemes that are not rendered as links in rst and markdown.
+_disable_url_schemes = ['javascript', 'data']
 
 
 def _import_markdown2():
     try:
-        import markdown2, re
+        import markdown2
+        import re
 
         class Markdown(markdown2.Markdown):
             # don't allow disabled protocols in links
@@ -204,9 +197,6 @@ def _import_mistune():
 
 
 markdown = _import_markdown2() or _import_markdown() or _import_mistune()
-
-# bring in the templating support
-from roundup.cgi import ZTUtils
 
 
 def anti_csrf_nonce(client, lifetime=None):

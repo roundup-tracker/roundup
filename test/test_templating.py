@@ -1,5 +1,6 @@
 from __future__ import print_function
 import unittest
+import time
 from cgi import FieldStorage, MiniFieldStorage
 
 from roundup.cgi.templating import *
