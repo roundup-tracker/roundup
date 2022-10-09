@@ -133,7 +133,7 @@ def _import_markdown():
                     md.treeprocessors.register(LinkRendererWithRel(), 'add_link_rel', 0)
                 else:
                     md.treeprocessors['add_link_rel'] = LinkRendererWithRel()
-                
+
         def _extensions(config):
             extensions = [SafeHtml(), 'fenced_code']
             if config['MARKDOWN_BREAK_ON_NEWLINE']:
@@ -332,7 +332,7 @@ class MultiLoader(LoaderBase):
 
     def add_loader(self, loader):
         self.loaders.append(loader)
-      
+
     def check(self, name):
         for l in self.loaders:
             if l.check(name):
@@ -350,7 +350,7 @@ class MultiLoader(LoaderBase):
             return self.load(name)
         except NoTemplate as message:
             raise KeyError(message)
-        
+
 
 class TemplateBase:
     content_type = 'text/html'
@@ -376,7 +376,7 @@ def get_loader(dir, template_engine):
         else:
             raise Exception('Unknown template engine "%s"' % engine_name)
         ml.add_loader(Loader(dir))
-    
+
     if len(engines) == 1:
         return ml.loaders[0]
     else:
@@ -1142,7 +1142,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         # function. Reset it to original value on return.
         orig_form_wins = self._client.form_wins
         self._client.form_wins = False
-                
+
         # get the journal, sort and reverse
         history = self._klass.history(self._nodeid, skipquiet=(not showall))
         history.sort(key=lambda a: a[:3])
@@ -1390,7 +1390,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         l.append('</table>')
 
         self._client.form_wins = orig_form_wins
-        
+
         return '\n'.join(l)
 
     def renderQueryForm(self):
@@ -1456,7 +1456,7 @@ class _HTMLUser(_HTMLItem):
     """Add ability to check for permissions on users.
     """
     _marker = []
-    
+
     def hasPermission(self, permission, classname=_marker,
             property=None, itemid=None):
         """Determine if the user has the Permission.
@@ -1855,7 +1855,7 @@ class StringHTMLProperty(HTMLProperty):
                     pass
                 else:
                     raise
-                
+
         return u2s(ReStructuredText(s, writer_name="html",
                        settings_overrides=self.rst_defaults)["html_body"])
 
@@ -1995,7 +1995,7 @@ class NumberHTMLProperty(HTMLProperty):
 
     def pretty(self, format="%0.3f"):
         '''Pretty print number using printf format specifier.
-        
+
            If value is not convertable, returns str(_value) or ""
            if None.
         '''
@@ -2135,7 +2135,7 @@ class BooleanHTMLProperty(HTMLProperty):
             # don't generate a trivalue radiobutton.
             u_label = ''
             u_rb=''
-            
+
         if (labelfirst):
             s = u_label + u_rb + y_label + y_rb + n_label + n_rb
         else:
@@ -2336,7 +2336,7 @@ class DateHTMLProperty(HTMLProperty):
             "data-width": width,
             "data-height": height
         }
-        
+
         return ('<a class="classhelp" %s href="javascript:help_window('
             "'%s?@template=calendar&amp;property=%s&amp;form=%s%s', %d, %d)"
             '">%s</a>'%(self.cgi_escape_attrs(**data_attr),self._classname, self._name, form, date, width,
@@ -2670,7 +2670,7 @@ class MultilinkHTMLProperty(HTMLProperty):
 
             Set Nonefirst to True to sort None/unset property
             before a property with a valid value.
-            
+
         """
 
         # use 2 if NoneFirst is False to sort None last
@@ -3503,7 +3503,7 @@ class TemplatingUtils:
 
     def timestamp(self):
         return pack_timestamp()
-    
+
     def url_quote(self, url):
         """URL-quote the supplied text."""
         return urllib_.quote(url)
