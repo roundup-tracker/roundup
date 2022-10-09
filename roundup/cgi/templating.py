@@ -2141,7 +2141,7 @@ class BooleanHTMLProperty(HTMLProperty):
         if (labelfirst):
             s = u_label + u_rb + y_label + y_rb + n_label + n_rb
         else:
-            s = u_label + u_rb +y_rb + y_label +  n_rb + n_label
+            s = u_label + u_rb +y_rb + y_label + n_rb + n_label
 
         return s
 
