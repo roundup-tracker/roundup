@@ -189,7 +189,7 @@ def _import_mistune():
                 return '<a href="%(href)s" rel="%(rel)s">%(content)s</a>' % values
 
         def _options(config):
-            options = {'renderer': LinkRendererWithRel(escape = True)}
+            options = {'renderer': LinkRendererWithRel(escape=True)}
             if config['MARKDOWN_BREAK_ON_NEWLINE']:
                 options['hard_wrap'] = True
             return options
@@ -2522,8 +2522,8 @@ class LinkHTMLProperty(HTMLProperty):
             value = None
 
         linkcl = self._db.getclass(self._prop.classname)
-        l = ['<select %s>'%self.cgi_escape_attrs(name = self._formname,
-                                            **html_kwargs)]
+        l = ['<select %s>'%self.cgi_escape_attrs(name=self._formname,
+                                                 **html_kwargs)]
         k = linkcl.labelprop(1)
         s = ''
         if value is None:
@@ -2836,9 +2836,9 @@ class MultilinkHTMLProperty(HTMLProperty):
                 # The "no selection" option.
                 height += 1
             height = min(height, 7)
-        l = ['<select multiple %s>'%self.cgi_escape_attrs(name = self._formname,
-                                                     size = height,
-                                                     **html_kwargs)]
+        l = ['<select multiple %s>'%self.cgi_escape_attrs(name=self._formname,
+                                                          size=height,
+                                                          **html_kwargs)]
         k = linkcl.labelprop(1)
 
         if value:  # FIXME '- no selection -' mark for translation
