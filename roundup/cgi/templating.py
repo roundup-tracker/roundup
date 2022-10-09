@@ -67,6 +67,7 @@ from roundup.exceptions import RoundupException
 def _import_markdown2():
     try:
         import markdown2, re
+
         class Markdown(markdown2.Markdown):
             # don't allow disabled protocols in links
             _safe_protocols = re.compile('(?!' + ':|'.join([re.escape(s) for s in _disable_url_schemes]) + ':)', re.IGNORECASE)
@@ -178,7 +179,7 @@ def _import_mistune():
                     'content': escape(content),
                     'href': escape_link(link),
                     'rel': self.rel_value,
-                    'title': escape(title) if title else '', 
+                    'title': escape(title) if title else '',
                 }
 
                 if title:
@@ -198,6 +199,7 @@ def _import_mistune():
         markdown = None
 
     return markdown
+
 
 markdown = _import_markdown2() or _import_markdown() or _import_mistune()
 
@@ -338,7 +340,7 @@ class MultiLoader(LoaderBase):
             if l.check(name):
                 return True
 
-    def load(self, name):    
+    def load(self, name):
         for l in self.loaders:
             if l.check(name):
                 return l.load(name)
@@ -507,6 +509,7 @@ class HTMLDatabase:
             m.append(HTMLClass(self._client, item))
         return m
 
+
 num_re = re.compile(r'^-?\d+$')
 
 
@@ -581,7 +584,7 @@ def html4_cgi_escape_attrs(**attrs):
           value is None
         Code can use None to indicate a pure boolean.
     '''
-    return ' '.join(['%s="%s"'%(k,html_escape(str(v), True)) 
+    return ' '.join(['%s="%s"'%(k,html_escape(str(v), True))
                          if v != None else '%s'%(k)
                          for k,v in sorted(attrs.items())])
 
@@ -2666,7 +2669,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         return self.viewableGenerator(l)
 
     def sorted(self, property, reverse=False, NoneFirst=False):
-        """ Return this multilink sorted by the given property 
+        """ Return this multilink sorted by the given property
 
             Set Nonefirst to True to sort None/unset property
             before a property with a valid value.
@@ -2689,7 +2692,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         if type(prop) in [hyperdb.Link, hyperdb.Multilink]:
             orderprop = value[0]._db.getclass(prop.classname).orderprop()
             sort_by_link = True
-        else: 
+        else:
             orderprop = property
             sort_by_link = False
 
@@ -2924,6 +2927,7 @@ def make_key_function(db, classname, sort_on=None):
     linkcl = db.getclass(classname)
     if sort_on is None:
         sort_on = linkcl.orderprop()
+
     def keyfunc(a):
         if num_re.match(a):
             a = linkcl.get(a, sort_on)
@@ -3220,6 +3224,7 @@ env: %(env)s
         """
         l = []
         sc = self.special_char
+
         def add(k, v):
             l.append(self.input(type="hidden", name=k, value=v))
         if columns and self.columns:
