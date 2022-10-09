@@ -48,7 +48,7 @@ except ImportError:
 try:
     from StructuredText.StructuredText import HTML as StructuredText
 except ImportError:
-    try: # older version
+    try:  # older version
         import StructuredText
     except ImportError:
         StructuredText = None
@@ -228,7 +228,7 @@ def anti_csrf_nonce(client, lifetime=None):
     otks.commit()
     return key
 
-### templating
+# templating
 
 
 class NoTemplate(RoundupException):
@@ -295,7 +295,7 @@ class TALLoaderBase(LoaderBase):
             src = os.path.join(realsrc, f)
             realpath = os.path.realpath(src)
             if not realpath.startswith(realsrc):
-                return # will raise invalid template
+                return  # will raise invalid template
             if os.path.exists(src):
                 return (src, f)
 
@@ -1743,7 +1743,7 @@ class StringHTMLProperty(HTMLProperty):
                 if end < len(match.string):
                     suffix = match.string[end]
                     if (prefix, suffix) in {('[', ']')}:
-                        if match.string[end+1] == '(': # find following (
+                        if match.string[end+1] == '(':  # find following (
                             return match.group(0)
                     if (prefix, suffix) in {('(',')')}:
                         if match.string[start-1] == ']':
@@ -2130,8 +2130,8 @@ class BooleanHTMLProperty(HTMLProperty):
                 checked="checked", id="%s_%s"%(self._formname, 'no'), **kwargs)
 
         if (u_label):
-            if (u_label is True): # it was set via u_label=True
-                u_label = '' # make it empty but a string not boolean
+            if (u_label is True):  # it was set via u_label=True
+                u_label = ''       # make it empty but a string not boolean
             u_rb = self.input(type="radio", name=self._formname,  value="",
                 id="%s_%s"%(self._formname, 'unk'), **kwargs)
         else:
@@ -2711,7 +2711,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             else:
                 val = prop._value
 
-            if val is None: # verify orderprop is set to a value
+            if val is None:   # verify orderprop is set to a value
                 return (NoneCode, None)
             return (1, val)  # val should be base python type
 
@@ -3035,7 +3035,7 @@ class HTMLRequest(HTMLInputMixin):
                 fields = handleListCGIValue(self.form[key])
                 if dirkey in self.form:
                     dirs.append(self.form.getfirst(dirkey))
-            if fields: # only try other special char if nothing found
+            if fields:   # only try other special char if nothing found
                 break
 
         # sometimes requests come in without a class
@@ -3555,8 +3555,8 @@ class TemplatingUtils:
             # if user submits a value like "d4" and gets an edit error.
             # If either or both invalid just ignore that we can't parse it
             # and assign them to today.
-            curr_date = date.Date(date_str) # to highlight
-            display = date.Date(display)  # to show
+            curr_date = date.Date(date_str)   # to highlight
+            display = date.Date(display)      # to show
         except ValueError:
             # we couldn't parse the date
             # just let the calendar display
