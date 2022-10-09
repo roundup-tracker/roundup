@@ -585,7 +585,7 @@ def html4_cgi_escape_attrs(**attrs):
         Code can use None to indicate a pure boolean.
     '''
     return ' '.join(['%s="%s"'%(k,html_escape(str(v), True))
-                         if v != None else '%s'%(k)
+                         if v is not None else '%s'%(k)
                          for k,v in sorted(attrs.items())])
 
 
@@ -599,7 +599,7 @@ def xhtml_cgi_escape_attrs(**attrs):
         Code can use None to indicate a pure boolean.
     '''
     return ' '.join(['%s="%s"'%(k,html_escape(str(v), True))
-                         if v != None else '%s="%s"'%(k,k)
+                         if v is not None else '%s="%s"'%(k,k)
                          for k,v in sorted(attrs.items())])
 
 
@@ -3284,7 +3284,7 @@ env: %(env)s
         q = urllib_.quote
         sc = self.special_char
         l = ['%s=%s'%(k,is_us(v) and q(v) or v)
-             for k,v in args.items() if v != None]
+             for k,v in args.items() if v is not None]
         # pull out the special values (prefixed by @ or :)
         specials = {}
         for key in args.keys():
