@@ -1162,14 +1162,14 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         for id, evt_date, user, action, args in history:
             date_s = str(evt_date.local(timezone)).replace("."," ")
             arg_s = ''
-            if action in ['link', 'unlink'] and type(args) == type(()):
+            if action in ['link', 'unlink'] and isinstance(args, tuple):
                 if len(args) == 3:
                     linkcl, linkid, key = args
                     arg_s += '<a rel="nofollow noopener" href="%s%s">%s%s %s</a>'%(linkcl, linkid,
                         linkcl, linkid, key)
                 else:
                     arg_s = str(args)
-            elif type(args) == type({}):
+            elif isinstance(args, dict):
                 cell = []
                 for k in args.keys():
                     # try to get the relevant property and treat it
@@ -3252,7 +3252,7 @@ env: %(env)s
             for k,v in self.filterspec.items():
                 if k in exclude:
                     continue
-                if type(v) == type([]):
+                if isinstance(v, list):
                     # id's are stored as strings but should be treated
                     # as integers in lists.
                     if (isinstance(cls.get_transitive_prop(k), hyperdb.String)
@@ -3324,7 +3324,7 @@ env: %(env)s
             cls = self.client.db.getclass(self.classname)
             for k,v in self.filterspec.items():
                 if k not in args:
-                    if type(v) == type([]):
+                    if isinstance(v, list):
                         prop = cls.get_transitive_prop(k)
                         if k != 'id' and isinstance(prop, hyperdb.String):
                             l.append('%s=%s'%(k, '%20'.join([q(i) for i in v])))
