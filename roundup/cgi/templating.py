@@ -584,9 +584,9 @@ def html4_cgi_escape_attrs(**attrs):
           value is None
         Code can use None to indicate a pure boolean.
     '''
-    return ' '.join(['%s="%s"'%(k,html_escape(str(v), True))
+    return ' '.join(['%s="%s"'%(k, html_escape(str(v), True))
                          if v is not None else '%s'%(k)
-                         for k,v in sorted(attrs.items())])
+                         for k, v in sorted(attrs.items())])
 
 
 def xhtml_cgi_escape_attrs(**attrs):
@@ -598,9 +598,9 @@ def xhtml_cgi_escape_attrs(**attrs):
           value is None
         Code can use None to indicate a pure boolean.
     '''
-    return ' '.join(['%s="%s"'%(k,html_escape(str(v), True))
-                         if v is not None else '%s="%s"'%(k,k)
-                         for k,v in sorted(attrs.items())])
+    return ' '.join(['%s="%s"'%(k, html_escape(str(v), True))
+                         if v is not None else '%s="%s"'%(k, k)
+                         for k, v in sorted(attrs.items())])
 
 
 def input_html4(**attrs):
@@ -785,7 +785,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                     l.append(htmlklass(self._client, self._classname, '',
                                        prop, name, value, self._anonymous))
         if sort:
-            l.sort(key=lambda a:a._name)
+            l.sort(key=lambda a: a._name)
         return l
 
     def list(self, sort_on=None):
@@ -1160,7 +1160,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         current = {}
         comments = {}
         for id, evt_date, user, action, args in history:
-            date_s = str(evt_date.local(timezone)).replace("."," ")
+            date_s = str(evt_date.local(timezone)).replace(".", " ")
             arg_s = ''
             if action in ['link', 'unlink'] and isinstance(args, tuple):
                 if len(args) == 3:
@@ -1706,7 +1706,7 @@ class StringHTMLProperty(HTMLProperty):
             s = match.group('email')
             return '`%s <mailto:%s>`_'%(s, s)
         elif len(match.group('id')) < 10:
-            return self._hyper_repl_item(match,'`%(item)s <%(cls)s%(id)s>`_')
+            return self._hyper_repl_item(match, '`%(item)s <%(cls)s%(id)s>`_')
         else:
             # just return the matched text
             return match.group(0)
@@ -1744,10 +1744,10 @@ class StringHTMLProperty(HTMLProperty):
                     if (prefix, suffix) in {('[', ']')}:
                         if match.string[end+1] == '(':  # find following (
                             return match.group(0)
-                    if (prefix, suffix) in {('(',')')}:
+                    if (prefix, suffix) in {('(', ')')}:
                         if match.string[start-1] == ']':
                             return match.group(0)
-            return self._hyper_repl_item(match,'[%(item)s](%(cls)s%(id)s)')
+            return self._hyper_repl_item(match, '[%(item)s](%(cls)s%(id)s)')
         else:
             # just return the matched text
             return match.group(0)
@@ -1822,7 +1822,7 @@ class StringHTMLProperty(HTMLProperty):
         s = self.plain(escape=escape, hyperlink=hyperlink)
         if not StructuredText:
             return s
-        return StructuredText(s,level=1,header=0)
+        return StructuredText(s, level=1, header=0)
 
     def rst(self, hyperlink=1):
         """ Render the value of the property as ReStructuredText.
@@ -2341,8 +2341,9 @@ class DateHTMLProperty(HTMLProperty):
 
         return ('<a class="classhelp" %s href="javascript:help_window('
             "'%s?@template=calendar&amp;property=%s&amp;form=%s%s', %d, %d)"
-            '">%s</a>'%(self.cgi_escape_attrs(**data_attr),self._classname, self._name, form, date, width,
-            height, label))
+            '">%s</a>'%(self.cgi_escape_attrs(**data_attr), 
+                        self._classname, self._name, form, date, width,
+                        height, label))
 
 
 class IntervalHTMLProperty(HTMLProperty):
@@ -2678,7 +2679,7 @@ class MultilinkHTMLProperty(HTMLProperty):
         # use 2 if NoneFirst is False to sort None last
         # 0 to sort to sort None first
         # 1 is used to sort the integer values.
-        NoneCode = (2,0)[NoneFirst]
+        NoneCode = (2, 0)[NoneFirst]
 
         value = list(self.__iter__())
 
@@ -2909,7 +2910,7 @@ propclasses = [
 
 
 def register_propclass(prop, cls):
-    for index,propclass in enumerate(propclasses):
+    for index, propclass in enumerate(propclasses):
         p, c = propclass
         if prop == p:
             propclasses[index] = (prop, cls)
@@ -3190,10 +3191,10 @@ class HTMLRequest(HTMLInputMixin):
         d.update(self.__dict__)
         f = ''
         for k in self.form.keys():
-            f += '\n      %r=%r'%(k,handleListCGIValue(self.form[k]))
+            f += '\n      %r=%r'%(k, handleListCGIValue(self.form[k]))
         d['form'] = f
         e = ''
-        for k,v in self.env.items():
+        for k, v in self.env.items():
             e += '\n     %r=%r'%(k, v)
         d['env'] = e
         return """
@@ -3248,7 +3249,7 @@ env: %(env)s
             add(sc+'filter', ','.join(self.filter))
         if self.classname and filterspec:
             cls = self.client.db.getclass(self.classname)
-            for k,v in self.filterspec.items():
+            for k, v in self.filterspec.items():
                 if k in exclude:
                     continue
                 if isinstance(v, list):
@@ -3282,8 +3283,8 @@ env: %(env)s
         """
         q = urllib_.quote
         sc = self.special_char
-        l = ['%s=%s'%(k,is_us(v) and q(v) or v)
-             for k,v in args.items() if v is not None]
+        l = ['%s=%s'%(k, is_us(v) and q(v) or v)
+             for k, v in args.items() if v is not None]
         # pull out the special values (prefixed by @ or :)
         specials = {}
         for key in args.keys():
@@ -3321,7 +3322,7 @@ env: %(env)s
         # finally, the remainder of the filter args in the request
         if self.classname and self.filterspec:
             cls = self.client.db.getclass(self.classname)
-            for k,v in self.filterspec.items():
+            for k, v in self.filterspec.items():
                 if k not in args:
                     if isinstance(v, list):
                         prop = cls.get_transitive_prop(k)
@@ -3352,7 +3353,7 @@ function help_window(helpurl, width, height) {
     HelpWin.focus ()
 }
 </script>
-"""%(self._client.client_nonce,self.base)
+"""%(self._client.client_nonce, self.base)
 
     def batch(self, permission='View'):
         """ Return a batch object for results from the "current search"
