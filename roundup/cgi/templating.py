@@ -63,6 +63,7 @@ except ImportError:
 
 from roundup.exceptions import RoundupException
 
+
 def _import_markdown2():
     try:
         import markdown2, re
@@ -71,7 +72,7 @@ def _import_markdown2():
             _safe_protocols = re.compile('(?!' + ':|'.join([re.escape(s) for s in _disable_url_schemes]) + ':)', re.IGNORECASE)
 
         def _extras(config):
-            extras = {'fenced-code-blocks' : {}, 'nofollow': None}
+            extras = {'fenced-code-blocks': {}, 'nofollow': None}
             if config['MARKDOWN_BREAK_ON_NEWLINE']:
                 extras['break-on-newline'] = True
             return extras
@@ -81,6 +82,7 @@ def _import_markdown2():
         markdown = None
 
     return markdown
+
 
 def _import_markdown():
     try:
@@ -144,6 +146,7 @@ def _import_markdown():
 
     return markdown
 
+
 def _import_mistune():
     try:
         import mistune
@@ -201,6 +204,7 @@ markdown = _import_markdown2() or _import_markdown() or _import_mistune()
 # bring in the templating support
 from roundup.cgi import ZTUtils
 
+
 def anti_csrf_nonce(client, lifetime=None):
     ''' Create a nonce for defending against CSRF attack.
 
@@ -224,8 +228,10 @@ def anti_csrf_nonce(client, lifetime=None):
 
 ### templating
 
+
 class NoTemplate(RoundupException):
     pass
+
 
 class Unauthorised(RoundupException):
     def __init__(self, action, klass, translator=None):
@@ -235,6 +241,7 @@ class Unauthorised(RoundupException):
             self._ = translator.gettext
         else:
             self._ = TranslationService.get_translation().gettext
+
     def __str__(self):
         return self._('You are not allowed to %(action)s '
             'items of class %(class)s') % {
@@ -269,6 +276,7 @@ class LoaderBase:
             false if template can not be found.
         """
         raise NotImplementedError
+
 
 class TALLoaderBase(LoaderBase):
     """ Common methods for the legacy TAL loaders."""
@@ -316,6 +324,7 @@ class TALLoaderBase(LoaderBase):
             return self.load(name)
         except NoTemplate as message:
             raise KeyError(message)
+
 
 class MultiLoader(LoaderBase):
     def __init__(self):
@@ -462,6 +471,7 @@ def context(client, template=None, classname=None, request=None):
         c['context'] = HTMLClass(client, classname, anonymous=1)
     return c
 
+
 class HTMLDatabase:
     """ Return HTMLClasses for valid class fetches
     """
@@ -499,6 +509,7 @@ class HTMLDatabase:
 
 num_re = re.compile(r'^-?\d+$')
 
+
 def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
     """ "fail_ok" should be specified if we wish to pass through bad values
         (most likely form values that we wish to represent back to the user)
@@ -526,6 +537,7 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
             l.append(entry)
     return l
 
+
 def lookupKeys(linkcl, key, ids, num_re=num_re):
     """ Look up the "key" values for "ids" list - though some may already
     be key values, not ids.
@@ -545,6 +557,7 @@ def lookupKeys(linkcl, key, ids, num_re=num_re):
             l.append(entry)
     return l
 
+
 def _set_input_default_args(dic):
     # 'text' is the default value anyway --
     # but for CSS usage it should be present
@@ -559,6 +572,7 @@ def _set_input_default_args(dic):
         except KeyError:
             pass
 
+
 def html4_cgi_escape_attrs(**attrs):
     ''' Boolean attributes like 'disabled', 'required'
         are represented without a value. E.G.
@@ -570,6 +584,7 @@ def html4_cgi_escape_attrs(**attrs):
     return ' '.join(['%s="%s"'%(k,html_escape(str(v), True)) 
                          if v != None else '%s'%(k)
                          for k,v in sorted(attrs.items())])
+
 
 def xhtml_cgi_escape_attrs(**attrs):
     ''' Boolean attributes like 'disabled', 'required'
@@ -584,15 +599,18 @@ def xhtml_cgi_escape_attrs(**attrs):
                          if v != None else '%s="%s"'%(k,k)
                          for k,v in sorted(attrs.items())])
 
+
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
     _set_input_default_args(attrs)
     return '<input %s>'%html4_cgi_escape_attrs(**attrs)
 
+
 def input_xhtml(**attrs):
     """Generate an 'input' (xhtml) element with given attributes"""
     _set_input_default_args(attrs)
     return '<input %s/>'%xhtml_cgi_escape_attrs(**attrs)
+
 
 class HTMLInputMixin(object):
     """ requires a _client property """
@@ -618,6 +636,7 @@ class HTMLInputMixin(object):
             msgid=msgid, context=self._context)
 
     _ = gettext
+
 
 class HTMLPermissions(object):
 
@@ -892,7 +911,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             else:
                 sort = self._klass.orderprop()
         sort = '&amp;@sort=' + sort
-        if group :
+        if group:
             group = '&amp;@group=' + group
         if property:
             property = '&amp;property=%s'%property
@@ -966,6 +985,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             'error_message': self._client._error_message
         }
         return pt.render(self._client, self.classname, req, **args)
+
 
 class _HTMLItem(HTMLInputMixin, HTMLPermissions):
     """ Accesses through an *item*
@@ -1219,7 +1239,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                             for linkid in linkids:
                                 # We're seeing things like
                                 # {'nosy':['38', '113', None, '82']} in the wild
-                                if linkid is None :
+                                if linkid is None:
                                     continue
                                 label = classname + linkid
                                 # if we have a label property, try to use it
@@ -1431,10 +1451,12 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
             ["%s=%s" % (key, urllib_.quote(value))
                 for key, value in query.items()])
 
+
 class _HTMLUser(_HTMLItem):
     """Add ability to check for permissions on users.
     """
     _marker = []
+    
     def hasPermission(self, permission, classname=_marker,
             property=None, itemid=None):
         """Determine if the user has the Permission.
@@ -1451,11 +1473,13 @@ class _HTMLUser(_HTMLItem):
         """Determine whether the user has any role in rolenames."""
         return self._db.user.has_role(self._nodeid, *rolenames)
 
+
 def HTMLItem(client, classname, nodeid, anonymous=0):
     if classname == 'user':
         return _HTMLUser(client, classname, nodeid, anonymous)
     else:
         return _HTMLItem(client, classname, nodeid, anonymous)
+
 
 class HTMLProperty(HTMLInputMixin, HTMLPermissions):
     """ String, Integer, Number, Date, Interval HTMLProperty
@@ -1521,28 +1545,35 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
         classname = self.__class__.__name__
         return '<%s(0x%x) %s %r %r>'%(classname, id(self), self._formname,
                                       self._prop, self._value)
+
     def __str__(self):
         return self.plain()
+
     def __lt__(self, other):
         if isinstance(other, HTMLProperty):
             return self._value < other._value
         return self._value < other
+
     def __le__(self, other):
         if isinstance(other, HTMLProperty):
             return self._value <= other._value
         return self._value <= other
+
     def __eq__(self, other):
         if isinstance(other, HTMLProperty):
             return self._value == other._value
         return self._value == other
+
     def __ne__(self, other):
         if isinstance(other, HTMLProperty):
             return self._value != other._value
         return self._value != other
+
     def __gt__(self, other):
         if isinstance(other, HTMLProperty):
             return self._value > other._value
         return self._value > other
+
     def __ge__(self, other):
         if isinstance(other, HTMLProperty):
             return self._value >= other._value
@@ -1580,6 +1611,7 @@ class HTMLProperty(HTMLInputMixin, HTMLPermissions):
                 self._client.userid, self._classname, self._name, self._nodeid):
             return 1
         return self.is_edit_ok()
+
 
 class StringHTMLProperty(HTMLProperty):
     hyper_re = re.compile(r'''(
@@ -1904,6 +1936,7 @@ class StringHTMLProperty(HTMLProperty):
             value = html_escape(value)
         return value
 
+
 class PasswordHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
         """ Render a "plain" representation of the property
@@ -1946,6 +1979,7 @@ class PasswordHTMLProperty(HTMLProperty):
             name="@confirm@%s"%self._formname,
             id="%s-confirm"%self._formname,
             size=size)
+
 
 class NumberHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
@@ -1998,6 +2032,7 @@ class NumberHTMLProperty(HTMLProperty):
         """ Return a float of me
         """
         return float(self._value)
+
 
 class IntegerHTMLProperty(HTMLProperty):
     def plain(self, escape=0):
@@ -2108,6 +2143,7 @@ class BooleanHTMLProperty(HTMLProperty):
 
         return s
 
+
 class DateHTMLProperty(HTMLProperty):
 
     _marker = []
@@ -2119,7 +2155,7 @@ class DateHTMLProperty(HTMLProperty):
         if self._value and not is_us(self._value):
             self._value.setTranslator(self._client.translator)
         self._offset = offset
-        if self._offset is None :
+        if self._offset is None:
             self._offset = self._prop.offset (self._db)
 
     def plain(self, escape=0):
@@ -2217,9 +2253,9 @@ class DateHTMLProperty(HTMLProperty):
             else:
                 value = date.Date(raw_value).pretty(format)
         else:
-            if self._offset is None :
+            if self._offset is None:
                 offset = self._db.getUserTimezone()
-            else :
+            else:
                 offset = self._offset
             value = raw_value.local(offset)
             if format is not self._marker:
@@ -2292,7 +2328,7 @@ class DateHTMLProperty(HTMLProperty):
         """
         if self.isset():
             date = "&date=%s"%self._value
-        else :
+        else:
             date = ""
 
         data_attr = {
@@ -2305,6 +2341,7 @@ class DateHTMLProperty(HTMLProperty):
             "'%s?@template=calendar&amp;property=%s&amp;form=%s%s', %d, %d)"
             '">%s</a>'%(self.cgi_escape_attrs(**data_attr),self._classname, self._name, form, date, width,
             height, label))
+
 
 class IntervalHTMLProperty(HTMLProperty):
     def __init__(self, client, classname, nodeid, prop, name, value,
@@ -2346,6 +2383,7 @@ class IntervalHTMLProperty(HTMLProperty):
 
         return self.input(name=self._formname, value=value, size=size,
                           **kwargs)
+
 
 class LinkHTMLProperty(HTMLProperty):
     """ Link HTMLProperty
@@ -2404,7 +2442,7 @@ class LinkHTMLProperty(HTMLProperty):
                                        default=self._("[label is missing]")))
             except IndexError:
                 value = self._value
-        else :
+        else:
             value = self._value
         if escape:
             value = html_escape(value)
@@ -2426,10 +2464,10 @@ class LinkHTMLProperty(HTMLProperty):
             k = linkcl.getkey()
             idparse = self._prop.try_id_parsing
             if k and num_re.match(self._value):
-                try :
+                try:
                     value = linkcl.get(self._value, k)
-                except IndexError :
-                    if idparse :
+                except IndexError:
+                    if idparse:
                         raise
                     value = ''
             else:
@@ -2867,6 +2905,7 @@ propclasses = [
     (hyperdb.Multilink, MultilinkHTMLProperty),
 ]
 
+
 def register_propclass(prop, cls):
     for index,propclass in enumerate(propclasses):
         p, c = propclass
@@ -2889,10 +2928,11 @@ def make_key_function(db, classname, sort_on=None):
         if num_re.match(a):
             a = linkcl.get(a, sort_on)
             # In Python3 we may not compare strings and None
-            if a is None :
+            if a is None:
                 return ''
         return a
     return keyfunc
+
 
 def handleListCGIValue(value):
     """ Value is either a single item or a list of items. Each item has a
@@ -2905,6 +2945,7 @@ def handleListCGIValue(value):
         if not value:
             return []
         return [v.strip() for v in value.split(',')]
+
 
 class HTMLRequest(HTMLInputMixin):
     """The *request*, holding the CGI form and environment.
@@ -3351,6 +3392,7 @@ function help_window(helpurl, width, height) {
         return Batch(self.client, l, self.pagesize, self.startwith,
             classname=self.classname)
 
+
 # extend the standard ZTUtils Batch object to remove dependency on
 # Acquisition and add a couple of useful methods
 class Batch(ZTUtils.Batch):
@@ -3445,11 +3487,13 @@ class Batch(ZTUtils.Batch):
         return Batch(self.client, self._sequence, self.size,
             self.end - self.overlap, 0, self.orphan, self.overlap)
 
+
 class TemplatingUtils:
     """ Utilities for templating
     """
     def __init__(self, client):
         self.client = client
+
     def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
         return Batch(self.client, sequence, size, start, end, orphan,
             overlap)
@@ -3495,11 +3539,11 @@ class TemplatingUtils:
         """
         tz = request.client.db.getUserTimezone()
         current_date = date.Date(".").local(tz)
-        date_str  = request.form.getfirst("date", current_date)
-        display   = request.form.getfirst("display", date_str)
-        template  = request.form.getfirst("@template", "calendar")
-        form      = request.form.getfirst("form")
-        property  = request.form.getfirst("property")
+        date_str = request.form.getfirst("date", current_date)
+        display = request.form.getfirst("display", date_str)
+        template = request.form.getfirst("@template", "calendar")
+        form = request.form.getfirst("form")
+        property = request.form.getfirst("property")
         curr_date = ""
         try:
             # date_str and display can be set to an invalid value
@@ -3507,13 +3551,13 @@ class TemplatingUtils:
             # If either or both invalid just ignore that we can't parse it
             # and assign them to today.
             curr_date = date.Date(date_str) # to highlight
-            display   = date.Date(display)  # to show
+            display = date.Date(display)  # to show
         except ValueError:
             # we couldn't parse the date
             # just let the calendar display
             curr_date = current_date
             display = current_date
-        day       = display.day
+        day = display.day
 
         # for navigation
         try:
@@ -3587,16 +3631,17 @@ class TemplatingUtils:
                         and display.year == curr_date.year):
                     # highlight
                     style = "today"
-                else :
+                else:
                     style = ""
                 if day:
                     res.append('   <td class="%s"><a href="%s">%s</a></td>'%(
                         style, link, day))
-                else :
+                else:
                     res.append('   <td></td>')
             res.append('  </tr>')
         res.append('</table></td></tr></table>')
         return "\n".join(res)
+
 
 class MissingValue(object):
     def __init__(self, description, **kwargs):
@@ -3605,6 +3650,7 @@ class MissingValue(object):
             self.__dict__[key] = value
 
     def __call__(self, *args, **kwargs): return MissingValue(self.__description)
+
     def __getattr__(self, name):
         # This allows assignments which assume all intermediate steps are Null
         # objects if they don't exist yet.
@@ -3625,6 +3671,7 @@ class MissingValue(object):
     def __str__(self): return '[%s]'%self.__description
     def __repr__(self): return '<MissingValue 0x%x "%s">'%(id(self),
         self.__description)
+
     def gettext(self, str): return str
     _ = gettext
 
