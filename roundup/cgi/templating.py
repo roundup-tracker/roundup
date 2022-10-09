@@ -2341,7 +2341,7 @@ class DateHTMLProperty(HTMLProperty):
 
         return ('<a class="classhelp" %s href="javascript:help_window('
             "'%s?@template=calendar&amp;property=%s&amp;form=%s%s', %d, %d)"
-            '">%s</a>'%(self.cgi_escape_attrs(**data_attr), 
+            '">%s</a>'%(self.cgi_escape_attrs(**data_attr),
                         self._classname, self._name, form, date, width,
                         height, label))
 
