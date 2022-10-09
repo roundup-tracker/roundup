@@ -2156,7 +2156,7 @@ class DateHTMLProperty(HTMLProperty):
             self._value.setTranslator(self._client.translator)
         self._offset = offset
         if self._offset is None:
-            self._offset = self._prop.offset (self._db)
+            self._offset = self._prop.offset(self._db)
 
     def plain(self, escape=0):
         """ Render a "plain" representation of the property
@@ -3092,11 +3092,11 @@ class HTMLRequest(HTMLInputMixin):
         self.filterspec = {}
         db = self.client.db
         if self.classname is not None:
-            cls = db.getclass (self.classname)
+            cls = db.getclass(self.classname)
             for name in self.filter:
                 if not self._form_has_key(name):
                     continue
-                prop = cls.get_transitive_prop (name)
+                prop = cls.get_transitive_prop(name)
                 fv = self.form[name]
                 if (isinstance(prop, hyperdb.Link) or
                         isinstance(prop, hyperdb.Multilink)):
@@ -3231,7 +3231,7 @@ env: %(env)s
                     val.append('-'+attr)
                 else:
                     val.append(attr)
-            add(sc+'sort', ','.join (val))
+            add(sc+'sort', ','.join(val))
         if group:
             val = []
             for dir, attr in self.group:
@@ -3239,7 +3239,7 @@ env: %(env)s
                     val.append('-'+attr)
                 else:
                     val.append(attr)
-            add(sc+'group', ','.join (val))
+            add(sc+'group', ','.join(val))
         if filter and self.filter:
             add(sc+'filter', ','.join(self.filter))
         if self.classname and filterspec:
@@ -3460,8 +3460,8 @@ class Batch(ZTUtils.Batch):
         if self.last_item is None:
             return 1
         for property in properties:
-            if property == 'id' or property.endswith ('.id')\
-               or isinstance (self.last_item[property], list):
+            if property == 'id' or property.endswith('.id')\
+               or isinstance(self.last_item[property], list):
                 if (str(self.last_item[property]) !=
                     str(self.current_item[property])):
                     return 1
