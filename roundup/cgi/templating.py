@@ -2342,9 +2342,9 @@ class DateHTMLProperty(HTMLProperty):
 
         return ('<a class="classhelp" %s href="javascript:help_window('
             "'%s?@template=calendar&amp;property=%s&amp;form=%s%s', %d, %d)"
-            '">%s</a>'%(self.cgi_escape_attrs(**data_attr),
-                        self._classname, self._name, form, date, width,
-                        height, label))
+            '">%s</a>' % (self.cgi_escape_attrs(**data_attr),
+                          self._classname, self._name, form, date, width,
+                          height, label))
 
 
 class IntervalHTMLProperty(HTMLProperty):
@@ -2415,7 +2415,7 @@ class LinkHTMLProperty(HTMLProperty):
                     return ''
                 return nothing
             msg = self._('Attempt to look up %(attr)s on a missing value')
-            return MissingValue(msg%locals())
+            return MissingValue(msg % locals())
         i = HTMLItem(self._client, self._prop.classname, self._value)
         return getattr(i, attr)
 
@@ -2426,7 +2426,7 @@ class LinkHTMLProperty(HTMLProperty):
         """
         if not self._value:
             msg = self._('Attempt to look up %(item)s on a missing value')
-            return MissingValue(msg%locals())
+            return MissingValue(msg % locals())
         i = HTMLItem(self._client, self._prop.classname, self._value)
         return i[item]
 
@@ -2523,13 +2523,13 @@ class LinkHTMLProperty(HTMLProperty):
             value = None
 
         linkcl = self._db.getclass(self._prop.classname)
-        l = ['<select %s>'%self.cgi_escape_attrs(name=self._formname,
+        l = ['<select %s>' % self.cgi_escape_attrs(name=self._formname,
                                                  **html_kwargs)]
         k = linkcl.labelprop(1)
         s = ''
         if value is None:
             s = 'selected="selected" '
-        l.append(self._('<option %svalue="-1">- no selection -</option>')%s)
+        l.append(self._('<option %svalue="-1">- no selection -</option>') % s)
 
         if sort_on is not None:
             if not isinstance(sort_on, tuple):
@@ -2588,9 +2588,9 @@ class LinkHTMLProperty(HTMLProperty):
 
             # figure the label
             if showid:
-                lab = '%s%s: %s'%(self._prop.classname, optionid, option)
+                lab = '%s%s: %s' % (self._prop.classname, optionid, option)
             elif not option:
-                lab = '%s%s'%(self._prop.classname, optionid)
+                lab = '%s%s' % (self._prop.classname, optionid)
             else:
                 lab = option
 
@@ -2602,14 +2602,14 @@ class LinkHTMLProperty(HTMLProperty):
                 m = []
                 for fn in additional_fns:
                     m.append(str(fn(optionid)))
-                lab = lab + ' (%s)'%', '.join(m)
+                lab = lab + ' (%s)' % ', '.join(m)
 
             # and generate
             tr = str
             if translate:
                 tr = self._
             lab = html_escape(tr(lab))
-            l.append('<option %svalue="%s">%s</option>'%(s, optionid, lab))
+            l.append('<option %svalue="%s">%s</option>' % (s, optionid, lab))
         l.append('</select>')
         return '\n'.join(l)
 
@@ -2746,7 +2746,7 @@ class MultilinkHTMLProperty(HTMLProperty):
                 except IndexError:
                     label = None
                 # fall back to designator if label is None
-                if label is None: label = '%s%s'%(self._prop.classname, k)
+                if label is None: label = '%s%s' % (self._prop.classname, k)
             else:
                 label = v
             labels.append(label)
@@ -2837,9 +2837,8 @@ class MultilinkHTMLProperty(HTMLProperty):
                 # The "no selection" option.
                 height += 1
             height = min(height, 7)
-        l = ['<select multiple %s>'%self.cgi_escape_attrs(name=self._formname,
-                                                          size=height,
-                                                          **html_kwargs)]
+        l = ['<select multiple %s>' % self.cgi_escape_attrs(
+            name=self._formname, size=height, **html_kwargs)]
         k = linkcl.labelprop(1)
 
         if value:  # FIXME '- no selection -' mark for translation
@@ -2873,7 +2872,7 @@ class MultilinkHTMLProperty(HTMLProperty):
 
             # figure the label
             if showid:
-                lab = '%s%s: %s'%(self._prop.classname, optionid, option)
+                lab = '%s%s: %s' % (self._prop.classname, optionid, option)
             else:
                 lab = option
             # truncate if it's too long
@@ -2883,15 +2882,15 @@ class MultilinkHTMLProperty(HTMLProperty):
                 m = []
                 for fn in additional_fns:
                     m.append(str(fn(optionid)))
-                lab = lab + ' (%s)'%', '.join(m)
+                lab = lab + ' (%s)' % ', '.join(m)
 
             # and generate
             tr = str
             if translate:
                 tr = self._
             lab = html_escape(tr(lab))
-            l.append('<option %svalue="%s">%s</option>'%(s, optionid,
-                lab))
+            l.append('<option %svalue="%s">%s</option>' % (s, optionid,
+                                                           lab))
         l.append('</select>')
         return '\n'.join(l)
 
@@ -2975,7 +2974,7 @@ class HTMLRequest(HTMLInputMixin):
     - "search_text" text to perform a full-text search on for an index
     """
     def __repr__(self):
-        return '<HTMLRequest %r>'%self.__dict__
+        return '<HTMLRequest %r>' % self.__dict__
 
     def __init__(self, client):
         # _client is needed by HTMLInputMixin
@@ -3018,17 +3017,17 @@ class HTMLRequest(HTMLInputMixin):
         dirs = []
         for special in '@:':
             idx = 0
-            key = '%s%s%d'%(special, name, idx)
+            key = '%s%s%d' % (special, name, idx)
             while self._form_has_key(key):
                 self.special_char = special
                 fields.append(self.form.getfirst(key))
-                dirkey = '%s%sdir%d'%(special, name, idx)
+                dirkey = '%s%sdir%d' % (special, name, idx)
                 if dirkey in self.form:
                     dirs.append(self.form.getfirst(dirkey))
                 else:
                     dirs.append(None)
                 idx += 1
-                key = '%s%s%d'%(special, name, idx)
+                key = '%s%s%d' % (special, name, idx)
             # backward compatible (and query) URL format
             key = special + name
             dirkey = key + 'dir'
@@ -3054,7 +3053,8 @@ class HTMLRequest(HTMLInputMixin):
             # if no classname, just append the propname unchecked.
             # this may be valid for some actions that bypass classes.
             if self.classname and cls.get_transitive_prop(propname) is None:
-                self.client.add_error_message("Unknown %s property %s"%(name, propname))
+                self.client.add_error_message("Unknown %s property %s" % (
+                    name, propname))
             else:
                 var.append((dir, propname))
 
@@ -3175,14 +3175,14 @@ class HTMLRequest(HTMLInputMixin):
         s = [self.client.db.config.TRACKER_NAME]
         if self.classname:
             if self.client.nodeid:
-                s.append('- %s%s'%(self.classname, self.client.nodeid))
+                s.append('- %s%s' % (self.classname, self.client.nodeid))
             else:
                 if self.template == 'item':
-                    s.append('- new %s'%self.classname)
+                    s.append('- new %s' % self.classname)
                 elif self.template == 'index':
-                    s.append('- %s index'%self.classname)
+                    s.append('- %s index' % self.classname)
                 else:
-                    s.append('- %s %s'%(self.classname, self.template))
+                    s.append('- %s %s' % (self.classname, self.template))
         else:
             s.append('- home')
         return ' '.join(s)
@@ -3192,11 +3192,11 @@ class HTMLRequest(HTMLInputMixin):
         d.update(self.__dict__)
         f = ''
         for k in self.form.keys():
-            f += '\n      %r=%r'%(k, handleListCGIValue(self.form[k]))
+            f += '\n      %r=%r' % (k, handleListCGIValue(self.form[k]))
         d['form'] = f
         e = ''
         for k, v in self.env.items():
-            e += '\n     %r=%r'%(k, v)
+            e += '\n     %r=%r' % (k, v)
         d['env'] = e
         return """
 form: %(form)s
@@ -3211,7 +3211,7 @@ search_text: %(search_text)r
 pagesize: %(pagesize)r
 startwith: %(startwith)r
 env: %(env)s
-"""%d
+""" % d
 
     def indexargs_form(self, columns=1, sort=1, group=1, filter=1,
             filterspec=1, search_text=1, exclude=[]):
@@ -3284,7 +3284,7 @@ env: %(env)s
         """
         q = urllib_.quote
         sc = self.special_char
-        l = ['%s=%s'%(k, is_us(v) and q(v) or v)
+        l = ['%s=%s' % (k, is_us(v) and q(v) or v)
              for k, v in args.items() if v is not None]
         # pull out the special values (prefixed by @ or :)
         specials = {}
@@ -3294,7 +3294,7 @@ env: %(env)s
 
         # ok, now handle the specials we received in the request
         if self.columns and 'columns' not in specials:
-            l.append(sc+'columns=%s'%(','.join(self.columns)))
+            l.append(sc+'columns=%s' % (','.join(self.columns)))
         if self.sort and 'sort' not in specials:
             val = []
             for dir, attr in self.sort:
@@ -3302,7 +3302,7 @@ env: %(env)s
                     val.append('-'+attr)
                 else:
                     val.append(attr)
-            l.append(sc+'sort=%s'%(','.join(val)))
+            l.append(sc+'sort=%s' % (','.join(val)))
         if self.group and 'group' not in specials:
             val = []
             for dir, attr in self.group:
@@ -3310,15 +3310,15 @@ env: %(env)s
                     val.append('-'+attr)
                 else:
                     val.append(attr)
-            l.append(sc+'group=%s'%(','.join(val)))
+            l.append(sc+'group=%s' % (','.join(val)))
         if self.filter and 'filter' not in specials:
-            l.append(sc+'filter=%s'%(','.join(self.filter)))
+            l.append(sc+'filter=%s' % (','.join(self.filter)))
         if self.search_text and 'search_text' not in specials:
-            l.append(sc+'search_text=%s'%q(self.search_text))
+            l.append(sc+'search_text=%s' % q(self.search_text))
         if 'pagesize' not in specials:
-            l.append(sc+'pagesize=%s'%self.pagesize)
+            l.append(sc+'pagesize=%s' % self.pagesize)
         if 'startwith' not in specials:
-            l.append(sc+'startwith=%s'%self.startwith)
+            l.append(sc+'startwith=%s' % self.startwith)
 
         # finally, the remainder of the filter args in the request
         if self.classname and self.filterspec:
@@ -3328,12 +3328,14 @@ env: %(env)s
                     if isinstance(v, list):
                         prop = cls.get_transitive_prop(k)
                         if k != 'id' and isinstance(prop, hyperdb.String):
-                            l.append('%s=%s'%(k, '%20'.join([q(i) for i in v])))
+                            l.append('%s=%s' % (
+                                k, '%20'.join([q(i) for i in v])))
                         else:
-                            l.append('%s=%s'%(k, ','.join([q(i) for i in v])))
+                            l.append('%s=%s' % (
+                                k, ','.join([q(i) for i in v])))
                     else:
-                        l.append('%s=%s'%(k, q(v)))
-        return '%s?%s'%(url, '&'.join(l))
+                        l.append('%s=%s' % (k, q(v)))
+        return '%s?%s' % (url, '&'.join(l))
     indexargs_href = indexargs_url
 
     def base_javascript(self):
@@ -3354,7 +3356,7 @@ function help_window(helpurl, width, height) {
     HelpWin.focus ()
 }
 </script>
-"""%(self._client.client_nonce, self.base)
+""" % (self._client.client_nonce, self.base)
 
     def batch(self, permission='View'):
         """ Return a batch object for results from the "current search"
@@ -3592,13 +3594,13 @@ class TemplatingUtils:
         # month
         res.append('<table class="calendar"><tr><td>')
         res.append(' <table width="100%" class="calendar_nav"><tr>')
-        link = "&display=%s"%date_prev_month
+        link = "&display=%s" % date_prev_month
         if date_prev_month:
             res.append('  <td><a href="%s&display=%s">&lt;</a></td>'
                     % (base_link, date_prev_month))
         else:
             res.append('  <td></td>')
-        res.append('  <td>%s</td>'%calendar.month_name[display.month])
+        res.append('  <td>%s</td>' % calendar.month_name[display.month])
         if date_next_month:
             res.append('  <td><a href="%s&display=%s">&gt;</a></td>'
                     % (base_link, date_next_month))
@@ -3612,7 +3614,7 @@ class TemplatingUtils:
                     % (base_link, date_prev_year))
         else:
             res.append('  <td></td>')
-        res.append('  <td>%s</td>'%display.year)
+        res.append('  <td>%s</td>' % display.year)
         if date_next_year:
             res.append('  <td><a href="%s&display=%s">&gt;</a></td>'
                     % (base_link, date_next_year))
@@ -3625,14 +3627,14 @@ class TemplatingUtils:
         res.append(' <tr><td><table class="calendar_display">')
         res.append('  <tr class="weekdays">')
         for day in calendar.weekheader(3).split():
-            res.append('   <td>%s</td>'%day)
+            res.append('   <td>%s</td>' % day)
         res.append('  </tr>')
         for week in calendar.monthcalendar(display.year, display.month):
             res.append('  <tr>')
             for day in week:
                 link = "javascript:form[field].value = '%d-%02d-%02d'; " \
                      "if ('createEvent' in document) { var evt = document.createEvent('HTMLEvents'); evt.initEvent('change', true, true); form[field].dispatchEvent(evt); } else { form[field].fireEvent('onchange'); }" \
-                     "window.close ();"%(display.year, display.month, day)
+                     "window.close ();" % (display.year, display.month, day)
                 if (day == curr_date.day and display.month == curr_date.month
                         and display.year == curr_date.year):
                     # highlight
@@ -3640,7 +3642,7 @@ class TemplatingUtils:
                 else:
                     style = ""
                 if day:
-                    res.append('   <td class="%s"><a href="%s">%s</a></td>'%(
+                    res.append('   <td class="%s"><a href="%s">%s</a></td>' % (
                         style, link, day))
                 else:
                     res.append('   <td></td>')
@@ -3674,9 +3676,9 @@ class MissingValue(object):
     def __contains__(self, key): return False
     def __eq__(self, rhs): return False
     def __ne__(self, rhs): return False
-    def __str__(self): return '[%s]'%self.__description
-    def __repr__(self): return '<MissingValue 0x%x "%s">'%(id(self),
-        self.__description)
+    def __str__(self): return '[%s]' % self.__description
+    def __repr__(self): return '<MissingValue 0x%x "%s">' % (
+            id(self), self.__description)
 
     def gettext(self, str): return str
     _ = gettext
