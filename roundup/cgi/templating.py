@@ -73,7 +73,7 @@ def _import_markdown2():
                 extras['break-on-newline'] = True
             return extras
 
-        markdown = lambda s, c: Markdown(safe_mode='escape', extras=_extras(c)).convert(s)
+        markdown = lambda s, c: Markdown(safe_mode='escape', extras=_extras(c)).convert(s)  # noqa: E731
     except ImportError:
         markdown = None
 
@@ -136,7 +136,7 @@ def _import_markdown():
                 extensions.append('nl2br')
             return extensions
 
-        markdown = lambda s, c: markdown_impl(s, extensions=_extensions(c))
+        markdown = lambda s, c: markdown_impl(s, extensions=_extensions(c))  # noqa: E731
     except ImportError:
         markdown = None
 
@@ -189,7 +189,7 @@ def _import_mistune():
                 options['hard_wrap'] = True
             return options
 
-        markdown = lambda s, c: mistune.markdown(s, **_options(c))
+        markdown = lambda s, c: mistune.markdown(s, **_options(c))  # noqa: E731
     except ImportError:
         markdown = None
 
@@ -238,8 +238,8 @@ class Unauthorised(RoundupException):
 
     def __str__(self):
         return self._('You are not allowed to %(action)s '
-            'items of class %(class)s') % {
-            'action': self.action, 'class': self.klass}
+                      'items of class %(class)s') % {
+                          'action': self.action, 'class': self.klass}
 
 
 # --- Template Loader API
@@ -328,14 +328,14 @@ class MultiLoader(LoaderBase):
         self.loaders.append(loader)
 
     def check(self, name):
-        for l in self.loaders:
-            if l.check(name):
+        for loader in self.loaders:
+            if loader.check(name):
                 return True
 
     def load(self, name):
-        for l in self.loaders:
-            if l.check(name):
-                return l.load(name)
+        for loader in self.loaders:
+            if loader.check(name):
+                return loader.load(name)
 
     def __getitem__(self, name):
         """Needed for TAL templates compatibility"""
@@ -460,7 +460,7 @@ def context(client, template=None, classname=None, request=None):
     # add in the item if there is one
     if client.nodeid:
         c['context'] = HTMLItem(client, classname, client.nodeid,
-            anonymous=1)
+                                anonymous=1)
     elif classname in client.db.classes:
         c['context'] = HTMLClass(client, classname, anonymous=1)
     return c
@@ -495,9 +495,9 @@ class HTMLDatabase:
             raise AttributeError(attr)
 
     def classes(self):
-        l = sorted(self._client.db.classes.keys())
+        class_keys = sorted(self._client.db.classes.keys())
         m = []
-        for item in l:
+        for item in class_keys:
             m.append(HTMLClass(self._client, item))
         return m
 
@@ -546,7 +546,8 @@ def lookupKeys(linkcl, key, ids, num_re=num_re):
                 # fall back to id if illegal (avoid template crash)
                 label = entry
             # fall back to designator if label is None
-            if label is None: label = '%s%s' % (linkcl.classname, entry)
+            if label is None:
+                label = '%s%s' % (linkcl.classname, entry)
             l.append(label)
         else:
             l.append(entry)
@@ -577,8 +578,8 @@ def html4_cgi_escape_attrs(**attrs):
         Code can use None to indicate a pure boolean.
     '''
     return ' '.join(['%s="%s"' % (k, html_escape(str(v), True))
-                         if v is not None else '%s' % (k)
-                         for k, v in sorted(attrs.items())])
+                     if v is not None else '%s' % (k)
+                     for k, v in sorted(attrs.items())])
 
 
 def xhtml_cgi_escape_attrs(**attrs):
@@ -591,8 +592,8 @@ def xhtml_cgi_escape_attrs(**attrs):
         Code can use None to indicate a pure boolean.
     '''
     return ' '.join(['%s="%s"' % (k, html_escape(str(v), True))
-                         if v is not None else '%s="%s"' % (k, k)
-                         for k, v in sorted(attrs.items())])
+                     if v is not None else '%s="%s"' % (k, k)
+                     for k, v in sorted(attrs.items())])
 
 
 def input_html4(**attrs):
@@ -627,8 +628,8 @@ class HTMLInputMixin(object):
         """Return the localized translation of msgid"""
         if self._context is None:
             self._context = context(self._client)
-        return self._client.translator.translate(domain="roundup",
-            msgid=msgid, context=self._context)
+        return self._client.translator.translate(
+            domain="roundup", msgid=msgid, context=self._context)
 
     _ = gettext
 
@@ -641,7 +642,7 @@ class HTMLPermissions(object):
         """
         if not self.is_view_ok():
             raise Unauthorised("view", self._classname,
-                translator=self._client.translator)
+                               translator=self._client.translator)
 
     def edit_check(self):
         """ Raise the Unauthorised exception if the user's not permitted to
@@ -649,7 +650,7 @@ class HTMLPermissions(object):
         """
         if not self.is_edit_ok():
             raise Unauthorised("edit", self._classname,
-                translator=self._client.translator)
+                               translator=self._client.translator)
 
     def retire_check(self):
         """ Raise the Unauthorised exception if the user's not permitted to
@@ -657,7 +658,7 @@ class HTMLPermissions(object):
         """
         if not self.is_retire_ok():
             raise Unauthorised("retire", self._classname,
-                translator=self._client.translator)
+                               translator=self._client.translator)
 
 
 class HTMLClass(HTMLInputMixin, HTMLPermissions):
@@ -681,29 +682,29 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         """ Is the user allowed to Create the current class?
         """
         perm = self._db.security.hasPermission
-        return perm('Web Access', self._client.userid) and perm('Create',
-            self._client.userid, self._classname)
+        return perm('Web Access', self._client.userid) and perm(
+            'Create', self._client.userid, self._classname)
 
     def is_retire_ok(self):
         """ Is the user allowed to retire items of the current class?
         """
         perm = self._db.security.hasPermission
-        return perm('Web Access', self._client.userid) and perm('Retire',
-            self._client.userid, self._classname)
+        return perm('Web Access', self._client.userid) and perm(
+            'Retire', self._client.userid, self._classname)
 
     def is_restore_ok(self):
         """ Is the user allowed to restore retired items of the current class?
         """
         perm = self._db.security.hasPermission
-        return perm('Web Access', self._client.userid) and perm('Restore',
-            self._client.userid, self._classname)
+        return perm('Web Access', self._client.userid) and perm(
+            'Restore', self._client.userid, self._classname)
 
     def is_view_ok(self):
         """ Is the user allowed to View the current class?
         """
         perm = self._db.security.hasPermission
-        return perm('Web Access', self._client.userid) and perm('View',
-            self._client.userid, self._classname)
+        return perm('Web Access', self._client.userid) and perm(
+            'View', self._client.userid, self._classname)
 
     def is_only_view_ok(self):
         """ Is the user only allowed to View (ie. not Create) the current class?
@@ -733,7 +734,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             if not isinstance(prop, klass):
                 continue
             return htmlklass(self._client, self._classname, None, prop, item,
-                None, self._anonymous)
+                             None, self._anonymous)
 
         # no good
         raise KeyError(item)
@@ -785,9 +786,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         """ List all items in this class.
         """
         # get the list and sort it nicely
-        l = self._klass.list()
+        class_list = self._klass.list()
         keyfunc = make_key_function(self._db, self._classname, sort_on)
-        l.sort(key=keyfunc)
+        class_list.sort(key=keyfunc)
 
         # check perms
         check = self._client.db.security.hasPermission
@@ -795,10 +796,11 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not check('Web Access', userid):
             return []
 
-        l = [HTMLItem(self._client, self._classname, id) for id in l
-            if check('View', userid, self._classname, itemid=id)]
+        class_list = [HTMLItem(self._client, self._classname, id)
+                      for id in class_list if
+                      check('View', userid, self._classname, itemid=id)]
 
-        return l
+        return class_list
 
     def csv(self):
         """ Return the items of this class as a chunk of CSV text.
@@ -816,9 +818,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
             for name in props:
                 # check permission to view this property on this item
                 if not check('View', userid, itemid=nodeid,
-                        classname=self._klass.classname, property=name):
+                             classname=self._klass.classname, property=name):
                     raise Unauthorised('view', self._klass.classname,
-                        translator=self._client.translator)
+                                       translator=self._client.translator)
                 value = self._klass.get(nodeid, name)
                 if value is None:
                     l.append('')
@@ -859,15 +861,15 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not check('Web Access', userid):
             return []
 
-        l = [HTMLItem(self._client, self.classname, id)
-             for id in self._klass.filter(None, filterspec, sort, group)
-             if check('View', userid, self.classname, itemid=id)]
-        return l
+        filtered = [HTMLItem(self._client, self.classname, id)
+                    for id in self._klass.filter(None, filterspec, sort, group)
+                    if check('View', userid, self.classname, itemid=id)]
+        return filtered
 
     def classhelp(self, properties=None, label=''"(list)", width='500',
-            height='600', property='', form='itemSynopsis',
-            pagesize=50, inputtype="checkbox", html_kwargs={},
-            group='', sort=None, filter=None):
+                  height='600', property='', form='itemSynopsis',
+                  pagesize=50, inputtype="checkbox", html_kwargs={},
+                  group='', sort=None, filter=None):
         """Pop up a javascript window with class help
 
         This generates a link to a popup window which displays the
@@ -925,11 +927,11 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                 filtervalues.append('&amp;%s=%s' % (name, urllib_.quote(values)))
             filter = '&amp;@filter=%s%s' % (','.join(names), ''.join(filtervalues))
         else:
-           filter = ''
+            filter = ''
         help_url = "%s?@startwith=0&amp;@template=help&amp;"\
                    "properties=%s%s%s%s%s%s&amp;@pagesize=%s%s" % \
                    (self.classname, properties, property, form, type,
-                   group, sort, pagesize, filter)
+                    group, sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
         return ('<a class="classhelp" data-helpurl="%s" '
@@ -952,10 +954,10 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
 
         return \
             self.input(type="submit", name="submit_button",
-                              value=self._(label), **html_kwargs) + \
+                       value=self._(label), **html_kwargs) + \
             '\n' + \
             self.input(type="hidden", name="@csrf",
-                              value=anti_csrf_nonce(self._client)) + \
+                       value=anti_csrf_nonce(self._client)) + \
             '\n' + \
             self.input(type="hidden", name="@action", value=action)
 
@@ -1005,15 +1007,16 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         """ Is the user allowed to Edit this item?
         """
         perm = self._db.security.hasPermission
-        return perm('Web Access', self._client.userid) and perm('Edit',
-            self._client.userid, self._classname, itemid=self._nodeid)
+        return perm('Web Access', self._client.userid) and perm(
+            'Edit', self._client.userid, self._classname, itemid=self._nodeid)
 
     def is_retire_ok(self):
         """ Is the user allowed to Reture this item?
         """
         perm = self._db.security.hasPermission
-        return perm('Web Access', self._client.userid) and perm('Retire',
-            self._client.userid, self._classname, itemid=self._nodeid)
+        return perm('Web Access', self._client.userid) and perm(
+            'Retire', self._client.userid, self._classname,
+            itemid=self._nodeid)
 
     def is_restore_ok(self):
         """ Is the user allowed to restore this item?
@@ -1026,8 +1029,9 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         """ Is the user allowed to View this item?
         """
         perm = self._db.security.hasPermission
-        if perm('Web Access', self._client.userid) and perm('View',
-                self._client.userid, self._classname, itemid=self._nodeid):
+        if perm('Web Access', self._client.userid) and perm(
+                'View', self._client.userid, self._classname,
+                itemid=self._nodeid):
             return 1
         return self.is_edit_ok()
 
@@ -1038,7 +1042,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
     def __repr__(self):
         return '<HTMLItem(0x%x) %s %s>' % (id(self), self._classname,
-            self._nodeid)
+                                           self._nodeid)
 
     def __getitem__(self, item):
         """ return an HTMLProperty instance
@@ -1073,7 +1077,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         for klass, htmlklass in propclasses:
             if isinstance(prop, klass):
                 htmlprop = htmlklass(self._client, self._classname,
-                    self._nodeid, prop, items[0], value, self._anonymous)
+                                     self._nodeid, prop, items[0],
+                                     value, self._anonymous)
         if htmlprop is not None:
             if has_rest:
                 if isinstance(htmlprop, MultilinkHTMLProperty):
