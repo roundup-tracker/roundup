@@ -342,7 +342,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 tables[classname] = spec.schema()
                 save = 1
 
-        for classname, _spec in list(tables.items()):
+        for classname in list(tables.keys()):
             if classname not in self.classes:
                 self.drop_class(classname, tables[classname])
                 del tables[classname]
@@ -2338,7 +2338,7 @@ class Class(hyperdb.Class):
 
         # validate the args
         props = self.getprops()
-        for propname, _nodeids in propspec.items():
+        for propname in propspec.keys():
             # check the prop is OK
             prop = props[propname]
             if not isinstance(prop, Link) and not isinstance(prop, Multilink):
