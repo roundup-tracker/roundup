@@ -60,6 +60,8 @@ RUN set -xv && CWD=$PWD && \
     tar -Jxvf xapian-bindings-$VER.tar.xz && \
     cd xapian-bindings-$VER/ && \
     pip --no-cache-dir install sphinx && \
+    sed -i -e '/PYTHON3_SO=/s/distutils\.//g' \
+           -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure && \
     ./configure --prefix=/usr/local --with-python3 --disable-documentation && \
     make && make install && \
     pip uninstall --no-cache-dir -y sphinx && \
