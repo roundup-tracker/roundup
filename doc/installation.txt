@@ -290,13 +290,20 @@ PyPI, by running::
 The docker declares a single volume mounted at
 ``/usr/src/app/tracker`` inside the container. You will mount your
 tracker home directory at this location. The ``/usr/src/app`` path can
-be changed by using ``--build-args=/new/path``.
+be changed by using ``--build-arg="appdir=/new/path"``.
 
 You can also add additional modules to the docker container by using
-`--build-args="pip_mod=requests setproctitle"`.
+`--build-arg="pip_mod=requests setproctitle"`.
+
+Because of deficiencies in the docker program (see:
+https://github.com/moby/moby/issues/29110#issuecomment-1100676306),
+there is no way to determine the version of Python inside the
+container and make that available as part of the build process. If
+your build fails because the ``pythonversion does not match``, add the
+suggested ``--build-arg`` to the ``docker build`` command line.
 
 By default the container runs Roundup using UID 1000. By setting
-`--build-args="roundup_uid=2000"` you can change the UID.
+`--build-arg="roundup_uid=2000"` you can change the UID.
 
 Configuring Roundup in the Container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

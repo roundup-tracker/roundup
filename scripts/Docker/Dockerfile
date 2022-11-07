@@ -18,6 +18,10 @@ ARG appdir=/usr/src/app
 # latest release from 'pypi'
 ARG source=local
 
+# Python version as a.b Used for installation directory and
+# COPY from install dir in second stage.
+ARG pythonversion=3.11
+
 FROM python:3-alpine as build
 
 # Inherit global values https://github.com/moby/moby/issues/37345
@@ -43,6 +47,15 @@ RUN apk add \
     postgresql-dev \
     swig \
     xapian-core-dev
+
+ARG pythonversion
+# verify that pythonversion matches the one in the image.
+RUN image_python_version=$(python -c 'import sys; print("%s.%s"%sys.version_info[0:2])'); \
+    if [ "${pythonversion}" != "${image_python_version}" ]; then \
+       printf "\n\n*****\npythonversion does not match.\n" ; \
+       printf "Add:\n   --build-arg=\"pythonversion=${image_python_version}\"\nto docker build\n******\n\n"; \
+       exit 1; \
+    fi
 
 # build xapian bindings:
 # file with sphinx build dependencies to remove after build
@@ -95,7 +108,7 @@ RUN set -xv && if [ "$source" = "local" ] ||  \
     if [ "$source" = "local_pip" ]; then cd install && pip install \
                             --use-feature=in-tree-build . ; fi; \
     if [ "$source" = "pypi" ]; then pip install roundup; \
-       cp -ril /usr/local/lib/python3.11/site-packages/usr/local/share/* \
+       cp -ril /usr/local/lib/python${pythonversion}/site-packages/usr/local/share/* \
 	   /usr/local/share; fi
 
 # Allow user to add more modules during build
@@ -135,9 +148,9 @@ LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
       "version"="2.2.0 $source" \
       "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net"
 
-
+ARG pythonversion
 # pull over built assets
-COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages/
+COPY --from=build /usr/local/lib/python${pythonversion}/site-packages /usr/local/lib/python${pythonversion}/site-packages/
 COPY --from=build /usr/local/bin/roundup* /usr/local/bin/
 COPY --from=build /usr/local/share /usr/local/share/
 COPY scripts/Docker/roundup_start .
