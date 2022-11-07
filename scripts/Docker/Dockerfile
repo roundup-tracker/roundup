@@ -95,7 +95,7 @@ RUN set -xv && if [ "$source" = "local" ] ||  \
     if [ "$source" = "local_pip" ]; then cd install && pip install \
                             --use-feature=in-tree-build . ; fi; \
     if [ "$source" = "pypi" ]; then pip install roundup; \
-       cp -ril /usr/local/lib/python3.10/site-packages/usr/local/share/* \
+       cp -ril /usr/local/lib/python3.11/site-packages/usr/local/share/* \
 	   /usr/local/share; fi
 
 # Allow user to add more modules during build
@@ -137,7 +137,7 @@ LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
 
 
 # pull over built assets
-COPY --from=build /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages/
+COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages/
 COPY --from=build /usr/local/bin/roundup* /usr/local/bin/
 COPY --from=build /usr/local/share /usr/local/share/
 COPY scripts/Docker/roundup_start .
