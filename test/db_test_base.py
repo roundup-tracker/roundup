@@ -415,7 +415,10 @@ class DBTest(commonDBTest):
         bstr = b'\x00\xF0\x34\x33' # random binary data
 
         # test set & retrieve (this time for file contents)
-        nid = self.db.file.create(content=bstr)
+        # Since it has null in it, set it to a binary mime type
+        # so indexer's don't try to index it.
+        nid = self.db.file.create(content=bstr,
+                                  type="application/octet-stream")
         print(nid)
         print(repr(self.db.file.get(nid, 'content')))
         print(repr(self.db.file.get(nid, 'binary_content')))
@@ -1429,18 +1432,19 @@ class DBTest(commonDBTest):
         self.db.commit()
         journal = self.db.getjournal('issue', id)
         now     = date.Date('.')
-        sec     = date.Interval('0:00:01')
+        sec1    = date.Interval('0:00:01')
         sec2    = date.Interval('0:00:02')
+        sec3    = date.Interval('0:00:03')
         jp0 = dict(title = 'spam')
         # Non-existing property changed
         jp1 = dict(nonexisting = None)
-        journal.append ((id, now, '1', 'set', jp1))
+        journal.append ((id, now+sec1, '1', 'set', jp1))
         # Link from user-class to non-existing property
         jp2 = ('user', '1', 'xyzzy')
-        journal.append ((id, now+sec, '1', 'link', jp2))
+        journal.append ((id, now+sec2, '1', 'link', jp2))
         # Link from non-existing class
         jp3 = ('frobozz', '1', 'xyzzy')
-        journal.append ((id, now+sec2, '1', 'link', jp3))
+        journal.append ((id, now+sec3, '1', 'link', jp3))
         self.db.setjournal('issue', id, journal)
         self.db.commit()
         result=self.db.issue.history(id)
@@ -1457,6 +1461,9 @@ class DBTest(commonDBTest):
             print(result) # following test fails sometimes under sqlite
                           # in travis. Looks like an ordering issue
                           # in python 3.5. Print result to debug.
+                          # is system runs fast enough, timestamp can
+                          # be the same on two journal items. Ordering
+                          # in that case is random.
             self.assertEqual(result [2][4], jp1)
             self.assertEqual(result [3][4], jp2)
             self.assertEqual(result [4][4], jp3)
@@ -1522,6 +1529,32 @@ class DBTest(commonDBTest):
 
         # unindexed stopword
         self.assertEqual(self.db.indexer.search(['the'], self.db.issue), {})
+
+    def testIndexerSearchingIgnoreProps(self):
+        f1 = self.db.file.create(content='hello', type="text/plain")
+        # content='world' has the wrong content-type and won't be indexed
+        f2 = self.db.file.create(content='world', type="text/frozz",
+            comment='blah blah')
+        i1 = self.db.issue.create(files=[f1, f2], title="flebble plop")
+        i2 = self.db.issue.create(title="flebble the frooz")
+        self.db.commit()
+
+        # filter out hits that are in the titpe prop of issues
+        self.assertEqual(self.db.indexer.search(['frooz'], self.db.issue,
+                                        ignore={('issue', 'title'): True}),
+                         {})
+
+        # filter out hits in the title prop of content. Note the returned
+        # match is in a file not an issue, so ignore has no effect.
+        # also there is no content property for issue.
+        self.assertEqual(self.db.indexer.search(['hello'], self.db.issue,
+                                        ignore={('issue', 'content'): True}),
+            {f1: {'files': ['1']}})
+
+        # filter out file content property hit leaving no results
+        self.assertEqual(self.db.indexer.search(['hello'], self.db.issue,
+                                        ignore={('file', 'content'): True}),
+            {})
 
     def testIndexerSearchingLink(self):
         m1 = self.db.msg.create(content="one two")
@@ -1806,6 +1839,23 @@ class DBTest(commonDBTest):
             self.db.issue.create(**issue)
         self.db.commit()
         return self.iterSetup(classname)
+
+    def testFilteringNone(self):
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
+            ae(filt(None, None, ('+','id'), (None,None)), ['1', '2', '3', '4'])
+
+    def testSortingNone(self):
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
+            ae(filt(None, {'id': ['1','3','4']}, None, ('-', 'status')),
+                    ['3', '4', '1'])
+
+    def testGroupingNone(self):
+        ae, iiter = self.filteringSetup()
+        for filt in iiter():
+            ae(filt(None, {'title': ['issue']}, [('-', 'id')],
+                    None), ['3', '2', '1'])
 
     def testFilteringID(self):
         ae, iiter = self.filteringSetup()

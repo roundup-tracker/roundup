@@ -1,9 +1,11 @@
 from __future__ import print_function
 import unittest
+import time
 from cgi import FieldStorage, MiniFieldStorage
 
 from roundup.cgi.templating import *
 from .test_actions import MockNull, true
+from .html_norm import NormalizingHtmlParser
 
 
 import pytest
@@ -42,7 +44,9 @@ else:
 
 from roundup.anypy.strings import u2s, s2u
 
-class MockDatabase(MockNull):
+from roundup.backends.sessions_common import SessionCommon
+
+class MockDatabase(MockNull, SessionCommon):
     def getclass(self, name):
         # limit class names
         if name not in [ 'issue', 'user', 'status' ]:
@@ -56,6 +60,8 @@ class MockDatabase(MockNull):
     storage = {}
     def set(self, key, **props):
         MockDatabase.storage[key] = {}
+        if '__timestamp' not in props:
+            props['__timestamp'] = time.time() - 7*24*3600
         MockDatabase.storage[key].update(props)
 
     def get(self, key, field, default=None):
@@ -63,11 +69,19 @@ class MockDatabase(MockNull):
             return default
         return MockDatabase.storage[key][field]
 
+    def getall(self, key):
+        if key not in MockDatabase.storage:
+            return default
+        return MockDatabase.storage[key]
+
     def exists(self,key):
         return key in MockDatabase.storage
 
     def getOTKManager(self):
         return MockDatabase()
+
+    def lifetime(self, seconds):
+        return time.time() - 7*24*3600 + seconds
 
 class TemplatingTestCase(unittest.TestCase):
     def setUp(self):
@@ -107,6 +121,21 @@ class HTMLDatabaseTestCase(TemplatingTestCase):
         db = HTMLDatabase(self.client)
         db._db.classes = {'issue':MockNull(), 'user': MockNull()}
         db.classes()
+
+    def test_HTMLDatabase_list(self):
+        # The list method used to produce a traceback when a None value
+        # for an order attribute of a class was encountered. This
+        # happens when the 'get' of the order attribute for a numeric
+        # id produced a None value. So we put '23' as a key into the
+        # list and set things up that a None value is returned on 'get'.
+
+        # This keeps db.issue static, otherwise it changes for each call
+        db = MockNull(issue = HTMLDatabase(self.client).issue)
+        db.issue._klass.list = lambda : ['23', 'a', 'b']
+        # Make db.getclass return something that has a sensible 'get' method
+        mock = MockNull(get = lambda x, y : None)
+        db.issue._db.getclass = lambda x : mock
+        l = db.issue.list()
 
 class FunctionsTestCase(TemplatingTestCase):
     def test_lookupIds(self):
@@ -219,7 +248,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
         '''call the csrf creation function and do basic length test
 
            Store the data in a mock db with the same api as the otk
-           db. Make sure nonce is 64 chars long. Lookup the nonce in
+           db. Make sure nonce is 54 chars long. Lookup the nonce in
            db and retrieve data. Verify that the nonce lifetime is
            correct (within 1 second of 1 week - lifetime), the uid is
            correct (1), the dummy sid is correct.
@@ -255,7 +284,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
                 # see above for web nonce lifetime.
                 greater_than = week_seconds - 10 * 60
 
-            self.assertEqual(len(nonce1), 64)
+            self.assertEqual(len(nonce1), 54)
 
             uid = otks.get(nonce1, 'uid', default=None)
             sid = otks.get(nonce1, 'sid', default=None)
@@ -277,6 +306,128 @@ class HTMLClassTestCase(TemplatingTestCase) :
             # to be less than 1 second for this to pass.
             self.assertEqual(True,
                        greater_than <= now - timestamp < (greater_than + 1) )
+
+    def test_number__int__(self):
+        # test with number
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+        self.assertEqual(p.__int__(), 2345678)
+
+        property = MockNull(get_default_value = lambda: None)
+        p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
+                               'test', None)
+        with self.assertRaises(TypeError) as e:
+            p.__int__()
+
+    def test_number__float__(self):
+        # test with number
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+        self.assertEqual(p.__float__(), 2345678.2345678)
+
+        property = MockNull(get_default_value = lambda: None)
+        p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
+                               'test', None)
+        with self.assertRaises(TypeError) as e:
+            p.__float__()
+
+    def test_number_field(self):
+        import sys
+
+        _py3 = sys.version_info[0] > 2
+
+        # python2 truncates while python3 rounds. Sigh.
+        if _py3:
+            expected_val = 2345678.2345678
+        else:
+            expected_val = 2345678.23457
+
+        # test with number
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+        self.assertEqual(p.field(),
+                         ('<input name="testnum1@test" size="30" type="text" '
+                         'value="%s">')%expected_val)
+        self.assertEqual(p.field(size=10),
+                         ('<input name="testnum1@test" size="10" type="text" '
+                         'value="%s">')%expected_val)
+        self.assertEqual(p.field(size=10, dataprop="foo", dataprop2=5),
+                         ('<input dataprop="foo" dataprop2="5" '
+                          'name="testnum1@test" size="10" type="text" '
+                          'value="%s">'%expected_val))
+
+        self.assertEqual(p.field(size=10, klass="class1", 
+                                 **{ "class": "class2 class3",
+                                     "data-prop": "foo",
+                                     "data-prop2": 5}),
+                         ('<input class="class2 class3" data-prop="foo" '
+                          'data-prop2="5" klass="class1" '
+                          'name="testnum1@test" size="10" type="text" '
+                          'value="%s">')%expected_val)
+
+        # get plain representation if user can't edit
+        p.is_edit_ok = lambda: False
+        self.assertEqual(p.field(), p.plain())
+
+        # test with string which is wrong type
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               "2345678.2345678")
+        self.assertEqual(p.field(),
+                         ('<input name="testnum1@test" size="30" type="text" '
+                          'value="2345678.2345678">'))
+
+        # test with None value, pretend property.__default_value = Null which
+        #    is the default. It would be returned by get_default_value
+        #    which I mock.
+        property = MockNull(get_default_value = lambda: None)
+        p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
+                               'test', None)
+        self.assertEqual(p.field(),
+                         ('<input name="testnum1@test" size="30" type="text" '
+                          'value="">'))
+
+    def test_number_plain(self):
+        import sys
+
+        _py3 = sys.version_info[0] > 2
+
+        # python2 truncates while python3 rounds. Sigh.
+        if _py3:
+            expected_val = 2345678.2345678
+        else:
+            expected_val = 2345678.23457
+
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+
+        self.assertEqual(p.plain(), "%s"%expected_val)
+
+    def test_number_pretty(self):
+        # test with number
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               2345678.2345678)
+        self.assertEqual(p.pretty(), "2345678.235")
+
+        # test with string which is wrong type
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               "2345678.2345678")
+        self.assertEqual(p.pretty(), "2345678.2345678")
+
+        # test with boolean
+        p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
+                               True)
+        self.assertEqual(p.pretty(), "1.000")
+
+        # test with None value, pretend property.__default_value = Null which
+        #    is the default. It would be returned by get_default_value
+        #    which I mock.
+        property = MockNull(get_default_value = lambda: None)
+        p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
+                               'test', None)
+        self.assertEqual(p.pretty(), '')
+
+        with self.assertRaises(ValueError) as e:
+            p.pretty('%0.3')
 
     def test_string_url_quote(self):
         ''' test that urlquote quotes the string '''
@@ -705,16 +856,20 @@ class MarkdownTests:
         self.assertEqual(p.markdown().strip().replace('\n\n', '\n'), u2s(u'<p>embedded code block &lt;pre&gt;</p>\n<pre><code>line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
 
     def test_string_markdown_code_block_attribute(self):
+        parser = NormalizingHtmlParser()
+
         ''' also verify that embedded html is escaped '''
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'embedded code block <pre>\n\n``` python\nline 1\nline 2\n```\n\nnew </pre> paragraph'))
-        m = p.markdown().strip()
+        m = parser.normalize(p.markdown())
+        parser.reset()
         print(m)
         if type(self) == MistuneTestCase:
-            self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="lang-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>')
+            self.assertEqual(m, parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="lang-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
         elif type(self) == MarkdownTestCase:
-            self.assertEqual(m.replace('\n\n','\n'), '<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="language-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>')
+            self.assertEqual(m, parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="language-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
         else:
-            self.assertEqual(m.replace('\n\n', '\n'), '<p>embedded code block &lt;pre&gt;</p>\n<div class="codehilite"><pre><span></span><code><span class="n">line</span> <span class="mi">1</span>\n<span class="n">line</span> <span class="mi">2</span>\n</code></pre></div>\n<p>new &lt;/pre&gt; paragraph</p>')
+            expected_result = parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<div class="codehilite"><pre><span></span><code><span class="n">line</span> <span class="mi">1</span>\n<span class="n">line</span> <span class="mi">2</span>\n</code></pre></div>\n<p>new &lt;/pre&gt; paragraph</p>')
+            self.assertEqual(m, expected_result)
 
     def test_markdown_return_text_on_exception(self):
         ''' string is invalid markdown. missing end of fenced code block '''

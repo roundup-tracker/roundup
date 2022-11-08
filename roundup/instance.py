@@ -134,9 +134,11 @@ class Tracker:
                 extension(self)
             detectors = self.get_extensions('detectors')
         db = env['db']
-        # *Must* call post_init! It is not an error if called multiple times.
-        db.post_init ()
         db.tx_Source = None
+        # Useful for script when multiple open calls happen. Scripts have
+        # to inject the i18n object, there is currently no support for this
+        if hasattr(self, 'i18n'):
+            db.i18n = self.i18n
 
         # apply the detectors
         for detector in detectors:
@@ -166,8 +168,9 @@ class Tracker:
                                          "non-existent class %s"
                                          % (classname, propname, linkto))
 
-            db.post_init()
             self.db_open = 1
+        # *Must* call post_init! It is not an error if called multiple times.
+        db.post_init()
         return db
 
     def load_interfaces(self):

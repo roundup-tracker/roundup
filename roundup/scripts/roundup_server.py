@@ -20,23 +20,17 @@
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-
-# --- patch sys.path to make sure 'import roundup' finds correct version
-import sys
-import os.path as osp
-
+import base64   # decode icon
+import errno
+import getopt
+import io
 import logging
-
-thisdir = osp.dirname(osp.abspath(__file__))
-rootdir = osp.dirname(osp.dirname(thisdir))
-if (osp.exists(thisdir + '/__init__.py') and
-        osp.exists(rootdir + '/roundup/__init__.py')):
-    # the script is located inside roundup source code
-    sys.path.insert(0, rootdir)
-# --/
-
-
-import errno, getopt, io, os, socket, sys, traceback, time
+import os
+import socket
+import sys     # modify sys.path when running in source tree
+import time
+import traceback
+import zlib    # decompress icon
 
 try:
     # Python 3.
@@ -57,23 +51,32 @@ try:
 except ImportError:
     SSL = None
 
-from roundup.anypy.html import html_escape
+# --- patch sys.path to make sure 'import roundup' finds correct version
+import os.path as osp
 
-# python version check
-from roundup import configuration, version_check
-from roundup import __version__ as roundup_version
+thisdir = osp.dirname(osp.abspath(__file__))
+rootdir = osp.dirname(osp.dirname(thisdir))
+if (osp.exists(thisdir + '/__init__.py') and
+        osp.exists(rootdir + '/roundup/__init__.py')):
+    # the script is located inside roundup source code
+    sys.path.insert(0, rootdir)
+# --/
 
+import roundup.instance                                        # noqa: E402
+
+# python version_check raises exception if imported for wrong python version
+from roundup import configuration, version_check           # noqa: F401,E402
+from roundup import __version__ as roundup_version         # noqa: E402
 # Roundup modules of use here
-from roundup.anypy import http_, urllib_
-from roundup.anypy.strings import s2b, StringIO
-from roundup.cgi import cgitb, client
-from roundup.cgi.PageTemplates.PageTemplate import PageTemplate
-import roundup.instance
-from roundup.i18n import _
+from roundup.anypy import http_, urllib_                   # noqa: E402
+from roundup.anypy.html import html_escape                 # noqa: E402
+from roundup.anypy.strings import s2b, StringIO            # noqa: E402
+from roundup.cgi import cgitb, client                      # noqa: E402
+from roundup.cgi.PageTemplates.PageTemplate import PageTemplate  # noqa: E402
+from roundup.i18n import _                                 # noqa: E402
 
 # "default" favicon.ico
 # generate by using "icotool" and tools/base64
-import zlib, base64
 favico = zlib.decompress(base64.b64decode(b'''
 eJztjr1PmlEUh59XgVoshdYPWorFIhaRFq0t9pNq37b60lYSTRzcTFw6GAfj5gDYaF0dTB0MxMSE
 gQQd3FzKJiEC0UCIUUN1M41pV2JCXySg/0ITn5tfzvmdc+85FwT56HSc81UJjXJsk1UsNcsSqCk1
@@ -95,7 +98,7 @@ DEFAULT_PORT = 8080
 # "debug" means "none" + no tracker/template cache
 MULTIPROCESS_TYPES = ["debug", "none"]
 try:
-    import threading  # nosrc: F401
+    import threading  # noqa: F401
 except ImportError:
     pass
 else:
@@ -107,7 +110,7 @@ DEFAULT_MULTIPROCESS = MULTIPROCESS_TYPES[-1]
 
 def auto_ssl():
     print(_('WARNING: generating temporary SSL certificate'))
-    import OpenSSL, random
+    import OpenSSL, random                               # noqa: E401
     pkey = OpenSSL.crypto.PKey()
     pkey.generate_key(OpenSSL.crypto.TYPE_RSA, 2048)
     cert = OpenSSL.crypto.X509()
@@ -115,9 +118,9 @@ def auto_ssl():
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(60 * 60 * 24 * 365)  # one year
     cert.get_subject().CN = '*'
-    cert.get_subject().O = 'Roundup Dummy Certificate'
+    cert.get_subject().O = 'Roundup Dummy Certificate'            # noqa: E741
     cert.get_issuer().CN = 'Roundup Dummy Certificate Authority'
-    cert.get_issuer().O = 'Self-Signed'
+    cert.get_issuer().O = 'Self-Signed'                           # noqa: E741
     cert.set_pubkey(pkey)
     cert.sign(pkey, 'sha512')
     ctx = SSL.Context(OpenSSL.SSL.TLSv1_2_METHOD)
@@ -161,6 +164,13 @@ class SecureHTTPServer(http_.server.HTTPServer):
                             return self.__fileobj.readline(*args)
                         except SSL.WantReadError:
                             time.sleep(.1)
+                        except SSL.ZeroReturnError:
+                            # Raised here on every request.
+                            # SSL connection has been closed.
+                            # But maybe not the underlying socket.
+                            # FIXME: Does this lead to a socket leak??
+                            #  if so how to fix?
+                            pass
 
                 def read(self, *args):
                     """ SSL.Connection can return WantRead """
@@ -169,6 +179,15 @@ class SecureHTTPServer(http_.server.HTTPServer):
                             return self.__fileobj.read(*args)
                         except SSL.WantReadError:
                             time.sleep(.1)
+                        except SSL.ZeroReturnError:
+                            # Put here to match readline() handling above.
+                            # Even though this never was the source of the
+                            #  exception logged during use.
+                            # SSL connection has been closed.
+                            # But maybe not the underlying socket.
+                            # FIXME: Does this lead to a socket leak??
+                            #  if so how to fix?
+                            pass
 
                 def __getattr__(self, attrib):
                     return getattr(self.__fileobj, attrib)
@@ -180,8 +199,26 @@ class SecureHTTPServer(http_.server.HTTPServer):
                     self.__conn = conn
 
                 def makefile(self, mode, bufsize):
-                    fo = socket._fileobject(self.__conn, mode, bufsize)
-                    return RetryingFile(fo)
+                    fo = None
+                    try:
+                        # see below of url used for this
+                        fo = socket.SocketIO(self.__conn, mode)
+                    except AttributeError:
+                        # python 2 in use
+                        buffer = socket._fileobject(self.__conn, mode, bufsize)
+
+                    if fo:
+                        # python3 set up buffering
+                        # verify mode is rb and bufsize is -1
+                        # implement subset of socket::makefile
+                        # https://bugs.launchpad.net/python-glanceclient/+bug/1812525
+                        if mode == 'rb' and bufsize == -1:
+                            buffering = io.DEFAULT_BUFFER_SIZE
+                            buffer = io.BufferedReader(fo, buffering)
+                        else:
+                            buffer = fo
+
+                    return RetryingFile(buffer)
 
                 def __getattr__(self, attrib):
                     return getattr(self.__conn, attrib)
@@ -230,7 +267,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             self.send_error(404, self.path)
         except client.Unauthorised as message:
             self.send_error(403, '%s (%s)' % (self.path, message))
-        except:
+        except Exception:
             exc, val, tb = sys.exc_info()
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
                 self.log_error('timeout')
@@ -245,7 +282,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                         reload(cgitb)
                         self.wfile.write(s2b(cgitb.breaker()))
                         self.wfile.write(s2b(cgitb.html()))
-                    except:
+                    except Exception:
                         s = StringIO()
                         traceback.print_exc(None, s)
                         self.wfile.write(b"<pre>")
@@ -262,7 +299,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                     traceback.print_exc()
 
     do_GET = do_POST = do_HEAD = do_PUT = do_DELETE = \
-                       do_PATCH = do_OPTIONS = run_cgi
+        do_PATCH = do_OPTIONS = run_cgi
 
     def index(self):
         ''' Print up an index of the available trackers
@@ -286,8 +323,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             extra = {'trackers': self.TRACKERS,
                      'nothing': None,
                      'true': 1,
-                     'false': 0,
-                    }
+                     'false': 0}
             w(s2b(pt.pt_render(extra_context=extra)))
         else:
             w(s2b(_('<html><head><title>Roundup trackers index</title></head>\n'
@@ -468,6 +504,9 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         range = self.headers.get('range')
         if range:
             env['HTTP_RANGE'] = range
+        if_range = self.headers.get('if-range')
+        if range:
+            env['HTTP_IF_RANGE'] = if_range
 
         # do the roundup thing
         tracker = self.get_tracker(tracker_name)
@@ -493,7 +532,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         else:
             try:
                 http_.server.BaseHTTPRequestHandler.log_message(self,
-                                                         format, *args)
+                                                                format, *args)
             except IOError:
                 # stderr is no longer viable
                 pass
@@ -581,7 +620,7 @@ class TrackerHomeOption(configuration.FilePathOption):
 class ServerConfig(configuration.Config):
 
     SETTINGS = (
-            ("main", (
+        ("main", (
             (configuration.Option, "host", "localhost",
                 "Host name of the Roundup web server instance.\n"
                 "If left unconfigured (no 'host' setting) the default\n"
@@ -691,8 +730,9 @@ class ServerConfig(configuration.Config):
     def getopt(self, args, short_options="", long_options=(),
                config_load_options=("C", "config"), **options):
         options.update(self.OPTIONS)
-        return configuration.Config.getopt(self, args,
-            short_options, long_options, config_load_options, **options)
+        return configuration.Config.getopt(
+            self, args, short_options, long_options,
+            config_load_options, **options)
 
     def _get_name(self):
         return "Roundup server"
@@ -739,7 +779,7 @@ class ServerConfig(configuration.Config):
                     # socket works (with SSL end-handshake started)
                     self.request.do_handshake()
                 RoundupRequestHandler.protocol_version = \
-                                         self.CONFIG["HTTP_VERSION"]
+                    self.CONFIG["HTTP_VERSION"]
                 RoundupRequestHandler.setup(self)
 
             def finish(self):
@@ -789,6 +829,16 @@ class ServerConfig(configuration.Config):
             if e.args[0] == errno.EADDRINUSE:
                 raise socket.error(_("Unable to bind to port %s, "
                                      "port already in use.") % self["PORT"])
+            if e.args[0] == errno.EACCES:
+                raise socket.error(_(
+                    "Unable to bind to port %(port)s, "
+                    "access not allowed, "
+                    "errno: %(errno)s %(msg)s" % {
+                        "port": self["PORT"],
+                        "errno": e.args[0],
+                        "msg": e.args[1]}
+                ))
+
             raise
         # change user and/or group
         setgid(self["GROUP"])
@@ -823,8 +873,9 @@ else:
             config = ServerConfig()
             (optlist, args) = config.getopt(sys.argv[1:])
             if not config["LOGFILE"]:
-                servicemanager.LogMsg(servicemanager.EVENTLOG_ERROR_TYPE,
-                                      servicemanager.PYS_SERVICE_STOPPED,
+                servicemanager.LogMsg(
+                    servicemanager.EVENTLOG_ERROR_TYPE,
+                    servicemanager.PYS_SERVICE_STOPPED,
                     (self._svc_display_name_, "\r\nMissing logfile option"))
                 self.ReportServiceStatus(win32service.SERVICE_STOPPED)
                 return
@@ -1108,6 +1159,7 @@ ERROR: -c is not available because roundup couldn't import
         httpd.serve_forever()
     except KeyboardInterrupt:
         print('Keyboard Interrupt: exiting')
+        httpd.socket.close()
 
 
 if __name__ == '__main__':

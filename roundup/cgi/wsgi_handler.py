@@ -74,17 +74,24 @@ class RequestHandler(object):
 
 
 class RequestDispatcher(object):
-    def __init__(self, home, debug=False, timing=False, lang=None):
+    def __init__(self, home, debug=False, timing=False, lang=None,
+                 feature_flags=None):
         assert os.path.isdir(home), '%r is not a directory' % (home,)
         self.home = home
         self.debug = debug
         self.timing = timing
+        self.feature_flags= feature_flags or {}
+        self.tracker = None
         if lang:
             self.translator = TranslationService.get_translation(lang,
                 tracker_home=home)
         else:
             self.translator = None
-        self.preload()
+
+        if "cache_tracker" in self.feature_flags:
+            self.tracker = roundup.instance.open(self.home, not self.debug)
+        else:
+            self.preload()
 
     def __call__(self, environ, start_response):
         """Initialize with `apache.Request` object"""
@@ -116,8 +123,8 @@ class RequestDispatcher(object):
         else:
             form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-        with self.get_tracker() as tracker:
-            client = tracker.Client(tracker, request, environ, form,
+        if "cache_tracker" in self.feature_flags:
+            client = self.tracker.Client(self.tracker, request, environ, form,
                                     self.translator)
             try:
                 client.main()
@@ -125,6 +132,16 @@ class RequestDispatcher(object):
                 request.start_response([('Content-Type', 'text/html')], 404)
                 request.wfile.write(s2b('Not found: %s' % 
                                         html_escape(client.path)))
+        else:
+            with self.get_tracker() as tracker:
+                client = tracker.Client(tracker, request, environ, form,
+                                        self.translator)
+                try:
+                    client.main()
+                except roundup.cgi.client.NotFound:
+                    request.start_response([('Content-Type', 'text/html')], 404)
+                    request.wfile.write(s2b('Not found: %s' % 
+                                            html_escape(client.path)))
 
         # all body data has been written using wfile
         return []

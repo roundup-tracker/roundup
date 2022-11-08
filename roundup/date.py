@@ -344,6 +344,9 @@ class Date:
                 self.year, self.month, self.day, self.hour, self.minute, \
                     self.second = spec.timetuple()[:6]
             else:
+                # FIXME: what is tz supposed to be? is it the trailing
+                # tz on the spec? Is it the offset?
+                tz = None
                 TZ = get_timezone(tz)
                 self.year, self.month, self.day, self.hour, self.minute, \
                     self.second = TZ.localize(spec).utctimetuple()[:6]

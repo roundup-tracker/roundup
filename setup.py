@@ -115,8 +115,19 @@ def main():
     # build list of scripts from their implementation modules
     scripts = [mapscript(f) for f in glob('roundup/scripts/[!_]*.py')]
 
+    # build list of zope files/directories
+    Zope = {}
+    Zope['module'] = [f for f in glob('frontends/ZRoundup/*.py')]
+    Zope['module'].append('frontends/ZRoundup/refresh.txt');
+    Zope['icons'] = [f for f in glob('frontends/ZRoundupscripts/*.gif')]
+    Zope['dtml'] = [f for f in glob('frontends/ZRoundupscripts/*.dtml')]
+
     data_files = [
         ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
+        ('share/roundup/frontends', ['frontends/wsgi.py']),
+        ('share/roundup/frontends/Zope', Zope['module']),
+        ('share/roundup/frontends/Zope/icons', Zope['icons']),
+        ('share/roundup/frontends/Zope/dtml', Zope['dtml'])
     ]
     # install man pages on POSIX platforms
     if os.name == 'posix':
@@ -184,6 +195,7 @@ def main():
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
           long_description=long_description,
+          long_description_content_type='text/x-rst',
           url='https://www.roundup-tracker.org',
           download_url='https://pypi.org/project/roundup',
           classifiers=['Development Status :: 5 - Production/Stable',
@@ -196,7 +208,9 @@ def main():
                        'Intended Audience :: End Users/Desktop',
                        'Intended Audience :: Developers',
                        'Intended Audience :: System Administrators',
+                       'License :: OSI Approved',
                        'License :: OSI Approved :: MIT License',
+                       'License :: OSI Approved :: Zope Public License',
                        'Operating System :: MacOS :: MacOS X',
                        'Operating System :: Microsoft :: Windows',
                        'Operating System :: POSIX',
@@ -204,12 +218,11 @@ def main():
                        'Programming Language :: Python :: 2',
                        'Programming Language :: Python :: 2.7',
                        'Programming Language :: Python :: 3',
-                       'Programming Language :: Python :: 3.4',
-                       'Programming Language :: Python :: 3.5',
                        'Programming Language :: Python :: 3.6',
                        'Programming Language :: Python :: 3.7',
                        'Programming Language :: Python :: 3.8',
                        'Programming Language :: Python :: 3.9',
+                       'Programming Language :: Python :: 3.10',
                        'Topic :: Communications :: Email',
                        'Topic :: Office/Business',
                        'Topic :: Software Development :: Bug Tracking',

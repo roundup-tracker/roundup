@@ -10,6 +10,33 @@ ideas and everything else that helped!
 
 .. _`Announcement with changelog for current release.`: announcement.html
 
+2.2
+---
+
+2.2.0
+~~~~~
+
+Maintainer:  John Rouillard, Ralf Schlatterbeck
+
+Release Manager: John Rouillard
+
+Developer activity by changesets::
+
+  rouilj@ieee.org         291 ************************************************
+  rsc@runtux.com           11 **
+  aburke                    1
+  cmeerw@cmeerw.org         1
+  thomas@intevation.de      1
+
+Other contributers
+
+Marcus Priesch,
+John Kristensen (jerrykan),
+Ashely Burke,
+Nagy Gabor,
+Norbert Schlemmer,
+Thomas Arendsen Hein
+
 2.1
 ---
 
@@ -86,7 +113,7 @@ Other contributers
 
 Chau Nguyen,
 Andreas (anrounham14),
-Robert Klonner
+Robert Klonner,
 Garth Jensen
 
 1.6

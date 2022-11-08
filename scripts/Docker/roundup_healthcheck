@@ -1,0 +1,5 @@
+#! /bin/sh
+
+tracker=$(ps -ef | sed -ne '/roundup-server/s/^.*\s\(\w*\)=.*$/\1/p')
+wget -q -O /dev/null --no-verbose http://localhost:8080/$tracker/
+

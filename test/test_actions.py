@@ -27,6 +27,7 @@ class ActionTestCase(unittest.TestCase):
         self.client.db.Otk.getall = self.data_get
         self.client.db.Otk.set = self.data_set
         self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN = 20
+        self.client.db.config.WEB_LOGIN_EMPTY_PASSWORDS = 0
         self.client._ok_message = []
         self.client._error_message = []
         self.client.add_error_message = lambda x, escape=True: add_message(
@@ -371,6 +372,27 @@ class LoginTestCase(ActionTestCase):
 
         self.assertLoginLeavesMessages([], 'foo', 'right')
 
+    def testBlankPasswordLogin(self):
+        self.client.db.security.hasPermission = lambda *args, **kwargs: True
+
+        self.client.db.user.get = lambda a,b: None
+
+        def opendb(username):
+            self.assertEqual(username, 'blank')
+        self.client.opendb = opendb
+
+        self.assertEqual(self.client.db.config.WEB_LOGIN_EMPTY_PASSWORDS, 0)
+        self.assertLoginLeavesMessages(['Invalid login'], 'blank', '' )
+
+        self.client.db.config.WEB_LOGIN_EMPTY_PASSWORDS = 1
+        self.form.value[:] = []  # reset form
+        self.client._error_message = [] # reset errors
+        self.assertLoginLeavesMessages([], 'blank', '' )
+
+        # reset
+        self.client.db.user.get = lambda a,b: 'right'
+        self.client.db.config.WEB_LOGIN_EMPTY_PASSWORDS = 0
+
     def testCorrectLoginRedirect(self):
         self.client.db.security.hasPermission = lambda *args, **kwargs: True
         def opendb(username):
@@ -431,7 +453,8 @@ class LoginTestCase(ActionTestCase):
         '''
         # Do the first login setting an invalid login name
         self.assertLoginLeavesMessages(['Invalid login'], 'nouser')
-        # use up the rest of the 20 login attempts
+        # use up the rest of the 20 login attempts. Login name
+        # persists.
         for i in range(19):
             self.client._error_message = []
             self.assertLoginLeavesMessages(['Invalid login'])

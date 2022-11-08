@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Features of using the Roundup Issue Tracker. Describes
         all access methods, configuration and workflow capabilities.
 	Links to detailed documentation.
@@ -24,7 +24,8 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
    mysql_ and postgresql_
 
 *simple to use*
- - accessible through the web, email, command-line or Python programs
+ - accessible through the web (html, REST or XMLRPC), email,
+   command-line or Python programs
  - may be used to track bugs, features, user feedback, sales opportunities,
    milestones, ...
  - automatically keeps a full history of changes to issues with
@@ -39,6 +40,9 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
  - database schema is also fully editable (only the "user" class is required)
    with a full set of data types (including dates and many-to-many relations)
    across all storages available
+ - authorization is fine grained and can be based on the properties of
+   a user and resource (`ABAC, PBAC (Attribute or Policy/Purpose Based Access
+   Control <https://en.wikipedia.org/wiki/Attribute-based_access_control>`_))
  - customised automatic auditors and reactors may be written that perform
    actions before and after changes are made to entries in the database,
    or may veto the creation or modification of items in the database
@@ -53,7 +57,8 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
    support them (sqlite, mysql and postgresql)
  - indexed text searching giving fast responses to searches across all
    messages and indexed string properties
- - support for the Xapian or Whoosh full-text indexing engine for large trackers
+ - support for the Xapian, Whoosh. sqlite or postgres full-text
+   indexing engines for large trackers
 
 *documented*
  - documentation exists for installation, upgrading, maintenance, users and
@@ -115,8 +120,11 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
    XMLRPC calls
  - see the `xmlrpc guide`_ for more details simple clients etc.
 
-*restful interface*
+*RESTful interface*
  - accessible using basic HTTP authentication at /rest starting point
+ - able to be extended with new endpoints
+ - authentication can be done using JSON Web Tokens (JWT)
+ - CORS support for use by third party web pages.
  - see the `rest guide`_ for details.
 
 .. _sqlite: http://www.hwaci.com/sw/sqlite/

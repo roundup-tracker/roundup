@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Everything about installing the Roundup issue tracker web and
 	mail interfaces and configuring a tracker. How to download and
 	demonstrate Roundup using using command line or
@@ -137,9 +137,19 @@ zstd, brotli
   compress the response from roundup as they transmit/proxy it to the
   client.
 
+redis
+  Storing ephemeral data: session keys, CSRF tokens etc. can be 
+  performance bottleneck. You can choose to deploy a Redis_ database
+  using the redis-py_ pypi package. See the section on
+  `Using Redis for Session Databases`_ in the `administration
+  guide`_ for details.
+
 Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
+
+.. _Using Redis for Session Databases:
+   admin_guide.html#using-redis-for-session-databases
 
 Getting Roundup
 ===============
@@ -159,7 +169,8 @@ For The Really Impatient
 
 If you just want to give Roundup a whirl Right Now, then simply unpack
 and run ``demo.py`` (it will be available as ``roundup-demo`` script
-after installation).
+after installation). (On systems that don't provide a ``python3``
+program you might need to run ``python demo.py``.)
 
 This will set up a simple demo tracker on your machine. [1]_
 When it's done, it'll print out a URL to point your web browser at
@@ -174,7 +185,7 @@ so you may start playing. Three users will be set up:
        If you run demo on a server host, please stop the demo when
        it has shown startup notice, open file ``demo/config.ini`` with
        your editor, change host name in the ``web`` option in section
-       ``[tracker]``, save the file, then re-run the demo program.
+       ``[tracker]``, save the file, then re-run the demo.py program.
 
 Installation
 ============
@@ -192,17 +203,30 @@ installation:
 For information about how Roundup installs, see the `administration
 guide`_.
 
-The following assumes that you are using the source distribution.  If
-you are using the Windows installer, run it with Administrator
-privileges so it can correctly update the registry.
+The following assumes that you are using the source distribution.
 
 Basic Installation Steps
 ------------------------
 
-To install the Roundup support code into your Python tree and
-Roundup scripts into /usr/bin (substitute that path for whatever is
-appropriate on your system). You need to have write permissions
-for these locations, eg. being root on unix::
+Installation of Roundup using Python3 in a virtual environment is
+probably the path of least resistance. Use::
+
+   python3 -m venv /path/to/environment/roundup
+
+then proceed as below after activating (assuming a Bourne like shell)
+the Python environment using::
+
+   . /path/to/environment/roundup/bin/activate
+
+then use the alias ``deactivate`` to return to the normal Python
+environment. If you create the virtual envirnment as a non-root user,
+you can install below using the same user.
+
+To install the Roundup support code into your Python tree and Roundup
+scripts into /usr/bin (substitute that path for whatever is
+appropriate on your system). You need to have write permissions for
+these locations, so you may need to run wthese commands with ``sudo``
+if root permission is required::
 
     python setup.py install
 
@@ -236,7 +260,7 @@ additional libraries that are listed in
 `scripts/Docker/requirements.txt`.
 
 Email support is a work in progress. Outgoing email should work given
-an external SMTP server. Reciving email should work by using a
+an external SMTP server. Receiving email should work by using a
 scheduled (cron) job to access email:
 
 * `As a regular job using a mailbox source`_
@@ -265,8 +289,21 @@ PyPI, by running::
 
 The docker declares a single volume mounted at
 ``/usr/src/app/tracker`` inside the container. You will mount your
-tracker home directory at this location.
+tracker home directory at this location. The ``/usr/src/app`` path can
+be changed by using ``--build-arg="appdir=/new/path"``.
 
+You can also add additional modules to the docker container by using
+`--build-arg="pip_mod=requests setproctitle"`.
+
+Because of deficiencies in the docker program (see:
+https://github.com/moby/moby/issues/29110#issuecomment-1100676306),
+there is no way to determine the version of Python inside the
+container and make that available as part of the build process. If
+your build fails because the ``pythonversion does not match``, add the
+suggested ``--build-arg`` to the ``docker build`` command line.
+
+By default the container runs Roundup using UID 1000. By setting
+`--build-arg="roundup_uid=2000"` you can change the UID.
 
 Configuring Roundup in the Container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -278,11 +315,12 @@ an interactive session it with::
        -v $PWD/tracker:/usr/src/app/tracker roundup-app:latest
 
 The ``-v`` option maps a directory from the host into the docker
-container. Note that uid 1000 is used by roundup. So the uid of the
-directory (and all files under it) must be uid 1000.  This example
-assumes your tracker configs are in the tracker subdirectory. Replace
-``$PWD/tracker`` with the full path name to the directory where the
-tracker home(s) are to be stored.
+container. Note that uid 1000 is used by roundup by default. The uid
+of the directory (and all files under it) must match the uid. You can
+set the UID at image build time, see above. This
+example assumes your tracker configs are in the tracker
+subdirectory. Replace ``$PWD/tracker`` with the full path name to the
+directory where the tracker home(s) are to be stored.
 
 The ``-p`` option maps an external port (9017) to proxy the roundup
 server running at port 8080 to the outside.
@@ -392,23 +430,25 @@ Configuring your first tracker
       templates or backends available)::
 
           Enter tracker home: /opt/roundup/trackers/support
-          Templates: classic
+          Templates: minimal, jinja2, classic, responsive, devel
           Select template [classic]: classic
-          Back ends: anydbm, mysql, sqlite
+          Back ends: anydbm, sqlite
           Select backend [anydbm]: anydbm
 
       Note: "Back ends" selection list depends on availability of
       third-party database modules.  Standard python distribution
-      includes anydbm module only.
+      includes anydbm and sqlite module only.
 
       The "support" part of the tracker name can be anything you want - it
       is going to be used as the directory that the tracker information
       will be stored in.
 
       You will now be directed to edit the tracker configuration and
-      initial schema.  At a minimum, you must set "main :: admin_email"
-      (that's the "admin_email" option in the "main" section) "mail ::
-      host", "tracker :: web" and "mail :: domain".  If you get stuck,
+      initial schema.  At a minimum, you must set "tracker :: web",
+      "mail :: host", and "mail :: domain". You should also
+      set "main :: admin_email" (that's the "admin_email" option in
+      the "main" section) to your local admin address to get email
+      on unusual occurances. If you get stuck,
       and get configuration file errors, then see the `tracker
       configuration`_ section of the `customisation documentation`_.
 
@@ -495,7 +535,7 @@ Name       Speed       Users   Support
 ========== =========== ===== ==============================
 anydbm     Slowest     Few   Always available
 sqlite     Fastest(*)  Few   May need install (PySQLite_)
-postgresql Fast        Many  Needs install/admin (psycopg_)
+postgresql Fast        Many  Needs install/admin (psycopg2_)
 mysql      Fast        Many  Needs install/admin (MySQLdb_)
 ========== =========== ===== ==============================
 
@@ -515,14 +555,15 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   can improve searching if you are not installing another indexer like
   xapian or whoosh. It works best with English text.
 **postgresql**
-  Backend for popular RDBMS PostgreSQL. You must read doc/postgresql.txt for
-  additional installation steps and requirements. You must also configure
+  Backend for popular RDBMS PostgreSQL. You must read
+  `doc/postgresql.txt`_ for additional installation steps and
+  requirements. You must also configure
   the ``rdbms`` section of your tracker's ``config.ini``.  It is recommended
-  that you use at least version 1.1.21 of psycopg.
+  that you use at least version 2.8 of psycopg2.
 **mysql**
-  Backend for popular RDBMS MySQL. You must read doc/mysql.txt for additional
-  installation steps and requirements. You must also configure the ``rdbms``
-  section of your tracker's ``config.ini``
+  Backend for popular RDBMS MySQL. You must read `doc/mysql.txt`_ for
+  additional installation steps and requirements. You must also
+  configure the ``rdbms`` section of your tracker's ``config.ini``
 
 You may defer your decision by setting your tracker up with the anydbm
 backend (which is guaranteed to be available) and switching to one of the
@@ -1134,7 +1175,7 @@ the following apache config to
 /etc/apache2/sites-available/roundup-foo (under debian/Ubunutu, modify
 as needed):
 
-  .. code:: xml
+  .. code:: ApacheConf
 
     ServerAdmin webmaster@example.com
     ErrorLog /var/log/apache2/error.log
@@ -1560,7 +1601,7 @@ On Windows 2000 and later:
 6) Choose "Environmental Variables"
 7) Add: "<dir>\Scripts" to the "Path" environmental variable.
 
-Where <dir> in 7) is the root directory (e.g., ``C:\Python22\Scripts``)
+Where <dir> in 7) is the root directory (e.g., ``C:\Python27\Scripts``)
 of your Python installation.
 
 I understand that in XP, 2) above is not needed as "Control
@@ -1702,11 +1743,13 @@ Problems? Testing your Python...
    for PostgreSQL you want to call the ``createuser`` command with the
    ``-d`` option to allow database creation.
 
-Once you've unpacked roundup's source, if you have pytest installed,
-run ``python -m pytest test`` in the source directory and make sure
-there are no errors. If there are errors, please let us know!
+This can only be done if you downloaded and unpacked the source
+distrbution. It will not work if you used `pip install` as the test
+suite is not installed. Once you've unpacked roundup's source, if you
+have pytest installed, run ``python -m pytest test`` in the source
+directory and make sure there are no errors. If there are errors,
+please let us know!
 
-.. _`table of contents`: index.html
 .. _`user guide`: user_guide.html
 .. _`roundup specification`: spec.html
 .. _`tracker configuration`: customizing.html#tracker-configuration
@@ -1719,6 +1762,8 @@ there are no errors. If there are errors, please let us know!
 .. _`customising roundup`: customizing.html
 .. _`upgrading document`: upgrading.html
 .. _`administration guide`: admin_guide.html
+.. _`doc/postgresql.txt`: postgresql.html
+.. _`doc/mysql.txt`: mysql.html
 
 
 .. _External hyperlink targets:
@@ -1740,12 +1785,14 @@ there are no errors. If there are errors, please let us know!
 .. _mod_wsgi: https://pypi.org/project/mod-wsgi/
 .. _MySQLdb: https://pypi.org/project/mysqlclient/
 .. _Olson tz database: https://www.iana.org/time-zones
-.. _Psycopg: https://www.psycopg.org/
+.. _Psycopg2: https://www.psycopg.org/
 .. _pyjwt: https://pypi.org/project/PyJWT/
 .. _pyopenssl: https://pypi.org/project/pyOpenSSL/
 .. _pysqlite: https://pysqlite.org/
 .. _pytz: https://pypi.org/project/pytz/
 .. _pywin32: https://pypi.org/project/pywin32/
+.. _Redis: https://redis.io
+.. _redis-py: https://pypi.org/project/redis/
 .. _Whoosh: https://whoosh.readthedocs.org/en/latest
 .. _Xapian: https://xapian.org/
 .. _zstd: https://pypi.org/project/zstd/

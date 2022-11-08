@@ -9,8 +9,10 @@ from roundup.anypy.html import html_escape
 
 from roundup.exceptions import RoundupException
 
+
 class RoundupCGIException(RoundupException):
     pass
+
 
 class HTTPException(RoundupCGIException):
     pass
@@ -54,11 +56,13 @@ class FormError(ValueError):
     """
     pass
 
+
 class IndexerQueryError(RoundupException):
     """Raised to handle errors from FTS searches due to query
        syntax errors.
     """
     pass
+
 
 class SendFile(RoundupException):
     """Send a file from the database."""

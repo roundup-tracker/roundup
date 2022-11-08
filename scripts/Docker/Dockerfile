@@ -18,12 +18,19 @@ ARG appdir=/usr/src/app
 # latest release from 'pypi'
 ARG source=local
 
+# Python version as a.b Used for installation directory and
+# COPY from install dir in second stage.
+ARG pythonversion=3.11
+
 FROM python:3-alpine as build
 
 # Inherit global values https://github.com/moby/moby/issues/37345
 ARG appdir
 
 WORKDIR $appdir
+
+# Update to get security and other improvements;
+RUN apk --update-cache upgrade
 
 # Add packages needed to compile mysql, pgsql and other python modules.
 # Can't use apk to add them as that installs a 3.9 python version.
@@ -41,10 +48,22 @@ RUN apk add \
     swig \
     xapian-core-dev
 
+ARG pythonversion
+# verify that pythonversion matches the one in the image.
+RUN image_python_version=$(python -c 'import sys; print("%s.%s"%sys.version_info[0:2])'); \
+    if [ "${pythonversion}" != "${image_python_version}" ]; then \
+       printf "\n\n*****\npythonversion does not match.\n" ; \
+       printf "Add:\n   --build-arg=\"pythonversion=${image_python_version}\"\nto docker build\n******\n\n"; \
+       exit 1; \
+    fi
+
 # build xapian bindings:
 # file with sphinx build dependencies to remove after build
 # they are over 70MB of space.
 COPY scripts/Docker/sphinxdeps.txt .
+
+# suppress warning when running pip as root
+ENV PIP_ROOT_USER_ACTION=ignore
 
 RUN set -xv && CWD=$PWD && \
     VER=$(apk list -I 'xapian-core-dev' | \
@@ -53,9 +72,12 @@ RUN set -xv && CWD=$PWD && \
     wget https://oligarchy.co.uk/xapian/$VER/xapian-bindings-$VER.tar.xz && \
     tar -Jxvf xapian-bindings-$VER.tar.xz && \
     cd xapian-bindings-$VER/ && \
-    pip --no-cache-dir install sphinx==1.8.5 && \
+    pip --no-cache-dir install sphinx && \
+    sed -i -e '/PYTHON3_SO=/s/distutils\.//g' \
+           -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure && \
     ./configure --prefix=/usr/local --with-python3 --disable-documentation && \
     make && make install && \
+    pip uninstall --no-cache-dir -y sphinx && \
     pip uninstall --no-cache-dir -y -r $CWD/sphinxdeps.txt
 
 # add requirements for pip here, e.g. Whoosh, gpg, zstd or other
@@ -86,8 +108,12 @@ RUN set -xv && if [ "$source" = "local" ] ||  \
     if [ "$source" = "local_pip" ]; then cd install && pip install \
                             --use-feature=in-tree-build . ; fi; \
     if [ "$source" = "pypi" ]; then pip install roundup; \
-       cp -ril /usr/local/lib/python3.10/site-packages/usr/local/share/* \
+       cp -ril /usr/local/lib/python${pythonversion}/site-packages/usr/local/share/* \
 	   /usr/local/share; fi
+
+# Allow user to add more modules during build
+ARG pip_mod
+RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
 
 # build a new smaller docker image for execution. Build image above
 # is 1G in size.
@@ -98,39 +124,51 @@ ARG appdir
 
 WORKDIR $appdir
 
+# suppress warning when running pip as root
+ENV PIP_ROOT_USER_ACTION=ignore
+
+# upgrade to get any security updates; bundle with
+# rest of apk actions to reduce layers/wasted space 
 # add libraries needed to run gpg/mysql/pgsql/brotli
-RUN apk add \
+# clean out any caches to save space
+RUN apk --update-cache upgrade; \
+    apk add \
+     brotli-libs \
      gpgme \
      mariadb-connector-c \
      libpq \
      libstdc++ \
-     libxapian
+     libxapian \
+     zstd-libs; \
+    rm -f /var/cache/apk/*
 
 ARG source
 LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
-      "org.roundup-tracker.description"="Roundup Issue Tracker using sqlite" \
-      "version"="2.1.0 $source" \
+      "org.roundup-tracker.description"="Roundup Issue Tracker multi-backend" \
+      "version"="2.2.0 $source" \
       "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net"
 
-
+ARG pythonversion
 # pull over built assets
-COPY --from=build /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages/
+COPY --from=build /usr/local/lib/python${pythonversion}/site-packages /usr/local/lib/python${pythonversion}/site-packages/
 COPY --from=build /usr/local/bin/roundup* /usr/local/bin/
 COPY --from=build /usr/local/share /usr/local/share/
 COPY scripts/Docker/roundup_start .
+COPY scripts/Docker/roundup_healthcheck .
+
+# make roundup scripts execuable and mount a trackerdir on tracker location
+RUN chmod +x roundup_start roundup_healthcheck; mkdir tracker
+VOLUME $appdir/tracker
 
 # map port 8080 to your local port
 EXPOSE 8080/tcp
 
-# mount a trackerdir on tracker location
-RUN mkdir tracker
-VOLUME $appdir/tracker
-
 HEALTHCHECK --start-period=1m \
-   CMD wget -q -O /dev/null --no-verbose http://localhost:8080/issues/
+   CMD ./roundup_healthcheck
 
-# do not run roundup as root
-RUN adduser -D -h /usr/src/app roundup
+# do not run roundup as root. This creates roundup user and group.
+ARG roundup_uid
+RUN adduser -D -h ${appdir} -u ${roundup_uid:-1000} roundup
 USER roundup
 
 # run the server, disable output buffering so we can see logs.

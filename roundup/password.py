@@ -19,15 +19,22 @@
 """
 __docformat__ = 'restructuredtext'
 
-import re, string
+import re
+import string
+import warnings
+
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1
 
-from roundup.anypy.strings import us2s, b2s, s2b
 import roundup.anypy.random_ as random_
 
+from roundup.anypy.strings import us2s, b2s, s2b
+
+
 try:
-    import crypt
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        import crypt
 except ImportError:
     crypt = None
 
@@ -86,7 +93,8 @@ except ImportError:
 
     def xor_bytes(left, right):
         "perform bitwise-xor of two byte-strings"
-        return _bjoin(bchr(bord(l) ^ bord(r)) for l, r in zip(left, right))
+        return _bjoin(bchr(bord(l) ^ bord(r))
+                      for l, r in zip(left, right))  # noqa: E741
 
     def _pbkdf2(password, salt, rounds, keylen):
         digest_size = 20  # sha1 generates 20-byte blocks
@@ -358,8 +366,10 @@ class Password(JournalPassword):
             raise ValueError('Password not set')
         return '{%s}%s' % (self.scheme, self.password)
 
+
 def test_missing_crypt():
-    p = encodePassword('sekrit', 'crypt')
+    p = encodePassword('sekrit', 'crypt')      # noqa: F841   - test only
+
 
 def test():
     # SHA

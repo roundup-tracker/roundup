@@ -1,7 +1,8 @@
-import re, mimetypes
+import mimetypes
+import re
 
 from roundup import hyperdb, date, password
-from roundup.cgi import templating
+from roundup.cgi import TranslationService
 from roundup.cgi.exceptions import FormError
 
 
@@ -38,11 +39,11 @@ class FormParser:
             self._ = self.gettext = client.gettext
             self.ngettext = client.ngettext
         except AttributeError:
-            _translator = templating.translationService
+            _translator = TranslationService.get_translation()
             self._ = self.gettext = _translator.gettext
             self.ngettext = _translator.ngettext
 
-    def parse(self, create=0, num_re=re.compile(r'^\d+$')):
+    def parse(self, create=0):
         """ Item properties and their values are edited with html FORM
             variables and their values. You can:
 
@@ -287,7 +288,8 @@ class FormParser:
                 for entry in self.extractFormList(form[key]):
                     m = self.FV_DESIGNATOR.match(entry)
                     if not m:
-                        raise FormError(self._('link "%(key)s" '
+                        raise FormError(self._(
+                            'link "%(key)s" '
                             'value "%(entry)s" not a designator') % locals())
                     value.append((m.group(1), m.group(2)))
 
@@ -305,9 +307,10 @@ class FormParser:
                 # make sure the link property is valid
                 if (not isinstance(propdef[propname], hyperdb.Multilink) and
                         not isinstance(propdef[propname], hyperdb.Link)):
-                    raise FormError(self._('%(class)s %(property)s '
-                            'is not a link or multilink property') % {
-                            'class':cn, 'property':propname})
+                    raise FormError(self._(
+                        '%(class)s %(property)s '
+                        'is not a link or multilink property') % {
+                            'class': cn, 'property': propname})
 
                 all_links.append((cn, nodeid, propname, value))
                 continue
@@ -317,10 +320,11 @@ class FormParser:
                 for entry in self.extractFormList(form[key]):
                     m = self.FV_SPECIAL.match(entry)
                     if not m:
-                        raise FormError(self._('The form action claims to '
+                        raise FormError(self._(
+                            'The form action claims to '
                             'require property "%(property)s" '
                             'which doesn\'t exist') % {
-                            'property':propname})
+                                'property': propname})
                     if m.group('classname'):
                         this = (m.group('classname'), m.group('id'))
                         entry = m.group('propname')
@@ -339,10 +343,11 @@ class FormParser:
             # does the property exist?
             if propname not in propdef:
                 if mlaction != 'set':
-                    raise FormError(self._('You have submitted a %(action)s '
+                    raise FormError(self._(
+                        'You have submitted a %(action)s '
                         'action for the property "%(property)s" '
                         'which doesn\'t exist') % {
-                        'action': mlaction, 'property': propname})
+                            'action': mlaction, 'property': propname})
                 # the form element is probably just something we don't care
                 # about - ignore it
                 continue
@@ -364,7 +369,8 @@ class FormParser:
             else:
                 # multiple values are not OK
                 if isinstance(value, type([])):
-                    raise FormError(self._('You have submitted more than one '
+                    raise FormError(self._(
+                        'You have submitted more than one '
                         'value for the %s property') % propname)
                 # value might be a single file upload
                 if not getattr(value, 'filename', None):
@@ -392,7 +398,8 @@ class FormParser:
                     raise FormError(self._('Password and confirmation text '
                                            'do not match'))
                 if isinstance(confirm, type([])):
-                    raise FormError(self._('You have submitted more than one '
+                    raise FormError(self._(
+                        'You have submitted more than one '
                         'value for the %s property') % propname)
                 if value != confirm.value:
                     raise FormError(self._('Password and confirmation text '
@@ -432,14 +439,14 @@ class FormParser:
             elif isinstance(proptype, hyperdb.Multilink):
                 # convert input to list of ids
                 try:
-                    l = hyperdb.rawToHyperdb(self.db, cl, nodeid,
-                                             propname, value)
+                    id_list = hyperdb.rawToHyperdb(self.db, cl, nodeid,
+                                                   propname, value)
                 except hyperdb.HyperdbValueError as msg:
                     raise FormError(msg)
 
                 # now use that list of ids to modify the multilink
                 if mlaction == 'set':
-                    value = l
+                    value = id_list
                 else:
                     # we're modifying the list - get the current list of ids
                     if propname in props:
@@ -453,17 +460,18 @@ class FormParser:
                     if mlaction == 'remove':
                         # remove - handle situation where the id isn't in
                         # the list
-                        for entry in l:
+                        for entry in id_list:
                             try:
                                 existing.remove(entry)
                             except ValueError:
-                                raise FormError(self._('property '
+                                raise FormError(self._(
+                                    'property '
                                     '"%(propname)s": "%(value)s" '
                                     'not currently in list') % {
-                                    'propname': propname, 'value': entry})
+                                        'propname': propname, 'value': entry})
                     else:
                         # add - easy, just don't dupe
-                        for entry in l:
+                        for entry in id_list:
                             if entry not in existing:
                                 existing.append(entry)
                     value = existing
@@ -479,8 +487,8 @@ class FormParser:
                 try:
                     # Try handling file upload
                     if (isinstance(proptype, hyperdb.String) and
-                        hasattr(value, 'filename') and
-                        value.filename is not None):
+                            hasattr(value, 'filename') and
+                            value.filename is not None):
                         value = self.parse_file(propdef, props, value)
                     else:
                         value = hyperdb.rawToHyperdb(self.db, cl, nodeid,
@@ -522,8 +530,8 @@ class FormParser:
                         # empty strings
                         if existing == self.db.BACKEND_MISSING_STRING:
                             existing = None
-                    elif isinstance(proptype, hyperdb.Number) or \
-                         isinstance(proptype, hyperdb.Integer):
+                    elif (isinstance(proptype, hyperdb.Number) or
+                          isinstance(proptype, hyperdb.Integer)):
                         # some backends store "missing" Numbers as 0 :(
                         if existing == self.db.BACKEND_MISSING_NUMBER:
                             existing = None

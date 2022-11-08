@@ -96,8 +96,8 @@ language = None
 # directories to ignore when looking for source files.
 # see https://issues.roundup-tracker.org/issue2550907:
 exclude_patterns = ['_build',
-                    'announcement.txt', 'whatsnew-0.7.txt', 'whatsnew-0.8.txt',
-                    'security.txt' ]
+                    'announcement.txt', 'whatsnew-0.7.txt',
+                    'whatsnew-0.8.txt']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         How to administer, backup, upgrade a Roundup installation.
         System and user security, configuring web compression,
         documentation on using roundup-server and running
@@ -19,7 +19,7 @@ What does Roundup install?
 There's two "installations" that we talk about when using Roundup:
 
 1. The installation of the software and its support files. This uses the
-   standard Python mechanism called "distutils" and thus Roundup's core code,
+   standard Python mechanism called "setuptools" and thus Roundup's core code,
    executable scripts and support data files are installed in Python's
    directories. On Windows, this is typically:
 
@@ -181,11 +181,21 @@ Additional notes for each keyword:
   the variable "trackers" is available to the template and is a
   dict of all configured trackers.
 **ssl**
-  Enables the use of SSL to secure the connection to the roundup-server.
+  Enables use of SSL to secure the connection to the
+  roundup-server. In most cases, you will want to run a
+  real web server (Apache, Nginx) as a proxy to
+  roundup-server running without SSL.  The real web server
+  can filter/rate limit/firewall requests to roundup-server.
   If you enable this, ensure that your tracker's config.ini specifies
-  an *https* URL.
+  an *https* URL. See roundup-server.1 man page for
+  additional information.
 **pem**
   If specified, the SSL PEM file containing the private key and certificate.
+  The file must include both the private key and certificate with appropriate
+  headers (e.g. ``-----BEGIN PRIVATE KEY-----``,
+  ``-----END PRIVATE KEY-----`` and
+  ``-----BEGIN CERTIFICATE-----``,
+  ``-----END CERTIFICATE-----``.
   If not specified, roundup will generate a temporary, self-signed certificate
   for use.
 **trackers** section
@@ -316,10 +326,14 @@ All of the data that is indexed is in a single column, so when column
 specifiers are used they usually result in an error which is detected
 and an enhanced error message is produced.
 
-Unlike the native, xapian and whoosh indexers, there are no stopwords,
-and there is no limit to the length of terms that are indexed. Keeping
-these would break proximity and phrase searching. This may be helpful
-or problematic for your particular tracker.
+Unlike the native, xapian and whoosh indexers there is no
+limit to the length of terms that are indexed. Also
+stopwords are indexed but ignored when searching if they are
+the only word in the search. So a search for "the" will
+return no results but "the book" will return
+results. Pre-filtering the stopwords when indexing would
+break proximity and phrase searching. This may be helpful or
+problematic for your particular tracker.
 
 To support the most languages available, the unicode61 tokenizer is
 used without porter stemming. Using the ``indexer_language`` setting
@@ -443,8 +457,93 @@ the following SQL commands::
    delete from __words;
    delete from __textids;
 
-Note this deletes data from the tables and does *not* delete the
-table.
+Note this deletes data from the tables and does *not* delete
+the table. This allows you to revert to Roundup's native
+full text indexing on SQLite or Postgres. If you were to
+delete the tables, Roundup will not recreate the
+tables. Under PostgreSQL, you can use the ``truncate
+<tablename>`` command if you wish.
+
+Configuring Session Databases
+=============================
+
+The session and OTK (one time key) databases
+store information about the operation of Roundup.
+This ephemeral data:
+
+* web login session keys,
+* CSRF tokens,
+* email password recovery one time keys,
+* rate limiting data,
+* ...
+
+can be a performance bottleneck. It usually happens with
+anydbm or SQLite backends. PostgreSQL and MySQL are
+sufficiently powerful that they can handle the higher
+transaction rates.
+
+If you are using sqlite, you can choose to use the anydbm
+database for session data. By default it will use additional
+sqlite databases for storing the session and otk data.
+
+The following table shows which primary databases support
+different session database backends::
+
+
+  main\/ session>| anydbm | sqlite | redis | mysql | postgresql |
+  anydbm         |    D   |        |   X   |       |            |
+  sqlite         |    X   |    D   |   X   |       |            |
+  mysql          |        |        |       |   D   |            |
+  postgresql     |        |        |       |       |      D     |
+  --------------------------------------------------------------+
+        D - default if unconfigured,   X - compatible choice
+
+The ``backend`` setting is in the tracker's ``config.ini``
+file under the ``sessiondb`` section.
+
+Using Redis for Session Databases
+---------------------------------
+
+Redis is an in memory key/value data structure store.
+
+You need to install the redis-py_ module from pypi. Then
+install Redis using your package manager or by downloading
+it from the Redis_ website.
+
+You need to secure your redis instance. The data that
+Roundup stores includes session cookies and other
+authentication tokens. At minimum you should require a
+password to connect to your redis database. Set
+``requirepass`` in ``redis.conf``. Then change the
+``redis_url`` in ``config.ini`` to use the password.
+
+
+For example::
+
+   redis://:mypassword@localhost:7200/10
+
+will connect to the redis instance running on localhost at
+port 7200 using the password ``mypassword`` to open database
+10. The ``redis_url`` setting can load a file to better
+secure the url. If you are using redis 6.0 or newer, you can
+specify a username/password and access control lists to
+improv the security of your data. Another good alternative
+is to talk to redis using a Unix domain socket.
+
+If you are connecting to redis across the network rather
+than on localhost, you should configure ssl/tls and use the
+``rediss`` scheme in the url along with the query
+parameters::
+
+	ssl_cert_reqs=required&ssl_ca_certs=/path/to/custom/ca-cert
+
+where you specify the file that can be used to validate the
+SSL certificate. `Securing Redis`_ has more details.
+
+.. _Redis: https://redis.io
+.. _redis-py: https://pypi.org/project/redis/
+.. _Securing Redis: https://redis.io/docs/manual/security/
+
 
 Users and Security
 ==================
@@ -474,10 +573,10 @@ In both cases, Roundup's behaviour when dealing with unknown users is
 controlled by Permissions defined in the "SECURITY SETTINGS" section of the
 tracker's ``schema.py`` module:
 
-Web Registration
+Web Access and Register
   If granted to the Anonymous Role, then anonymous users will be able to
   register through the web.
-Email Registration
+Email Access and Register
   If granted to the Anonymous Role, then email messages from unknown users
   will result in those users being registered with the tracker.
 
@@ -556,8 +655,10 @@ it to be elsewhere) will then complete the backup.
 Software Upgrade
 ----------------
 
-Always make a backup of your tracker before upgrading software. Steps you may
-take:
+.. _make a backup: #tracker-backup
+
+Always `make a backup`_ of your tracker before upgrading software.
+Steps you may take:
 
 1. Install pytest and ensure that the unit tests run on your system
    (using your preferred python version)::
@@ -576,11 +677,11 @@ take:
 
     python setup.py install
 
-6. Follow the steps in the `upgrading documentation`_ for the new version of
-   the software in the copied.
+6. Follow the steps in the `upgrading documentation`_ for all the
+   versions between your original version and the new version.
 
-   Usually you will be asked to run `roundup_admin migrate` on your tracker
-   before you allow users to start accessing the tracker.
+   Usually you should run `roundup_admin -i <tracker_home> migrate`
+   on your tracker(s) before you allow users to start accessing the tracker.
 
    It's safe to run this even if it's not required, so just get into the
    habit.
@@ -590,7 +691,6 @@ If something bad happens, you may reinstate your backup of the tracker and
 reinstall the older version of the sofware using the same install command::
 
     python setup.py install
-
 
 .. index:: database; convert from one database backend to another
    single: roundup-admin; import and export

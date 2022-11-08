@@ -1118,7 +1118,7 @@ class TestCase():
         # value will be almost 60. Allow 1-2 seconds for all 20 rounds.
         self.assertAlmostEqual(
             float(self.server.client.additional_headers["X-RateLimit-Reset"]),
-            59, delta=1)
+            59, delta=5)
         self.assertEqual(
             str(self.server.client.additional_headers["Retry-After"]),
             "3")  # check as string
@@ -1155,7 +1155,7 @@ class TestCase():
         # we still need to wait a minute for everything to clear
         self.assertAlmostEqual(
             float(self.server.client.additional_headers["X-RateLimit-Reset"]),
-            59, delta=1)
+            59, delta=5)
 
         # and make sure we need to wait another three seconds
         # as we consumed the last api call

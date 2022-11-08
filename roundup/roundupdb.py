@@ -20,28 +20,29 @@
 """
 __docformat__ = 'restructuredtext'
 
-import time
-import base64, mimetypes
+import base64
 import logging
+import mimetypes
+import time
+
 from email import encoders
-from email.parser import FeedParser
-from email.utils import formataddr
 from email.header import Header
-from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.parser import FeedParser
+from email.utils import formataddr
 
-from roundup import password, date, hyperdb
-from roundup.i18n import _
-from roundup.hyperdb import iter_roles
-
-from roundup.mailer import Mailer, MessageSendError, nice_sender_header
-
-from roundup.anypy.strings import b2s, s2u
 import roundup.anypy.random_ as random_
 
+from roundup import date, hyperdb, password
+from roundup.anypy.strings import b2s, s2u
+from roundup.hyperdb import iter_roles
+from roundup.i18n import _, RoundupNullTranslations
+from roundup.mailer import Mailer, MessageSendError, nice_sender_header
+
 try:
-    import gpg, gpg.core
+    import gpg, gpg.core  # noqa: E401
 except ImportError:
     gpg = None
 
@@ -53,6 +54,9 @@ class Database(object):
     # b. if the journaltag disappears during a transaction, we don't barf
     #    (eg. the current user edits their username)
     journal_uid = None
+
+    def __init__(self):
+        self.i18n = RoundupNullTranslations()
 
     def getuid(self):
         """Return the id of the "user" node associated with the user
@@ -238,9 +242,10 @@ class IssueClass:
         """
 
     def nosymessage(self, issueid, msgid, oldvalues, whichnosy='nosy',
-                    from_address=None, cc=[], bcc=[], cc_emails=[],
-                    bcc_emails=[], subject=None,
-                    note_filter=None, add_headers={}):
+                    from_address=None, cc=None, bcc=None,
+                    cc_emails=None,
+                    bcc_emails=None, subject=None,
+                    note_filter=None, add_headers=None):
         """Send a message to the members of an issue's nosy list.
 
         The message is sent only to users on the nosy list who are not
@@ -290,6 +295,13 @@ class IssueClass:
         The add_headers parameter allows to set additional headers for
         the outgoing email.
         """
+
+        if cc is None: cc = []                              # noqa: E701
+        if bcc is None: bcc = []                            # noqa: E701
+        if cc_emails is None: cc_emails = []                # noqa: E701
+        if bcc_emails is None: bcc_emails = []              # noqa: E701
+        if add_headers is None: add_headers = {}            # noqa: E701
+
         encrypt = self.db.config.PGP_ENABLE and self.db.config.PGP_ENCRYPT
         pgproles = self.db.config.PGP_ROLES
         if msgid:
@@ -311,7 +323,8 @@ class IssueClass:
             address = self.db.user.get(userid, 'address')
             if address:
                 ciphered = encrypt and (not pgproles or
-                    self.db.user.has_role(userid, *iter_roles(pgproles)))
+                                        self.db.user.has_role(
+                                            userid, *iter_roles(pgproles)))
                 type = ['plain', 'crypt'][ciphered]
                 to[type].append(address)
                 recipients.append(userid)
@@ -425,12 +438,15 @@ class IssueClass:
         return msg
 
     def send_message(self, issueid, msgid, note, sendto, from_address=None,
-                     bcc_sendto=[], subject=None, crypt=False,
-                     add_headers={}, authid=None):
+                     bcc_sendto=None, subject=None, crypt=False,
+                     add_headers=None, authid=None):
         '''Actually send the nominated message from this issue to the sendto
            recipients, with the note appended. It's possible to add
            headers to the message with the add_headers variable.
         '''
+
+        if bcc_sendto is None: bcc_sendto = []            # noqa: E701
+        if add_headers is None: add_headers = {}          # noqa: E701
         users = self.db.user
         messages = self.db.msg
         files = self.db.file
@@ -446,7 +462,8 @@ class IssueClass:
         if not messageid:
             # this is an old message that didn't get a messageid, so
             # create one
-            messageid = "<%s.%s.%s%s@%s>" % (time.time(),
+            messageid = "<%s.%s.%s%s@%s>" % (
+                time.time(),
                 b2s(base64.b32encode(random_.token_bytes(10))),
                 self.classname, issueid, self.db.config['MAIL_DOMAIN'])
             if msgid is not None:
@@ -573,8 +590,10 @@ class IssueClass:
                     # note that authaddr at this point is already
                     # surrounded by < >, so get the original address
                     # from the db as nice_send_header adds < >
-                    replyto_addr = nice_sender_header(authname,
-                        users.get(authid, 'address', ''), charset)
+                    replyto_addr = nice_sender_header(
+                        authname,
+                        users.get(authid, 'address', ''),
+                        charset)
                 else:
                     replyto_addr = replyto_config
             else:
@@ -735,7 +754,8 @@ class IssueClass:
         # then append a trailing slash if it is missing
         base = self.db.config.TRACKER_WEB
         if (not isinstance(base, type('')) or
-            not (base.startswith('http://') or base.startswith('https://'))):
+                not (base.startswith('http://') or
+                     base.startswith('https://'))):
             web = "Configuration Error: TRACKER_WEB isn't a " \
                 "fully-qualified URL"
         else:
@@ -770,15 +790,10 @@ class IssueClass:
                 continue
             if isinstance(prop, hyperdb.Link):
                 link = self.db.classes[prop.classname]
-                if value:
-                    key = link.labelprop(default_to_id=1)
-                    if key:
-                        value = link.get(value, key)
-                else:
-                    value = ''
+                key = link.labelprop(default_to_id=1)
+                if key:
+                    value = link.get(value, key)
             elif isinstance(prop, hyperdb.Multilink):
-                if value is None: value = []
-                l = []
                 link = self.db.classes[prop.classname]
                 key = link.labelprop(default_to_id=1)
                 if key:
@@ -854,32 +869,32 @@ class IssueClass:
                 change = '%s -> %s' % (oldvalue, value)
             elif isinstance(prop, hyperdb.Multilink):
                 change = ''
-                if value is None: value = []
-                if oldvalue is None: oldvalue = []
-                l = []
+                if value is None: value = []                    # noqa: E701
+                if oldvalue is None: oldvalue = []              # noqa: E701
+                changed_links = []
                 link = self.db.classes[prop.classname]
                 key = link.labelprop(default_to_id=1)
                 # check for additions
                 for entry in value:
-                    if entry in oldvalue: continue
+                    if entry in oldvalue: continue              # noqa: E701
                     if key:
-                        l.append(link.get(entry, key))
+                        changed_links.append(link.get(entry, key))
                     else:
-                        l.append(entry)
-                if l:
-                    l.sort()
-                    change = '+%s' % (', '.join(l))
-                    l = []
+                        changed_links.append(entry)
+                if changed_links:
+                    changed_links.sort()
+                    change = '+%s' % (', '.join(changed_links))
+                    changed_links = []
                 # check for removals
                 for entry in oldvalue:
-                    if entry in value: continue
+                    if entry in value: continue                 # noqa: E701
                     if key:
-                        l.append(link.get(entry, key))
+                        changed_links.append(link.get(entry, key))
                     else:
-                        l.append(entry)
-                if l:
-                    l.sort()
-                    change += ' -%s' % (', '.join(l))
+                        changed_links.append(entry)
+                if changed_links:
+                    changed_links.sort()
+                    change += ' -%s' % (', '.join(changed_links))
             else:
                 change = '%s -> %s' % (oldvalue, value)
                 if '\n' in change:

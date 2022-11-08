@@ -33,19 +33,25 @@ NOTE: we don't need an index on the id column if it's PRIMARY KEY
 '''
 __docformat__ = 'restructuredtext'
 
+import logging
+import os
+import shutil
+import sys
+
+import MySQLdb
+from MySQLdb.constants import ER
+
 from roundup import date, hyperdb, password
 from roundup.backends import rdbms_common
-import MySQLdb
-import os, shutil, sys
-from MySQLdb.constants import ER
-import logging
 
-isolation_levels = \
-    { 'read uncommitted': 'READ UNCOMMITTED'
-    , 'read committed': 'READ COMMITTED'
-    , 'repeatable read': 'REPEATABLE READ'
-    , 'serializable': 'SERIALIZABLE'
-    }
+
+isolation_levels = {
+    'read uncommitted': 'READ UNCOMMITTED',
+    'read committed': 'READ COMMITTED',
+    'repeatable read': 'REPEATABLE READ',
+    'serializable': 'SERIALIZABLE'
+}
+
 
 def connection_dict(config, dbnamestr=None):
     d = rdbms_common.connection_dict(config, dbnamestr)
@@ -58,6 +64,7 @@ def connection_dict(config, dbnamestr=None):
     if charset != 'default':
         d['charset'] = charset
     return d
+
 
 def db_nuke(config):
     """Clear all database contents and drop database itself"""
@@ -75,10 +82,10 @@ def db_nuke(config):
             tables = cursor.fetchall()
             # stupid MySQL bug requires us to drop all the tables first
             for table in tables:
-                command = 'DROP TABLE `%s`'%table[0]
+                command = 'DROP TABLE `%s`' % table[0]
                 logging.debug(command)
                 cursor.execute(command)
-            command = "DROP DATABASE %s"%config.RDBMS_NAME
+            command = "DROP DATABASE %s" % config.RDBMS_NAME
             logging.info(command)
             cursor.execute(command)
             conn.commit()
@@ -87,18 +94,20 @@ def db_nuke(config):
     if os.path.exists(config.DATABASE):
         shutil.rmtree(config.DATABASE)
 
+
 def db_create(config):
     """Create the database."""
     kwargs = connection_dict(config)
     conn = MySQLdb.connect(**kwargs)
     cursor = conn.cursor()
-    command = "CREATE DATABASE %s"%config.RDBMS_NAME
+    command = "CREATE DATABASE %s COLLATE utf8_general_ci" % config.RDBMS_NAME
     if sys.version_info[0] > 2:
         command += ' CHARACTER SET utf8'
     logging.info(command)
     cursor.execute(command)
     conn.commit()
     conn.close()
+
 
 def db_exists(config):
     """Check if database already exists."""
@@ -135,42 +144,42 @@ class Database(rdbms_common.Database):
     # InnoDB is faster, but if you're running <4.0.16 then you'll need to
     # use BDB to pass all unit tests.
     mysql_backend = 'InnoDB'
-    #mysql_backend = 'BDB'
+    # mysql_backend = 'BDB'
 
     hyperdb_to_sql_datatypes = {
-        hyperdb.String : 'TEXT',
-        hyperdb.Date   : 'DATETIME',
-        hyperdb.Link   : 'INTEGER',
-        hyperdb.Interval  : 'VARCHAR(255)',
-        hyperdb.Password  : 'VARCHAR(255)',
-        hyperdb.Boolean   : 'BOOL',
-        hyperdb.Number    : 'REAL',
-        hyperdb.Integer   : 'INTEGER',
+        hyperdb.String:   'TEXT',
+        hyperdb.Date:     'DATETIME',
+        hyperdb.Link:     'INTEGER',
+        hyperdb.Interval: 'VARCHAR(255)',
+        hyperdb.Password: 'VARCHAR(255)',
+        hyperdb.Boolean:  'BOOL',
+        hyperdb.Number:   'REAL',
+        hyperdb.Integer:  'INTEGER',
     }
 
     hyperdb_to_sql_value = {
-        hyperdb.String : str,
+        hyperdb.String:    str,
         # no fractional seconds for MySQL
-        hyperdb.Date   : lambda x: x.formal(sep=' '),
-        hyperdb.Link   : int,
-        hyperdb.Interval  : str,
-        hyperdb.Password  : str,
-        hyperdb.Boolean   : int,
-        hyperdb.Number    : lambda x: x,
-        hyperdb.Integer   : int,
-        hyperdb.Multilink : lambda x: x,    # used in journal marshalling
+        hyperdb.Date:      lambda x: x.formal(sep=' '),  # noqa: E272
+        hyperdb.Link:      int,
+        hyperdb.Interval:  str,
+        hyperdb.Password:  str,
+        hyperdb.Boolean:   int,
+        hyperdb.Number:    lambda x: x,  # noqa: E272
+        hyperdb.Integer:   int,
+        hyperdb.Multilink: lambda x: x,  # used in journal marshalling, noqa: E272
     }
 
     def sql_open_connection(self):
         kwargs = connection_dict(self.config, 'db')
-        self.log_info('open database %r'%(kwargs['db'],))
+        self.log_info('open database %r' % (kwargs['db'],))
         try:
             conn = MySQLdb.connect(**kwargs)
         except MySQLdb.OperationalError as message:
             raise hyperdb.DatabaseError(message)
         cursor = conn.cursor()
         cursor.execute("SET AUTOCOMMIT=0")
-        lvl = isolation_levels [self.config.RDBMS_ISOLATION_LEVEL]
+        lvl = isolation_levels[self.config.RDBMS_ISOLATION_LEVEL]
         cursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL %s" % lvl)
         cursor.execute("START TRANSACTION")
         return (conn, cursor)
@@ -191,10 +200,10 @@ class Database(rdbms_common.Database):
             if message.args[0] != ER.NO_SUCH_TABLE:
                 raise hyperdb.DatabaseError(message)
             self.init_dbschema()
-            self.sql("CREATE TABLE `schema` (`schema` TEXT) ENGINE=%s"%
-                self.mysql_backend)
+            self.sql("CREATE TABLE `schema` (`schema` TEXT) ENGINE=%s" %
+                     self.mysql_backend)
             self.sql('''CREATE TABLE ids (name VARCHAR(255),
-                num INTEGER) ENGINE=%s'''%self.mysql_backend)
+                num INTEGER) ENGINE=%s''' % self.mysql_backend)
             self.sql('create index ids_name_idx on ids(name)')
             self.create_version_2_tables()
 
@@ -219,30 +228,30 @@ class Database(rdbms_common.Database):
     def create_version_2_tables(self):
         # OTK store
         self.sql('''CREATE TABLE otks (otk_key VARCHAR(255),
-            otk_value TEXT, otk_time FLOAT(20))
-            ENGINE=%s'''%self.mysql_backend)
+            otk_value TEXT, otk_time DOUBLE)
+            ENGINE=%s''' % self.mysql_backend)
         self.sql('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
         self.sql('''CREATE TABLE sessions (session_key VARCHAR(255),
-            session_time FLOAT(20), session_value TEXT)
-            ENGINE=%s'''%self.mysql_backend)
+            session_time DOUBLE, session_value TEXT)
+            ENGINE=%s''' % self.mysql_backend)
         self.sql('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')
 
         # full-text indexing store
         self.sql('''CREATE TABLE __textids (_class VARCHAR(255),
             _itemid VARCHAR(255), _prop VARCHAR(255), _textid INT)
-            ENGINE=%s'''%self.mysql_backend)
+            ENGINE=%s''' % self.mysql_backend)
         self.sql('''CREATE TABLE __words (_word VARCHAR(%s),
             _textid INT) ENGINE=%s''' % ((self.indexer.maxlength + 5),
-                                         self.mysql_backend)
-            )
+                                         self.mysql_backend))
         self.sql('CREATE INDEX words_word_ids ON __words(_word)')
         self.sql('CREATE INDEX words_by_id ON __words (_textid)')
         self.sql('CREATE UNIQUE INDEX __textids_by_props ON '
                  '__textids (_class, _itemid, _prop)')
-        sql = 'insert into ids (name, num) values (%s,%s)'%(self.arg, self.arg)
+        sql = 'insert into ids (name, num) values (%s,%s)' % (self.arg,
+                                                              self.arg)
         self.sql(sql, ('__textids', 1))
 
     def add_new_columns_v2(self):
@@ -263,35 +272,35 @@ class Database(rdbms_common.Database):
                     if name in properties:
                         propnames.append(name)
                     continue
-                tn = '%s_%s'%(cn, name)
+                tn = '%s_%s' % (cn, name)
 
                 if name in properties:
                     # grabe the current values
-                    sql = 'select linkid, nodeid from %s'%tn
+                    sql = 'select linkid, nodeid from %s' % tn
                     self.sql(sql)
                     rows = self.cursor.fetchall()
 
                 # drop the old table
                 self.drop_multilink_table_indexes(cn, name)
-                sql = 'drop table %s'%tn
+                sql = 'drop table %s' % tn
                 self.sql(sql)
 
                 if name in properties:
                     # re-create and populate the new table
                     self.create_multilink_table(klass, name)
                     sql = '''insert into %s (linkid, nodeid) values
-                        (%s, %s)'''%(tn, self.arg, self.arg)
+                        (%s, %s)''' % (tn, self.arg, self.arg)
                     for linkid, nodeid in rows:
                         self.sql(sql, (int(linkid), int(nodeid)))
 
             # figure the column names to fetch
-            fetch = ['_%s'%name for name in propnames]
+            fetch = ['_%s' % name for name in propnames]
 
             # select the data out of the old table
             fetch.append('id')
             fetch.append('__retired__')
             fetchcols = ','.join(fetch)
-            sql = 'select %s from _%s'%(fetchcols, cn)
+            sql = 'select %s from _%s' % (fetchcols, cn)
             self.sql(sql)
 
             # unserialise the old data
@@ -347,7 +356,7 @@ class Database(rdbms_common.Database):
             self.drop_class_table_indexes(cn, old_spec[0])
 
             # drop the old table
-            self.sql('drop table _%s'%cn)
+            self.sql('drop table _%s' % cn)
 
             # create the new table
             self.create_class_table(klass)
@@ -355,28 +364,28 @@ class Database(rdbms_common.Database):
             # do the insert of the old data
             args = ','.join([self.arg for x in cols])
             cols = ','.join(cols)
-            sql = 'insert into _%s (%s) values (%s)'%(cn, cols, args)
+            sql = 'insert into _%s (%s) values (%s)' % (cn, cols, args)
             for entry in olddata:
                 self.sql(sql, tuple(entry))
 
             # now load up the old journal data to migrate it
             cols = ','.join('nodeid date tag action params'.split())
-            sql = 'select %s from %s__journal'%(cols, cn)
+            sql = 'select %s from %s__journal' % (cols, cn)
             self.sql(sql)
 
             # data conversions
             olddata = []
             for nodeid, journaldate, journaltag, action, params in \
                     self.cursor.fetchall():
-                #nodeid = int(nodeid)
+                # nodeid = int(nodeid)
                 journaldate = date.Date(journaldate)
-                #params = eval(params)
+                # params = eval(params)
                 olddata.append((nodeid, journaldate, journaltag, action,
-                    params))
+                                params))
 
             # drop journal table and indexes
             self.drop_journal_table_indexes(cn)
-            sql = 'drop table %s__journal'%cn
+            sql = 'drop table %s__journal' % cn
             self.sql(sql)
 
             # re-create journal table
@@ -384,7 +393,7 @@ class Database(rdbms_common.Database):
             dc = self.to_sql_value(hyperdb.Date)
             for nodeid, journaldate, journaltag, action, params in olddata:
                 self.save_journal(cn, cols, nodeid, dc(journaldate),
-                    journaltag, action, params)
+                                  journaltag, action, params)
 
             # make sure the normal schema update code doesn't try to
             # change things
@@ -421,8 +430,15 @@ class Database(rdbms_common.Database):
         #   column length and maxlength.
         c.execute(sql, (self.indexer.maxlength + 5,))
 
+    def fix_version_7_tables(self):
+        # Modify type for session.session_time/otk.otk_time column.
+        sql = "alter table sessions modify session_time double"
+        self.sql(sql)
+        sql = "alter table otks modify otk_time double"
+        self.sql(sql)
+
     def __repr__(self):
-        return '<myroundsql 0x%x>'%id(self)
+        return '<myroundsql 0x%x>' % id(self)
 
     def sql_fetchone(self):
         return self.cursor.fetchone()
@@ -431,7 +447,7 @@ class Database(rdbms_common.Database):
         return self.cursor.fetchall()
 
     def sql_index_exists(self, table_name, index_name):
-        self.sql('show index from %s'%table_name)
+        self.sql('show index from %s' % table_name)
         for index in self.cursor.fetchall():
             if index[2] == index_name:
                 return 1
@@ -445,9 +461,9 @@ class Database(rdbms_common.Database):
         cols.append(('__retired__', 'INTEGER DEFAULT 0'))
 
         # create the base table
-        scols = ','.join(['%s %s'%x for x in cols])
-        sql = 'create table _%s (%s) ENGINE=%s'%(spec.classname, scols,
-            self.mysql_backend)
+        scols = ','.join(['%s %s' % x for x in cols])
+        sql = 'create table _%s (%s) ENGINE=%s' % (spec.classname, scols,
+                                                   self.mysql_backend)
         self.sql(sql)
 
         self.create_class_table_indexes(spec)
@@ -457,7 +473,7 @@ class Database(rdbms_common.Database):
         ''' create the class table for the given spec
         '''
         # create __retired__ index
-        index_sql2 = 'create index _%s_retired_idx on _%s(__retired__)'%(
+        index_sql2 = 'create index _%s_retired_idx on _%s(__retired__)' % (
                         spec.classname, spec.classname)
         self.sql(index_sql2)
 
@@ -467,7 +483,7 @@ class Database(rdbms_common.Database):
                 idx = spec.key + '(255)'
             else:
                 idx = spec.key
-            index_sql3 = 'create index _%s_%s_idx on _%s(_%s)'%(
+            index_sql3 = 'create index _%s_%s_idx on _%s(_%s)' % (
                         spec.classname, spec.key,
                         spec.classname, idx)
             self.sql(index_sql3)
@@ -484,32 +500,33 @@ class Database(rdbms_common.Database):
         prop = self.classes[cn].getprops()[key]
         if isinstance(prop, hyperdb.String):
             sql = '''create unique index _%s_key_retired_idx
-                on _%s(__retired__, _%s(255))'''%(cn, cn, key)
+                on _%s(__retired__, _%s(255))''' % (cn, cn, key)
         else:
             sql = '''create unique index _%s_key_retired_idx
-                on _%s(__retired__, _%s)'''%(cn, cn, key)
+                on _%s(__retired__, _%s)''' % (cn, cn, key)
         self.sql(sql)
 
     def create_class_table_key_index(self, cn, key):
         # mysql requires sizes on TEXT indexes
         prop = self.classes[cn].getprops()[key]
         if isinstance(prop, hyperdb.String):
-            sql = 'create index _%s_%s_idx on _%s(_%s(255))'%(cn, key, cn, key)
+            sql = 'create index _%s_%s_idx on _%s(_%s(255))' % (cn, key,
+                                                                cn, key)
         else:
-            sql = 'create index _%s_%s_idx on _%s(_%s)'%(cn, key, cn, key)
+            sql = 'create index _%s_%s_idx on _%s(_%s)' % (cn, key, cn, key)
         self.sql(sql)
 
     def drop_class_table_indexes(self, cn, key):
         # drop the old table indexes first
-        l = ['_%s_id_idx'%cn, '_%s_retired_idx'%cn]
+        l = ['_%s_id_idx' % cn, '_%s_retired_idx' % cn]
         if key:
-            l.append('_%s_%s_idx'%(cn, key))
+            l.append('_%s_%s_idx' % (cn, key))
 
-        table_name = '_%s'%cn
+        table_name = '_%s' % cn
         for index_name in l:
             if not self.sql_index_exists(table_name, index_name):
                 continue
-            index_sql = 'drop index %s on %s'%(index_name, table_name)
+            index_sql = 'drop index %s on %s' % (index_name, table_name)
             self.sql(index_sql)
 
     def create_journal_table(self, spec):
@@ -517,53 +534,51 @@ class Database(rdbms_common.Database):
             already-determined cols
         '''
         # journal table
-        cols = ','.join(['%s varchar'%x
-            for x in 'nodeid date tag action params'.split()])
         sql = '''create table %s__journal (
-            nodeid integer, date datetime, tag varchar(255),
-            action varchar(255), params text) ENGINE=%s'''%(
-            spec.classname, self.mysql_backend)
+                 nodeid integer, date datetime, tag varchar(255),
+                 action varchar(255), params text) ENGINE=%s''' % (
+                 spec.classname, self.mysql_backend)
         self.sql(sql)
         self.create_journal_table_indexes(spec)
 
     def drop_journal_table_indexes(self, classname):
-        index_name = '%s_journ_idx'%classname
-        if not self.sql_index_exists('%s__journal'%classname, index_name):
+        index_name = '%s_journ_idx' % classname
+        if not self.sql_index_exists('%s__journal' % classname, index_name):
             return
-        index_sql = 'drop index %s on %s__journal'%(index_name, classname)
+        index_sql = 'drop index %s on %s__journal' % (index_name, classname)
         self.sql(index_sql)
 
     def create_multilink_table(self, spec, ml):
         sql = '''CREATE TABLE `%s_%s` (linkid VARCHAR(255),
-            nodeid VARCHAR(255)) ENGINE=%s'''%(spec.classname, ml,
-                self.mysql_backend)
+            nodeid VARCHAR(255)) ENGINE=%s''' % (spec.classname, ml,
+                                                 self.mysql_backend)
         self.sql(sql)
         self.create_multilink_table_indexes(spec, ml)
 
     def drop_multilink_table_indexes(self, classname, ml):
         l = [
-            '%s_%s_l_idx'%(classname, ml),
-            '%s_%s_n_idx'%(classname, ml)
+            '%s_%s_l_idx' % (classname, ml),
+            '%s_%s_n_idx' % (classname, ml)
         ]
-        table_name = '%s_%s'%(classname, ml)
+        table_name = '%s_%s' % (classname, ml)
         for index_name in l:
             if not self.sql_index_exists(table_name, index_name):
                 continue
-            sql = 'drop index %s on %s'%(index_name, table_name)
+            sql = 'drop index %s on %s' % (index_name, table_name)
             self.sql(sql)
 
     def drop_class_table_key_index(self, cn, key):
-        table_name = '_%s'%cn
-        index_name = '_%s_%s_idx'%(cn, key)
+        table_name = '_%s' % cn
+        index_name = '_%s_%s_idx' % (cn, key)
         if not self.sql_index_exists(table_name, index_name):
             return
-        sql = 'drop index %s on %s'%(index_name, table_name)
+        sql = 'drop index %s on %s' % (index_name, table_name)
         self.sql(sql)
 
         # and now the retired unique index too
         index_name = '_%s_key_retired_idx' % cn
         if self.sql_index_exists(table_name, index_name):
-            sql = 'drop index %s on _%s'%(index_name, cn)
+            sql = 'drop index %s on _%s' % (index_name, cn)
             self.sql(sql)
 
     # old-skool id generation
@@ -571,12 +586,12 @@ class Database(rdbms_common.Database):
         ''' Generate a new id for the given class
         '''
         # get the next ID - "FOR UPDATE" will lock the row for us
-        sql = 'select num from ids where name=%s FOR UPDATE'%self.arg
+        sql = 'select num from ids where name=%s FOR UPDATE' % self.arg
         self.sql(sql, (classname, ))
         newid = int(self.cursor.fetchone()[0])
 
         # update the counter
-        sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
+        sql = 'update ids set num=%s where name=%s' % (self.arg, self.arg)
         vals = (int(newid)+1, classname)
         self.sql(sql, vals)
 
@@ -588,7 +603,7 @@ class Database(rdbms_common.Database):
 
         We add one to make it behave like the seqeunces in postgres.
         '''
-        sql = 'update ids set num=%s where name=%s'%(self.arg, self.arg)
+        sql = 'update ids set num=%s where name=%s' % (self.arg, self.arg)
         vals = (int(setid)+1, classname)
         self.sql(sql, vals)
 
@@ -635,6 +650,7 @@ class Database(rdbms_common.Database):
             if str(message) != 'closing a closed connection':
                 raise
 
+
 class MysqlClass:
     case_sensitive_equal = 'COLLATE utf8_bin ='
 
@@ -645,22 +661,22 @@ class MysqlClass:
         ''' "I can't believe it's not a toy RDBMS"
            see, even toy RDBMSes like gadfly and sqlite can do sub-selects...
         '''
-        classname       = proptree.parent.classname
-        multilink_table = proptree.propclass.table_name
-        nodeid_name     = proptree.propclass.nodeid_name
-        linkid_name     = proptree.propclass.linkid_name
+        classname       = proptree.parent.classname       # noqa: E221
+        multilink_table = proptree.propclass.table_name   # noqa: E221
+        nodeid_name     = proptree.propclass.nodeid_name  # noqa: E221
+        linkid_name     = proptree.propclass.linkid_name  # noqa: E221
 
         w = ''
         if proptree.need_retired:
-            w = ' where %s.__retired__=0'%(multilink_table)
+            w = ' where %s.__retired__=0' % (multilink_table)
         if proptree.need_child_retired:
             tn1 = multilink_table
             tn2 = '_' + proptree.classname
-            w = ', %s where %s.%s=%s.id and %s.__retired__=0'%(tn2, tn1,
-                linkid_name, tn2, tn2)
-        self.db.sql('select %s from %s%s'%(nodeid_name, multilink_table, w))
+            w = ', %s where %s.%s=%s.id and %s.__retired__=0' % (
+                tn2, tn1, linkid_name, tn2, tn2)
+        self.db.sql('select %s from %s%s' % (nodeid_name, multilink_table, w))
         s = ','.join([str(x[0]) for x in self.db.sql_fetchall()])
-        return '_%s.id not in (%s)'%(classname, s)
+        return '_%s.id not in (%s)' % (classname, s)
 
     def create_inner(self, **propvalues):
         try:
@@ -690,7 +706,7 @@ class MysqlClass:
         # create the node.  Fortunately, MySQL gives us a unique error
         # code for this situation, so we can detect it here and handle
         # it appropriately.
-        # 
+        #
         # The details of the race condition are as follows, where
         # "X" is a classname, and the term "thread" is meant to
         # refer generically to both threads and processes:
@@ -724,12 +740,16 @@ class MysqlClass:
             raise ValueError('node with key "%s" exists' % key)
         # We don't know what this exception is; reraise it.
         raise
-        
+
 
 class Class(MysqlClass, rdbms_common.Class):
     pass
+
+
 class IssueClass(MysqlClass, rdbms_common.IssueClass):
     pass
+
+
 class FileClass(MysqlClass, rdbms_common.FileClass):
     pass
 

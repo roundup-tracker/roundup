@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Documentation on the XMLRPC interface to the Roundup Issue
 	Tracker. Includes sample clients.
 

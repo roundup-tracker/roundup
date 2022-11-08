@@ -8,10 +8,70 @@ Many entries without name were done by Richard Jones.
 
 **IMPORTANT** The v1.5.x releases of Roundup were the last to support
 Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
-v2.7.2 or later are required to run newer releases of Roundup.  From v2.0
-onwards Python 3.4 and later are also supported.
+v2.7.2 or later are required to run newer releases of Roundup.
+Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
+python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 
-20xx-yy-zz 2.2.0
+2023-xx-yy 2.3.0
+
+Fixed:
+
+- Dockerfile healthcheck fixed so it works when trackers are
+  specified on command line. Also cleanup of unneeded
+  packages. (John Rouillard)
+- issue2551224 - Replace dbm db for sessions and otks when using
+  sqlite. New databases are created for session data (db-session)
+  and one time key data (db-otk). The data is ephemeral so no
+  need to migrate. (John Rouillard)
+- issue2551223 - Timestamps are truncated in mysql and postgresql
+  for session and otk database tables. Modify db schema to use a
+  numeric type that preserves more significant figures. See
+  upgrading.txt for required steps. (John Rouillard)
+- added more testing of BasicDatabase to support use of SQLite
+  for that purpose. Had to fix memory, rdbms and dbm edge cases
+  due to new tests. (John Rouillard)
+- issue2551138 - roundup-server with ssl under python2 throws
+  traceback on socket close. Not sure how this got fixed,
+  but after fixing issue2551137 it was not an issue anymore.
+- issue2551137 - roundup-server won't run with ssl under python3
+  Fixed by using SocketIO and manually adding buffering io and
+  catching SSL.ZeroReturnError indicating SSL has been shut down.
+- add caching header for text/javascript in addition to depricated
+  application/javascript. (John Rouillard)
+- Enable postgres-fts: fix indexer-common::get_indexer so it returns a
+  postgresql-fts Test code paths in get_indexer. (John Rouillard)
+- Fix Postgres native-fts, implement a two phase initialization of the
+  indexer. The native-fts one gets assigned after the database
+  connection is open. (John Rouillard)
+- fix crash if postgresql native-fts backend is asked to index content
+  with null bytes. (John Rouillard)
+- issue2551232 - modify in-reply-to threading when multiple matches
+  Change how in-reply-to threading works in the mailgw. If there is
+  more than one issue with a matching parent message, fall back to
+  subject matching. See upgrading.txt for details. (John Rouillard)
+
+Features:
+
+- Dockerfile build allows adding additional python packages via
+  pip, setting UID tracker is run under. (John Rouillard)
+- issue2551140 - Added redis as a session and otk database for use
+  with anydbm and sqlite primary databases. (John Rouillard)
+- issue2550559 - Pretty printing / formatting for Number types.
+  Added pretty(format='%0.3f') method to NumberHTMLProperty to
+  print numeric values. If value is None, return empty string
+  otherwise str() of value. (John Rouillard)
+- sqlite native-fts backend now uses the stopwords list in config.ini
+  to filter words from queries. (Stopwords are still indexed so that
+  phrase/proximity searches still work.) (John Rouillard)
+- sqlite databases use WAL mode when *created* to improve read
+  concurrency. Existing sqlite database still use rollback journal
+  mode. See upgrading.txt for details. (John Rouillard)
+- issue2551233 - create new roundup-admin command "templates"
+  list all template names, location and descriptions. Should help
+  find where /usr/share/roundup/templates is buried during some
+  install mechanisms. (John Rouillard)
+
+2022-07-13 2.2.0
 
 Fixed:
 
@@ -35,6 +95,8 @@ Fixed:
   length. All other paths with a . in then will be passed through
   without change. This allows items like a JWT to be passed as a path
   element. (John Rouillard)
+- issue2550995 - KeyError classic during roundup-admin install. Add
+  paths to search for locale and template files.
 - issue2551167 - pip install in containerized environments puts
   template and locale files under site-packages where roundup can't find
   them. Change code to find them under site-packages.
@@ -78,6 +140,40 @@ Fixed:
 - issue2551196 - Unset labelprop of a Multilink can lead to Python
   error when using context/history. (reported and initial patch: Nagy
   Gabor, John Rouillard)
+- Fix roundup-server to pass If-Range http header so Ranges work
+  better. (John Rouillard)
+- issue2551183 - Replace references to distutils in
+  roundup/dist/command (John Rouillard)
+- Fix hang if Range request was not able to be satified or a HEAD
+  request was done.
+- Mark strings involved with password reset and registration for
+  translation. (reported: Thomas Arendsen Hein, John Rouillard)
+- issue2551159 - cl.filter fails if filterspec is None (also
+  group and sort). Passing a sort, group or filterprop param
+  set to None to any filter() call should not cause a
+  traceback. It will pretend as though no filter, sort or
+  group was specified. (John Rouillard)
+- issue2551205 - Add support for specifying valid origins
+  for api: xmlrpc/rest. Allows CORS to work with roundup
+  backend. (John Rouillard)
+- new option added to config.ini: login_empty_passwords set to
+  no by default. Setting this to yes allows a user with an
+  empty password to login.
+- issue2551207 - Fix sorting by order attribute if order attributes can
+  be None. Add a test.
+- issue2551203 fix CORS requests by providing proper headers and allowing
+  unauthenticted CORS preflight requests. (Marcus Priesch and John
+  Rouillard)
+- issue2551206 - removed some windows installer references that were missed.
+- document use of jinja2 templating as optional in config.ini
+  file. Report if available or not. (John Rouillard)
+- make setup.py install the Zope and wsgi.py frontends under
+  share/frontends. This matches the install of the cgi-bin/roundup.cgi
+  frontend. (John Rouillard)
+- prevent submit button from showing up when using _generic.item.html
+  if the user doesn't have edit permissions. (John Rouillard)
+- issue2551216 - create new mysql databases using COLLATE
+  utf8_general_ci to prevent crashes in test suite. (John Rouillard)
 
 Features:
 
@@ -139,6 +235,14 @@ Features:
   than 25. Also German words are long. Since there is little chance of
   fixing German to shorten their words, change indexer maxlength to 50.
   (Thomas Arendsen Hein provided patch; patch reworked John Rouillard)
+- issue2551184 - add an i18n object to the roundupdb. This makes it
+  possible to translate error messages in detectors (or actions). The
+  i18n object is now also correctly set for the mail interface:
+  previously the 'language' setting in the [mailgw] section seems to
+  have been ignored. Thanks to Marcus Priesch for the patch.
+- issue2551212 - speed up wsgi interface by caching the tracker
+  instance. Hidden behind a feature flag. See upgrading.txt for
+  details. (Marcus Priesch with feature flag by John Rouillard)
 
 2021-07-13 2.1.0
 

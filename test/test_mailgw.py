@@ -27,6 +27,14 @@ except ImportError:
     skip_pgp = mark_class(pytest.mark.skip(
         reason="Skipping PGP tests: 'gpg' not installed"))
 
+try:
+    import bs4
+    skip_beautifulsoup = lambda func, *args, **kwargs: func
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_beautifulsoup = mark_class(pytest.mark.skip(
+        reason="Skipping beautifulsoup tests: 'bs4' not installed"))
+
 
 from roundup.anypy.email_ import message_from_bytes
 from roundup.anypy.strings import b2s, u2s, s2b
@@ -236,6 +244,10 @@ class MailgwTestAbstractBase(DiffHelper):
 
     def _create_mailgw(self, message, args=()):
         class MailGW(self.instance.MailGW):
+            """call _handle_message as handle_message 
+               the real handle_message reopens the database, and destroys
+               the db that we supply as part of the test.
+            """
             def handle_message(self, message):
                 return self._handle_message(message)
         handler = MailGW(self.instance, args)
@@ -297,7 +309,11 @@ Subject: [issue] Testing...
 
 class MailgwTestCase(MailgwTestAbstractBase, StringFragmentCmpHelper, unittest.TestCase):
 
-    def testTextHtmlMessage(self):
+    @skip_beautifulsoup
+    def testTextHtmlMessageBeautifulSoup(self):
+        self.testTextHtmlMessage(converter='beautifulsoup')
+
+    def testTextHtmlMessage(self, converter='dehtml'):
         html_message='''Content-Type: text/html;
   charset="iso-8859-1"
 From: Chef <chef@bork.bork.bork>
@@ -353,17 +369,20 @@ have to install the win32all package separately (get it from
 </div>
 </body>
 '''
-        text_fragments = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).']
+        text_fragments = {}
+        text_fragments['dehtml'] = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).']
+        text_fragments['beautifulsoup'] = ['Roundup\nHome\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from\nhttp://www.python.org/\n.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\nIf you', (u2s(u'\u2019'), "'"), 're on windows, you will either need to be using the ActiveState python\ndistribution (at\nhttp://www.activestate.com/Products/ActivePython/\n), or you’ll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/\n).']
 
-        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "dehtml"
+        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = converter
         nodeid = self._handle_mail(html_message)
         assert not os.path.exists(SENDMAILDEBUG)
         msgid = self.db.issue.get(nodeid, 'messages')[0]
         self.compareStringFragments(self.db.msg.get(msgid, 'content'),
-                                    text_fragments)
+                                    text_fragments[converter])
 
-        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "none"
-        self.assertRaises(MailUsageError, self._handle_mail, html_message)
+        if converter == 'dehtml':
+            self.db.config.MAILGW_CONVERT_HTMLTOTEXT = "none"
+            self.assertRaises(MailUsageError, self._handle_mail, html_message)
 
     def testMessageWithFromInIt(self):
         nodeid = self._handle_mail('''Content-Type: text/plain;
@@ -1381,22 +1400,31 @@ Content-Transfer-Encoding: quoted-printable
 --001485f339f8f361fb049188dbba--
 '''%html_doc
 
-    def testMultipartTextifyHTML(self):
-        text_fragments = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).\n\numlaut']
+    @skip_beautifulsoup
+    def testMultipartTextifyHTMLBeautifulSoup(self):
+        self.testMultipartTextifyHTML(converter="beautifulsoup")
+
+    def testMultipartTextifyHTML(self, converter='dehtml'):
+        text_fragments = {}
+        text_fragments['dehtml'] = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).\n\numlaut']  + [b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")]
+        text_fragments['beautifulsoup'] = ['Roundup\nHome\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\nRoundup requires Python 2.5 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from\nhttp://www.python.org/\n.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\nIf you', (u2s(u'\u2019'), "'"), 're on windows, you will either need to be using the ActiveState python\ndistribution (at\nhttp://www.activestate.com/Products/ActivePython/\n), or you’ll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/\n).\numlaut'] + [b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")]
+
 
 #  \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f
 # append above with leading space to end of mycontent. It is the 
 # translated content when =E4=F6=FC=C4=D6=DC=DF is added to the html
 # input.
         self.doNewIssue()
-        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = 'dehtml'
+        self.db.config.MAILGW_CONVERT_HTMLTOTEXT = converter
         self._handle_mail(self.multipart_msg_notext)
         messages = self.db.issue.get('1', 'messages')
         messages.sort()
         msg = self.db.msg.getnode(messages[-1])
+
+        print(msg.content)
         # html converted to utf-8 text
         self.compareStringFragments(msg.content,
-                                    text_fragments + [b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")])
+                                    text_fragments[converter])
         self.assertEqual(msg.type, None)
         self.assertEqual(len(msg.files), 2)
         name = "unnamed" # no name for any files
@@ -1407,6 +1435,63 @@ Content-Transfer-Encoding: quoted-printable
         content = { 0: "75,23,16,18\n",
                     1: self.html_doc.replace(" =E4=F6=FC=C4=D6=DC=DF",
                                              b2s(b" \xc3\xa4\xc3\xb6\xc3\xbc\xc3\x84\xc3\x96\xc3\x9c\xc3\x9f")) }
+        email_body = {}
+        email_body['dehtml'] = '''Roundup
+        Home
+Download
+Docs
+Roundup Features
+Installing Roundup
+Upgrading to newer versions of Roundup
+Roundup FAQ
+User Guide
+Customising Roundup
+Administration Guide
+Prerequisites
+
+Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
+anydbm module. Download the latest version from http://www.python.org/.
+It is highly recommended that users install the latest patch version
+of python as these contain many fixes to serious bugs.
+
+Some variants of Linux will need an additional python dev package
+installed for Roundup installation to work. Debian and derivatives, are
+known to require this.
+
+If youre on windows, you will either need to be using the ActiveState python
+distribution (at http://www.activestate.com/Products/ActivePython/), or youll
+have to install the win32all package separately (get it from
+http://starship.python.net/crew/mhammond/win32/).
+'''
+        email_body['beautifulsoup']='''Roundup
+Home
+Download
+Docs
+Roundup Features
+Installing Roundup
+Upgrading to newer versions of Roundup
+Roundup FAQ
+User Guide
+Customising Roundup
+Administration Guide
+Prerequisites
+Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
+anydbm module. Download the latest version from
+http://www.python.org/
+.
+It is highly recommended that users install the latest patch version
+of python as these contain many fixes to serious bugs.
+Some variants of Linux will need an additional python dev package
+installed for Roundup installation to work. Debian and derivatives, are
+known to require this.
+If youre on windows, you will either need to be using the ActiveState python
+distribution (at
+http://www.activestate.com/Products/ActivePython/
+), or youll
+have to install the win32all package separately (get it from
+http://starship.python.net/crew/mhammond/win32/
+).'''
+
         for n, id in enumerate (msg.files):
             f = self.db.file.getnode (id)
             self.assertEqual(f.name, name)
@@ -1447,33 +1532,8 @@ Content-Transfer-Encoding: quoted-printable
 
 Contrary, Mary <mary@test.test> added the comment:
 
-Roundup
-        Home
-Download
-Docs
-Roundup Features
-Installing Roundup
-Upgrading to newer versions of Roundup
-Roundup FAQ
-User Guide
-Customising Roundup
-Administration Guide
-Prerequisites
-
-Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
-anydbm module. Download the latest version from http://www.python.org/.
-It is highly recommended that users install the latest patch version
-of python as these contain many fixes to serious bugs.
-
-Some variants of Linux will need an additional python dev package
-installed for Roundup installation to work. Debian and derivatives, are
-known to require this.
-
-If youre on windows, you will either need to be using the ActiveState python
-distribution (at http://www.activestate.com/Products/ActivePython/), or youll
-have to install the win32all package separately (get it from
-http://starship.python.net/crew/mhammond/win32/).
-
+''' + email_body[converter] +
+'''
 umlaut =C3=A4=C3=B6=C3=BC=C3=84=C3=96=C3=9C=C3=9F
 
 ----------
@@ -3589,7 +3649,6 @@ This is a test submission of a new issue.
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, [self.richard_id, self.mary_id])
-        return nodeid
 
     def testResentFromSwitchedOff(self):
         self.instance.config.EMAIL_KEEP_REAL_FROM = 'yes'
@@ -3608,7 +3667,6 @@ This is a test submission of a new issue.
         l = self.db.issue.get(nodeid, 'nosy')
         l.sort()
         self.assertEqual(l, [self.chef_id, self.richard_id])
-        return nodeid
 
     def testDejaVu(self):
         self.assertRaises(IgnoreLoop, self._handle_mail,
@@ -3693,6 +3751,158 @@ Reply-To: chef@bork.bork.bork
 Message-Id: <dummy_test_message_id>
 
 ''')
+
+
+    def testNoSubjectErrorTranslation(self):
+        """ Use message with no subject to trigger an error """
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id_2>
+
+Just a test reply
+'''
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+        # verify proper value when no translation
+        self.db.config.MAILGW_LANGUAGE = 'en'
+        self.db.config.TRACKER_LANGUAGE = 'en'
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+
+        ### copied from mailgw.py handle_message()
+        language = self.instance.config["MAILGW_LANGUAGE"] or self.instance.config["TRACKER_LANGUAGE"]
+        # use . as tracker home to get .mo files from top level
+        # locale directory.
+        self.assertEqual('en', language)
+        print(i18n.DOMAIN)
+
+        self.db.i18n = i18n.get_translation(language,
+                        self.instance.config['TRACKER_HOME'])
+
+        _ = self.db.i18n.gettext
+        old_translate_ = mailgw._
+        roundupdb._ = mailgw._ = _
+
+        self.db.tx_Source = "email"
+        ### end copy
+
+        # insert translation string
+        self.db.i18n._catalog['\nEmails to Roundup trackers must include a Subject: line!\n'] = 'me me me'
+
+        with self.assertRaises(MailUsageError) as ctx:
+            self._handle_mail(message)
+
+        self.assertEqual(str(ctx.exception), "me me me")
+
+        roundupdb._ = mailgw._ = old_translate_
+
+    def testNoSubjectErrorTranslationDe(self):
+        """ Use message with no subject to trigger an error get output in
+            German. """
+
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id_2>
+
+Just a test reply
+'''
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+        # verify proper value when no translation
+        self.db.config.MAILGW_LANGUAGE = 'de'
+        self.db.config.TRACKER_LANGUAGE = 'de'
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+
+        ### copied from mailgw.py handle_message()
+        language = self.instance.config["MAILGW_LANGUAGE"] or self.instance.config["TRACKER_LANGUAGE"]
+        # use . as tracker home to get .mo files from top level
+        # locale directory.
+        self.assertEqual('de', language)
+        print(i18n.DOMAIN)
+
+        self.db.i18n = i18n.get_translation(language,
+                        self.instance.config['TRACKER_HOME'])
+
+        _ = self.db.i18n.gettext
+        old_translate_ = mailgw._
+        roundupdb._ = mailgw._ = _
+
+        self.db.tx_Source = "email"
+        ### end copy
+
+        de_translation = "\nMails an Roundup müssen eine Subject-Zeile haben (Betreff)!\n"
+
+        with self.assertRaises(MailUsageError) as ctx:
+            self._handle_mail(message)
+
+        self.assertEqual(str(ctx.exception), de_translation)
+
+        roundupdb._ = mailgw._ = old_translate_
+
+    def testNoIssueClassErrorTranslationDe(self):
+        """ Use message with a non-existant issue designator
+            to trigger an error get output in German. """
+
+        message = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id_2>
+Subject: [issue9999999] this is a nonexistant issue
+
+Just a test reply
+'''
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+        # verify proper value when no translation
+        self.db.config.MAILGW_LANGUAGE = 'de'
+        self.db.config.TRACKER_LANGUAGE = 'de'
+        print(self.db.config.MAILGW_LANGUAGE, self.db.config.TRACKER_LANGUAGE)
+
+        ### copied from mailgw.py handle_message()
+        language = self.instance.config["MAILGW_LANGUAGE"] or self.instance.config["TRACKER_LANGUAGE"]
+        # use . as tracker home to get .mo files from top level
+        # locale directory.
+        self.assertEqual('de', language)
+        print(i18n.DOMAIN)
+
+        self.db.i18n = i18n.get_translation(language,
+                        self.instance.config['TRACKER_HOME'])
+
+        _ = self.db.i18n.gettext
+        old_translate_ = mailgw._
+        roundupdb._ = mailgw._ = _
+
+        self.db.tx_Source = "email"
+        ### end copy
+
+        de_translation = "Der in der Betreffzeile Ihre Nachricht bezeichnete Eintrag"
+
+        with self.assertRaises(MailUsageError) as ctx:
+            self._handle_mail(message)
+
+        self.assertIn(de_translation, str(ctx.exception))
+
+        de_translation = """Der Betreff muss einen Klassennamen oder Bezeichner enthalten, um
+anzuzeigen, worum es geht. Zum Beispiel:
+"""
+        with self.assertRaises(MailUsageError) as ctx:
+            self._handle_mail(
+            '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: [frobulated] testing
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+
+        self.assertIn(de_translation, str(ctx.exception))
+
+
+        roundupdb._ = mailgw._ = old_translate_
 
     #
     # TEST FOR INVALID DESIGNATOR HANDLING
@@ -3993,6 +4203,60 @@ Yet another message in the same thread/issue.
 
         self.assertEqual(nodeid, nodeid2)
         self.assertEqual(nodeid, nodeid3)
+
+
+    def testReplytoMultiMatch(self):
+        """ If an in reply-to header matches more than 1 issue:
+            Try a subject match, if that fails create a new issue.
+        """
+
+        # create two issues with the same initial message/messgage-id.
+        nodeid1 = self.doNewIssue()
+        nodeid2 = self.doNewIssue()
+        
+        # set unique title/subject for second issue.
+        self.db.issue.set("2", title="Testing1...")
+
+        # Send an email that will match both issue1 and issue2 by
+        # in-reply-to. As a result we fall back to Subject match, but
+        # the Subject doesn't match issue1 or 2. So it creates a new
+        # issue.
+        nodeid3 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id2>
+In-Reply-To: <dummy_test_message_id>
+Subject: Testing2...
+
+Followup message.
+''')
+        # this will be added to issue3 because of in-reply-to.
+        nodeid4 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id3>
+In-Reply-To: <dummy_test_message_id2>
+Subject: Testing...
+
+Yet another message in the same thread/issue.
+''')
+
+        # this message gets added to issue 2 by subject match.
+        nodeid5 = self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <dummy_test_message_id4>
+In-Reply-To: <dummy_test_message_id>
+Subject: Testing1...
+
+Yet another message in the same thread/issue.
+''')
+
+        self.assertEqual(nodeid3, nodeid4)
+        self.assertEqual(nodeid2, nodeid5)
 
     def testHelpSubject(self):
         message = '''Content-Type: text/plain;

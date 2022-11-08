@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         Critical documentation on how to upgrade the Roundup Issue
 	Tracker. Actions that must or can be taken when upgrading from
 	one version to another are documented here.
@@ -12,7 +12,7 @@ Upgrading to newer versions of Roundup
 
 Please read each section carefully and edit your tracker home files
 accordingly. Note that there is information about upgrade procedures in the
-`administration guide`_.
+`administration guide`_ in the `Software Upgrade`_ section.
 
 If a specific version transition isn't mentioned here (eg. 0.6.7 to 0.6.8)
 then you don't need to do anything. If you're upgrading from 0.5.6 to
@@ -30,10 +30,185 @@ Contents:
 .. contents::
    :local:
 
-.. index:: Upgrading; 2.0.0 to 2.1.0
+.. index:: Upgrading; 2.2.0 to 2.3.0
 
-Migrating from 2.1.0 to 2.x.y
+Migrating from 2.2.0 to 2.3.0
 =============================
+
+Update your ``config.ini`` (required)
+-------------------------------------
+
+Upgrade tracker's config.ini file. Use::
+
+  roundup-admin -i /path/to/tracker updateconfig newconfig.ini
+
+to generate a new ini file preserving all your settings.
+You can then merge any local comments from the tracker's
+``config.ini`` to ``newconfig.ini`` and replace
+``config.ini`` with ``newconfig.ini``.
+
+Rdbms version change from 7 to 8 (required)
+-------------------------------------------
+
+This release includes a change that requires updates to the
+database schema.
+
+Sessions and one time key (otks) tables in the Mysql and
+PostgreSQL database use a numeric type that
+truncates/rounds expiration timestamps. This results in
+entries being purged early or late (depending on whether
+it rounds up or down). The discrepancy is a couple of
+days for Mysql or a couple of minutes for PostgreSQL.
+  
+Session keys stay for a week or more and CSRF keys are
+two weeks by default. As a result, this isn't usually a
+visible issue. This migration updates the numeric types
+to ones that supports more significant figures.
+
+You should backup your instance and run the
+``roundup-admin -i <tracker_home> migrate``
+command for all your trackers once you've
+installed the latest code base.
+
+Do this before you use the web, command-line or mail
+interface and before any users access the tracker.
+
+If successful, this command will respond with either
+"Tracker updated" (if you've not previously run it on an
+RDBMS backend) or "No migration action required" (if you
+have run it, or have used another interface to the tracker,
+or are using anydbm).
+
+Session/OTK data storage for SQLite backend changed (required)
+--------------------------------------------------------------
+
+Roundup stores a lot of ephemeral data:
+
+* login session tokens,
+* rate limits
+* password reset attempt tokens
+* one time keys
+* and anti CSRF keys.
+
+These were stored using dbm style files while the main data
+is stored in a SQLite db. Using both dbm and sqlite style
+files is surprising and due to how we lock dbm files can be
+a performance issue.
+
+However you can continue to use the dbm files by setting the
+``backend`` option in the ``[sessiondb]`` section of
+``config.ini`` to ``anydbm``.
+
+If you do not change the setting, two sqlite databases
+called ``db-otk`` and ``db-session`` replace the dbm
+databases. Once you make the change the old ``otks`` and
+``sessions`` dbm databases can be removed.
+
+Note this replacement will require users to log in again and
+refresh web pages to save data. It is best if people save
+all their changes and log out of Roundup before the upgrade
+is done to minimize confusion. Because the data is
+ephemeral, there is no plan to migrate this data to the new
+SQLite databases. If you want to keep using the data set the
+``sessiondb`` ``backend`` option as described above.
+
+Session/OTK data storage using Redis (optional)
+-----------------------------------------------
+
+You can store your ephemeral data in a Redis database. This
+provides significantly better performance for ephemeral data
+than SQLite or dbm files. See the section `Using Redis for
+Session Databases`_ in the `administration guide`_
+
+
+.. _Using Redis for Session Databases:
+    admin_guide.html#using-redis-for-session-databases
+
+New SQLite databases created with WAL mode journaling (optional)
+----------------------------------------------------------------
+
+By default, SQLite databases use a rollback journal when
+writing an update. The rollback journal stores a copy of the
+data from before the update. One downside of this is that
+all reads have to be suspended while a write is
+occurring. SQLite has an alternate way of insuring ACID
+compliance by using a WAL (write ahead log) journal.
+
+Version 2.3.0 of Roundup, creates new SQLite databases using
+WAL journaling. With WAL, a writer does not block readers
+and readers do not block writing an update. This keeps
+Roundup accessible even under a heavy write load (e.g. when
+bulk loading data or automated updates via REST).
+
+If you want to convert your existing SQLite db to WAL mode:
+
+   1. check the current journal mode on your database
+      using::
+
+        sqlite3 <tracker_home>/db/db "pragma journal_mode;"
+
+   2. If it returns ``delete``, change it to WAL mode using::
+
+        sqlite3 <tracker_home>/db/db "pragma journal_mode=WAL;"
+ 
+   3. verify by running the command in step 1 again and you
+      should get ``wal``.
+
+If you are using SQLite for session and otk databases,
+perform the same steps replacing ``db`` with ``db-session``
+and ``db-otk``.
+
+If you find WAL mode is not working for you, you can set the
+journal method to a rollback journal (``delete`` mode) by
+using step 2 and replacing ``wal`` with ``delete``. (Note:
+SQLite supports other journaling modes, but only ``wal`` and
+``delete`` persist. Roundup doesn't set a journaling mode
+when it opens the database, so options such as ``truncate``
+are not used.)
+
+For details on WAL mode see `<https://www.sqlite.org/wal.html>`_
+and `<https://www.sqlite.org/pragma.html#pragma_journal_mode>`_.
+
+Change in processing of In-Reply_to email header
+------------------------------------------------
+
+Messages received via email usually include a ``[issue23]``
+designator in the subject line. This indicates what issue is
+being updated. If the designator is missing, Roundup tries
+to find the correct issue by using the in-reply-to email
+header.
+
+The former code appends the new message to the first issue
+found with a message matching the in-reply-to
+header. Usually a message is associated with only one
+issue. However nothing in Roundup requires that.
+
+In this release, the in-reply-to matching is disabled if
+there are multiple issues with the same message. In this
+case, subject matching is used to try to find the matching
+issue.
+
+If you don't have messages assigned to multiple issues you
+will see no change. If you do have multi-linked messages
+this will hopefully result in better message->issue
+matching.
+
+.. index:: Upgrading; 2.1.0 to 2.2.0
+
+Migrating from 2.1.0 to 2.2.0
+=============================
+
+Update your ``config.ini`` (required)
+-------------------------------------
+
+Upgrade tracker's config.ini file. Use::
+
+  roundup-admin -i /path/to/tracker updateconfig newconfig.ini
+
+to generate a new ini file preserving all your settings.
+You can then merge any local comments from the tracker's
+``config.ini`` to ``newconfig.ini`` and replace
+``config.ini`` with ``newconfig.ini``.
 
 Rdbms version change from 6 to 7 (required)
 -------------------------------------------
@@ -48,8 +223,8 @@ schema:
   2. Some databases that include native full-text search (native-fts
      indexer) searching are now supported.
 
-You should run the ``roundup-admin migrate`` command for your
-tracker once you've installed the latest codebase.
+You should run the ``roundup-admin -i <tracker_home> migrate`` command
+for all your trackers once you've installed the latest codebase.
 
 Do this before you use the web, command-line or mail interface
 and before any users access the tracker.
@@ -59,9 +234,9 @@ updated" (if you've not previously run it on an RDBMS backend) or
 "No migration action required" (if you have run it, or have used
 another interface to the tracker, or are using anydbm).
 
-See `below for directions on enabling native-fts`_.
+See `below if you want to enable native-fts searching`_.
 
-.. _below for directions on enabling native-fts: \
+.. _below if you want to enable native-fts searching: \
     #enhanced-full-text-search-optional
 
 The increase in indexed word length also affects whoosh and xapian
@@ -69,20 +244,35 @@ backends. You may want to run ``roundup-admin -i tracker_home
 reindex`` if you want to index or search for longer words in your full
 text searches. Re-indexing make take some time.
 
+Check new login_empty_passwords setting (required)
+--------------------------------------------------
+
+In this version of Roundup, users with a blank password are not
+allowed to login. Blank passwords have been allowed since 2002, but
+2022 is a different time. If you have a use case that requires a user
+to login without a password, set the ``login_empty_passwords`` setting
+in the ``web`` section of ``config.ini`` to ``yes``. In
+general this should be left at its default value of ``no``.
+
+Check allowed_api_origins setting (optional)
+--------------------------------------------
+
+If you are using the REST or xmlrpc api's from an origin
+that is different from your roundup tracker, you will need
+to add your allowed origins to the allowed_api_origins in
+your updated ``config.ini``. Upgrade your ``config.ini`` as
+described above then read the documentation for the setting
+in ``config.ini``.
+
 Check compression settings (optional)
 -------------------------------------
 
 Read the `administration guide`_ section on `Configuring Compression`_.
 
-Upgrade tracker's config.ini file. Use::
-
-  roundup-admin -i /path/to/tracker updateconfig newconfig.ini
-
-to generate a new ini file preserving all your settings. You can then
-merge any local comments from the tracker's ``config.ini`` into
-``newconfig.ini``. Compare the old and new files and configure new
-compression settings as you want. Then replace ``config.ini`` with the
-``newconfig.ini`` file.
+Upgrade your tracker's config.ini as described
+above. Compare the old and new files and configure new
+compression settings as you want. Then replace
+``config.ini`` with the ``newconfig.ini`` file.
 
 Search added to user index page (optional)
 ------------------------------------------
@@ -180,6 +370,47 @@ The example uses interactive mode (indicated by the ``roundup>``
 prompt). This prevents the new password from showing up in the output
 of ps or shell history. The new password will be encrypted using the
 default encryption method (usually pbkdf2).
+
+Enable performance improvement for wsgi mode (optional)
+-------------------------------------------------------
+
+There is an experimental wsgi performance improvement mode that caches
+the loaded roundup instance. This eliminates disk reads that are
+incurred on each connection. In one report it improves speed by a
+factor of 2 to 3 times. To enable this you should add a feature flag
+to your Roundup wsgi wrapper (see the file
+``.../share/frontends/wsgi.py``) so it looks like::
+
+   feature_flags = { "cache_tracker": "" }
+   app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+
+to enable this mode. Note that this is experimental and was added
+during the 2.2.0 beta period, so it is enabled using a feature flag.
+If you use this and it works for you please followup with an email to
+the roundup-users at lists.sourceforge.net mailing list so we can
+enable it by default in a future release.
+
+
+Hide submit button during readonly use of _generic.item.html (optional)
+-----------------------------------------------------------------------
+
+The submit button in _generic.item.html always shows up even when the
+user doesn't have edit perms. Change the ``context/submit`` html to
+read::
+
+   <td colspan=3 tal:content="structure context/submit"
+       tal:condition="context/is_edit_ok">
+
+in your TAL based templates. The ``jinja2`` based templates are
+missing this file, but if you implemented one you want to surround the
+jinja2 code with::
+
+  {% if context.is_view_ok() %}
+    <submit button code here>
+  {% endif %}
+
+
+.. index:: Upgrading; 2.0.0 to 2.1.0
 
 Migrating from 2.0.0 to 2.1.0
 =============================
@@ -928,13 +1159,13 @@ the @csrf element for that form.
 
 Errors and Troubleshooting - xmlrpc Required Header Missing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-When performing and xmlrpc call, if you see something like:
+When performing and xmlrpc call, if you see something like::
 
   xmlrpclib.Fault: <Fault 1: "<class
      'roundup.exceptions.UsageError'>:Required Header Missing">
 
 change the setting of csrf_enforce_header_x-requested-with in
-config.ini to no. So it looks like:
+config.ini to no. So it looks like::
 
   csrf_enforce_header_x-requested-with = no
 
@@ -952,7 +1183,7 @@ Support for SameSite cookie option for session cookie
 
 Support for serving the session cookie using the SameSite cookie option
 has been added. By default it is set to lax to provide a better user
-experience. But this can be changes to strict or the option can be
+experience. But this can be changed to strict or the option can be
 removed entirely.
 
 Using the process for merging config.ini changes described in
@@ -3397,3 +3628,4 @@ copy.
 .. _PostgreSQL's full text search: https://www.postgresql.org/docs/current/textsearch.html
 .. _`administration guide notes on native-fts`: admin_guide.html#configuring-native-fts-full-text-search
 .. _Configuring Compression: admin_guide.html#configuring-compression
+.. _Software Upgrade: admin_guide.html#software-upgrade

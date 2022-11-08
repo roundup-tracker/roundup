@@ -6,16 +6,17 @@ class. It's now also used for One Time Key handling too.
 """
 __docformat__ = 'restructuredtext'
 
-import os, marshal, time, logging, random
+import marshal, os, random, time
 
 from roundup.anypy.html import html_escape as escape
 
 from roundup import hyperdb
 from roundup.i18n import _
 from roundup.anypy.dbm_ import anydbm, whichdb
+from roundup.backends.sessions_common import SessionCommon
 
 
-class BasicDatabase:
+class BasicDatabase(SessionCommon):
     ''' Provide a nice encapsulation of an anydbm store.
 
         Keys are id strings, values are automatically marshalled data.
@@ -88,11 +89,26 @@ class BasicDatabase:
 
     def set(self, infoid, **newvalues):
         db = self.opendb('c')
+        timestamp = None
         try:
             if infoid in db:
                 values = marshal.loads(db[infoid])
+                try:
+                    timestamp = values['__timestamp']
+                except KeyError:
+                    pass  # stay at None
             else:
-                values = {'__timestamp': time.time()}
+                values = {}
+
+            if '__timestamp' in newvalues:
+                try:
+                    float(newvalues['__timestamp'])
+                except ValueError:
+                    # keep original timestamp if present
+                    newvalues['__timestamp'] = timestamp or time.time()
+            else:
+                newvalues['__timestamp'] = time.time()
+
             values.update(newvalues)
             db[infoid] = marshal.dumps(values)
         finally:
@@ -132,7 +148,6 @@ class BasicDatabase:
         dbm = __import__(db_type)
 
         retries_left = 15
-        logger = logging.getLogger('roundup.hyperdb.backend.sessions')
         while True:
             try:
                 handle = dbm.open(path, mode)
@@ -142,20 +157,30 @@ class BasicDatabase:
                 #   [Errno 11] Resource temporarily unavailable retry
                 # FIXME: make this more specific
                 if retries_left < 10:
-                    logger.warning('dbm.open failed, retrying %s left: %s'%(retries_left,e))
+                    self.log_warning(
+                        'dbm.open failed on ...%s, retry %s left: %s, %s' %
+                        (path[-15:], 15-retries_left, retries_left, e))
                 if retries_left < 0:
                     # We have used up the retries. Reraise the exception
                     # that got us here.
                     raise
                 else:
                     # stagger retry to try to get around thundering herd issue.
-                    time.sleep(random.randint(0,25)*.005)
+                    time.sleep(random.randint(0, 25)*.005)
                     retries_left = retries_left - 1
                     continue  # the while loop
         return handle
 
     def commit(self):
         pass
+
+    def lifetime(self, key_lifetime=0):
+        """Return the proper timestamp for a key with key_lifetime specified
+           in seconds. Default lifetime is 0.
+        """
+        now = time.time()
+        week = 60*60*24*7
+        return now - week + key_lifetime
 
     def close(self):
         pass

@@ -5,6 +5,8 @@ from roundup import hyperdb
 from .db_test_base import DBTest, ROTest, SchemaTest, config, setupSchema
 from roundup.test import memorydb
 
+from roundup.anypy import strings
+
 class memorydbOpener:
     module = memorydb
 
@@ -54,10 +56,22 @@ class memorydbSchemaTest(memorydbOpener, SchemaTest, unittest.TestCase):
 
 from .session_common import SessionTest
 class memorydbSessionTest(memorydbOpener, SessionTest, unittest.TestCase):
+    s2b = lambda x,y: strings.s2b(y)
+
     def setUp(self):
         self.db = self.module.Database(config, 'admin')
         setupSchema(self.db, 1, self.module)
         self.sessions = self.db.sessions
+        self.db.Session = self.sessions
+        self.otks = self.db.otks
+        self.db.Otk = self.otks
+
+    def get_ts(self):
+        return (self.sessions.get('random_session', '__timestamp'),)
+
+    def testDbType(self):
+        self.assertIn("memorydb", repr(self.db))
+        self.assertIn("{}", repr(self.db.Session))
 
 # vim: set filetype=python ts=4 sw=4 et si
 

@@ -23,14 +23,21 @@ from __future__ import print_function
 
 __docformat__ = 'restructuredtext'
 
-import csv, getopt, getpass, operator, os, re, shutil, sys
+import csv
+import getopt
+import getpass
+import operator
+import os
+import re
+import shutil
+import sys
 
 from roundup import date, hyperdb, init, password, token
 from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.configuration import (CoreConfig, NoConfigError,
                                    ParsingOptionError, UserConfig)
-from roundup.i18n import _
+from roundup.i18n import _, get_translation
 from roundup.exceptions import UsageError
 from roundup.anypy.my_input import my_input
 from roundup.anypy.strings import repr_export
@@ -157,10 +164,12 @@ Help:
         commands.sort()
         commands.append(_(
 """Commands may be abbreviated as long as the abbreviation
-matches only one command, e.g. l == li == lis == list."""))
+matches only one command, e.g. l == li == lis == list."""))  # noqa: E122
         sys.stdout.write('\n'.join(commands) + '\n\n')
 
-    def help_commands_html(self, indent_re=re.compile(r'^(\s+)\S+')):
+    indent_re = re.compile(r'^(\s+)\S+')
+
+    def help_commands_html(self, indent_re=indent_re):
         """ Produce an HTML command list.
         """
         commands = sorted(iter(self.commands.values()),
@@ -174,7 +183,7 @@ matches only one command, e.g. l == li == lis == list."""))
     <td><tt>%(usage)s</tt><p>
 <pre>""" % locals())
             indent = indent_re.match(h[3])
-            if indent: indent = len(indent.group(1))
+            if indent: indent = len(indent.group(1))  # noqa: E701
             for line in h[3:]:
                 if indent:
                     print(line[indent:])
@@ -249,8 +258,10 @@ Command help:
             print(_('%s:') % name)
             print('   ', _(command.__doc__))
 
-    def do_help(self, args, nl_re=re.compile('[\r\n]'),
-                indent_re=re.compile(r'^(\s+)\S+')):
+    nl_re = re.compile('[\r\n]')
+    # indent_re defined above
+
+    def do_help(self, args, nl_re=nl_re, indent_re=indent_re):
         ''"""Usage: help topic
         Give help about topic.
 
@@ -281,7 +292,7 @@ Command help:
             lines = nl_re.split(_(help.__doc__))
             print(lines[0])
             indent = indent_re.match(lines[1])
-            if indent: indent = len(indent.group(1))
+            if indent: indent = len(indent.group(1))  # noqa: E701
             for line in lines[1:]:
                 if indent:
                     print(line[indent:])
@@ -289,25 +300,23 @@ Command help:
                     print(line)
         return 0
 
-    def listTemplates(self):
+    def listTemplates(self, trace_search=False):
         """ List all the available templates.
 
         Look in the following places, where the later rules take precedence:
 
          1. <roundup.admin.__file__>/../../share/roundup/templates/*
             this is where they will be if we installed an egg via easy_install
+            or we are in the source tree.
          2. <prefix>/share/roundup/templates/*
             this should be the standard place to find them when Roundup is
-            installed
+            installed using setup.py without a prefix
          3. <roundup.admin.__file__>/../../<sys.prefix>/share/\
                  roundup/templates/* which is where they will be found if
             roundup is installed as a wheel using pip install
-         4. <roundup.admin.__file__>/../templates/*
-            this will be used if Roundup's run in the distro (aka. source)
-            directory
-         5. <current working dir>/*
+         4. <current working dir>/*
             this is for when someone unpacks a 3rd-party template
-         6. <current working dir>
+         5. <current working dir>
             this is for someone who "cd"s to the 3rd-party template dir
         """
         # OK, try <prefix>/share/roundup/templates
@@ -320,15 +329,19 @@ Command help:
         #    (2 dirs up)
         #
         # we're interested in where the directory containing "share" is
+        debug = False
         templates = {}
+        if debug: print(__file__)  # noqa: E701
         for N in 2, 4, 5, 6:
             path = __file__
             # move up N elements in the path
             for _i in range(N):
                 path = os.path.dirname(path)
             tdir = os.path.join(path, 'share', 'roundup', 'templates')
+            if debug or trace_search: print(tdir)  # noqa: E701
             if os.path.isdir(tdir):
                 templates = init.listTemplates(tdir)
+                if debug: print(" Found templates breaking loop")  # noqa: E701
                 break
 
         # search for data files parallel to the roundup
@@ -347,25 +360,39 @@ Command help:
         # path is /usr/local/lib/python3.10/site-packages
         tdir = os.path.join(path, sys.prefix[1:], 'share',
                             'roundup', 'templates')
+        if debug or trace_search: print(tdir)  # noqa: E701
         if os.path.isdir(tdir):
             templates.update(init.listTemplates(tdir))
 
-        # OK, now try as if we're in the roundup source distribution
-        # directory, so this module will be in .../roundup-*/roundup/admin.py
-        # and we're interested in the .../roundup-*/ part.
-        path = __file__
-        for _i in range(2):
-            path = os.path.dirname(path)
-        tdir = os.path.join(path, 'templates')
-        if os.path.isdir(tdir):
-            templates.update(init.listTemplates(tdir))
+        try:
+            # sigh pip 3.10 in virtual env finds another place to bury them.
+            # why local and sys.base_prefix are in path I do not know.
+            # path is /usr/local/lib/python3.10/site-packages
+            tdir = os.path.join(path, sys.base_prefix[1:], 'local', 'share',
+                                'roundup', 'templates')
+            if debug or trace_search: print(tdir)  # noqa: E701
+            if os.path.isdir(tdir):
+                templates.update(init.listTemplates(tdir))
+                # path is /usr/local/lib/python3.10/site-packages
+
+            tdir = os.path.join(path, sys.base_prefix[1:], 'share',
+                                'roundup', 'templates')
+            if debug or trace_search: print(tdir)  # noqa: E701
+            if os.path.isdir(tdir):
+                templates.update(init.listTemplates(tdir))
+        except AttributeError:
+            pass  # sys.base_prefix doesn't work under python2
 
         # Try subdirs of the current dir
         templates.update(init.listTemplates(os.getcwd()))
+        if debug or trace_search: print(os.getcwd() + '/*')  # noqa: E701
 
         # Finally, try the current directory as a template
         template = init.loadTemplateInfo(os.getcwd())
+        if debug or trace_search: print(os.getcwd())  # noqa: E701
         if template:
+            if debug: print("  Found template %s" %   # noqa: E701
+                            template['name'])
             templates[template['name']] = template
 
         return templates
@@ -418,7 +445,7 @@ Command help:
                 ok = my_input(_(
 """WARNING: There appears to be a tracker in "%(tracker_home)s"!
 If you re-install it, you will lose all the data!
-Erase it? Y/N: """) % locals())
+Erase it? Y/N: """) % locals())  # noqa: E122
                 if ok.strip().lower() != 'y':
                     return 0
 
@@ -507,10 +534,9 @@ Erase it? Y/N: """) % locals())
  You MUST run the "roundup-admin initialise" command once you've performed
  the above steps.
 ---------------------------------------------------------------------------
-""") % {
-    'database_config_file': os.path.join(tracker_home, 'schema.py'),
-    'database_init_file': os.path.join(tracker_home, 'initial_data.py'),
-})
+""") % {'database_config_file': os.path.join(tracker_home, 'schema.py'),
+        'database_init_file': os.path.join(tracker_home, 'initial_data.py')}) \
+        # noqa: E122
         return 0
 
     def _get_choice(self, list_name, prompt, options, argument, default=None):
@@ -582,7 +608,7 @@ Erase it? Y/N: """) % locals())
                 ok = my_input(_(
 """WARNING: The database is already initialised!
 If you re-initialise it, you will lose all the data!
-Erase it? Y/N: """))
+Erase it? Y/N: """))  # noqa: E122
                 if ok.strip().lower() != 'y':
                     return 0
 
@@ -639,7 +665,8 @@ Erase it? Y/N: """))
                         property = properties[propname]
                         if not (isinstance(property, hyperdb.Multilink) or
                                 isinstance(property, hyperdb.Link)):
-                            raise UsageError(_('property %s is not of type'
+                            raise UsageError(_(
+                                'property %s is not of type'
                                 ' Multilink or Link so -d flag does not '
                                 'apply.') % propname)
                         propclassname = self.db.getclass(property.classname).classname
@@ -656,7 +683,8 @@ Erase it? Y/N: """))
                         property = properties[propname]
                         if not (isinstance(property, hyperdb.Multilink) or
                                 isinstance(property, hyperdb.Link)):
-                            raise UsageError(_('property %s is not of type'
+                            raise UsageError(_(
+                                'property %s is not of type'
                                 ' Multilink or Link so -d flag does not '
                                 'apply.') % propname)
                         propclassname = self.db.getclass(property.classname).classname
@@ -787,8 +815,10 @@ Erase it? Y/N: """))
                         try:
                             curclassname = curclass.getprops()[pn].classname
                         except KeyError:
-                            raise UsageError(_("Class %(curclassname)s has "
-                            "no property %(pn)s in %(propname)s." % locals()))
+                            raise UsageError(_(
+                                "Class %(curclassname)s has "
+                                "no property %(pn)s in %(propname)s." %
+                                locals()))
                         # get class object
                         curclass = self.get_class(curclassname)
                     except AttributeError:
@@ -966,7 +996,7 @@ Erase it? Y/N: """))
         if len(args) == 1:
             # ask for the properties
             for key in properties:
-                if key == 'id': continue
+                if key == 'id': continue  # noqa: E701
                 value = properties[key]
                 name = value.__class__.__name__
                 if isinstance(value, hyperdb.Password):
@@ -978,7 +1008,8 @@ Erase it? Y/N: """))
                         again = getpass.getpass(_('   %(propname)s (Again): ')
                                                 %
                                                 {'propname': key.capitalize()})
-                        if value != again: print(_('Sorry, try again...'))
+                        if value != again:
+                            print(_('Sorry, try again...'))
                     if value:
                         props[key] = value
                 else:
@@ -993,7 +1024,8 @@ Erase it? Y/N: """))
         for propname in props:
             try:
                 props[propname] = hyperdb.rawToHyperdb(self.db, cl, None,
-                                                    propname, props[propname])
+                                                       propname,
+                                                       props[propname])
             except hyperdb.HyperdbValueError as message:
                 raise UsageError(message)
 
@@ -1063,6 +1095,34 @@ Erase it? Y/N: """))
                                        '"%(propname)s"') % locals())
                 print(_('%(nodeid)4s: %(value)s') % locals())
         return 0
+
+    def do_templates(self, args):
+        ''"""Usage: templates [trace_search]
+        List templates and their installed directories.
+
+        With trace_search also list all directories that are
+        searched for templates.
+        """
+        import textwrap
+
+        trace_search = False
+        if args and args[0] == "trace_search":
+            trace_search = True
+
+        templates = self.listTemplates(trace_search=trace_search)
+
+        for name in sorted(list(templates.keys())):
+            templates[name]['description'] = textwrap.fill(
+                "\n".join([line.lstrip() for line in
+                           templates[name]['description'].split("\n")]),
+                70,
+                subsequent_indent="      "
+            )
+            print("""
+Name: %(name)s
+Path: %(path)s
+Desc: %(description)s
+""" % templates[name])
 
     def do_table(self, args):
         ''"""Usage: table classname [property[,property]*]
@@ -1355,7 +1415,7 @@ Erase it? Y/N: """))
 
                 classkey = cl.getkey()
                 if classkey:  # False sorts before True, so negate is_retired
-                    keysort = lambda i: (cl.get(i, classkey),
+                    keysort = lambda i: (cl.get(i, classkey),  # noqa: E731
                                          not cl.is_retired(i))
                     all_nodes.sort(key=keysort)
                 # if there is no classkey no need to sort
@@ -1453,36 +1513,33 @@ Erase it? Y/N: """))
             cl = self.get_class(classname)
 
             # ensure that the properties and the CSV file headings match
-            f = open(os.path.join(dir, file), 'r')
-            reader = csv.reader(f, colon_separated)
-            file_props = None
-            maxid = 1
-            # loop through the file and create a node for each entry
-            for n, r in enumerate(reader):
-                if file_props is None:
-                    file_props = r
-                    continue
+            with open(os.path.join(dir, file), 'r') as f:
+                reader = csv.reader(f, colon_separated)
+                file_props = None
+                maxid = 1
+                # loop through the file and create a node for each entry
+                for n, r in enumerate(reader):
+                    if file_props is None:
+                        file_props = r
+                        continue
 
-                if self.verbose:
-                    sys.stdout.write('\rImporting %s - %s' % (classname, n))
-                    sys.stdout.flush()
+                    if self.verbose:
+                        sys.stdout.write('\rImporting %s - %s' % (classname, n))
+                        sys.stdout.flush()
 
-                # do the import and figure the current highest nodeid
-                nodeid = cl.import_list(file_props, r)
-                if hasattr(cl, 'import_files') and import_files:
-                    cl.import_files(dir, nodeid)
-                maxid = max(maxid, int(nodeid))
+                    # do the import and figure the current highest nodeid
+                    nodeid = cl.import_list(file_props, r)
+                    if hasattr(cl, 'import_files') and import_files:
+                        cl.import_files(dir, nodeid)
+                    maxid = max(maxid, int(nodeid))
 
-            # (print to sys.stdout here to allow tests to squash it .. ugh)
-            print(file=sys.stdout)
-
-            f.close()
+                # (print to sys.stdout here to allow tests to squash it .. ugh)
+                print(file=sys.stdout)
 
             # import the journals
-            f = open(os.path.join(args[0], classname + '-journals.csv'), 'r')
-            reader = csv.reader(f, colon_separated)
-            cl.import_journals(reader)
-            f.close()
+            with open(os.path.join(args[0], classname + '-journals.csv'), 'r') as f:
+                reader = csv.reader(f, colon_separated)
+                cl.import_journals(reader)
 
             # (print to sys.stdout here to allow tests to squash it .. ugh)
             print('setting', classname, maxid+1, file=sys.stdout)
@@ -1539,7 +1596,9 @@ Erase it? Y/N: """))
         self.db_uncommitted = True
         return 0
 
-    def do_reindex(self, args, desre=re.compile('([A-Za-z]+)([0-9]+)')):
+    designator_re = re.compile('([A-Za-z]+)([0-9]+)')
+
+    def do_reindex(self, args, desre=designator_re):
         ''"""Usage: reindex [classname|designator]*
         Re-generate a tracker's search indexes.
 
@@ -1596,8 +1655,9 @@ Erase it? Y/N: """))
                 d = permission.__dict__
                 if permission.klass:
                     if permission.properties:
-                        sys.stdout.write(_(' %(description)s (%(name)s for "%(klass)s"' +
-                          ': %(properties)s only)\n') % d)
+                        sys.stdout.write(_(
+                            ' %(description)s (%(name)s for "%(klass)s"' +
+                            ': %(properties)s only)\n') % d)
                         # verify that properties exist; report bad props
                         bad_props = []
                         cl = self.db.getclass(permission.klass)
@@ -1608,7 +1668,11 @@ Erase it? Y/N: """))
                             else:
                                 bad_props.append(p)
                         if bad_props:
-                            sys.stdout.write(_('\n  **Invalid properties for %(class)s: %(props)s\n\n') % {"class": permission.klass, "props": bad_props})
+                            sys.stdout.write(_(
+                                '\n  **Invalid properties for %(class)s: '
+                                '%(props)s\n\n') % {
+                                    "class": permission.klass,
+                                    "props": bad_props})
                             return 1
                     else:
                         sys.stdout.write(_(' %(description)s (%(name)s for '
@@ -1638,7 +1702,7 @@ Erase it? Y/N: """))
         It's safe to run this even if it's not required, so just get
         into the habit.
         """
-        if getattr(self.db, 'db_version_updated'):
+        if self.db.db_version_updated:
             print(_('Tracker updated'))
             self.db_uncommitted = True
         else:
@@ -1700,6 +1764,8 @@ Erase it? Y/N: """))
             except UsageError as message:  # noqa: F841
                 print(_('Error: %(message)s') % locals())
                 return 1
+        elif command == "templates":
+            return self.do_templates(args[1:])
 
         # get the tracker
         try:
@@ -1712,13 +1778,19 @@ Erase it? Y/N: """))
             self.tracker_home = ''
             print(_("Error: Couldn't open tracker: %(message)s") % locals())
             return 1
-        except ParsingOptionError as message: # message used via locals
+        # message used via locals
+        except ParsingOptionError as message:  # noqa: F841
             print("%(message)s" % locals())
             return 1
 
         # only open the database once!
         if not self.db:
             self.db = tracker.open(self.name)
+            # dont use tracker.config["TRACKER_LANGUAGE"] here as the
+            # cli operator likely wants to have i18n as set in the
+            # environment.
+            # This is needed to fetch the locale's of the tracker's home dir.
+            self.db.i18n = get_translation(tracker_home=tracker.tracker_home)
 
         self.db.tx_Source = 'cli'
 
@@ -1753,13 +1825,13 @@ Erase it? Y/N: """))
             except EOFError:
                 print(_('exit...'))
                 break
-            if not command: continue
+            if not command: continue  # noqa: E701
             try:
                 args = token.token_split(command)
             except ValueError:
                 continue        # Ignore invalid quoted token
-            if not args: continue
-            if args[0] in ('quit', 'exit'): break
+            if not args: continue  # noqa: E701
+            if args[0] in ('quit', 'exit'): break   # noqa: E701
             self.run_command(args)
 
         # exit.. check for transactions
@@ -1831,7 +1903,7 @@ Erase it? Y/N: """))
                 self.interactive()
             else:
                 ret = self.run_command(args)
-                if self.db: self.db.commit()
+                if self.db: self.db.commit()  # noqa: E701
             return ret
         finally:
             if self.db:

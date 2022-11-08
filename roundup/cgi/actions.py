@@ -1,20 +1,21 @@
-import re, cgi, time, csv, codecs, sys
+import cgi
+import codecs
+import csv
+import re
+import sys
+from datetime import timedelta
 
 from roundup import hyperdb, token, date, password
 from roundup.actions import Action as BaseAction
-from roundup.i18n import _
+from roundup.anypy import urllib_
+from roundup.anypy.html import html_escape
+from roundup.anypy.strings import StringIO
 from roundup.cgi import exceptions, templating
-from roundup.mailgw import uidFromAddress
-from roundup.rate_limit import Gcra, RateLimit
 from roundup.cgi.timestamp import Timestamped
 from roundup.exceptions import Reject, RejectRaw
-from roundup.anypy import urllib_
-from roundup.anypy.strings import StringIO
-import roundup.anypy.random_ as random_
-
-from roundup.anypy.html import html_escape
-
-from datetime import timedelta
+from roundup.i18n import _
+from roundup.mailgw import uidFromAddress
+from roundup.rate_limit import Gcra, RateLimit
 
 # Also add action to client.py::Client.actions property
 __all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction',
@@ -22,9 +23,6 @@ __all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
            'ConfRegoAction', 'RegisterAction', 'LoginAction', 'LogoutAction',
            'NewItemAction', 'ExportCSVAction', 'ExportCSVWithIdAction']
-
-# used by a couple of routines
-chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
 
 class Action:
@@ -139,11 +137,11 @@ class Action:
         allowed_pattern = re.compile(r'''^[A-Za-z0-9@:/?._~%!$&'()*+,;=-]*$''')
 
         if not allowed_pattern.match(parsed_url_tuple.path):
-           raise ValueError(self._("Path component (%(url_path)s) in %(url)s "
-                                   "is not properly escaped") % info)
+            raise ValueError(self._("Path component (%(url_path)s) in %(url)s "
+                                    "is not properly escaped") % info)
 
         if not allowed_pattern.match(parsed_url_tuple.params):
-           raise ValueError(self._("Params component (%(url_params)s) in %(url)s is not properly escaped") % info)
+            raise ValueError(self._("Params component (%(url_params)s) in %(url)s is not properly escaped") % info)
 
         if not allowed_pattern.match(parsed_url_tuple.query):
             raise ValueError(self._("Query component (%(url_query)s) in %(url)s is not properly escaped") % info)
@@ -243,7 +241,7 @@ class RetireAction(Action):
 
         # check permission
         if not self.hasPermission('Retire', classname=self.classname,
-                itemid=itemid):
+                                  itemid=itemid):
             raise exceptions.Unauthorised(self._(
                 'You do not have permission to retire %(class)s'
             ) % {'class': self.classname})
@@ -355,9 +353,10 @@ class SearchAction(Action):
                         if queryname != self.db.query.get(qid, 'name'):
                             continue
                         # whoops we found a duplicate; report error and return
-                        message = _("You already own a query named '%s'. "
-                                    "Please choose another name.") % \
-                                    (queryname)
+                        message = _(
+                            "You already own a query named '%s'. "
+                            "Please choose another name.") % (queryname)
+
                         self.client.add_error_message(message)
                         return
 
@@ -378,7 +377,7 @@ class SearchAction(Action):
                             continue
                         if not self.hasPermission('Edit', 'query', itemid=qid):
                             raise exceptions.Unauthorised(self._(
-                            "You do not have permission to edit queries"))
+                                "You do not have permission to edit queries"))
                         self.db.query.set(qid, klass=self.classname,
                                           url=url, name=queryname)
                 else:
@@ -428,11 +427,11 @@ class SearchAction(Action):
                 if isinstance(prop, hyperdb.String):
                     v = self.form[key].value
                     # If this ever has unbalanced quotes, hilarity will ensue
-                    l = token.token_split(v)
-                    if len(l) != 1 or l[0] != v:
+                    tokens = token.token_split(v)
+                    if len(tokens) != 1 or tokens[0] != v:
                         self.form.value.remove(self.form[key])
                         # replace the single value with the split list
-                        for v in l:
+                        for v in tokens:
                             self.form.value.append(cgi.MiniFieldStorage(key, v))
                 elif isinstance(prop, hyperdb.Number):
                     try:
@@ -509,7 +508,7 @@ class EditCSVAction(Action):
         line = 0
         for values in reader:
             line += 1
-            if line == 1: continue
+            if line == 1: continue                                # noqa: E701
             # skip property names header
             if values == props:
                 continue
@@ -542,8 +541,8 @@ class EditCSVAction(Action):
             # confirm correct weight
             if len(props_without_id) != len(values):
                 self.client.add_error_message(
-                    self._('Not enough values on line %(line)s') % \
-                    {'line':line})
+                    self._('Not enough values on line %(line)s') % {
+                        'line': line})
                 return
 
             # extract the new values
@@ -551,7 +550,8 @@ class EditCSVAction(Action):
             for name, value in zip(props_without_id, values):
                 # check permission to edit this property on this item
                 if exists and not self.hasPermission('Edit', itemid=itemid,
-                                     classname=self.classname, property=name):
+                                                     classname=self.classname,
+                                                     property=name):
                     raise exceptions.Unauthorised(self._(
                         'You do not have permission to edit %(class)s'
                     ) % {'class': self.classname})
@@ -816,9 +816,9 @@ class EditItemAction(EditCommon):
         message = self._(
             'Edit Error: someone else has edited this %(klass)s (%(props)s). '
             'View <a target="_blank" href="%(klass)s%(id)s">their changes</a> '
-            'in a new window.') % { "klass": self.classname,
-                                    "props": ', '.join(props),
-                                    "id": self.nodeid}
+            'in a new window.') % {"klass": self.classname,
+                                   "props": ', '.join(props),
+                                   "id": self.nodeid}
         self.client.add_error_message(message, escape=False)
         return
 
@@ -969,12 +969,12 @@ class PassResetAction(Action):
 
             # send the email
             tracker_name = self.db.config.TRACKER_NAME
-            subject = 'Password reset for %s' % tracker_name
-            body = '''
+            subject = self._('Password reset for %s') % tracker_name
+            body = self._('''
 The password has been reset for username "%(name)s".
 
 Your password is now: %(password)s
-''' % {'name': name, 'password': newpw}
+''') % {'name': name, 'password': newpw}
             if not self.client.standard_message([address], subject, body):
                 return
 
@@ -1005,16 +1005,15 @@ Your password is now: %(password)s
             return
 
         # generate the one-time-key and store the props for later
-        otk = ''.join([random_.choice(chars) for x in range(32)])
-        while otks.exists(otk):
-            otk = ''.join([random_.choice(chars) for x in range(32)])
+        otk = otks.getUniqueKey(length=32)
+
         otks.set(otk, uid=uid, uaddress=address)
         otks.commit()
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
-        subject = 'Confirm reset of password for %s' % tracker_name
-        body = '''
+        subject = self._('Confirm reset of password for %s') % tracker_name
+        body = self._('''
 Someone, perhaps you, has requested that the password be changed for your
 username, "%(name)s". If you wish to proceed with the change, please follow
 the link below:
@@ -1022,7 +1021,7 @@ the link below:
   %(url)suser?@template=forgotten&@action=passrst&otk=%(otk)s
 
 You should then receive another email with the new password.
-''' % {'name': name, 'tracker': tracker_name, 'url': self.base, 'otk': otk}
+''') % {'name': name, 'tracker': tracker_name, 'url': self.base, 'otk': otk}
         if not self.client.standard_message([address], subject, body):
             return
 
@@ -1055,7 +1054,7 @@ class RegoCommon(Action):
             <script nonce="%s" type="text/javascript">
             window.setTimeout('window.location = "%s"', 1000);
             </script>''' % (message, url, message,
-                          self.client.client_nonce, url)
+                            self.client.client_nonce, url)
 
 
 class ConfRegoAction(RegoCommon):
@@ -1106,7 +1105,8 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
             # handle the create now
             try:
                 # when it hits the None element, it'll set self.nodeid
-                messages = self._editnodes(props, links)
+                # execute for side effect
+                messages = self._editnodes(props, links)   # noqa: F841
             except (ValueError, KeyError, IndexError, Reject) as message:
                 escape = not isinstance(message, RejectRaw)
                 # these errors might just be indicative of user dumbness
@@ -1131,7 +1131,9 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
         check_user = self.db.config['WEB_REGISTRATION_PREVALIDATE_USERNAME']
         if check_user:
             try:
-                user_found = self.db.user.lookup(user_props['username'])
+                # verify user exists
+                user_found = self.db.user.lookup(user_props['username']) \
+                             # noqa: F841
                 # if user is found reject the request.
                 raise Reject(
                     _("Username '%s' is already used.") % user_props['username'])
@@ -1150,18 +1152,16 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
             elif isinstance(proptype, hyperdb.Password):
                 user_props[propname] = str(value)
         otks = self.db.getOTKManager()
-        otk = ''.join([random_.choice(chars) for x in range(32)])
-        while otks.exists(otk):
-            otk = ''.join([random_.choice(chars) for x in range(32)])
+        otk = otks.getUniqueKey(length=32)
         otks.set(otk, **user_props)
 
         # send the email
         tracker_name = self.db.config.TRACKER_NAME
         tracker_email = self.db.config.TRACKER_EMAIL
         if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
-            subject = 'Complete your registration to %s -- key %s' % (
+            subject = _('Complete your registration to %s -- key %s') % (
                 tracker_name, otk)
-            body = """To complete your registration of the user "%(name)s" with
+            body = _("""To complete your registration of the user "%(name)s" with
 %(tracker)s, please do one of the following:
 
 - send a reply to %(tracker_email)s and maintain the subject line as is (the
@@ -1171,17 +1171,18 @@ reply's additional "Re:" is ok),
 
 %(url)s?@action=confrego&otk=%(otk)s
 
-""" % {'name': user_props['username'], 'tracker': tracker_name,
-       'url': self.base, 'otk': otk, 'tracker_email': tracker_email}
+""") % {'name': user_props['username'], 'tracker': tracker_name,
+        'url': self.base, 'otk': otk, 'tracker_email': tracker_email}  \
+        # noqa: E122
         else:
-            subject = 'Complete your registration to %s' % (tracker_name)
-            body = """To complete your registration of the user "%(name)s" with
+            subject = _('Complete your registration to %s') % (tracker_name)
+            body = _("""To complete your registration of the user "%(name)s" with
 %(tracker)s, please visit the following URL:
 
 %(url)s?@action=confrego&otk=%(otk)s
 
-""" % {'name': user_props['username'], 'tracker': tracker_name,
-       'url': self.base, 'otk': otk}
+""") % {'name': user_props['username'], 'tracker': tracker_name,
+            'url': self.base, 'otk': otk}  # noqa: E122
         if not self.client.standard_message([user_props['address']], subject,
                                             body,
                                             (tracker_name, tracker_email)):
@@ -1285,13 +1286,13 @@ class LoginAction(Action):
                 query = {}
                 pass
 
-            redirect_url = urllib_.urlunparse((redirect_url_tuple.scheme,
-                                               redirect_url_tuple.netloc,
-                                               redirect_url_tuple.path,
-                                               redirect_url_tuple.params,
-                                               urllib_.urlencode(list(sorted(query.items())), doseq=True),
-                                               redirect_url_tuple.fragment)
-            )
+            redirect_url = urllib_.urlunparse(
+                (redirect_url_tuple.scheme,
+                 redirect_url_tuple.netloc,
+                 redirect_url_tuple.path,
+                 redirect_url_tuple.params,
+                 urllib_.urlencode(list(sorted(query.items())), doseq=True),
+                 redirect_url_tuple.fragment))
 
         try:
             # Implement rate limiting of logins by login name.
@@ -1314,7 +1315,7 @@ class LoginAction(Action):
 
                 # Calculate a timestamp that will make OTK expire the
                 # unused entry 1 hour in the future
-                ts = time.time() - (60 * 60 * 24 * 7) + 3600
+                ts = otk.lifetime(3600)
                 otk.set(rlkey, tat=gcra.get_tat_as_string(rlkey),
                         __timestamp=ts)
                 otk.commit()
@@ -1333,13 +1334,13 @@ class LoginAction(Action):
             if '__came_from' in self.form:
                 # set a new error
                 query['@error_message'] = err.args
-                redirect_url = urllib_.urlunparse((redirect_url_tuple.scheme,
-                                                   redirect_url_tuple.netloc,
-                                                   redirect_url_tuple.path,
-                                                   redirect_url_tuple.params,
-                                                   urllib_.urlencode(list(sorted(query.items())), doseq=True),
-                                                   redirect_url_tuple.fragment )
-                )
+                redirect_url = urllib_.urlunparse(
+                    (redirect_url_tuple.scheme,
+                     redirect_url_tuple.netloc,
+                     redirect_url_tuple.path,
+                     redirect_url_tuple.params,
+                     urllib_.urlencode(list(sorted(query.items())), doseq=True),
+                     redirect_url_tuple.fragment))
                 raise exceptions.Redirect(redirect_url)
             # if no __came_from, send back to base url with error
             return
@@ -1354,7 +1355,9 @@ class LoginAction(Action):
 
         # If we came from someplace, go back there
         if '__came_from' in self.form:
-            query['@ok_message'] = _("Welcome %(username)s!") %{"username" : self.client.user, }       # adds welcome message to user when logged in
+            # add welcome message to user when logged in
+            query['@ok_message'] = _("Welcome %(username)s!") % {
+                "username": self.client.user, }
             redirect_url = urllib_.urlunparse((redirect_url_tuple.scheme,
                                                redirect_url_tuple.netloc,
                                                redirect_url_tuple.path,
@@ -1373,7 +1376,7 @@ class LoginAction(Action):
             # Prevents guessing of valid usernames by detecting
             # delay caused by checking password only on valid
             # users.
-            _discard = self.verifyPassword("2", password)
+            _discard = self.verifyPassword("2", password)          # noqa: F841
             raise exceptions.LoginError(self._('Invalid login'))
 
         # verify the password
@@ -1398,7 +1401,8 @@ class LoginAction(Action):
                 db.user.set(userid, password=newpw)
                 db.commit()
             return 1
-        if not givenpw and not stored:
+        # allow blank password
+        if db.config.WEB_LOGIN_EMPTY_PASSWORDS and not givenpw and not stored:
             return 1
         return 0
 
@@ -1508,7 +1512,7 @@ class ExportCSVAction(Action):
                     return ""
                 else:
                     if (arg.local(self.db.getUserTimezone()).pretty('%H:%M') ==
-                        '00:00'):
+                            '00:00'):
                         fmt = '%Y-%m-%d'
                     else:
                         fmt = '%Y-%m-%d %H:%M'
@@ -1707,8 +1711,8 @@ class Bridge(BaseAction):
         # different Action interfaces, we have to look at the arguments to
         # figure out how to complete construction.
         if (len(args) == 1 and
-            hasattr(args[0], '__class__') and
-            args[0].__class__.__name__ == 'Client'):
+                hasattr(args[0], '__class__') and
+                args[0].__class__.__name__ == 'Client'):
             self.cgi = True
             self.execute = self.execute_cgi
             self.client = args[0]

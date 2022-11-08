@@ -162,7 +162,7 @@
    <input type="file" id="file-1@content" name="file-1@content" size="40">
  </td>
   <th><label for="file-1@description" i18n:translate="">File Description</label>:</th>
- <td colspan=3><input type="edit" class="fileDesc" id="file-1@description" name="file-1@description" size="40"></td>
+ <td colspan=3><input type="text" class="fileDesc" id="file-1@description" name="file-1@description" size="40"></td>
 </tr>
 <tr tal:condition="context/is_edit_ok">
   <td colspan=4>
@@ -298,7 +298,7 @@
 		  br = fileDesc.insertAdjacentElement('afterend',
 				       document.createElement('br'));
                   fileDesc=document.createElement('input');
-                  fileDesc.type="edit";
+                  fileDesc.type="text";
                   fileDesc.id="file-" + NextInputNum + "@description";
                   fileDesc.name=fileDesc.id
                   fileDesc.size = 40

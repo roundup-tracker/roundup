@@ -7,33 +7,36 @@
 '''Postgresql backend via psycopg2 for Roundup.'''
 __docformat__ = 'restructuredtext'
 
-import os, shutil, time
+import logging
+import os
+import shutil
+import time
+
 ISOLATION_LEVEL_READ_UNCOMMITTED = None
 ISOLATION_LEVEL_READ_COMMITTED = None
 ISOLATION_LEVEL_REPEATABLE_READ = None
 ISOLATION_LEVEL_SERIALIZABLE = None
 
-import psycopg2
-from psycopg2.extensions import QuotedString
-from psycopg2.extensions import ISOLATION_LEVEL_READ_UNCOMMITTED
-from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED
-from psycopg2.extensions import ISOLATION_LEVEL_REPEATABLE_READ
-from psycopg2.extensions import ISOLATION_LEVEL_SERIALIZABLE
-from psycopg2 import ProgrammingError
-from psycopg2.extensions import TransactionRollbackError
+import psycopg2                                                   # noqa: E402
+from psycopg2 import ProgrammingError                             # noqa: E402
+from psycopg2.extensions import QuotedString                      # noqa: E402
+from psycopg2.extensions import ISOLATION_LEVEL_READ_UNCOMMITTED  # noqa: F401 E402
+from psycopg2.extensions import ISOLATION_LEVEL_READ_COMMITTED    # noqa: E402
+from psycopg2.extensions import ISOLATION_LEVEL_REPEATABLE_READ   # noqa: E402
+from psycopg2.extensions import ISOLATION_LEVEL_SERIALIZABLE      # noqa: E402
+from psycopg2.extensions import TransactionRollbackError          # noqa: F401 E402
 
-import logging
+from roundup import hyperdb                   # noqa: E402
+from roundup.backends import rdbms_common     # noqa: E402
+from roundup.backends import sessions_rdbms   # noqa: E402
 
-from roundup import hyperdb, date
-from roundup.backends import rdbms_common
-from roundup.backends import sessions_rdbms
+isolation_levels = {
+    'read uncommitted': ISOLATION_LEVEL_READ_COMMITTED,
+    'read committed': ISOLATION_LEVEL_READ_COMMITTED,
+    'repeatable read': ISOLATION_LEVEL_REPEATABLE_READ,
+    'serializable': ISOLATION_LEVEL_SERIALIZABLE
+}
 
-isolation_levels = \
-    { 'read uncommitted': ISOLATION_LEVEL_READ_COMMITTED
-    , 'read committed': ISOLATION_LEVEL_READ_COMMITTED
-    , 'repeatable read': ISOLATION_LEVEL_REPEATABLE_READ
-    , 'serializable': ISOLATION_LEVEL_SERIALIZABLE
-    }
 
 def connection_dict(config, dbnamestr=None):
     ''' read_default_group is MySQL-specific, ignore it '''
@@ -44,29 +47,32 @@ def connection_dict(config, dbnamestr=None):
         del d['read_default_file']
     return d
 
+
 def db_create(config):
     """Clear all database contents and drop database itself"""
-    command = "CREATE DATABASE \"%s\" WITH ENCODING='UNICODE'"%config.RDBMS_NAME
+    command = "CREATE DATABASE \"%s\" WITH ENCODING='UNICODE'" % config.RDBMS_NAME
     if config.RDBMS_TEMPLATE:
         command = command + " TEMPLATE=%s" % config.RDBMS_TEMPLATE
     logging.getLogger('roundup.hyperdb').info(command)
     db_command(config, command)
 
+
 def db_nuke(config):
     """Clear all database contents and drop database itself"""
-    command = 'DROP DATABASE "%s"'% config.RDBMS_NAME
+    command = 'DROP DATABASE "%s"' % config.RDBMS_NAME
     logging.getLogger('roundup.hyperdb').info(command)
     db_command(config, command)
 
     if os.path.exists(config.DATABASE):
         shutil.rmtree(config.DATABASE)
 
+
 def db_command(config, command, database='postgres'):
     '''Perform some sort of database-level command. Retry 10 times if we
     fail by conflicting with another user.
 
     Since PostgreSQL version 8.1 there is a database "postgres",
-    before "template1" seems to have been used, so we fall back to it. 
+    before "template1" seems to have been used, so we fall back to it.
     Compare to issue2550543.
     '''
     template1 = connection_dict(config)
@@ -82,12 +88,13 @@ def db_command(config, command, database='postgres'):
     conn.set_isolation_level(0)
     cursor = conn.cursor()
     try:
-        for n in range(10):
+        for _n in range(10):
             if pg_command(cursor, command):
                 return
     finally:
         conn.close()
     raise RuntimeError('10 attempts to create database failed')
+
 
 def pg_command(cursor, command):
     '''Execute the postgresql command, which may be blocked by some other
@@ -108,8 +115,9 @@ def pg_command(cursor, command):
                 if msg in response:
                     time.sleep(0.1)
                     return 0
-        raise RuntimeError (response)
+        raise RuntimeError(response)
     return 1
+
 
 def db_exists(config):
     """Check if database already exists"""
@@ -118,8 +126,9 @@ def db_exists(config):
         conn = psycopg2.connect(**db)
         conn.close()
         return 1
-    except:
+    except Exception:
         return 0
+
 
 class Sessions(sessions_rdbms.Sessions):
     def set(self, *args, **kwargs):
@@ -133,6 +142,7 @@ class Sessions(sessions_rdbms.Sessions):
                 # serializable isolation.
                 # see http://www.postgresql.org/docs/7.4/interactive/transaction-iso.html
                 self.db.rollback()
+
 
 class Database(rdbms_common.Database):
     """Postgres DB backend implementation
@@ -154,7 +164,7 @@ class Database(rdbms_common.Database):
     def sql_open_connection(self):
         db = connection_dict(self.config, 'database')
         logging.getLogger('roundup.hyperdb').info(
-            'open database %r'%db['database'])
+            'open database %r' % db['database'])
         try:
             conn = psycopg2.connect(**db)
         except psycopg2.OperationalError as message:
@@ -162,7 +172,7 @@ class Database(rdbms_common.Database):
 
         cursor = conn.cursor()
         if ISOLATION_LEVEL_REPEATABLE_READ is not None:
-            lvl = isolation_levels [self.config.RDBMS_ISOLATION_LEVEL]
+            lvl = isolation_levels[self.config.RDBMS_ISOLATION_LEVEL]
             conn.set_isolation_level(lvl)
 
         return (conn, cursor)
@@ -234,12 +244,12 @@ class Database(rdbms_common.Database):
     def create_version_2_tables(self):
         # OTK store
         self.sql('''CREATE TABLE otks (otk_key VARCHAR(255),
-            otk_value TEXT, otk_time REAL)''')
+            otk_value TEXT, otk_time float)''')
         self.sql('CREATE INDEX otks_key_idx ON otks(otk_key)')
 
         # Sessions store
         self.sql('''CREATE TABLE sessions (
-            session_key VARCHAR(255), session_time REAL,
+            session_key VARCHAR(255), session_time float,
             session_value TEXT)''')
         self.sql('''CREATE INDEX sessions_key_idx ON
             sessions(session_key)''')
@@ -265,13 +275,13 @@ class Database(rdbms_common.Database):
 
         # convert session / OTK *_time columns to REAL
         for name in ('otk', 'session'):
-            self.sql('drop index %ss_key_idx'%name)
-            self.sql('drop table %ss'%name)
+            self.sql('drop index %ss_key_idx' % name)
+            self.sql('drop table %ss' % name)
             self.sql('''CREATE TABLE %ss (%s_key VARCHAR(255),
-                %s_value VARCHAR(255), %s_time REAL)'''%(name, name, name,
-                name))
-            self.sql('CREATE INDEX %ss_key_idx ON %ss(%s_key)'%(name, name,
-                name))
+                %s_value VARCHAR(255), %s_time REAL)''' % (name, name,
+                                                           name, name))
+            self.sql('CREATE INDEX %ss_key_idx ON %ss(%s_key)' % (name, name,
+                                                                  name))
 
     def fix_version_3_tables(self):
         rdbms_common.Database.fix_version_3_tables(self)
@@ -279,8 +289,9 @@ class Database(rdbms_common.Database):
             USING btree (_word, _textid)''')
 
     def _add_fts_table(self):
-        self.sql('CREATE TABLE __fts (_class VARCHAR(255), '
-                 '_itemid VARCHAR(255), _prop VARCHAR(255), _tsv tsvector)'
+        self.sql(
+            'CREATE TABLE __fts (_class VARCHAR(255), '
+            '_itemid VARCHAR(255), _prop VARCHAR(255), _tsv tsvector)'
         )
 
         self.sql('CREATE INDEX __fts_idx ON __fts USING GIN (_tsv)')
@@ -296,11 +307,19 @@ class Database(rdbms_common.Database):
 
         self._add_fts_table()
 
-    def add_actor_column(self):
+    def fix_version_7_tables(self):
+        # Modify type for session.session_time/otk.otk_time column.
+        # float is double precision 15 signifcant digits
+        sql = 'alter table sessions alter column session_time type float'
+        self.sql(sql)
+        sql = 'alter table otks alter column otk_time type float'
+        self.sql(sql)
+
+    def add_new_columns_v2(self):
         # update existing tables to have the new actor column
         tables = self.database_schema['tables']
         for name in tables:
-            self.sql('ALTER TABLE _%s add __actor VARCHAR(255)'%name)
+            self.sql('ALTER TABLE _%s add __actor VARCHAR(255)' % name)
 
     def __repr__(self):
         return '<roundpsycopgsql 0x%x>' % id(self)
@@ -312,31 +331,32 @@ class Database(rdbms_common.Database):
 
     def sql_index_exists(self, table_name, index_name):
         sql = 'select count(*) from pg_indexes where ' \
-            'tablename=%s and indexname=%s'%(self.arg, self.arg)
+            'tablename=%s and indexname=%s' % (self.arg, self.arg)
         self.sql(sql, (table_name, index_name))
         return self.cursor.fetchone()[0]
 
     def create_class_table(self, spec, create_sequence=1):
         if create_sequence:
-            sql = 'CREATE SEQUENCE _%s_ids'%spec.classname
+            sql = 'CREATE SEQUENCE _%s_ids' % spec.classname
             self.sql(sql)
 
         return rdbms_common.Database.create_class_table(self, spec)
 
     def drop_class_table(self, cn):
-        sql = 'drop table _%s'%cn
+        sql = 'drop table _%s' % cn
         self.sql(sql)
 
-        sql = 'drop sequence _%s_ids'%cn
+        sql = 'drop sequence _%s_ids' % cn
         self.sql(sql)
 
     def newid(self, classname):
-        sql = "select nextval('_%s_ids') from dual"%classname
+        sql = "select nextval('_%s_ids') from dual" % classname
         self.sql(sql)
         return str(self.cursor.fetchone()[0])
 
     def setid(self, classname, setid):
-        sql = "select setval('_%s_ids', %s) from dual"%(classname, int(setid))
+        sql = "select setval('_%s_ids', %s) from dual" % (classname,
+                                                          int(setid))
         self.sql(sql)
 
     def clear(self):
@@ -344,17 +364,23 @@ class Database(rdbms_common.Database):
 
         # reset the sequences
         for cn in self.classes:
-            self.cursor.execute('DROP SEQUENCE _%s_ids'%cn)
-            self.cursor.execute('CREATE SEQUENCE _%s_ids'%cn)
+            self.cursor.execute('DROP SEQUENCE _%s_ids' % cn)
+            self.cursor.execute('CREATE SEQUENCE _%s_ids' % cn)
+
 
 class PostgresqlClass:
     order_by_null_values = '(%s is not NULL)'
     case_insensitive_like = 'ILIKE'
 
+
 class Class(PostgresqlClass, rdbms_common.Class):
     pass
+
+
 class IssueClass(PostgresqlClass, rdbms_common.IssueClass):
     pass
+
+
 class FileClass(PostgresqlClass, rdbms_common.FileClass):
     pass
 

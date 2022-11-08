@@ -20,8 +20,10 @@ Run the server in the background and write the server's PID to the
 file indicated by PIDfile. The -l (or -L) option \fBmust\fP be
 specified if -d is used.
 .TP
-\fB-t\fP \fBfork|debug|none\fP
-Control multi-process mode. Default fork.
+\fB-t\fP \fBfork|thread|debug|none\fP
+Control multi-process mode. \fBdebug\fP and \fBnone\fP are always
+available. If an invalid mode is specified the server starts in
+\fBnone\fP (also called single) mode. Default fork.
 .TP
 \fB-l\fP \fIfile\fP
 Sets a filename to log to (instead of stdout). This is required if the -d
@@ -43,11 +45,18 @@ front end server to authenticate a user and pass the user identity to
 roundup.
 .TP
 \fB-s\fP
-Enables use of SSL.
+Enables use of SSL. In most cases, you will want to run a real web server
+(Apache, Nginx) as a proxy to roundup-server running without SSL.
+The real web server can filter/rate limit/firewall requests to
+roundup-server.
 .TP
 \fB-e\fP \fIfile\fP
-Sets a filename containing the PEM file to use for SSL. If left blank, a
-temporary self-signed certificate will be used.
+Sets a filename containing the PEM file to use for SSL. The PEM file
+must include both the private key and certificate with appropriate
+headers (e.g. "-----BEGIN PRIVATE KEY-----", "-----END PRIVATE
+KEY-----" and "-----BEGIN CERTIFICATE-----", "-----END
+CERTIFICATE-----". If no file is specified, a temporary self-signed
+certificate will be used.
 .TP
 \fB-N\fP
 Log client machine names instead of IP addresses (much slower).

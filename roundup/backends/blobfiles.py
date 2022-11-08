@@ -22,17 +22,19 @@ __docformat__ = 'restructuredtext'
 
 import os
 
+
 def files_in_dir(dir):
     if not os.path.exists(dir):
         return 0
     num_files = 0
     for dir_entry in os.listdir(dir):
-        full_filename = os.path.join(dir,dir_entry)
+        full_filename = os.path.join(dir, dir_entry)
         if os.path.isfile(full_filename):
             num_files = num_files + 1
         elif os.path.isdir(full_filename):
             num_files = num_files + files_in_dir(full_filename)
     return num_files
+
 
 class FileStorage(object):
     """Store files in some directory structure
@@ -63,7 +65,7 @@ class FileStorage(object):
 
     Edit Procotol
     -------------
-    
+
     When a file is created or edited, the following protocol is used:
 
     1. The new content of the file is placed in 'file.tmp'.
@@ -91,14 +93,14 @@ class FileStorage(object):
     or two web clients running with a multi-process server) attempt
     edits at the same time, both will write to 'file.tmp', and the
     results will be indeterminate.
-    
+
     Crash Analysis
     --------------
-    
+
     There are several situations that may occur if a crash (whether
     because the machine crashes, because an unhandled Python exception
     is raised, or because the Python process is killed) occurs.
-    
+
     Complexity ensues because backuping up an RDBMS is generally more
     complex than simply copying a file.  Instead, some command is run
     which stores a snapshot of the database in a file.  So, if you
@@ -203,22 +205,22 @@ class FileStorage(object):
     database will be consistent, so long as unreferenced 'file.v'
     files are never removed until after the database has been backed
     up.
-    """    
+    """
 
     tempext = '.tmp'
     """The suffix added to files indicating that they are uncommitted."""
-    
+
     def __init__(self, umask):
         self.umask = umask
 
     def subdirFilename(self, classname, nodeid, property=None):
         """Determine what the filename and subdir for nodeid + classname is."""
         if property:
-            name = '%s%s.%s'%(classname, nodeid, property)
+            name = '%s%s.%s' % (classname, nodeid, property)
         else:
             # roundupdb.FileClass never specified the property name, so don't
             # include it
-            name = '%s%s'%(classname, nodeid)
+            name = '%s%s' % (classname, nodeid)
 
         # have a separate subdir for every thousand messages
         subdir = str(int(nodeid) // 1000)
@@ -239,11 +241,10 @@ class FileStorage(object):
 
         for method, args in self.transactions:
             if (method == self.doStoreFile and
-                args == (classname, nodeid, property)):
+                    args == (classname, nodeid, property)):
                 return True
 
         return False
-    
 
     def filename(self, classname, nodeid, property=None, create=0):
         """Determine what the filename for the given node and optionally
@@ -253,8 +254,8 @@ class FileStorage(object):
         usual place, or it could be in a temp file pre-commit *or* it
         could be in an old-style, backwards-compatible flat directory.
         """
-        filename  = os.path.join(self.dir, 'files', classname,
-                                 self.subdirFilename(classname, nodeid, property))
+        filename = os.path.join(self.dir, 'files', classname,
+                                self.subdirFilename(classname, nodeid, property))
         # If the caller is going to create the file, return the
         # post-commit filename.  It is the callers responsibility to
         # add self.tempext when actually creating the file.
@@ -267,13 +268,13 @@ class FileStorage(object):
         # of the temporary file containing the edited content.
         if self._editInProgress(classname, nodeid, property):
             if not os.path.exists(tempfile):
-                raise IOError('content file for %s not found'%tempfile)
+                raise IOError('content file for %s not found' % tempfile)
             return tempfile
 
         if os.path.exists(filename):
             return filename
 
-        # Otherwise, if the temporary file exists, then the probable 
+        # Otherwise, if the temporary file exists, then the probable
         # explanation is that a crash occurred between the point that
         # the database entry recording the creation of the file
         # occured and the point at which the file was renamed from the
@@ -288,21 +289,21 @@ class FileStorage(object):
             # at the same time, only one of them will succeed.
             # So, tolerate such an error -- but no other.
             if not os.path.exists(filename):
-                raise IOError('content file for %s not found'%filename)
+                raise IOError('content file for %s not found' % filename)
             return filename
 
         # ok, try flat (very old-style)
         if property:
-            filename = os.path.join(self.dir, 'files', '%s%s.%s'%(classname,
-                nodeid, property))
+            filename = os.path.join(self.dir, 'files', '%s%s.%s' % (
+                classname, nodeid, property))
         else:
-            filename = os.path.join(self.dir, 'files', '%s%s'%(classname,
-                nodeid))
+            filename = os.path.join(self.dir, 'files', '%s%s' % (classname,
+                                                                 nodeid))
         if os.path.exists(filename):
             return filename
 
         # file just ain't there
-        raise IOError('content file for %s not found'%filename)
+        raise IOError('content file for %s not found' % filename)
 
     def filesize(self, classname, nodeid, property=None, create=0):
         filename = self.filename(classname, nodeid, property, create)
@@ -327,7 +328,7 @@ class FileStorage(object):
         if not self._editInProgress(classname, nodeid, property):
             # save off the rename action
             self.transactions.append((self.doStoreFile, (classname, nodeid,
-                property)))
+                                                         property)))
         # always set umask before writing to make sure we have the proper one
         # in multi-tracker (i.e. multi-umask) or modpython scenarios
         # the umask may have changed since last we set it.
@@ -393,7 +394,7 @@ class FileStorage(object):
            Is there a better way than using self.filename?
         """
         try:
-            fname = self.filename(classname, nodeid)
+            fname = self.filename(classname, nodeid)  # noqa: F841
             return True
         except IOError:
             return False

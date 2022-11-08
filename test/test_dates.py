@@ -40,8 +40,10 @@ class DateTestCase(unittest.TestCase):
         # force use of local locale directory. System locale dir 
         # doesn't have the locale files installed, and without wiping
         # the default the .mo file sometimes isn't found.
-        i18n.LOCALE_DIRS=[]
-        i18n.LOCALE_DIRS.insert(0,"locale/locale")
+        self.backup_domain = i18n.DOMAIN
+        i18n.DOMAIN = ''
+        self.backup_locale_dirs = i18n.LOCALE_DIRS
+        i18n.LOCALE_DIRS=["locale"]
 
         self.old_gettext_ = i18n.gettext
         self.old_ngettext_ = i18n.ngettext
@@ -53,6 +55,8 @@ class DateTestCase(unittest.TestCase):
     def tearDown(self):
         i18n.gettext = self.old_gettext_
         i18n.ngettext = self.old_ngettext_
+        i18n.LOCALE_DIRS = self.backup_locale_dirs
+        i18n.DOMAIN = self.backup_domain
 
     def testDateInterval(self):
         ae = self.assertEqual

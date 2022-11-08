@@ -12,6 +12,7 @@ from __future__ import print_function
 import unittest, os, shutil, errno, sys, difflib, cgi, re, io
 
 import pytest
+import copy
 
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError, NotFound, Redirect
@@ -954,7 +955,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # need to set SENDMAILDEBUG to prevent
         # downstream issue when email is sent on successful
         # issue creation. Also delete the file afterwards
-        # just tomake sure that someother test looking for
+        # just to make sure that some other test looking for
         # SENDMAILDEBUG won't trip over ours.
         if 'SENDMAILDEBUG' not in os.environ:
             os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
@@ -1084,7 +1085,6 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
         cl.db.config['WEB_CSRF_ENFORCE_TOKEN'] = 'yes'
 
-        import copy
         form2 = copy.copy(form)
         form2.update({'@csrf': 'booogus'})
         # add a bogus csrf field to the form and rerun the inner_main
@@ -1157,6 +1157,32 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
 
         del(cl.env['HTTP_REFERER'])
+
+        # test by setting allowed api origins to *
+        # this should not redirect as it is not an API call.
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = "  *  "
+        cl.env['HTTP_ORIGIN'] = 'https://baz.edu'
+        cl.inner_main()
+        match_at=out[0].find('Invalid Origin https://baz.edu')
+        print("result of subtest invalid origin:", out[0])
+        self.assertEqual(match_at, 36)
+        del(cl.env['HTTP_ORIGIN'])
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = ""
+        del(out[0])
+
+        # test by setting allowed api origins to *
+        # this should not redirect as it is not an API call.
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = "  *  "
+        cl.env['HTTP_ORIGIN'] = 'http://whoami.com'
+        cl.env['HTTP_REFERER'] = 'https://baz.edu/path/'
+        cl.inner_main()
+        match_at=out[0].find('Invalid Referer: https://baz.edu/path/')
+        print("result of subtest invalid referer:", out[0])
+        self.assertEqual(match_at, 36)
+        del(cl.env['HTTP_ORIGIN'])
+        del(cl.env['HTTP_REFERER'])
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = ""
+        del(out[0])
         
         # clean up from email log
         if os.path.exists(SENDMAILDEBUG):
@@ -1203,7 +1229,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # Should return explanation because content type is text/plain
         # and not text/xml
         cl.handle_rest()
-        self.assertEqual(b2s(out[0]), "<class 'roundup.exceptions.UsageError'>: Required Header Missing\n")
+        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, "msg": "Required Header Missing"}}')
         del(out[0])
 
         cl = client.Client(self.instance, None,
@@ -1237,6 +1263,163 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         response=json.loads(b2s(out[0]))
         expected=json.loads(answer)
         self.assertEqual(response,expected)
+        del(out[0])
+
+
+        # rest has no form content
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = "https://bar.edu http://bar.edu"
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('title', 'A new issue'),
+            cgi.MiniFieldStorage('status', '1'),
+            cgi.MiniFieldStorage('@pretty', 'false'),
+            cgi.MiniFieldStorage('@apiver', '1'),
+        ]
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'POST',
+                            'PATH_INFO':'rest/data/issue',
+                            'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                            'HTTP_ORIGIN': 'https://bar.edu',
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_ACCEPT': "application/json;version=1"
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_rest()
+        answer='{"data": {"link": "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/2", "id": "2"}}\n'
+        # check length to see if pretty is turned off.
+        self.assertEqual(len(out[0]), 99)
+
+        # compare as dicts not strings due to different key ordering
+        # between python versions.
+        response=json.loads(b2s(out[0]))
+        expected=json.loads(answer)
+        self.assertEqual(response,expected)
+        del(out[0])
+
+        #####
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'POST',
+                            'PATH_INFO':'rest/data/issue',
+                            'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                            'HTTP_ORIGIN': 'httxs://bar.edu',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_ACCEPT': "application/json;version=1"
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_rest()
+        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, "msg": "Invalid Origin httxs://bar.edu"}}')
+        del(out[0])
+
+
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = "  * "
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'POST',
+                            'PATH_INFO':'rest/data/issue',
+                            'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                            'HTTP_ORIGIN': 'httxs://bar.edu',
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'httxp://bar.edu/path/',
+                            'HTTP_ACCEPT': "application/json;version=1"
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # create fourth issue
+        cl.handle_rest()
+        self.assertIn('"id": "3"', b2s(out[0]))
+        del(out[0])
+
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = "httxs://bar.foo.edu httxs://bar.edu"
+        for referer in [ 'httxs://bar.edu/path/foo',
+                         'httxs://bar.edu/path/foo?g=zz',
+                         'httxs://bar.edu']:
+            cl = client.Client(self.instance, None,
+                               {'REQUEST_METHOD':'POST',
+                                'PATH_INFO':'rest/data/issue',
+                                'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                                'HTTP_ORIGIN': 'httxs://bar.edu',
+                                'HTTP_X_REQUESTED_WITH': 'rest',
+                                'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                                'HTTP_REFERER': referer,
+                                'HTTP_ACCEPT': "application/json;version=1"
+                               }, form)
+            cl.db = self.db
+            cl.base = 'http://whoami.com/path/'
+            cl._socket_op = lambda *x : True
+            cl._error_message = []
+            cl.request = MockNull()
+            h = { 'content-type': 'application/json',
+                  'accept': 'application/json' }
+            cl.request.headers = MockNull(**h)
+            
+            cl.write = wh # capture output
+
+            # create fourth issue
+            cl.handle_rest()
+            self.assertIn('"id": "', b2s(out[0]))
+            del(out[0])
+        
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = "httxs://bar.foo.edu httxs://bar.edu"
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'POST',
+                            'PATH_INFO':'rest/data/issue',
+                            'CONTENT_TYPE': 'application/x-www-form-urlencoded',
+                            'HTTP_ORIGIN': 'httxs://bar.edu',
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'httxp://bar.edu/path/',
+                            'HTTP_ACCEPT': "application/json;version=1"
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # create fourth issue
+        cl.handle_rest()
+        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, "msg": "Invalid Referer: httxp://bar.edu/path/"}}')
         del(out[0])
 
     def testXmlrpcCsrfProtection(self):
@@ -1663,12 +1846,11 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # need to set SENDMAILDEBUG to prevent
         # downstream issue when email is sent on successful
         # issue creation. Also delete the file afterwards
-        # just tomake sure that someother test looking for
+        # just to make sure that some other test looking for
         # SENDMAILDEBUG won't trip over ours.
         if 'SENDMAILDEBUG' not in os.environ:
             os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
         SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
-
         
         # missing opaqueregister
         cl = self._make_client({'username':'new_user1', 'password':'secret',
@@ -1727,7 +1909,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # need to set SENDMAILDEBUG to prevent
         # downstream issue when email is sent on successful
         # issue creation. Also delete the file afterwards
-        # just tomake sure that someother test looking for
+        # just to make sure that some other test looking for
         # SENDMAILDEBUG won't trip over ours.
         if 'SENDMAILDEBUG' not in os.environ:
             os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
@@ -1763,6 +1945,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
     def testserve_static_files(self):
         # make a client instance
         cl = self._make_client({})
+        # Make local copy in cl to not modify value in class
+        cl.Cache_Control = copy.copy (cl.Cache_Control)
 
         # hijack _serve_file so I can see what is found
         output = []

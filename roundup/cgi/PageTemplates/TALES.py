@@ -24,7 +24,6 @@ import re, sys
 from roundup.cgi import ZTUtils
 from weakref import ref
 from .MultiMapping import MultiMapping
-from .GlobalTranslationService import getGlobalTranslationService
 
 ustr = str
 
@@ -256,16 +255,6 @@ class Context:
 
     def setPosition(self, position):
         self.position = position
-
-    def translate(self, domain, msgid, mapping=None,
-                  context=None, target_language=None, default=None):
-        if context is None:
-            context = self.contexts.get('here')
-        return getGlobalTranslationService().translate(
-            domain, msgid, mapping=mapping,
-            context=context,
-            default=default,
-            target_language=target_language)
 
 class TALESTracebackSupplement:
     """Implementation of ITracebackSupplement"""

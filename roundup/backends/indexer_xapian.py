@@ -1,11 +1,12 @@
 ''' This implements the full-text indexer using the Xapian indexer.
 '''
-import re, os, time
-
+import os
+import re
+import time
 import xapian
 
-from roundup.backends.indexer_common import Indexer as IndexerBase
 from roundup.anypy.strings import b2s, s2b
+from roundup.backends.indexer_common import Indexer as IndexerBase
 from roundup.i18n import _
 
 # TODO: we need to delete documents when a property is *reindexed*
@@ -14,6 +15,7 @@ from roundup.i18n import _
 # https://xapian.org/docs/bindings/python3/introduction.html#strings:
 # "Where std::string is returned, it's always mapped to bytes in
 # Python..."
+
 
 class Indexer(IndexerBase):
     def __init__(self, db):
@@ -35,7 +37,8 @@ class Indexer(IndexerBase):
                 # we are back to the for loop
 
         # Get here only if we dropped out of the for loop.
-        raise xapian.DatabaseLockError("Unable to get lock after 10 retries on %s."%index)
+        raise xapian.DatabaseLockError(_(
+            "Unable to get lock after 10 retries on %s.") % index)
 
     def save_index(self):
         '''Save the changes to the index.'''
@@ -70,23 +73,24 @@ class Indexer(IndexerBase):
         ''' "identifier" is  (classname, itemid, property) '''
         if mime_type != 'text/plain':
             return
-        if not text: text = ''
+        if not text:
+            text = ''
 
         # open the database and start a transaction if needed
         database = self._get_database()
 
-        # XXX: Xapian now supports transactions, 
+        # XXX: Xapian now supports transactions,
         #  but there is a call to save_index() missing.
-        #if not self.transaction_active:
-            #database.begin_transaction()
-            #self.transaction_active = True
+        # if not self.transaction_active:
+        #      database.begin_transaction()
+        #      self.transaction_active = True
 
         stemmer = xapian.Stem(self.language)
 
         # We use the identifier twice: once in the actual "text" being
         # indexed so we can search on it, and again as the "data" being
         # indexed so we know what we're matching when we get results
-        identifier = s2b('%s:%s:%s'%identifier)
+        identifier = s2b('%s:%s:%s' % identifier)
 
         # create the new document
         doc = xapian.Document()
@@ -118,7 +122,7 @@ class Indexer(IndexerBase):
         stemmer = xapian.Stem(self.language)
         terms = []
         for term in [word.upper() for word in wordlist
-                          if self.minlength <= len(word) <= self.maxlength]:
+                     if self.minlength <= len(word) <= self.maxlength]:
             if not self.is_stopword(term):
                 terms.append(stemmer(s2b(term.lower())))
         query = xapian.Query(xapian.Query.OP_AND, terms)
@@ -127,5 +131,4 @@ class Indexer(IndexerBase):
         matches = enquire.get_mset(0, database.get_doccount())
 
         return [tuple(b2s(m.document.get_data()).split(':'))
-            for m in matches]
-
+                for m in matches]

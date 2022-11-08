@@ -136,3 +136,50 @@ div#contact table td {
   white-space: nowrap;
   padding: 1pt 1em;
 }
+
+@media only screen and (max-width:960px) {
+/* setup for layout/page frame */
+body { padding-inline-start: unset; /* remove space for float menu */}
+body > .header { margin-inline-start: unset;
+	         margin-block-start: 3em; /* move down from search */}
+body > .navigation { margin-inline-start: unset;
+		     float: none;}
+body > .navigation li > ul > li { padding-block: 1em;
+                /* move links away from each other */ }
+#roundup-issue-tracker .note { float: none; /* download box */}
+body > .footer { margin-inline-start: unset; }
+
+/* changes for content */
+ /* stop paths and things from overflowing the viewport. */
+div.content { overflow-wrap: break-word; }
+/* add spaces around items in TOC to make hitting the links easier */
+div.contents ul.simple li { padding-block: .5em; }
+ul.simple li a { min-height: 48px;
+			      display: block;}
+/* make examples with long lines scrollable */
+div.highlight pre { overflow: auto;}
+}
+/* set background when using borland pygments style */
+div.highlight pre { background: lightyellow;}
+
+#skiplink { display: block;
+                   margin-block-start: 1em;
+                   margin-inline-start: 1em;}
+#skiplink a {
+  /* force stuff for screenreader off screen */
+  position:absolute;
+  left:-10000px;
+  top:auto;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  padding: 0 0.75em;
+  font-weight: bold;
+}
+#skiplink a:focus { position: static;
+                    width: auto;
+                    height: auto; }
+
+/* remove solid black border when focus is around the main section
+   due to activation of skip-link. Page jumps there, that's enough. */
+#main:focus-visible {outline: none;}

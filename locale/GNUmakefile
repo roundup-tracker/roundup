@@ -48,7 +48,11 @@ template:
 	  ../share/roundup/templates/devel/html/*.html \
 	  ../share/roundup/templates/minimal/html/*.html \
 	  ../share/roundup/templates/responsive/html/*.html
+	VERSION="`sed -ne \"/__version__/s/.*'\(.*\)'.*/\1/p\" \
+	      ../build/lib/roundup/__init__.py`"; \
 	${XGETTEXT} -j -w 80 -F \
+	  --package-name=Roundup \
+	  --package-version=$$VERSION \
 	  --msgid-bugs-address=roundup-devel@lists.sourceforge.net \
 	  --copyright-holder="See Roundup README.txt" \
 	  -o $(TEMPLATE) $(SOURCES)
@@ -69,3 +73,5 @@ diff:
 
 %.mo: %.po
 	${MSGFMT} --statistics -o $@ $<
+
+roundup.pot: template

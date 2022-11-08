@@ -70,6 +70,19 @@ for N in 1, 2:
 _ldir = os.path.join(path, sys.prefix[1:], 'share', 'locale')
 if os.path.isdir(_ldir):
     LOCALE_DIRS.append(_ldir)
+# try other places locale files are hidden on install
+_ldir = os.path.join(path, sys.prefix[1:], 'local', 'share', 'locale')
+if os.path.isdir(_ldir):
+    LOCALE_DIRS.append(_ldir)
+try:
+    _ldir = os.path.join(path, sys.base_prefix[1:], 'local', 'share', 'locale')
+    if os.path.isdir(_ldir):
+        LOCALE_DIRS.append(_ldir)
+    _ldir = os.path.join(path, sys.base_prefix[1:], 'share', 'locale')
+    if os.path.isdir(_ldir):
+        LOCALE_DIRS.append(_ldir)
+except AttributeError:
+    pass # no base_prefix on 2.7
 del _ldir
 
 # Roundup text domain
@@ -204,10 +217,14 @@ def get_translation(language=None, tracker_home=None,
             mo = open(mofile, "rb")
             if translator is None:
                 translator = translation_class(mo)
+                # the .mo file this translator loaded from
+                translator._file = mofile
             else:
                 # note: current implementation of gettext_module
                 #   always adds fallback to the end of the fallback chain.
-                translator.add_fallback(translation_class(mo))
+                fallback = translation_class(mo)
+                fallback._file = mofile
+                translator.add_fallback(fallback)
             mo.close()
         except IOError:
             # ignore unreadable .mo files

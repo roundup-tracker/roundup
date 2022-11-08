@@ -22,6 +22,8 @@ from .db_test_base import DBTest, ROTest, SchemaTest, ClassicInitTest, config
 from .db_test_base import HTMLItemTest, SpecialActionTest
 from .rest_common import TestCase as RestTestCase
 
+from roundup.anypy import strings
+
 class anydbmOpener:
     module = get_backend('anydbm')
 
@@ -51,8 +53,15 @@ class anydbmHTMLItemTest(HTMLItemTest, unittest.TestCase):
 
 from .session_common import SessionTest
 class anydbmSessionTest(anydbmOpener, SessionTest, unittest.TestCase):
-    pass
+    s2b = lambda x,y: strings.s2b(y)
 
+    def get_ts(self):
+        return (self.sessions.get('random_session', '__timestamp'),)
+
+    def testDbType(self):
+        self.assertIn("back_anydbm", repr(self.db))
+        self.assertIn("roundup.backends.sessions_dbm.Sessions", repr(self.db.Session))
+        
 class anydbmSpecialActionTestCase(anydbmOpener, SpecialActionTest,
                                   unittest.TestCase):
     backend = 'anydbm'

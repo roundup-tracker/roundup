@@ -18,22 +18,25 @@ branches:
 
 dist: focal
 
-#  - pypy3
 python:
   - 2.7
-  - 3.10.0
-  - 3.9
-  - 3.8
+  - 3.10.4
+#  - 3.9
+#  - 3.8
   - 3.6
+  - 3.11-dev
   - nightly
+#  - pypy3
 
 services:
   - mysql
   - postgresql
+  - redis-server
 
 jobs:
-    allow_failures:  # nightly not ready for prime time yet.
+    allow_failures:  # releases not ready for prime time yet.
       - python: nightly
+      - python: 3.11-dev
       - python: pypy3
 
 addons:
@@ -50,23 +53,30 @@ addons:
       - gpgsm
 
 before_install:
+  # build xapian
   - echo "$TRAVIS_PYTHON_VERSION"
   # Sphinx required to build the xapian python bindings. Use 1.8.5 on
   # older python and newest on newer.
   - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then pip install sphinx==1.8.5; fi
   - if [[ $TRAVIS_PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then pip install sphinx; fi
-  - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1)
+  - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
+  # force specific version 1.4.19 for python 3.12 for debugging
+  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then XAPIAN_VER=1.4.19; fi; echo $XAPIAN_VER
   - cd /tmp
   - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
   - tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
   - cd xapian-bindings-$XAPIAN_VER/
   - echo $TRAVIS_PYTHON_VERSION
-  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python3; fi
-  - make && make install
+  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python --disable-documentation; fi
+  # edit the configure script. distutils.sysconfig.get_config_vars('SO')
+  #  doesn't work for 3.11 or newer.
+  # Change distutils.sysconfig... to just sysconfig and SO to EXT_SUFFIX
+  # to get valid value.
+  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
+  - case "$TRAVIS_PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && make install; esac
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
@@ -89,7 +99,7 @@ before_install:
   - make && make install
 
   # gpgme
-  - GPGME_VERSION=1.16.0
+  - GPGME_VERSION=1.17.1
   - cd /tmp
   - curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
   - tar -jxf gpgme-$GPGME_VERSION.tar.bz2
@@ -104,8 +114,11 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3.4"* ]]; then  pip install mysqlclient==1.3.14; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mysqlclient; fi
   - pip install psycopg2
+  - pip install redis
   - pip install gpg pytz whoosh pyjwt requests
+  - pip install jinja2
   - pip install pytest-cov codecov
+  - pip install beautifulsoup4
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune==0.8.4; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* && $TRAVIS_PYTHON_VERSION != "2."* ]]; then pip install Markdown; fi
@@ -128,12 +141,6 @@ before_script:
   # set up postgresql database
   - psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
 
-  # HACK: workaround mysql bug: http://bugs.mysql.com/bug.php?id=74901
-  #   needed for test_mysql.mysqlDBTest.testFilteringSpecialChars
-  # plus others. Otherwise we get:
-  # COLLATION 'utf8_bin' is not valid for CHARACTER SET 'utf8mb4'
-  - sed -i 's/CREATE DATABASE \%s/CREATE DATABASE \%s COLLATE utf8_general_ci/' roundup/backends/back_mysql.py
-
   # build the .mo translation files and install them into a tree
   # (locale/locale under roundup directory root) 
   # suitable for use by gettext.
@@ -143,17 +150,17 @@ script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
   - if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
-    py.test 
+    py.test -r a
       -W default
       -W "ignore:SelectableGroups:DeprecationWarning" 
       -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 
       -W "ignore:'U' mode::docutils.io" 
       -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" 
       -W "ignore:unclosed file:ResourceWarning:enum" 
-      -v --maxfail=20 test/ --cov=roundup;
+      -v --maxfail=5 test/ --cov=roundup;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
-      py.test -v --maxfail=20 test/ --cov=roundup;
+      py.test -v -r a --maxfail=5 test/ --cov=roundup;
     fi
   - ./setup.py build_doc
 

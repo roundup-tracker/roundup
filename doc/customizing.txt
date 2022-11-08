@@ -1,5 +1,5 @@
 .. meta::
-    :description language=en:
+    :description:
         How to customize and extend the Roundup Issue
         Tracker. Includes many cookbook and how-to
         examples. Reference for the design and internals
@@ -1501,7 +1501,7 @@ and used to be the main way to get a lot of customization done. In
 modern roundup, the extensions_ mechanism is used, but there are
 places where interfaces.py is still useful. Note that the tracker
 directories are not on the Python system path when interfaces.py is
-evaluated. You need to add library directories explicty by
+evaluated. You need to add library directories explictly by
 modifying sys.path.
 
 Example: Changing Cache-Control headers
@@ -2246,6 +2246,12 @@ for specific object of issue class with id 1 will look like:
 
 8. ``/issue1``
 
+.. _strip_zeros:
+
+Note that a leading string of 0's will be stripped from the id part of
+the object designator in the URL. E.G. ``/issue001`` is the same as
+``/issue1``.  Similarly for ``/file01`` etc. However you should
+generate URL's without the extra zeros.
 
 Determining web context
 -----------------------
@@ -2276,6 +2282,7 @@ c. if there is something in the path (as in example 1, "issue"), it
    identifies the tracker class to display.
 d. if the path is an item designator (as in examples 2 and 4, "issue1"
    and "file1"), then we're to display a specific item.
+   :ref:`Note. <strip_zeros>`
 e. if the path starts with an item designator and is longer than one
    entry (as in example 5, "file1/kitten.png"), then we're assumed to be
    handling an item of a ``FileClass``, and the extra path information
@@ -2737,14 +2744,25 @@ How the templates work
 Templating engines
 ~~~~~~~~~~~~~~~~~~
 
-Since version 1.4.20 Roundup supports two templating engines: the original
-`Template Attribute Language`_ (TAL) engine from Zope and the standalone
-Chameleon templating engine. Chameleon is intended as a replacement for the
-original TAL engine, and supports the same syntax,
-but they are not 100% compatible. The major (and most likely the only)
-incompatibility is the default expression type being
-``python:`` instead of ``path:``. See also "Incompatibilities and
-differences" section of `Chameleon documentation`__.
+Since version 1.4.20 Roundup supports two templating engines:
+
+  * the original `Template Attribute Language`_ (TAL) engine from Zope
+  * the standalone Chameleon templating engine. Chameleon is intended
+    as a replacement for the original TAL engine, and supports the
+    same syntax, but they are not 100% compatible. The major (and most
+    likely the only) incompatibility is the default expression type being
+    ``python:`` instead of ``path:``. See also "Incompatibilities and
+    differences" section of `Chameleon documentation`__.
+
+Version 1.5.0 added experimental support for the `jinja2`_ templating
+language. You must install the `jinja2`_ module in order to use it. The
+``jinja2`` template supplied with Roundup has the templates rewritten
+to use ``jinja2`` rather than TAL. A number of trackers are running
+using ``jinja2`` templating so it is considered less experimental than
+Chameleon templating.
+
+.. _jinja2: https://palletsprojects.com/p/jinja/
+
 
 **NOTE1**: For historical reasons, examples given below assumes path
 expression as default expression type. With Chameleon you have to manually
@@ -3400,6 +3418,11 @@ pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
             format (eg. "yesterday"). The format arguments are those used
             in the standard ``strftime`` call (see the `Python Library
             Reference: time module`__)
+
+            Number properties - takes a printf style format argument
+            (default: '%0.3f') and formats the number accordingly.
+            If the value can't be converted, '' is returned if the
+            value is ``None`` otherwise it is converted to a string.
 popcal      Generate a link to a popup calendar which may be used to
             edit the date field, for example::
 
