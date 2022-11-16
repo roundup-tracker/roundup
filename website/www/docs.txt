@@ -1,3 +1,8 @@
+.. meta::
+    :description:
+        Table of contents for published documentation on the Roundup
+        Issue Tracker.
+
 Docs
 ====
 

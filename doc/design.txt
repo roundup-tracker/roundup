@@ -1,3 +1,9 @@
+.. meta::
+    :description:
+        Documentation of design for the Roundup Issue Tracker. This
+        is the original design (written by Ka-Ping Yee) updated with
+        implementation notes by Richard Jones.
+ 
 ========================================================
 Roundup - An Issue-Tracking System for Knowledge Workers
 ========================================================

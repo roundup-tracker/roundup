@@ -1,7 +1,8 @@
 .. meta::
     :description:
-        Describes how to interact with and use a tracker with the
-        Roundup Issue Tracker.
+        Describes how to interact with a tracker based on the
+        Roundup Issue Tracker. Covers web (html), and email
+        interfaces.
 
 ==========
 User Guide

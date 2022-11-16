@@ -1,3 +1,10 @@
+.. meta::
+    :description:
+        Instructions for contacting the authors of the Roundup Issue Tracker.
+        Includes mailing lists (hosted by sourceforge), and the IRC
+        channel #roundup on oftc.
+ 
+
 Contact
 =======
 
