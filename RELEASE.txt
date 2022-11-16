@@ -201,13 +201,14 @@ Roundup release checklist:
 	   roundup-tracker/roundup:2.2.0 that changes and always tags
 	   the latest -X release??)
 
-        docker build -t roundup-tracker/roundup:2.2.0 --build-arg="source=pypi" -f scripts/Docker/Dockerfile .
+        docker build -t roundup-tracker/roundup:2.2.0 \
+           --build-arg="source=pypi" -f scripts/Docker/Dockerfile .
 
      to create the dockerfile. *Change 2.2.0 to current version*
      Always use the exact release tag.
 17c. vulnerability scan local image using:
 
-        docker run --rm --volume
+        docker run --rm --volume \
 	/var/run/docker.sock:/var/run/docker.sock \
             --name Grype anchore/grype:latest roundup-tracker/roundup:2.2.0
 
