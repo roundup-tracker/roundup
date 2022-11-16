@@ -28,8 +28,9 @@ ALIASES = {
       ['Ralf Schlatterbeck <schlatterbeck@users.sourceforge.net>'],
   'Stefan Seefeld <stefan@seefeld.name>':
       ['Stefan Seefeld <stefan@users.sourceforge.net>'],
-  'John P. Rouillard <rouilj@cs.umb.edu>':
-      ['rouilj'],
+  'John Rouillard <rouilj@ieee.org>':
+      ['rouilj@uland', 'rouilj']
+
 }
 ROBOTS = ['No Author <no-author@users.sourceforge.net>']
 # /-- 
@@ -78,9 +79,14 @@ def compress(years):
 
 
 if __name__ == '__main__':
+
+  command = 'hg log --template "{date(date,\\"%Y\\")},{author}\\n"'
+
   if verbose:
     print("Getting HG log...")
-  authorship = check_output('hg log --template "{date(date,\\"%Y\\")},{author}\n"')
+    print("Using: ", command)
+  
+  authorship = check_output(command, shell=True)
   # authorship are strings like
   # 2003,Richard Jones <richard@users.sourceforge.net>
   # ...
