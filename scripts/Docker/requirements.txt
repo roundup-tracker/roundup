@@ -12,3 +12,5 @@ PyJWT
 # extra HTTP compression methods
 Brotli
 zstd
+# jinja2 template engine
+Jinja2
