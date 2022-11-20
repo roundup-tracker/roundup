@@ -9,14 +9,16 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Roundup 0.7.0\n"
+"Project-Id-Version: Roundup 2.3.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2022-09-14 23:13-0400\n"
+"POT-Creation-Date: 2022-11-20 10:32-0500\n"
 "PO-Revision-Date: 2004-11-20 13:47+0200\n"
+"Last-Translator: Not applicable\n"
 "Language-Team: English\n"
-"Language: \n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=us-ascii\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: ../roundup/actions.py:49
 #, python-format
@@ -885,51 +887,46 @@ msgstr ""
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:193 ../roundup/backends/back_lmdb.py:251
+#: ../roundup/backends/back_anydbm.py:215
 #: ../roundup/backends/rdbms_common.py:928
 #, python-format
 msgid "Class \"%s\" already defined."
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:254 ../roundup/backends/back_lmdb.py:312
+#: ../roundup/backends/back_anydbm.py:280
 #: ../roundup/backends/sessions_dbm.py:56
 msgid "Couldn't identify database type"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:288 ../roundup/backends/back_lmdb.py:346
+#: ../roundup/backends/back_anydbm.py:314
 #, python-format
 msgid ""
 "Couldn't open database - the required module '%s' (as dbm.gnu) is not "
 "available"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:291 ../roundup/backends/back_lmdb.py:349
+#: ../roundup/backends/back_anydbm.py:318
 #, python-format
 msgid "Couldn't open database - the required module '%s' is not available"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:847
-#: ../roundup/backends/back_anydbm.py:860
-#: ../roundup/backends/back_anydbm.py:1133
-#: ../roundup/backends/back_anydbm.py:1168
-#: ../roundup/backends/back_anydbm.py:1394
-#: ../roundup/backends/back_anydbm.py:1412
-#: ../roundup/backends/back_anydbm.py:1458
-#: ../roundup/backends/back_anydbm.py:2083
-#: ../roundup/backends/back_anydbm.py:847:860
-#: ../roundup/backends/back_lmdb.py:905 ../roundup/backends/back_lmdb.py:918
-#: ../roundup/backends/back_lmdb.py:1191 ../roundup/backends/back_lmdb.py:1226
-#: ../roundup/backends/back_lmdb.py:1452 ../roundup/backends/back_lmdb.py:1470
-#: ../roundup/backends/back_lmdb.py:1516 ../roundup/backends/back_lmdb.py:2138
-#: ../roundup/backends/back_lmdb.py:905:918
-#: ../roundup/backends/rdbms_common.py:1706
-#: ../roundup/backends/rdbms_common.py:1953
-#: ../roundup/backends/rdbms_common.py:2192
-#: ../roundup/backends/rdbms_common.py:2212
-#: ../roundup/backends/rdbms_common.py:2265
-#: ../roundup/backends/rdbms_common.py:3217
-#: ../roundup/backends/rdbms_common.py:1706:1953 :1133:1168 :1191:1226
-#: :1394:1412 :1452:1470:1458 :1516:2138:2083 :2192:2212:2265 :3217
+#: ../roundup/backends/back_anydbm.py:871
+#: ../roundup/backends/back_anydbm.py:884
+#: ../roundup/backends/back_anydbm.py:1158
+#: ../roundup/backends/back_anydbm.py:1193
+#: ../roundup/backends/back_anydbm.py:1422
+#: ../roundup/backends/back_anydbm.py:1440
+#: ../roundup/backends/back_anydbm.py:1487
+#: ../roundup/backends/back_anydbm.py:2117
+#: ../roundup/backends/back_anydbm.py:871:884
+#: ../roundup/backends/rdbms_common.py:1708
+#: ../roundup/backends/rdbms_common.py:1955
+#: ../roundup/backends/rdbms_common.py:2194
+#: ../roundup/backends/rdbms_common.py:2214
+#: ../roundup/backends/rdbms_common.py:2267
+#: ../roundup/backends/rdbms_common.py:3219
+#: ../roundup/backends/rdbms_common.py:1708:1955 :1158:1193 :1422:1440:1487
+#: :2117 :2194:2214 :2267:3219
 msgid "Database open read-only"
 msgstr ""
 
@@ -970,27 +967,27 @@ msgstr ""
 msgid "DROP operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1849
+#: ../roundup/backends/rdbms_common.py:1851
 msgid "create"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:2024
+#: ../roundup/backends/rdbms_common.py:2026
 msgid "unlink"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:2028
+#: ../roundup/backends/rdbms_common.py:2030
 msgid "link"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:2173
+#: ../roundup/backends/rdbms_common.py:2175
 msgid "set"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:2202
+#: ../roundup/backends/rdbms_common.py:2204
 msgid "retired"
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:2232
+#: ../roundup/backends/rdbms_common.py:2234
 msgid "restored"
 msgstr ""
 
@@ -1624,136 +1621,136 @@ msgid_plural "Required %(class)s properties %(property)s not supplied"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../roundup/cgi/templating.py:238
+#: ../roundup/cgi/templating.py:240
 #, python-format
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:851
+#: ../roundup/cgi/templating.py:869
 msgid "(list)"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:924
+#: ../roundup/cgi/templating.py:944
 msgid "Submit New Entry"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:946 ../roundup/cgi/templating.py:1117
-#: ../roundup/cgi/templating.py:1736 ../roundup/cgi/templating.py:1765
-#: ../roundup/cgi/templating.py:1785 ../roundup/cgi/templating.py:1798
-#: ../roundup/cgi/templating.py:1835 ../roundup/cgi/templating.py:1888
-#: ../roundup/cgi/templating.py:1911 ../roundup/cgi/templating.py:1918
-#: ../roundup/cgi/templating.py:1954 ../roundup/cgi/templating.py:2006
-#: ../roundup/cgi/templating.py:2039 ../roundup/cgi/templating.py:2128
-#: ../roundup/cgi/templating.py:2149 ../roundup/cgi/templating.py:2239
-#: ../roundup/cgi/templating.py:2259 ../roundup/cgi/templating.py:2281
-#: ../roundup/cgi/templating.py:2320 ../roundup/cgi/templating.py:2330
-#: ../roundup/cgi/templating.py:2394 ../roundup/cgi/templating.py:2693
-#: ../roundup/cgi/templating.py:946:1117 :1736:1765 :1785:1798 :1835:1888
-#: :1911:1918 :1954:2006 :2039:2128 :2149:2239 :2259:2281 :2320:2330 :2394:2693
+#: ../roundup/cgi/templating.py:966 ../roundup/cgi/templating.py:1142
+#: ../roundup/cgi/templating.py:1777 ../roundup/cgi/templating.py:1806
+#: ../roundup/cgi/templating.py:1826 ../roundup/cgi/templating.py:1839
+#: ../roundup/cgi/templating.py:1877 ../roundup/cgi/templating.py:1930
+#: ../roundup/cgi/templating.py:1954 ../roundup/cgi/templating.py:1961
+#: ../roundup/cgi/templating.py:1998 ../roundup/cgi/templating.py:2051
+#: ../roundup/cgi/templating.py:2084 ../roundup/cgi/templating.py:2179
+#: ../roundup/cgi/templating.py:2200 ../roundup/cgi/templating.py:2291
+#: ../roundup/cgi/templating.py:2311 ../roundup/cgi/templating.py:2333
+#: ../roundup/cgi/templating.py:2376 ../roundup/cgi/templating.py:2386
+#: ../roundup/cgi/templating.py:2451 ../roundup/cgi/templating.py:2754
+#: ../roundup/cgi/templating.py:966:1142 :1777:1806 :1826:1839 :1877:1930
+#: :1954:1961 :1998:2051 :2084:2179 :2200:2291 :2311:2333 :2376:2386 :2451:2754
 msgid "[hidden]"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:947
+#: ../roundup/cgi/templating.py:967
 msgid "New node - no history"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1082
+#: ../roundup/cgi/templating.py:1107
 msgid "Submit Changes"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1160
+#: ../roundup/cgi/templating.py:1185
 msgid "<em>The indicated property no longer exists</em>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1161
+#: ../roundup/cgi/templating.py:1186
 #, python-format
 msgid "<em>%s: %s</em>\n"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1196
+#: ../roundup/cgi/templating.py:1221
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1232 ../roundup/cgi/templating.py:1260
-#: ../roundup/cgi/templating.py:2403 ../roundup/cgi/templating.py:2702
-#: ../roundup/cgi/templating.py:1232:1260 :2403:2702
+#: ../roundup/cgi/templating.py:1258 ../roundup/cgi/templating.py:1288
+#: ../roundup/cgi/templating.py:2460 ../roundup/cgi/templating.py:2763
+#: ../roundup/cgi/templating.py:1258:1288 :2460:2763
 msgid "[label is missing]"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1236 ../roundup/cgi/templating.py:1263
-#: ../roundup/cgi/templating.py:1236:1263
+#: ../roundup/cgi/templating.py:1262 ../roundup/cgi/templating.py:1291
+#: ../roundup/cgi/templating.py:1262:1291
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1324
+#: ../roundup/cgi/templating.py:1353
 #, python-format
 msgid "%s: (no value)"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1340
+#: ../roundup/cgi/templating.py:1369
 #, python-format
 msgid ""
 "<strong><em>This event %s is not handled by the history display!</em></"
 "strong>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1353
+#: ../roundup/cgi/templating.py:1382
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1362
+#: ../roundup/cgi/templating.py:1391
 msgid "History"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1364
+#: ../roundup/cgi/templating.py:1393
 msgid "<th>Date</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1365
+#: ../roundup/cgi/templating.py:1394
 msgid "<th>User</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1366
+#: ../roundup/cgi/templating.py:1395
 msgid "<th>Action</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1367
+#: ../roundup/cgi/templating.py:1396
 msgid "<th>Args</th>"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1418
+#: ../roundup/cgi/templating.py:1447
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2043 ../roundup/cgi/templating.py:2076
-#: ../roundup/cgi/templating.py:1306:2043:2076
+#: ../roundup/cgi/templating.py:2088 ../roundup/cgi/templating.py:2123
+#: ../roundup/cgi/templating.py:1335:2088:2123
 msgid "No"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2043 ../roundup/cgi/templating.py:2071
-#: ../roundup/cgi/templating.py:1306:2043:2071
+#: ../roundup/cgi/templating.py:2088 ../roundup/cgi/templating.py:2117
+#: ../roundup/cgi/templating.py:1335:2088:2117
 msgid "Yes"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2197
+#: ../roundup/cgi/templating.py:2249
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2374
+#: ../roundup/cgi/templating.py:2431
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2385
+#: ../roundup/cgi/templating.py:2442
 #, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:2489
+#: ../roundup/cgi/templating.py:2547
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr ""

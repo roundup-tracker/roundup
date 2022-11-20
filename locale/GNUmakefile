@@ -25,6 +25,7 @@ help:
 	@echo "$(MAKE) dist      - same as above"
 	@echo "$(MAKE) template  - update message template from sources"
 	@echo "$(MAKE) diff      - see template differences in vi"
+	@echo "$(MAKE) potest    - check .po files for errors"
 	@echo "$(MAKE) pytest    - create locale files to run pytest"
 	@echo "$(MAKE) locale.po - update message file from template"
 	@echo "$(MAKE) locale.mo - compile individual message file"
@@ -66,7 +67,13 @@ pytest local_install: dist
 
 # helps to check template file before check in
 diff:
-	hg diff roundup.pot|grep -v '^[-+]#'| vi -Rv -
+	hg cat roundup.pot | diff -u -I '^\#: \.\./roundup.*$$' \
+	                             -I '^#:\s*:[0-9]*.*$$' \
+                                     - roundup.pot || exit 0
+potest:
+	for file in $(PO_FILES); do \
+	  ${MSGFMT} -cv $$file; \
+	done
 
 %.po: $(TEMPLATE)
 	${MSGMERGE} -U --suffix=.bak $@ $<
