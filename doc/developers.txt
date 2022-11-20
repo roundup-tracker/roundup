@@ -200,7 +200,7 @@ Sometimes translatable strings appear in the source code in untranslated
 form [#note_admin.py]_ and must be translated elsewhere.
 Example::
 
-  for meal in ("spam", "egg", "beacon"):
+  for meal in ("spam", "egg", "bacon"):
       print(_(meal))
 
 In such cases, strings must be marked for translation without actual
