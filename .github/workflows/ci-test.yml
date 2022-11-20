@@ -1,5 +1,9 @@
 # merged in python-package.yml workflow
 
+# reference docs:
+# https://blog.deepjyoti30.dev/tests-github-python
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+#
 name: roundup-ci
 
 on: 
