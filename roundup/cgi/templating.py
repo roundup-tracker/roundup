@@ -1183,7 +1183,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         # property no longer exists
                         comments['no_exist'] = self._(
                             "<em>The indicated property no longer exists</em>")
-                        cell.append(self._('<em>%s: %s</em>\n')
+                        cell.append('<em>%s: %s</em>\n'
                                     % (self._(k), str(args[k])))
                         continue
 
