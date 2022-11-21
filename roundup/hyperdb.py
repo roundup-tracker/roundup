@@ -116,8 +116,9 @@ class Password(_Type):
             return password.Password(encrypted=value, scheme=self.scheme,
                                      strict=True)
         except password.PasswordValueError as message:
-            raise HyperdbValueError(_('property %s: %s') %
-                                    (kw['propname'], message))
+            raise HyperdbValueError(_('property %(property)s: %(errormsg)s') %
+                                    {'property': kw['propname'],
+                                     'errormsg':  message})
 
     def sort_repr(self, cls, val, name):
         if not val:
@@ -143,9 +144,11 @@ class Date(_Type):
         try:
             value = date.Date(value, self.offset(db))
         except ValueError as message:
-            raise HyperdbValueError(_('property %s: %r is an invalid '
-                                      'date (%s)') % (kw['propname'],
-                                                      value, message))
+            raise HyperdbValueError(_(
+                'property %(property)s: %(value)r is an invalid '
+                'date (%(errormsg)s)') % {'property': kw['propname'],
+                                          'value': value,
+                                          'errormsg': message})
         return value
 
     def range_from_raw(self, value, db):
@@ -164,9 +167,12 @@ class Interval(_Type):
         try:
             value = date.Interval(value)
         except ValueError as message:
-            raise HyperdbValueError(_('property %s: %r is an invalid '
-                                      'date interval (%s)') %
-                                    (kw['propname'], value, message))
+            raise HyperdbValueError(_(
+                'property %(property)s: %(value)r is an invalid '
+                'date interval (%(errormsg)s)') %
+                                    {'property': kw['propname'],
+                                     'value': value,
+                                     'errormsg': message})
         return value
 
     def sort_repr(self, cls, val, name):
@@ -418,8 +424,10 @@ class Number(_Type):
         try:
             value = float(value)
         except ValueError:
-            raise HyperdbValueError(_('property %s: %r is not a number') %
-                                    (kw['propname'], value))
+            raise HyperdbValueError(_(
+                'property %(property)s: %(value)r is not a number') %
+                                    {'property': kw['propname'],
+                                     'value': value})
         return value
 
 
@@ -430,8 +438,10 @@ class Integer(_Type):
         try:
             value = int(value)
         except ValueError:
-            raise HyperdbValueError(_('property %s: %r is not an integer') %
-                                    (kw['propname'], value))
+            raise HyperdbValueError(_(
+                'property %(property)s: %(value)r is not an integer') % {
+                    'property': kw['propname'],
+                    'value': value})
         return value
 
 
@@ -674,7 +684,8 @@ class Proptree(object):
                 else:
                     assert not isinstance(p.val, Exact_Match)
                     filterspec[p.name] = p.val
-        self.set_val(self.cls._filter(search_matches, filterspec, sort and self,
+        self.set_val(self.cls._filter(search_matches, filterspec,
+                                      sort and self,
                                       retired=retired,
                                       exact_match_spec=exact_match_spec))
         return self.val
@@ -1962,8 +1973,12 @@ def convertLinkValue(db, propname, prop, value, idre=id_regex):
             try:
                 value = linkcl.lookup(value)
             except KeyError:
-                raise HyperdbValueError(_('property %s: %r is not a %s.') % (
-                    propname, value, prop.classname))
+                raise HyperdbValueError(_(
+                    'property %(property)s: %(value)r '
+                    'is not a %(classname)s.') % {
+                        'property': propname,
+                        'value': value,
+                        'classname': prop.classname})
         else:
             raise HyperdbValueError(_('you may only enter ID values '
                                       'for property %s') % propname)
@@ -1999,8 +2014,10 @@ def rawToHyperdb(db, klass, itemid, propname, value, **kw):
     try:
         proptype = properties[propname]
     except KeyError:
-        raise HyperdbValueError(_('%r is not a property of %s') % (
-            propname, klass.classname))
+        raise HyperdbValueError(_(
+            '%(property)r is not a property of %(classname)s') % {
+                'property': propname,
+                'classname': klass.classname})
 
     # if we got a string, strip it now
     if isinstance(value, type('')):
