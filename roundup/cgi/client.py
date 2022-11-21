@@ -1454,7 +1454,7 @@ class Client:
                     if enforce in ('required', 'yes'):
                         logger.error(self._(
                             "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s") % {
-                                'usierid': current_user, 'host': host})
+                                'userid': current_user, 'host': host})
                         raise Unauthorised(self._(
                             "Invalid X-FORWARDED-HOST %s") % host)
                     elif enforce == 'logfailure':
