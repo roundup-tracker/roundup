@@ -1159,8 +1159,11 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
         tracker_name = self.db.config.TRACKER_NAME
         tracker_email = self.db.config.TRACKER_EMAIL
         if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
-            subject = _('Complete your registration to %s -- key %s') % (
-                tracker_name, otk)
+            subject = _(
+                'Complete your registration to %(tracker_name)s -- key %(key)s') % {
+                    'tracker_name': tracker_name,
+                    'key': otk}
+
             body = _("""To complete your registration of the user "%(name)s" with
 %(tracker)s, please do one of the following:
 
