@@ -1403,7 +1403,10 @@ class Client:
         for header in header_names:
             if (config["WEB_CSRF_ENFORCE_HEADER_%s" % header] == 'required'
                     and "HTTP_%s" % header.replace('-', '_') not in self.env):
-                logger.error(self._("csrf header %s required but missing for user%s."), header, current_user)
+                logger.error(self._(
+                    "csrf header %(header)s required but missing for user%(userid)s.") % {
+                        'header': header,
+                        'userid': current_user})
                 raise Unauthorised(self._("Missing header: %s") % header)
 
         # self.base always matches: ^https?://hostname
@@ -1412,13 +1415,14 @@ class Client:
             if not self.is_referer_header_ok(api=api):
                 referer = self.env['HTTP_REFERER']
                 if enforce in ('required', 'yes'):
-                    logger.error(self._("csrf Referer header check failed for user%s. Value=%s"), current_user, referer)
+                    logger.error(self._(
+                        "csrf Referer header check failed for user%(userid)s. Value=%(referer)s") % {'userid': current_user, 'referer': referer})
                     raise Unauthorised(self._("Invalid Referer: %s") % (
                         referer))
                 elif enforce == 'logfailure':
                     logger.warning(self._(
-                        "csrf Referer header check failed for user%s. Value=%s"),
-                                   current_user, referer)
+                        "csrf Referer header check failed for user%(userid)s. Value=%(referer)s") % {
+                            'userid': current_user, 'referer': referer})
             else:
                 header_pass += 1
 
@@ -1430,10 +1434,13 @@ class Client:
             if not self.is_origin_header_ok(api=api):
                 origin = self.env['HTTP_ORIGIN']
                 if enforce in ('required', 'yes'):
-                    logger.error(self._("csrf Origin header check failed for user%s. Value=%s"), current_user, origin)
+                    logger.error(self._(
+                        "csrf Origin header check failed for user%(userid)s. Value=%(origin)s") % {
+                        'userid': current_user, 'origin': origin})
                     raise Unauthorised(self._("Invalid Origin %s" % origin))
                 elif enforce == 'logfailure':
-                    logger.warning(self._("csrf Origin header check failed for user%s. Value=%s"), current_user, origin)
+                    logger.warning(self._(
+                        "csrf Origin header check failed for user%(userid)s. Value=%(origin)s") % {'userid': current_user, 'origin': origin})
             else:
                 header_pass += 1
 
@@ -1446,14 +1453,14 @@ class Client:
                 if foundat not in [4, 5]:
                     if enforce in ('required', 'yes'):
                         logger.error(self._(
-                            "csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"),
-                                     current_user, host)
+                            "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s") % {
+                                'usierid': current_user, 'host': host})
                         raise Unauthorised(self._(
                             "Invalid X-FORWARDED-HOST %s") % host)
                     elif enforce == 'logfailure':
                         logger.warning(self._(
-                            "csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"),
-                                       current_user, host)
+                            "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s") % {
+                                'userid': current_user, 'host': host})
                 else:
                     header_pass += 1
         else:
@@ -1470,10 +1477,10 @@ class Client:
                 # 4 means http:// prefix, 5 means https:// prefix
                 if foundat not in [4, 5]:
                     if enforce in ('required', 'yes'):
-                        logger.error(self._("csrf HOST header check failed for user%s. Value=%s"), current_user, host)
+                        logger.error(self._("csrf HOST header check failed for user%(userid)s. Value=%(host)s") % {'userid': current_user, 'host': host})
                         raise Unauthorised(self._("Invalid HOST %s") % host)
                     elif enforce == 'logfailure':
-                        logger.warning(self._("csrf HOST header check failed for user%s. Value=%s"), current_user, host)
+                        logger.warning(self._("csrf HOST header check failed for user%(userid)s. Value=%(host)s") % {'userid': current_user, 'host': host})
                 else:
                     header_pass += 1
 
@@ -1585,23 +1592,38 @@ class Client:
         if current_user != nonce_user:
             if enforce in ('required', "yes"):
                 logger.error(
-                    self._("Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
-                    current_user, nonce_user, current_session, nonce_session, key)
+                    self._("Csrf mismatch user: current user %(user)s != stored user %(stored)s, current session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s.") % {
+                        'user': current_user,
+                        'stored': nonce_user,
+                        'cur_sess': current_session,
+                        'stor_sess': nonce_session,
+                        'key': key})
                 raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
                 logger.warning(
-                    self._("logged only: Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
-                    current_user, nonce_user, current_session, nonce_session, key)
+                    self._("Csrf mismatch user: current user %(user)s != stored user %(stored)s, current session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s.") % {
+                        'user': current_user,
+                        'stored': nonce_user,
+                        'cur_sess': current_session,
+                        'stor_sess': nonce_session,
+                        'key': key})
         if current_session != nonce_session:
             if enforce in ('required', "yes"):
                 logger.error(
-                    self._("Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
-                    current_session, nonce_session, current_user, key)
+                    self._("Csrf mismatch user: current session %(curr_sess)s != stored session %(stor_sess)s, current user/stored user is: %(user)s for key %(key)s.") % {
+                        'curr_sess': current_session,
+                        'stor_sess': nonce_session,
+                        'user': current_user,
+                        'key': key})
                 raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
                 logger.warning(
-                    self._("logged only: Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
-                    current_session, nonce_session, current_user, key)
+                    self._("logged only: Csrf mismatch user: current session %(curr_sess)s != stored session %(stor_sess)s, current user/stored user is: %(user)s for key %(key)s.") % {
+                        'curr_sess': current_session,
+                        'stor_sess': nonce_session,
+                        'user': current_user,
+                        'key': key})
+
         # we are done and the change can occur.
         return True
 
