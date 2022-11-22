@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 2.3.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2022-11-20 10:32-0500\n"
+"POT-Creation-Date: 2022-11-22 17:09-0500\n"
 "PO-Revision-Date: 2016-04-11 09:13+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
@@ -1488,7 +1488,7 @@ msgstr "\"%(input)s\" ist keine ID (%(classname)s ID wird erwartet)"
 #: ../roundup/cgi/actions.py:228 ../roundup/cgi/actions.py:266
 #: ../roundup/cgi/actions.py:493 ../roundup/cgi/actions.py:833
 #: ../roundup/cgi/actions.py:880 ../roundup/cgi/actions.py:1084
-#: ../roundup/cgi/actions.py:1243 ../roundup/cgi/actions.py:228:266:1243
+#: ../roundup/cgi/actions.py:1246 ../roundup/cgi/actions.py:228:266:1246
 #: :493:833 :880:1084
 msgid "Invalid request"
 msgstr "Ungültige Anforderung"
@@ -1678,12 +1678,12 @@ msgstr "Sie sind nun registriert. Willkommen!"
 msgid "Username '%s' is already used."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1162
+#: ../roundup/cgi/actions.py:1163
 #, python-format
-msgid "Complete your registration to %s -- key %s"
+msgid "Complete your registration to %(tracker_name)s -- key %(key)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1164
+#: ../roundup/cgi/actions.py:1167
 #, python-format
 msgid ""
 "To complete your registration of the user \"%(name)s\" with\n"
@@ -1699,12 +1699,12 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1178
+#: ../roundup/cgi/actions.py:1181
 #, python-format
 msgid "Complete your registration to %s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1179
+#: ../roundup/cgi/actions.py:1182
 #, python-format
 msgid ""
 "To complete your registration of the user \"%(name)s\" with\n"
@@ -1714,44 +1714,44 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1203
+#: ../roundup/cgi/actions.py:1206
 msgid "It is not permitted to supply roles at registration."
 msgstr "Bei der Registrierung dürfen keine Rollen angegeben werden"
 
-#: ../roundup/cgi/actions.py:1217
+#: ../roundup/cgi/actions.py:1220
 msgid "You are logged out"
 msgstr "Sie wurden vom System abgemeldet"
 
-#: ../roundup/cgi/actions.py:1247
+#: ../roundup/cgi/actions.py:1250
 msgid "Username required"
 msgstr "Benutzername notwendig"
 
-#: ../roundup/cgi/actions.py:1326
+#: ../roundup/cgi/actions.py:1329
 #, python-format
 msgid "Logins occurring too fast. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1359
+#: ../roundup/cgi/actions.py:1362
 #, python-format
 msgid "Welcome %(username)s!"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1380 ../roundup/cgi/actions.py:1384
-#: ../roundup/cgi/actions.py:1380:1384
+#: ../roundup/cgi/actions.py:1383 ../roundup/cgi/actions.py:1387
+#: ../roundup/cgi/actions.py:1383:1387
 msgid "Invalid login"
 msgstr "Ungültiger Benutzername"
 
-#: ../roundup/cgi/actions.py:1390
+#: ../roundup/cgi/actions.py:1393
 msgid "You do not have permission to login"
 msgstr "Sie sind nicht berechtigt, sich anzumelden"
 
-#: ../roundup/cgi/actions.py:1434 ../roundup/cgi/actions.py:1613
-#: ../roundup/cgi/actions.py:1434:1613
+#: ../roundup/cgi/actions.py:1437 ../roundup/cgi/actions.py:1616
+#: ../roundup/cgi/actions.py:1437:1616
 #, python-format
 msgid "Column \"%(column)s\" not found in %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1684
+#: ../roundup/cgi/actions.py:1687
 #, python-format
 msgid "You do not have permission to view %(class)s"
 msgstr "Sie sind nicht berechtigt, Einträge der Klasse \"%(class)s\" zu lesen"
@@ -1884,132 +1884,127 @@ msgstr ""
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1406
+#: ../roundup/cgi/client.py:1407
 #, python-format
-msgid "csrf header %s required but missing for user%s."
+msgid "csrf header %(header)s required but missing for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1407
+#: ../roundup/cgi/client.py:1410
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1415 ../roundup/cgi/client.py:1420
-#: ../roundup/cgi/client.py:1415:1420
+#: ../roundup/cgi/client.py:1419 ../roundup/cgi/client.py:1424
+#: ../roundup/cgi/client.py:1419:1424
 #, python-format
-msgid "csrf Referer header check failed for user%s. Value=%s"
+msgid "csrf Referer header check failed for user%(userid)s. Value=%(referer)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1416
+#: ../roundup/cgi/client.py:1420
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
 msgstr "Ungültiger Benutzername"
 
-#: ../roundup/cgi/client.py:1433 ../roundup/cgi/client.py:1436
-#: ../roundup/cgi/client.py:1433:1436
+#: ../roundup/cgi/client.py:1438 ../roundup/cgi/client.py:1443
+#: ../roundup/cgi/client.py:1438:1443
 #, python-format
-msgid "csrf Origin header check failed for user%s. Value=%s"
+msgid "csrf Origin header check failed for user%(userid)s. Value=%(origin)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1434
+#: ../roundup/cgi/client.py:1440
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Ungültiger Benutzername"
 
-#: ../roundup/cgi/client.py:1449 ../roundup/cgi/client.py:1455
-#: ../roundup/cgi/client.py:1449:1455
+#: ../roundup/cgi/client.py:1456 ../roundup/cgi/client.py:1462
+#: ../roundup/cgi/client.py:1456:1462
 #, python-format
-msgid "csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"
+msgid ""
+"csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1452
+#: ../roundup/cgi/client.py:1459
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1473 ../roundup/cgi/client.py:1476
-#: ../roundup/cgi/client.py:1473:1476
+#: ../roundup/cgi/client.py:1480 ../roundup/cgi/client.py:1483
+#: ../roundup/cgi/client.py:1480:1483
 #, python-format
-msgid "csrf HOST header check failed for user%s. Value=%s"
+msgid "csrf HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1474
+#: ../roundup/cgi/client.py:1481
 #, fuzzy, python-format
 msgid "Invalid HOST %s"
 msgstr "Ungültige Anforderung"
 
-#: ../roundup/cgi/client.py:1482
+#: ../roundup/cgi/client.py:1489
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1483
+#: ../roundup/cgi/client.py:1490
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1497
+#: ../roundup/cgi/client.py:1504
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1499
+#: ../roundup/cgi/client.py:1506
 msgid "Required Header Missing"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1536
+#: ../roundup/cgi/client.py:1543
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1537 ../roundup/cgi/client.py:1590
-#: ../roundup/cgi/client.py:1600 ../roundup/cgi/client.py:1537:1590:1600
+#: ../roundup/cgi/client.py:1544 ../roundup/cgi/client.py:1601
+#: ../roundup/cgi/client.py:1618 ../roundup/cgi/client.py:1544:1601:1618
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1540
+#: ../roundup/cgi/client.py:1547
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1588
+#: ../roundup/cgi/client.py:1595 ../roundup/cgi/client.py:1604
+#: ../roundup/cgi/client.py:1595:1604
 #, python-format
 msgid ""
-"Csrf mismatch user: current user %s != stored user %s, current session, "
-"stored session: %s,%s for key %s."
+"Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
+"session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1593
+#: ../roundup/cgi/client.py:1613
 #, python-format
 msgid ""
-"logged only: Csrf mismatch user: current user %s != stored user %s, current "
-"session, stored session: %s,%s for key %s."
+"Csrf mismatch user: current session %(curr_sess)s != stored session "
+"%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1598
+#: ../roundup/cgi/client.py:1621
 #, python-format
 msgid ""
-"Csrf mismatch user: current session %s != stored session %s, current user/"
-"stored user is: %s for key %s."
+"logged only: Csrf mismatch user: current session %(curr_sess)s != stored "
+"session %(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1603
-#, python-format
-msgid ""
-"logged only: Csrf mismatch user: current session %s != stored session %s, "
-"current user/stored user is: %s for key %s."
-msgstr ""
-
-#: ../roundup/cgi/client.py:1784
+#: ../roundup/cgi/client.py:1806
 msgid "You are not allowed to view this file."
 msgstr "Sie sind nicht berechtigt, diese Seite anzuzeigen."
 
-#: ../roundup/cgi/client.py:2073
+#: ../roundup/cgi/client.py:2095
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sBenötigte Zeit: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2077
+#: ../roundup/cgi/client.py:2099
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -2018,7 +2013,7 @@ msgstr ""
 "%(starttag)sCache benutzt: %(cache_hits)d, verfehlt: %(cache_misses)d. "
 "Einträge laden: %(get_items)fs; filtern: %(filtering)fs.%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2614
+#: ../roundup/cgi/client.py:2636
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -2126,11 +2121,6 @@ msgstr "Speichern"
 #: ../roundup/cgi/templating.py:1185
 msgid "<em>The indicated property no longer exists</em>"
 msgstr "<em>Die gewählte Eigenschaft existiert nicht mehr</em>"
-
-#: ../roundup/cgi/templating.py:1186
-#, python-format
-msgid "<em>%s: %s</em>\n"
-msgstr "<em>%s: %s</em>\n"
 
 #: ../roundup/cgi/templating.py:1221
 #, python-format
@@ -2393,54 +2383,55 @@ msgid "in %s"
 msgstr "in %s"
 
 #: ../roundup/hyperdb.py:119
-#, python-format
-msgid "property %s: %s"
+#, fuzzy, python-format
+msgid "property %(property)s: %(errormsg)s"
 msgstr "Eigenschaft %s: %s"
 
-#: ../roundup/hyperdb.py:146
-#, python-format
-msgid "property %s: %r is an invalid date (%s)"
+#: ../roundup/hyperdb.py:148
+#, fuzzy, python-format
+msgid "property %(property)s: %(value)r is an invalid date (%(errormsg)s)"
 msgstr "Eigenschaft %s: %r ist kein gültiges Datum (%s)"
 
-#: ../roundup/hyperdb.py:167
-#, python-format
-msgid "property %s: %r is an invalid date interval (%s)"
+#: ../roundup/hyperdb.py:171
+#, fuzzy, python-format
+msgid ""
+"property %(property)s: %(value)r is an invalid date interval (%(errormsg)s)"
 msgstr "Eigenschaft %s: %r ist kein gültiges Datumsintervall (%s)"
 
-#: ../roundup/hyperdb.py:421
-#, python-format
-msgid "property %s: %r is not a number"
-msgstr "Eigenschaft %s: %r ist keine Zahl"
-
-#: ../roundup/hyperdb.py:433
+#: ../roundup/hyperdb.py:428
 #, fuzzy, python-format
-msgid "property %s: %r is not an integer"
+msgid "property %(property)s: %(value)r is not a number"
 msgstr "Eigenschaft %s: %r ist keine Zahl"
 
-#: ../roundup/hyperdb.py:454
+#: ../roundup/hyperdb.py:442
+#, fuzzy, python-format
+msgid "property %(property)s: %(value)r is not an integer"
+msgstr "Eigenschaft %s: %r ist keine Zahl"
+
+#: ../roundup/hyperdb.py:464
 #, python-format
 msgid "\"%s\" not a node designator"
 msgstr "\"%s\" ist kein gültiger Bezeichner"
 
-#: ../roundup/hyperdb.py:1481 ../roundup/hyperdb.py:1489
-#: ../roundup/hyperdb.py:1481:1489
+#: ../roundup/hyperdb.py:1492 ../roundup/hyperdb.py:1500
+#: ../roundup/hyperdb.py:1492:1500
 #, python-format
 msgid "Not a property name: %s"
 msgstr "Keine Eigenschaft: %s"
 
-#: ../roundup/hyperdb.py:1965
-#, python-format
-msgid "property %s: %r is not a %s."
-msgstr "Eigenschaft %s: %r ist kein %s."
+#: ../roundup/hyperdb.py:1977
+#, fuzzy, python-format
+msgid "property %(property)s: %(value)r is not a %(classname)s."
+msgstr "Der Wert \"%(value)s\" ist nicht in der Liste für \"%(propname)s\""
 
-#: ../roundup/hyperdb.py:1968
+#: ../roundup/hyperdb.py:1983
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr "Sie können für die Eigenschaft %s  nur IDs eingeben"
 
-#: ../roundup/hyperdb.py:2002
-#, python-format
-msgid "%r is not a property of %s"
+#: ../roundup/hyperdb.py:2018
+#, fuzzy, python-format
+msgid "%(property)r is not a property of %(classname)s"
 msgstr "%r ist keine Eigenschaft von %s"
 
 #: ../roundup/init.py:139
@@ -2894,14 +2885,16 @@ msgstr ""
 "Vorher:\n"
 "%(old)s"
 
-#: ../roundup/scripts/roundup_demo.py:121
+#: ../roundup/scripts/roundup_demo.py:49
 #, python-format
 msgid "Enter directory path to create demo tracker [%s]: "
 msgstr "Verzeichnis für Tracker-Demo eingeben [%s]: "
 
-#: ../roundup/scripts/roundup_demo.py:127
+#: ../roundup/scripts/roundup_demo.py:54
 #, python-format
-msgid "Enter tracker template to use (one of (%s)) [%s]: "
+msgid ""
+"Enter tracker template to use (one of (%(template_list)s)) "
+"[%(default_template)s]: "
 msgstr ""
 
 #: ../roundup/scripts/roundup_gettext.py:35
@@ -5802,6 +5795,12 @@ msgstr "Aufgabe anzeigen"
 #, fuzzy
 msgid "Password"
 msgstr "Passwort"
+
+#~ msgid "<em>%s: %s</em>\n"
+#~ msgstr "<em>%s: %s</em>\n"
+
+#~ msgid "property %s: %r is not a %s."
+#~ msgstr "Eigenschaft %s: %r ist kein %s."
 
 #, fuzzy
 #~ msgid " %(description)s (%(name)s for \"%(klass)s\" "
