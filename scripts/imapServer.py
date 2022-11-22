@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """\
 This script is a wrapper around the mailgw.py script that exists in roundup.
 It runs as service instead of running as a one-time shot.
@@ -34,17 +34,18 @@ from __future__ import print_function
 import getpass
 import logging
 import imaplib
-import optparse
+import argparse
 import os
 import re
 import time
+import sys
 
 from roundup.anypy.my_input import my_input
 
 logging.basicConfig()
 log = logging.getLogger('roundup.IMAPServer')
 
-version = '0.1.2'
+version = '0.1.3'
 
 class RoundupMailbox:
     """This contains all the info about each mailbox.
@@ -301,10 +302,11 @@ def getItems(s):
 
 def main():
     """This is what is called if run at the prompt"""
-    parser = optparse.OptionParser(
-        version=('%prog ' + version),
-        usage="""usage: %prog [options] (home server)...
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
 
+The server takes pairs of home/server.
 So each entry has a home, and then the server configuration. Home is just
 a path to the roundup issue tracker. The server is something of the form:
 
@@ -315,57 +317,63 @@ password, you will be prompted for them. The server must be supplied.
 Without mailbox the INBOX is used.
 
 Examples:
-  %prog /home/roundup/trackers/test imaps://test@imap.example.com/test
-  %prog /home/roundup/trackers/test imap.example.com \
-/home/roundup/trackers/test2 imap.example.com/test2
-"""
+  %(prog)s /home/roundup/trackers/test imaps://test@imap.example.com/test
+  %(prog)s /home/roundup/trackers/test imap.example.com \\
+    /home/roundup/trackers/test2 imap.example.com/test2
+""" % dict(prog = sys.argv [0])
     )
-    parser.add_option('-d', '--delay', dest='delay', type='float',
+    parser.add_argument('args', nargs='*')
+    parser.add_argument('-d', '--delay', dest='delay', type=float,
         metavar='<sec>', default=5,
         help="Set the delay between checks in minutes. (default 5)"
     )
-    parser.add_option('-p', '--pid-file', dest='pidfile',
+    parser.add_argument('-p', '--pid-file', dest='pidfile',
         metavar='<file>', default=None,
         help="The pid of the server process will be written to <file>"
     )
-    parser.add_option('-n', '--no-daemon', dest='daemon',
+    parser.add_argument('-n', '--no-daemon', dest='daemon',
         action='store_false', default=True,
         help="Do not fork into the background after running the first check."
     )
-    parser.add_option('-v', '--verbose', dest='verbose',
+    parser.add_argument('--version', action="store_true",
+        help="Print version and exit")
+    parser.add_argument('-v', '--verbose', dest='verbose',
         action='store_const', const=logging.INFO,
         help="Be more verbose in letting you know what is going on."
         " Enables informational messages."
     )
-    parser.add_option('-V', '--very-verbose', dest='verbose',
+    parser.add_argument('-V', '--very-verbose', dest='verbose',
         action='store_const', const=logging.DEBUG,
         help="Be very verbose in letting you know what is going on."
             " Enables debugging messages."
     )
-    parser.add_option('-q', '--quiet', dest='verbose',
+    parser.add_argument('-q', '--quiet', dest='verbose',
         action='store_const', const=logging.ERROR,
         help="Be less verbose. Ignores warnings, only prints errors."
     )
-    parser.add_option('-Q', '--very-quiet', dest='verbose',
+    parser.add_argument('-Q', '--very-quiet', dest='verbose',
         action='store_const', const=logging.CRITICAL,
         help="Be much less verbose. Ignores warnings and errors."
             " Only print CRITICAL messages."
     )
 
-    (opts, args) = parser.parse_args()
-    if (len(args) == 0) or (len(args) % 2 == 1):
+    args = parser.parse_args()
+    if args.version:
+        print('%s %s' % (sys.argv [0], version))
+        sys.exit(0)
+    if not len(args.args) or len(args.args) % 2 == 1:
         parser.error('Invalid number of arguments. '
             'Each site needs a home and a server.')
 
-    if opts.verbose == None:
-        opts.verbose = logging.WARNING
+    if args.verbose == None:
+        args.verbose = logging.WARNING
 
-    log.setLevel(opts.verbose)
-    myServer = IMAPServer(delay=opts.delay, pidfile=opts.pidfile,
-        daemon=opts.daemon)
-    for i in range(0,len(args),2):
-        home = args[i]
-        server = args[i+1]
+    log.setLevel(args.verbose)
+    myServer = IMAPServer(delay=args.delay, pidfile=args.pidfile,
+        daemon=args.daemon)
+    for i in range(0,len(args.args),2):
+        home = args.args[i]
+        server = args.args[i+1]
         if not os.path.exists(home):
             parser.error('Home: "%s" does not exist' % home)
 
