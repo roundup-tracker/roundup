@@ -51,8 +51,10 @@ def run():
             home = DEFAULT_HOME
         templates = admin.AdminTool().listTemplates().keys()
         template = my_input(
-            _('Enter tracker template to use (one of (%s)) [%s]: ') %
-            (','.join(templates), template))
+            _('Enter tracker template to use (one of (%(template_list)s)) [%(d\
+efault_template)s]: ') %
+            { 'template_list': ','.join(templates),
+              'default_template': template})
         if not template:
             template = DEFAULT_TEMPLATE
         # install
