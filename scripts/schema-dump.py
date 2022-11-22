@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Use recently documented XML-RPC API to dump
@@ -23,7 +23,7 @@ import sys
 from roundup.anypy import xmlrpc_
 import pprint
 import textwrap
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 sname = os.path.basename(sys.argv[0])
 usage = """\
@@ -82,25 +82,23 @@ def format_yaml(var):
     return out
  
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or "-h" in sys.argv or "--help" in sys.argv:
-        sys.exit(usage)
-    if "--version" in sys.argv:
+    parser = ArgumentParser()
+    parser.add_argument("url", nargs=1)
+    parser.add_argument("--raw", action='store_true')
+    parser.add_argument("--yaml", action='store_true')
+    parser.add_argument("--json", action='store_true')
+    parser.add_argument("-v", "--version", action='store_true')
+    args = parser.parse_args()
+    if args.version:
         sys.exit(sname + " " + __version__)
 
-    parser = OptionParser()
-    parser.add_option("--raw", action='store_true')
-    parser.add_option("--yaml", action='store_true')
-    parser.add_option("--json", action='store_true')
-    (options, args) = parser.parse_args()
-
-    url = args[0]
-    roundup_server = xmlrpc_.client.ServerProxy(url, allow_none=True)
+    roundup_server = xmlrpc_.client.ServerProxy(args.url[0], allow_none=True)
     schema = roundup_server.schema()
-    if options.raw:
+    if args.raw:
         print(str(schema))
-    elif options.yaml:
+    elif args.yaml:
         print(format_yaml(schema))
-    elif options.json:
+    elif args.json:
         print(format_json(schema))
     else:
         print(format_pprint(schema))
