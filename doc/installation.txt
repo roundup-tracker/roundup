@@ -148,6 +148,10 @@ Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
 
+requests
+  If you are using OAuth authentication with the roundup-mailgw
+  mail gateway you need to install the requests_ library.
+
 .. _Using Redis for Session Databases:
    admin_guide.html#using-redis-for-session-databases
 
@@ -1793,6 +1797,7 @@ please let us know!
 .. _pywin32: https://pypi.org/project/pywin32/
 .. _Redis: https://redis.io
 .. _redis-py: https://pypi.org/project/redis/
+.. _requests: https://requests.readthedocs.io/en/latest/
 .. _Whoosh: https://whoosh.readthedocs.org/en/latest
 .. _Xapian: https://xapian.org/
 .. _zstd: https://pypi.org/project/zstd/
