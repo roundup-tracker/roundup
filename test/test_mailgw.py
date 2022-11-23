@@ -243,7 +243,7 @@ class MailgwTestAbstractBase(DiffHelper):
         ]
         self.db.security.role['anonymous'].permissions = p
 
-    def _create_mailgw(self, message, args=[]):
+    def _create_mailgw(self, message, args=()):
         class MailGW(self.instance.MailGW):
             """call _handle_message as handle_message 
                the real handle_message reopens the database, and destroys
@@ -256,7 +256,7 @@ class MailgwTestAbstractBase(DiffHelper):
         handler.db = self.db
         return handler
 
-    def _handle_mail(self, message, args=[], trap_exc=0):
+    def _handle_mail(self, message, args=(), trap_exc=0):
         handler = self._create_mailgw(message, args)
         handler.trapExceptions = trap_exc
         return handler.main(io.BytesIO(s2b(message)))

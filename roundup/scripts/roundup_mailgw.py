@@ -230,7 +230,8 @@ def main(argv):
             password = match.group('pass')
             server = match.group('server')
         else:
-            return usage(argv, _('Error: %s specification not valid') % source)
+            cmd.print_help(sys.stderr)
+            return _('\nError: %s specification not valid') % source
 
     # now invoke the mailgw handler depending on the server handler requested
     if source.startswith('pop'):
@@ -253,9 +254,10 @@ def main(argv):
             mailbox = args.args[3]
         return handler.do_imap(server, username, password, mailbox, **d)
 
-    return usage(argv, _('Error: The source must be either "mailbox",'
-                         ' "pop", "pops", "apop", "imap", "imaps" or'
-                         ' "imaps_cram'))
+    cmd.print_help(sys.stderr)
+    return _('\nError: The source must be either "mailbox",'
+             ' "pop", "pops", "apop", "imap", "imaps", '
+             ' "imaps_cram", or "imaps_oauth"')
 
 
 def run():
