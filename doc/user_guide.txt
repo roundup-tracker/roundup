@@ -58,7 +58,7 @@ Issue life cycles in Roundup
 New issues may be submitted via the web or e-mail.
 
 By default, the issue will have the status "unread". If another message
-is received for the issue, its status will change to "chatting". 
+is received for the issue, its status will change to "chatting".
 
 The "home" page for a tracker will generally display all issues which
 are not "resolved".
@@ -217,7 +217,7 @@ Other possible examples (consider local time is 2003-03-08.22:07:48):
   <Range from 2003-01-01.00:00:00 to 2003-12-31.23:59:59>
 - "2003-04" means
   <Range from 2003-04-01.00:00:00 to 2003-04-30.23:59:59>
-    
+
 
 Interval properties
 ~~~~~~~~~~~~~~~~~~~
@@ -357,7 +357,7 @@ Argument     Description
              in descending or nothing for ascending order. The group
              argument can have several props separated with comma.
 @columns     selects the columns that should be displayed. Default is
-             all.                     
+             all.
 @filter      indicates which properties are being used in filtering.
              Default is none.
 propname     selects the values the item properties given by propname must
@@ -602,7 +602,7 @@ the message may be added to the `nosy list`_ depending on:
  followups too. If 'no', they're never added to the nosy.
 
 Some organisations might prefer to have someone moderate emails before
-they are delivered into Roundup.  Those might want to set the 
+they are delivered into Roundup.  Those might want to set the
 configuration option ``EMAIL_KEEP_REAL_FROM`` to ``'yes'`` to avoid
 having the moderators address appearing as the creator of issues.
 
@@ -628,40 +628,55 @@ Mail gateway script command line
 
 Usage::
 
-  roundup-mailgw [[-C class] -S field=value]* <instance home> [method]
+    usage: roundup_mailgw.py [-h] [-v] [-c DEFAULT_CLASS] [-I OAUTH_CLIENT_ID]
+			     [-O OAUTH_DIRECTORY] [-S SET_VALUE]
+			     [-T OAUTH_TOKEN_ENDPOINT]
+			     [args ...]
+
 
 The roundup mail gateway may be called in one of three ways:
 
+ - without arguments. Then the env var ROUNDUP_INSTANCE will be tried.
  - with an instance home as the only argument,
  - with both an instance home and a mail spool file, or
- - with both an instance home and a pop server account.
- 
-It also supports optional -C and -S arguments that allows you to set a
-fields for a class created by the roundup-mailgw. The default class if
-not specified is msg, but the other classes: issue, file, user can also
-be used. The -S or --set options uses the same
+ - with an instance home, a mail source type and its specification.
+
+It also supports optional ``-S`` (or ``--set-value``) arguments that allows you
+to set fields for a class created by the roundup-mailgw. The format for
+this option is [class.]property=value where class can be omitted and
+defaults to msg. The ``-S`` options uses the same
 property=value[;property=value] notation accepted by the command line
 roundup command or the commands that can be given on the Subject line of
-an e-mail message.
+an email message (if you're using multiple properties delimited with a
+semicolon the class must be specified only once in the beginning).
 
-It can let you set the type of the message on a per e-mail address basis.
+It can let you set the type of the message on a per e-mail address basis
+by calling roundup-mailgw with different email addresses and other
+settings.
 
 PIPE:
- In the first case, the mail gateway reads a single message from the
- standard input and submits the message to the roundup.mailgw module.
+ If there is no mail source specified, the mail gateway reads a single
+ message from the standard input and submits the message to the
+ roundup.mailgw module.
 
 UNIX mailbox:
- In the second case, the gateway reads all messages from the mail spool
+ In this case, the gateway reads all messages from the UNIX mail spool
  file and submits each in turn to the roundup.mailgw module. The file is
  emptied once all messages have been successfully handled. The file is
  specified as::
 
    mailbox /path/to/mailbox
 
+In all of the following mail source types, the username and password
+can be stored in a ``~/.netrc`` file. If done so, only the server name
+needs to be specified on the command-line.
+The username and/or password will be prompted for if not supplied on
+the command-line or in ``~/.netrc``.
+
 POP:
- In the third case, the gateway reads all messages from the POP server
- specified and submits each in turn to the roundup.mailgw module. The
- server is specified as::
+ For the mail source "pop", the gateway reads all messages from the POP
+ server specified and submits each in turn to the roundup.mailgw module.
+ The server is specified as::
 
     pop username:password@server
 
@@ -670,8 +685,7 @@ POP:
     pop username@server
     pop server
 
- are both valid. The username and/or password will be prompted for if
- not supplied on the command-line.
+ are both valid.
 
 POPS:
  Connect to a POP server over ssl.
@@ -707,6 +721,30 @@ IMAPS_CRAM:
 
     imaps_cram username:password@server [mailbox]
 
+IMAPS_OAUTH:
+ Connect to an IMAP server over ssl using OAUTH authentication.
+ Note that this does not support a password in imaps URLs.
+ Instead it uses only the user and server and a command-line option for
+ the directory with the files ``access_token``, ``refresh_token``, and
+ ``client_secret``.
+ By default this directory is ``oauth`` in your tracker home directory. The
+ access token is tried first and, if expired, the refresh token together
+ with the client secret is used to retrieve a new access token. Note that
+ both token files need to be *writeable*, the access token is
+ continuously replaced and some cloud providers may also renew the
+ refresh token from time to time::
+
+   imaps_oauth username@server [mailbox]
+
+ Note that you also have to specify the OAuth client id with the
+ ``--oauth-client-id`` option on the command line. The refresh and
+ access tokens (the latter can be left empty) and the client secret need
+ to be retrieved via cloud provider specific protocols or websites.
+
+ You need the requests_ library installed for OAuth.
+
+.. _requests: https://requests.readthedocs.io/en/latest/
+
 .. index:: ! roundup-admin
    single: roundup-admin; usage
    single: roundup-admin; data formats
@@ -737,7 +775,7 @@ The basic usage is::
   roundup-admin help <command>             -- command-specific help
   roundup-admin help all                   -- all available help
 
- Commands: 
+ Commands:
   commit
   create classname property=value ...
   display designator[,designator]*
@@ -778,7 +816,7 @@ arguments and in the printed results:
 - Date values are printed in the full date format in the local time
   zone, and accepted in the full format or any of the partial formats
   explained below.::
-  
+
     Input of...        Means...
     "2000-04-17.03:45" 2000-04-17.03:45:00
     "2000-04-17"       2000-04-17.00:00:00
@@ -790,14 +828,14 @@ arguments and in the printed results:
     "2003"             2003-01-01.00:00:00
     "2003-04"          2003-04-01.00:00:00
     "."                "right now"
-    
+
 - Link values are printed as item designators. When given as an
   argument, item designators and key strings are both accepted.
 - Multilink values are printed as lists of item designators joined by
   commas. When given as an argument, item designators and key strings
   are both accepted; an empty string, a single item, or a list of items
   joined by commas is accepted.
-  
+
 When multiple items are specified to the roundup get or roundup set
 commands, the specified properties are retrieved or set on all the
 listed items.  When multiple results are returned by the roundup get or
@@ -877,8 +915,8 @@ You can also display issue contents::
     author: 1
     date: 2003-02-15.01:59:11
     messageid: None
-    summary: jlkfjadsf    
-    
+    summary: jlkfjadsf
+
 or status::
 
     shell% roundup-admin get name `/tools/roundup/bin/roundup-admin \

@@ -71,6 +71,11 @@ Features:
   list all template names, location and descriptions. Should help
   find where /usr/share/roundup/templates is buried during some
   install mechanisms. (John Rouillard)
+- Add OAuth authentication to the mailgw script. Now IMAPS can be used
+  with OAuth as required by several large cloud providers. Move command
+  line processing of the mailgw script to ``argparse``. Note that the
+  command line options of the mailgw have changed, see upgrading.txt for
+  details. (Ralf Schlatterbeck)
 
 2022-07-13 2.2.0
 

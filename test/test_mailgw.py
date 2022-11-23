@@ -38,6 +38,7 @@ except ImportError:
 
 from roundup.anypy.email_ import message_from_bytes
 from roundup.anypy.strings import b2s, u2s, s2b
+from roundup.scripts.roundup_mailgw import parse_arguments
 
 if 'SENDMAILDEBUG' not in os.environ:
     os.environ['SENDMAILDEBUG'] = 'mail-test.log'
@@ -242,7 +243,7 @@ class MailgwTestAbstractBase(DiffHelper):
         ]
         self.db.security.role['anonymous'].permissions = p
 
-    def _create_mailgw(self, message, args=()):
+    def _create_mailgw(self, message, args=[]):
         class MailGW(self.instance.MailGW):
             """call _handle_message as handle_message 
                the real handle_message reopens the database, and destroys
@@ -250,11 +251,12 @@ class MailgwTestAbstractBase(DiffHelper):
             """
             def handle_message(self, message):
                 return self._handle_message(message)
-        handler = MailGW(self.instance, args)
+        cmd, parsed_args = parse_arguments (args)
+        handler = MailGW(self.instance, parsed_args)
         handler.db = self.db
         return handler
 
-    def _handle_mail(self, message, args=(), trap_exc=0):
+    def _handle_mail(self, message, args=[], trap_exc=0):
         handler = self._create_mailgw(message, args)
         handler.trapExceptions = trap_exc
         return handler.main(io.BytesIO(s2b(message)))
@@ -444,7 +446,7 @@ Reply-To: chef@bork.bork.bork
 Subject: [issue] Testing...
 
 Hi there!
-''', (('-C', 'issue'), ('-S', 'status=chatting;priority=critical')))
+''', ('-S', 'issue.status=chatting;priority=critical'))
         self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
         self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
 
@@ -458,7 +460,7 @@ Reply-To: chef@bork.bork.bork
 Subject: [issue] Testing...
 
 Hi there!
-''', (('-C', 'issue'), ('-S', 'status=chatting'), ('-S', 'priority=critical')))
+''', ('-S', 'issue.status=chatting', '-S', 'issue.priority=critical'))
         self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
         self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
 
@@ -472,7 +474,7 @@ Reply-To: chef@bork.bork.bork
 Subject: [issue] Testing... [status=chatting;priority=critical]
 
 Hi there!
-''', (('-c', 'issue'),))
+''', ('-c', 'issue'))
         self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
         self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
         self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
@@ -5038,4 +5040,4 @@ zGhS06FLl3V1xx6gBlpqQHjut3efrAGpXGBVpnTJMOcgYAk=
         l = self.db.msg.get(m, 'tx_Source')
         self.assertEqual(l, 'email-sig-openpgp')
 
-# vim: set filetype=python sts=4 sw=4 et si :
+# vim: set filetype=python sts=4 sw=4 et :

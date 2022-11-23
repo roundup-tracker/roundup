@@ -66,6 +66,36 @@ You can then merge any local comments from the tracker's
 ``config.ini`` to ``newconfig.ini`` and replace
 ``config.ini`` with ``newconfig.ini``.
 
+Using the roundup-mailgw script
+-------------------------------
+
+In previous versions the roundup-mailgw script had a ``-C`` (or
+``--class``) option for specifying a class to be used with ``-S`` (or
+``--set``) option(s). In the latest version the ``-C`` option is gone,
+the class for this option is specified as a prefix, e.g. instead of ::
+
+    roundup-mailgw -C issue -S issueprop=value
+
+You now specify ::
+
+    roundup-mailgw -S issue.issueprop=value
+
+If multiple values need to be set, this can be achieved with multiple
+``-S`` options or with delimiting multiple values with a semicolon (in
+that case the string needs to be quoted because semicolon is a shell
+special character)::
+
+    roundup-mailgw -S 'issue.issueprop1=value1;issueprop2=value2'
+    roundup-mailgw -S issue.issueprop1=value1 -S issue.issueprop2=value2
+
+are equivalent.  Note that the class is provided as a prefix for the
+set-string, not for each property. The class can be omitted altogether
+in which case it defaults to ``msg`` (this default existed in previous
+versions).
+
+If you do not use the ``-C`` (or ``--class``) option in your current
+setup of mailgw you don't need to change anything.
+
 Rdbms version change from 7 to 8 (required)
 -------------------------------------------
 
