@@ -734,6 +734,7 @@ class sqliteFtsIndexerTest(sqliteOpener, RDBMSIndexerTest, IndexerTest):
         error = 'Query error: syntax error near "^"'
         self.assertEqual(str(ctx.exception), error)
 
+    @skip_postgresql
     def testNullChar(self):
        """Test with null char in string. FTS will throw
           an error on null.
