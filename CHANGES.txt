@@ -76,6 +76,8 @@ Features:
   line processing of the mailgw script to ``argparse``. Note that the
   command line options of the mailgw have changed, see upgrading.txt for
   details. (Ralf Schlatterbeck)
+- issue2551243: schema-dump.py enhanced with anti-CSRF headers. Flake8
+  cleanup and python2 support. (John Rouillard)
 
 2022-07-13 2.2.0
 
