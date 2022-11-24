@@ -1566,41 +1566,6 @@ class Client:
 
         current_session = self.session_api._sid
 
-        '''
-        # I think now that LogoutAction redirects to
-        # self.base ([tracker] web parameter in config.ini),
-        # this code is not needed. However I am keeping it
-        # around in case it has to come back to life.
-        # Delete if this is still around in 3/2018.
-        #   rouilj 3/2017.
-        #
-        # Note using this code may cause a CSRF Login vulnerability.
-        # Handle the case where user logs out and tries to
-        # log in again in same window.
-        # The csrf token for the login button is associated
-        # with the prior login, so it will not validate.
-        #
-        # To bypass error, Verify that nonce_user != user and that
-        # user is '2' (anonymous) and there is no current
-        # session key. Validate that the csrf exists
-        # in the db and nonce_user and nonce_session are not None.
-        # Also validate that the action is Login.
-        # Lastly requre at least one csrf header check to pass.
-        # If all of those work process the login.
-        if current_user != nonce_user and \
-           current_user == '2' and \
-           current_session is None and \
-           nonce_user is not None and \
-           nonce_session is not None and \
-           "@action" in self.form and \
-           self.form["@action"].value == "Login":
-            if header_pass > 0:
-                otks.destroy(key)
-                otks.commit()
-                return True
-            else:
-                self.add_error_message("Reload window before logging in.")
-        '''
         # validate against user and session
         if current_user != nonce_user:
             logmsg = self._(
