@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os, unittest, shutil
+import os, sys, unittest, shutil
 
 import pytest
 from roundup.backends import get_backend, have_backend
@@ -33,6 +33,11 @@ from .test_postgresql import postgresqlOpener, skip_postgresql
 from .test_mysql import mysqlOpener, skip_mysql
 from .test_sqlite import sqliteOpener
 from .test_anydbm import anydbmOpener
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 try:
     import xapian
@@ -280,14 +285,12 @@ class Get_IndexerTest(anydbmOpener, unittest.TestCase):
 
     @skip_whoosh
     def test_whoosh_autoselect(self):
-        import mock, sys
         with mock.patch.dict('sys.modules',
                              {'roundup.backends.indexer_xapian': None}):
             indexer = get_indexer(self.db.config, self.db)
         self.assertIn('roundup.backends.indexer_whoosh.Indexer', str(indexer))
 
     def test_native_autoselect(self):
-        import mock, sys
         with mock.patch.dict('sys.modules',
                              {'roundup.backends.indexer_xapian': None,
                               'roundup.backends.indexer_whoosh': None}):
