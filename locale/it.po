@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 2.3.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2022-11-22 17:09-0500\n"
+"POT-Creation-Date: 2022-11-23 22:28-0500\n"
 "PO-Revision-Date: 2013-10-31 12:20+0100\n"
 "Last-Translator: Marco Ghidinelli <marco.ghidinelli@ing.unibs.it>\n"
 "Language-Team: italian <it@li.org>\n"
@@ -1474,150 +1474,143 @@ msgstr "Errore nella Form: "
 msgid "Unrecognized charset: %r"
 msgstr "Codice di carattere sconosciuto: %r"
 
-#: ../roundup/cgi/client.py:1251
+#: ../roundup/cgi/client.py:1238 ../roundup/cgi/client.py:2196
+#: ../roundup/cgi/client.py:1238:2196
+msgid "broken form: multiple @action values submitted"
+msgstr ""
+
+#: ../roundup/cgi/client.py:1253
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr ""
 "Gli utenti anonimi non hanno il permesso di utilizzare l'interfaccia web"
 
-#: ../roundup/cgi/client.py:1374
+#: ../roundup/cgi/client.py:1376
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1378
+#: ../roundup/cgi/client.py:1380
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1407
+#: ../roundup/cgi/client.py:1409
 #, python-format
 msgid "csrf header %(header)s required but missing for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1410
+#: ../roundup/cgi/client.py:1413
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1419 ../roundup/cgi/client.py:1424
-#: ../roundup/cgi/client.py:1419:1424
+#: ../roundup/cgi/client.py:1421
 #, python-format
 msgid "csrf Referer header check failed for user%(userid)s. Value=%(referer)s"
 msgstr ""
 
 # ../roundup/cgi/actions.py:931:935
-#: ../roundup/cgi/client.py:1420
+#: ../roundup/cgi/client.py:1426
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
 msgstr "Login invalida"
 
-#: ../roundup/cgi/client.py:1438 ../roundup/cgi/client.py:1443
-#: ../roundup/cgi/client.py:1438:1443
+#: ../roundup/cgi/client.py:1441
 #, python-format
 msgid "csrf Origin header check failed for user%(userid)s. Value=%(origin)s"
 msgstr ""
 
 # ../roundup/cgi/actions.py:931:935
-#: ../roundup/cgi/client.py:1440
+#: ../roundup/cgi/client.py:1446
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Login invalida"
 
-#: ../roundup/cgi/client.py:1456 ../roundup/cgi/client.py:1462
-#: ../roundup/cgi/client.py:1456:1462
+#: ../roundup/cgi/client.py:1460
 #, python-format
 msgid ""
 "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1459
+#: ../roundup/cgi/client.py:1466
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1480 ../roundup/cgi/client.py:1483
-#: ../roundup/cgi/client.py:1480:1483
+#: ../roundup/cgi/client.py:1485
 #, python-format
 msgid "csrf HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1481
+#: ../roundup/cgi/client.py:1490
 #, python-format
 msgid "Invalid HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1489
+#: ../roundup/cgi/client.py:1498
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1490
+#: ../roundup/cgi/client.py:1499
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1504
+#: ../roundup/cgi/client.py:1513
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1506
+#: ../roundup/cgi/client.py:1516
 msgid "Required Header Missing"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1543
+#: ../roundup/cgi/client.py:1554
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1544 ../roundup/cgi/client.py:1601
-#: ../roundup/cgi/client.py:1618 ../roundup/cgi/client.py:1544:1601:1618
+#: ../roundup/cgi/client.py:1556 ../roundup/cgi/client.py:1583
+#: ../roundup/cgi/client.py:1600 ../roundup/cgi/client.py:1556:1583:1600
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1547
+#: ../roundup/cgi/client.py:1560
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1595 ../roundup/cgi/client.py:1604
-#: ../roundup/cgi/client.py:1595:1604
+#: ../roundup/cgi/client.py:1572
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
 "session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1613
+#: ../roundup/cgi/client.py:1590
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %(curr_sess)s != stored session "
 "%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1621
-#, python-format
-msgid ""
-"logged only: Csrf mismatch user: current session %(curr_sess)s != stored "
-"session %(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
-msgstr ""
-
-#: ../roundup/cgi/client.py:1806
+#: ../roundup/cgi/client.py:1784
 msgid "You are not allowed to view this file."
 msgstr "Non si dispone dei permessi per visualizzare questo file."
 
-#: ../roundup/cgi/client.py:2095
+#: ../roundup/cgi/client.py:2073
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sTempo trascorso: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2099
+#: ../roundup/cgi/client.py:2077
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
 "items: %(get_items)f secs. Filtering: %(filtering)f secs.%(endtag)s\n"
 msgstr ""
 
-#: ../roundup/cgi/client.py:2636
+#: ../roundup/cgi/client.py:2615
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -2054,44 +2047,44 @@ msgstr ""
 "ATTENZIONE: La directory '%s'\n"
 "\tcontene un template old-style - ignorato"
 
-#: ../roundup/mailgw.py:205 ../roundup/mailgw.py:218
-#: ../roundup/mailgw.py:205:218
+#: ../roundup/mailgw.py:215 ../roundup/mailgw.py:228
+#: ../roundup/mailgw.py:215:228
 #, python-format
 msgid "Message signed with unknown key: %s"
 msgstr ""
 
-#: ../roundup/mailgw.py:208
+#: ../roundup/mailgw.py:218
 #, python-format
 msgid "Message signed with an expired key: %s"
 msgstr ""
 
-#: ../roundup/mailgw.py:211
+#: ../roundup/mailgw.py:221
 #, python-format
 msgid "Message signed with a revoked key: %s"
 msgstr ""
 
-#: ../roundup/mailgw.py:214
+#: ../roundup/mailgw.py:224
 msgid "Invalid PGP signature detected."
 msgstr ""
 
-#: ../roundup/mailgw.py:221
+#: ../roundup/mailgw.py:231
 #, fuzzy
 msgid "Unsigned Message"
 msgstr "Nuovo Messagggio"
 
-#: ../roundup/mailgw.py:471
+#: ../roundup/mailgw.py:481
 msgid "Unknown multipart/encrypted version."
 msgstr ""
 
-#: ../roundup/mailgw.py:480
+#: ../roundup/mailgw.py:490
 msgid "Unable to decrypt your message."
 msgstr ""
 
-#: ../roundup/mailgw.py:507
+#: ../roundup/mailgw.py:517
 msgid "No PGP signature found in message."
 msgstr ""
 
-#: ../roundup/mailgw.py:589
+#: ../roundup/mailgw.py:599
 msgid ""
 "\n"
 "Emails to Roundup trackers must include a Subject: line!\n"
@@ -2099,7 +2092,7 @@ msgstr ""
 "\n"
 "Le Email al tracker Roundup devono includere il campo Oggetto: \n"
 
-#: ../roundup/mailgw.py:702
+#: ../roundup/mailgw.py:712
 #, python-format
 msgid ""
 "\n"
@@ -2126,7 +2119,7 @@ msgstr ""
 "\n"
 "Il campo \"Subject: \" (Oggetto) era: '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:740
+#: ../roundup/mailgw.py:747
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2143,7 +2136,7 @@ msgstr ""
 "Classi valide sono: %(validname)s\n"
 "Il campo Subject: conteneva il valore \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:748
+#: ../roundup/mailgw.py:755
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2170,7 +2163,7 @@ msgstr ""
 "\n"
 "Il campo \"Subject: \" (Oggetto) era: '%(subject)s'\n"
 
-#: ../roundup/mailgw.py:808
+#: ../roundup/mailgw.py:815
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2187,7 +2180,7 @@ msgstr ""
 "Subject precedente intatto.\n"
 "Il campo Subject: conteneva il valore \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:841
+#: ../roundup/mailgw.py:848
 #, python-format
 msgid ""
 "\n"
@@ -2202,7 +2195,7 @@ msgstr ""
 "\n"
 "Il campo Subject: conteneva il valore \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:886
+#: ../roundup/mailgw.py:893
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -2215,21 +2208,21 @@ msgstr ""
 "\n"
 "Indirizzo sconosciuto: %(from_address)s\n"
 
-#: ../roundup/mailgw.py:894
+#: ../roundup/mailgw.py:901
 msgid "You are not permitted to access this tracker."
 msgstr "Non si dispone di permessi sufficienti per accedere a questo tracker"
 
-#: ../roundup/mailgw.py:906
+#: ../roundup/mailgw.py:913
 #, python-format
 msgid "You are not permitted to edit %(classname)s."
 msgstr "Non si dispone dei permessi sufficienti per modificare %(classname)s"
 
-#: ../roundup/mailgw.py:912
+#: ../roundup/mailgw.py:919
 #, python-format
 msgid "You are not permitted to create %(classname)s."
 msgstr "Non si dispone dei permessi sufficienti per creare %(classname)s"
 
-#: ../roundup/mailgw.py:994
+#: ../roundup/mailgw.py:1001
 #, python-format
 msgid ""
 "\n"
@@ -2244,28 +2237,28 @@ msgstr ""
 "\n"
 "Il Subject era: \"%(subject)s\"\n"
 
-#: ../roundup/mailgw.py:1047
+#: ../roundup/mailgw.py:1054
 msgid "This tracker has been configured to require all email be PGP encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1085
+#: ../roundup/mailgw.py:1092
 msgid ""
 "\n"
 "This tracker has been configured to require all email be PGP signed or\n"
 "encrypted."
 msgstr ""
 
-#: ../roundup/mailgw.py:1116
+#: ../roundup/mailgw.py:1122
 msgid "You are not permitted to create files."
 msgstr "Non si dispone dei permessi necessari a creare file."
 
-#: ../roundup/mailgw.py:1133
+#: ../roundup/mailgw.py:1139
 #, python-format
 msgid "You are not permitted to add files to %(classname)s."
 msgstr ""
 "Non si dispone dei permessi necessari per aggiungere file a %(classname)s"
 
-#: ../roundup/mailgw.py:1164
+#: ../roundup/mailgw.py:1170
 msgid ""
 "\n"
 "Roundup requires the submission to be plain text. The message parser could\n"
@@ -2275,11 +2268,11 @@ msgstr ""
 "Roundup richiede che i valori immessi siano in formato testo. Il parser dei "
 "messaggi non ha trovato alcuna parte text/plain da utilizzare.\n"
 
-#: ../roundup/mailgw.py:1177
+#: ../roundup/mailgw.py:1183
 msgid "You are not permitted to create messages."
 msgstr "Non si disponde dei permessi necessari per creare messaggi."
 
-#: ../roundup/mailgw.py:1186
+#: ../roundup/mailgw.py:1192
 #, python-format
 msgid ""
 "\n"
@@ -2290,26 +2283,26 @@ msgstr ""
 "La Mail è stata rifiutata da un detector.\n"
 "%(error)s\n"
 
-#: ../roundup/mailgw.py:1197
+#: ../roundup/mailgw.py:1203
 #, python-format
 msgid "You are not permitted to add messages to %(classname)s."
 msgstr "Non si dispone dei permessi per aggiungere messaggi a %(classname)s"
 
-#: ../roundup/mailgw.py:1220
+#: ../roundup/mailgw.py:1226
 #, python-format
 msgid "You are not permitted to edit property %(prop)s of class %(classname)s."
 msgstr ""
 "Non si dispone dei permessi necessari per modificare la proprietà %(prop)s "
 "della classe %(classname)s"
 
-#: ../roundup/mailgw.py:1232
+#: ../roundup/mailgw.py:1238
 #, fuzzy, python-format
 msgid "You are not permitted to set property %(prop)s of class %(classname)s."
 msgstr ""
 "Non si dispone dei permessi necessari per modificare la proprietà %(prop)s "
 "della classe %(classname)s"
 
-#: ../roundup/mailgw.py:1240
+#: ../roundup/mailgw.py:1246
 #, python-format
 msgid ""
 "\n"
@@ -2320,20 +2313,8 @@ msgstr ""
 "Si è verificato un problema con il messaggio che hai inviato:\n"
 "   %(message)s\n"
 
-#: ../roundup/mailgw.py:1720
-#, fuzzy, python-format
-msgid ""
-"\n"
-"The mail gateway is not properly set up. Please contact\n"
-"%(mailadmin)s and have them fix the incorrect class specified as:\n"
-"  %(clsname)s\n"
-msgstr ""
-"\n"
-"Il gateway mail non è configurato correttamente. Per favore contatta\n"
-"%(mailadmin)s e segnala che la classe specificata come:\n"
-"  %(current_class)s è scorretta.\n"
-
-#: ../roundup/mailgw.py:1752
+#: ../roundup/mailgw.py:1366 ../roundup/mailgw.py:1835
+#: ../roundup/mailgw.py:1366:1835
 #, python-format
 msgid ""
 "\n"
@@ -2346,7 +2327,20 @@ msgstr ""
 "%(mailadmin)s e segnala che la proprietà scorretta:\n"
 "  %(errors)s\n"
 
-#: ../roundup/mailgw.py:1773
+#: ../roundup/mailgw.py:1820
+#, fuzzy, python-format
+msgid ""
+"\n"
+"The mail gateway is not properly set up. Please contact\n"
+"%(mailadmin)s and have them fix the incorrect class specified as:\n"
+"  %(classname)s\n"
+msgstr ""
+"\n"
+"Il gateway mail non è configurato correttamente. Per favore contatta\n"
+"%(mailadmin)s e segnala che la classe specificata come:\n"
+"  %(current_class)s è scorretta.\n"
+
+#: ../roundup/mailgw.py:1856
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
 msgstr "Non nel formato [arg=valore,valore,...;arg=valore,valore,...]"
 
@@ -2506,106 +2500,32 @@ msgstr ""
 msgid "No tracker templates found in directory %s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_mailgw.py:50
-#, python-format
+#: ../roundup/scripts/roundup_mailgw.py:185
 msgid ""
-"Usage: %(program)s [-v] [-c class] [[-C class] -S field=value]* [instance "
-"home] [mail source [specification]]\n"
 "\n"
-"Options:\n"
-" -v: print version and exit\n"
-" -c: default class of item to create (else the tracker's "
-"MAIL_DEFAULT_CLASS)\n"
-" -C / -S: see below\n"
-"\n"
-"The roundup mail gateway may be called in one of the following ways:\n"
-" . without arguments. Then the env var ROUNDUP_INSTANCE will be tried.\n"
-" . with an instance home as the only argument,\n"
-" . with both an instance home and a mail spool file,\n"
-" . with an instance home, a mail source type and its specification.\n"
-"\n"
-"It also supports optional -C and -S arguments that allows you to set a\n"
-"fields for a class created by the roundup-mailgw. The default class if\n"
-"not specified is msg, but the other classes: issue, file, user can\n"
-"also be used. The -S or --set options uses the same\n"
-"property=value[;property=value] notation accepted by the command line\n"
-"roundup command or the commands that can be given on the Subject line\n"
-"of an email message.\n"
-"\n"
-"It can let you set the type of the message on a per email address basis.\n"
-"\n"
-"PIPE:\n"
-" If there is no mail source specified,\n"
-" the mail gateway reads a single message from the standard input\n"
-" and submits the message to the roundup.mailgw module.\n"
-"\n"
-"Mail source \"mailbox\":\n"
-" In this case, the gateway reads all messages from the UNIX mail spool\n"
-" file and submits each in turn to the roundup.mailgw module. The file is\n"
-" emptied once all messages have been successfully handled. The file is\n"
-" specified as:\n"
-"   mailbox /path/to/mailbox\n"
-"\n"
-"In all of the following mail source type the username and password\n"
-"can be stored in a ~/.netrc file. If done so case only the server name\n"
-"need to be specified on the command-line.\n"
-"\n"
-"The username and/or password will be prompted for if not supplied on\n"
-"the command-line or in ~/.netrc.\n"
-"\n"
-"POP:\n"
-" For the mail source \"pop\", the gateway reads all messages from the POP "
-"server\n"
-" specified and submits each in turn to the roundup.mailgw module. The\n"
-" server is specified as:\n"
-"    pop username:password@server\n"
-" Alternatively, one can omit one or both of username and password:\n"
-"    pop username@server\n"
-"    pop server\n"
-" are both valid.\n"
-"\n"
-"POPS:\n"
-" Connect to a POP server over ssl. This requires python 2.4 or later.\n"
-" This supports the same notation as POP.\n"
-"\n"
-"APOP:\n"
-" Same as POP, but using Authenticated POP:\n"
-"    apop username:password@server\n"
-"\n"
-"IMAP:\n"
-" Connect to an IMAP server. This supports the same notation as that of\n"
-" POP mail.\n"
-"    imap username:password@server\n"
-" It also allows you to specify a specific mailbox other than INBOX using\n"
-" this format:\n"
-"    imap username:password@server mailbox\n"
-"\n"
-"IMAPS:\n"
-" Connect to an IMAP server over ssl.\n"
-" This supports the same notation as IMAP.\n"
-"    imaps username:password@server [mailbox]\n"
-"\n"
-"IMAPS_CRAM:\n"
-" Connect to an IMAP server over ssl using CRAM-MD5 authentication.\n"
-" This supports the same notation as IMAP.\n"
-"    imaps_cram username:password@server [mailbox]\n"
-"\n"
+"Error: The instance home must be specified"
 msgstr ""
 
-#: ../roundup/scripts/roundup_mailgw.py:174
-msgid "Error: not enough source specification information"
-msgstr "Errore: insufficienti informazioni sul sorgente"
-
 #: ../roundup/scripts/roundup_mailgw.py:203
-#, fuzzy, python-format
-msgid "Error: %s specification not valid"
-msgstr "Errore: il pop server specificato non è valido."
-
-#: ../roundup/scripts/roundup_mailgw.py:223
 #, fuzzy
 msgid ""
+"\n"
+"Error: not enough source specification information"
+msgstr "Errore: insufficienti informazioni sul sorgente"
+
+#: ../roundup/scripts/roundup_mailgw.py:234
+#, fuzzy, python-format
+msgid ""
+"\n"
+"Error: %s specification not valid"
+msgstr "Errore: il pop server specificato non è valido."
+
+#: ../roundup/scripts/roundup_mailgw.py:258
+#, fuzzy
+msgid ""
+"\n"
 "Error: The source must be either \"mailbox\", \"pop\", \"pops\", \"apop\", "
-"\"imap\", \"imaps\" or \"imaps_cram"
+"\"imap\", \"imaps\",  \"imaps_cram\", or \"imaps_oauth\""
 msgstr ""
 "Errore: la sorgente deve essere una tra \"mailbox\", \"pop\", \"apop\", "
 "\"imap\" o \"imaps\""
