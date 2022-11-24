@@ -1165,9 +1165,10 @@ class Client:
                     # if we got here token is valid, use the role
                     # and sub claims.
                     try:
-                        # make sure to str(token['sub']) the subject. As decoded
-                        # by json, it is unicode which thows an error when used
-                        # with 'nodeid in db' down the call chain.
+                        # make sure to str(token['sub']) the
+                        # subject. As decoded by json, it is unicode
+                        # which thows an error when used with 'nodeid
+                        # in db' down the call chain.
                         user = self.db.user.get(str(token['sub']), 'username')
                     except IndexError:
                         raise LoginError("Token subject is invalid.")
@@ -1233,7 +1234,8 @@ class Client:
         except TypeError:
             pass
         if isinstance(action, list):
-            raise SeriousError('broken form: multiple @action values submitted')
+            raise SeriousError(
+                self._('broken form: multiple @action values submitted'))
         elif action != '':
             action = action.value.lower()
         if action in ('login', 'register'):
@@ -1404,7 +1406,8 @@ class Client:
             if (config["WEB_CSRF_ENFORCE_HEADER_%s" % header] == 'required'
                     and "HTTP_%s" % header.replace('-', '_') not in self.env):
                 logger.error(self._(
-                    "csrf header %(header)s required but missing for user%(userid)s.") % {
+                    ''"csrf header %(header)s required but missing "
+                    ''"for user%(userid)s.") % {
                         'header': header,
                         'userid': current_user})
                 raise Unauthorised(self._("Missing header: %s") % header)
@@ -1414,15 +1417,16 @@ class Client:
         if 'HTTP_REFERER' in self.env and enforce != "no":
             if not self.is_referer_header_ok(api=api):
                 referer = self.env['HTTP_REFERER']
+                logmsg = self._(
+                    ''"csrf Referer header check failed for user%(userid)s. "
+                    ''"Value=%(referer)s") % {'userid': current_user,
+                                              'referer': referer}
                 if enforce in ('required', 'yes'):
-                    logger.error(self._(
-                        "csrf Referer header check failed for user%(userid)s. Value=%(referer)s") % {'userid': current_user, 'referer': referer})
+                    logger.error(logmsg)
                     raise Unauthorised(self._("Invalid Referer: %s") % (
                         referer))
                 elif enforce == 'logfailure':
-                    logger.warning(self._(
-                        "csrf Referer header check failed for user%(userid)s. Value=%(referer)s") % {
-                            'userid': current_user, 'referer': referer})
+                    logger.warning(logmsg)
             else:
                 header_pass += 1
 
@@ -1433,14 +1437,15 @@ class Client:
         if 'HTTP_ORIGIN' in self.env and enforce != "no":
             if not self.is_origin_header_ok(api=api):
                 origin = self.env['HTTP_ORIGIN']
+                logmsg = self._(
+                    ''"csrf Origin header check failed for user%(userid)s. "
+                    ''"Value=%(origin)s") % {
+                        'userid': current_user, 'origin': origin}
                 if enforce in ('required', 'yes'):
-                    logger.error(self._(
-                        "csrf Origin header check failed for user%(userid)s. Value=%(origin)s") % {
-                        'userid': current_user, 'origin': origin})
+                    logger.error(logmsg)
                     raise Unauthorised(self._("Invalid Origin %s" % origin))
                 elif enforce == 'logfailure':
-                    logger.warning(self._(
-                        "csrf Origin header check failed for user%(userid)s. Value=%(origin)s") % {'userid': current_user, 'origin': origin})
+                    logger.warning(logmsg)
             else:
                 header_pass += 1
 
@@ -1451,16 +1456,16 @@ class Client:
                 foundat = self.base.find('://' + host + '/')
                 # 4 means self.base has http:/ prefix, 5 means https:/ prefix
                 if foundat not in [4, 5]:
+                    logmsg = self._(
+                        ''"csrf X-FORWARDED-HOST header check failed "
+                        ''"for user%(userid)s. Value=%(host)s") % {
+                            'userid': current_user, 'host': host}
                     if enforce in ('required', 'yes'):
-                        logger.error(self._(
-                            "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s") % {
-                                'userid': current_user, 'host': host})
+                        logger.error(logmsg)
                         raise Unauthorised(self._(
                             "Invalid X-FORWARDED-HOST %s") % host)
                     elif enforce == 'logfailure':
-                        logger.warning(self._(
-                            "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s") % {
-                                'userid': current_user, 'host': host})
+                        logger.warning(logmsg)
                 else:
                     header_pass += 1
         else:
@@ -1476,11 +1481,15 @@ class Client:
                 foundat = self.base.find('://' + host + '/')
                 # 4 means http:// prefix, 5 means https:// prefix
                 if foundat not in [4, 5]:
+                    logmsg = self._(
+                        ''"csrf HOST header check failed for "
+                        ''"user%(userid)s. Value=%(host)s") % {
+                            'userid': current_user, 'host': host}
                     if enforce in ('required', 'yes'):
-                        logger.error(self._("csrf HOST header check failed for user%(userid)s. Value=%(host)s") % {'userid': current_user, 'host': host})
+                        logger.error(logmsg)
                         raise Unauthorised(self._("Invalid HOST %s") % host)
                     elif enforce == 'logfailure':
-                        logger.warning(self._("csrf HOST header check failed for user%(userid)s. Value=%(host)s") % {'userid': current_user, 'host': host})
+                        logger.warning(logmsg)
                 else:
                     header_pass += 1
 
@@ -1501,7 +1510,8 @@ class Client:
                 # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
                 if 'HTTP_X_REQUESTED_WITH' not in self.env:
                     logger.error(self._(
-                        "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."),
+                        ''"csrf X-REQUESTED-WITH xmlrpc required header "
+                        ''"check failed for user%s."),
                                  current_user)
                     raise UsageError(self._("Required Header Missing"))
 
@@ -1540,8 +1550,11 @@ class Client:
         enforce = config['WEB_CSRF_ENFORCE_TOKEN']
         if key is None:  # we do not have an @csrf token
             if enforce == 'required':
-                logger.error(self._("Required csrf field missing for user%s"), current_user)
-                raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
+                logger.error(self._(
+                    "Required csrf field missing for user%s"), current_user)
+                raise UsageError(self._(
+                    ''"We can't validate your session (csrf failure). "
+                    ''"Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
                 # FIXME include url
                 logger.warning(self._("csrf field not supplied by user%s"),
@@ -1590,39 +1603,39 @@ class Client:
         '''
         # validate against user and session
         if current_user != nonce_user:
-            if enforce in ('required', "yes"):
-                logger.error(
-                    self._("Csrf mismatch user: current user %(user)s != stored user %(stored)s, current session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s.") % {
-                        'user': current_user,
-                        'stored': nonce_user,
-                        'cur_sess': current_session,
-                        'stor_sess': nonce_session,
-                        'key': key})
-                raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
+            logmsg = self._(
+                ''"Csrf mismatch user: current user %(user)s != stored "
+                ''"user %(stored)s, current session, stored session: "
+                ''"%(cur_sess)s,%(stor_sess)s for key %(key)s.") % {
+                    'user': current_user,
+                    'stored': nonce_user,
+                    'cur_sess': current_session,
+                    'stor_sess': nonce_session,
+                    'key': key}
+            if enforce in ('required', 'yes'):
+                logger.error(logmsg)
+                raise UsageError(self._(
+                    ''"We can't validate your session (csrf failure). "
+                    ''"Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
-                logger.warning(
-                    self._("Csrf mismatch user: current user %(user)s != stored user %(stored)s, current session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s.") % {
-                        'user': current_user,
-                        'stored': nonce_user,
-                        'cur_sess': current_session,
-                        'stor_sess': nonce_session,
-                        'key': key})
+                logger.warning(logmsg)
+
         if current_session != nonce_session:
-            if enforce in ('required', "yes"):
-                logger.error(
-                    self._("Csrf mismatch user: current session %(curr_sess)s != stored session %(stor_sess)s, current user/stored user is: %(user)s for key %(key)s.") % {
-                        'curr_sess': current_session,
-                        'stor_sess': nonce_session,
-                        'user': current_user,
-                        'key': key})
-                raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
+            logmsg = self._(
+                ''"Csrf mismatch user: current session %(curr_sess)s "
+                ''"!= stored session %(stor_sess)s, current user/stored "
+                ''"user is: %(user)s for key %(key)s.") % {
+                    'curr_sess': current_session,
+                    'stor_sess': nonce_session,
+                    'user': current_user,
+                    'key': key}
+            if enforce in ('required', 'yes'):
+                logger.error(logmsg)
+                raise UsageError(self._(
+                    ''"We can't validate your session (csrf failure). "
+                    ''"Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
-                logger.warning(
-                    self._("logged only: Csrf mismatch user: current session %(curr_sess)s != stored session %(stor_sess)s, current user/stored user is: %(user)s for key %(key)s.") % {
-                        'curr_sess': current_session,
-                        'stor_sess': nonce_session,
-                        'user': current_user,
-                        'key': key})
+                logger.warning(logmsg)
 
         # we are done and the change can occur.
         return True
@@ -2214,7 +2227,8 @@ class Client:
             return None
 
         if isinstance(action, list):
-            raise SeriousError('broken form: multiple @action values submitted')
+            raise SeriousError(
+                self._('broken form: multiple @action values submitted'))
         else:
             action = action.value.lower()
 
