@@ -1290,7 +1290,7 @@ class Client:
             return False
 
         allowed_origins = self.db.config['WEB_ALLOWED_API_ORIGINS']
-        if allowed_origins[0] == '*':
+        if allowed_origins and allowed_origins[0] == '*':
             return True
 
         # For referer, loop over allowed_api_origins and
