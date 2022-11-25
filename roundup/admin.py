@@ -1825,7 +1825,7 @@ Desc: %(description)s
 
         while 1:
             try:
-                command = my_input(_('roundup> '))
+                command = my_input('roundup> ')
             except EOFError:
                 print(_('exit...'))
                 break
