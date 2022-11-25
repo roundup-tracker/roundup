@@ -35,7 +35,7 @@ import sys
 from roundup import date, hyperdb, init, password, token
 from roundup import __version__ as roundup_version
 import roundup.instance
-from roundup.configuration import (CoreConfig, NoConfigError,
+from roundup.configuration import (CoreConfig, NoConfigError, OptionUnsetError,
                                    ParsingOptionError, UserConfig)
 from roundup.i18n import _, get_translation
 from roundup.exceptions import UsageError
@@ -616,8 +616,12 @@ Erase it? Y/N: """))  # noqa: E122
             tracker.nuke()
 
         # GO
-        tracker.init(password.Password(adminpw, config=tracker.config),
-                     tx_Source='cli')
+        try:
+            tracker.init(password.Password(adminpw, config=tracker.config),
+                         tx_Source='cli')
+        except OptionUnsetError as e:
+            raise UsageError("In %(tracker_home)s/config.ini - %(error)s" % {
+                'error': str(e), 'tracker_home': tracker_home })
 
         return 0
 
