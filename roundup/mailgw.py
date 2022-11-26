@@ -1462,8 +1462,10 @@ The mail gateway is not properly set up. Please contact
         """
         with open(os.path.join(self.oauth_path, 'client_secret'), 'r') as f:
             client_secret = f.read().strip()
+        with open(os.path.join(self.oauth_path, 'client_id'), 'r') as f:
+            client_id = f.read().strip()
         data = dict \
-            ( client_id = self.oauth_client_id
+            ( client_id = client_id
             , client_secret = client_secret
             , refresh_token = self.refresh_token
             , grant_type = 'refresh_token'
@@ -1514,7 +1516,6 @@ The mail gateway is not properly set up. Please contact
             # The following are mandatory for oauth and are passed by
             # the command-line handler:
             self.token_endpoint = kw ['token_endpoint']
-            self.oauth_client_id = kw ['oauth_client_id']
             for k in range(2):
                 t = self.access_token
                 s = 'user=%s\1auth=Bearer %s\1\1' % (user, t)

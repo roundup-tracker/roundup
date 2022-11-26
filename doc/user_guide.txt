@@ -725,8 +725,8 @@ IMAPS_OAUTH:
  Connect to an IMAP server over ssl using OAUTH authentication.
  Note that this does not support a password in imaps URLs.
  Instead it uses only the user and server and a command-line option for
- the directory with the files ``access_token``, ``refresh_token``, and
- ``client_secret``.
+ the directory with the files ``access_token``, ``refresh_token``,
+ ``client_secret``, and ``client_id``.
  By default this directory is ``oauth`` in your tracker home directory. The
  access token is tried first and, if expired, the refresh token together
  with the client secret is used to retrieve a new access token. Note that
@@ -736,10 +736,9 @@ IMAPS_OAUTH:
 
    imaps_oauth username@server [mailbox]
 
- Note that you also have to specify the OAuth client id with the
- ``--oauth-client-id`` option on the command line. The refresh and
- access tokens (the latter can be left empty) and the client secret need
- to be retrieved via cloud provider specific protocols or websites.
+ The refresh and access tokens (the latter can be left empty), the
+ client id and the client secret need to be retrieved via cloud provider
+ specific protocols or websites.
 
  You need the requests_ library installed for OAuth.
 

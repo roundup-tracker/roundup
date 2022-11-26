@@ -123,8 +123,8 @@ IMAPS_OAUTH:
  Connect to an IMAP server over ssl using OAUTH authentication.
  Note that this does not support a password in imaps URLs.
  Instead it uses only the user and server and a command-line option for
- the directory with the files 'access_token', 'refresh_token', and
- 'client_secret'.
+ the directory with the files 'access_token', 'refresh_token',
+ 'client_secret', and 'client_id'.
  By default this directory is 'oauth' in your tracker home directory. The
  access token is tried first and, if expired, the refresh token together
  with the client secret is used to retrieve a new access token. Note that
@@ -132,10 +132,9 @@ IMAPS_OAUTH:
  continuously replaced and some cloud providers may also renew the
  refresh token from time to time:
     imaps_oauth username@server [mailbox]
- Note that you also have to specify the OAuth client id with the
- ``--oauth-client-id`` option on the command line. The refresh and
- access tokens (the latter can be left empty) and the client secret need
- to be retrieved via cloud provider specific protocols or websites.
+ The refresh and access tokens (the latter can be left empty), the
+ client id and the client secret need to be retrieved via cloud provider
+ specific protocols or websites.
 
 
 
@@ -154,8 +153,6 @@ def parse_arguments(argv):
     cmd.add_argument('-c', '--default_class', default='',
         help="Default class of item to create (else the tracker's "
         "MAILGW_DEFAULT_CLASS)")
-    cmd.add_argument('-I', '--oauth-client-id',
-        help='ID for OAUTH token refresh')
     cmd.add_argument('-O', '--oauth-directory',
         help='Directory with OAUTH credentials, default "oauth" in '
         'tracker home')
@@ -248,7 +245,6 @@ def main(argv):
         elif source == 'imaps_oauth':
             d.update(ssl = 1, oauth = 1, oauth_path = args.oauth_directory)
             d.update(token_endpoint = args.oauth_token_endpoint)
-            d.update(oauth_client_id = args.oauth_client_id)
         mailbox = ''
         if len(args.args) > 3:
             mailbox = args.args[3]
