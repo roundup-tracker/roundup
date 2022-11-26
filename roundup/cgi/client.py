@@ -764,7 +764,7 @@ class Client:
 
                 # if we've made it this far the context is to a bit of
                 # Roundup's real web interface (not a file being served up)
-                # so do the Anonymous Web Acess check now
+                # so do the Anonymous Web Access check now
                 self.check_anonymous_access()
 
                 # check for a valid csrf token identifying the right user
