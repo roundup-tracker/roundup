@@ -1,4 +1,4 @@
-.TH ROUNDUP-MAILGW 1 "07 October 2019"
+>.TH ROUNDUP-MAILGW 1 "27 October 2022"
 .SH NAME
 roundup-mailgw \- mail gateway for roundup
 .SH SYNOPSIS
@@ -154,6 +154,21 @@ A comment alias would receive emails at tracker_comment with:
 
 which would be a technical message. These messages can trigger
 different workflows based on the messagetype.
+
+Both examples use the default class specified in the tracker's
+config.ini (usually the issue class).
+
+You can also set properties directly on the issue class. If
+your tracker's issue has a "private" property that limits
+who can view an issue and its messages:
+
+  security: |/tools/roundup/bin/roundup-mailgw
+             -S "issue.private=true" -S "issue.keyword+=security"
+             /var/roundup/sysadmin
+
+would set the private property on a issue to restrict
+visiblity and mark the issue as a security topic using a
+keyword.
 
 Both examples use the default class specified in the tracker's
 config.ini (usually the issue class).
