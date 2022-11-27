@@ -688,7 +688,7 @@ POP:
  are both valid.
 
 POPS:
- Connect to a POP server over ssl.
+ Connect to a POP server over tls/ssl.
  This supports the same notation as POP::
 
     pops username:password@server
@@ -710,19 +710,19 @@ IMAP:
     imap username:password@server mailbox
 
 IMAPS:
- Connect to an IMAP server over ssl.
+ Connect to an IMAP server over tls/ssl.
  This supports the same notation as IMAP::
 
     imaps username:password@server [mailbox]
 
 IMAPS_CRAM:
- Connect to an IMAP server over ssl using CRAM-MD5 authentication.
+ Connect to an IMAP server over tls/ssl using CRAM-MD5 authentication.
  This supports the same notation as IMAP::
 
     imaps_cram username:password@server [mailbox]
 
 IMAPS_OAUTH:
- Connect to an IMAP server over ssl using OAUTH authentication.
+ Connect to an IMAP server over tls/ssl using OAUTH authentication.
  Note that this does not support a password in imaps URLs.
  Instead it uses only the user and server and a command-line option for
  the directory with the files ``access_token``, ``refresh_token``,

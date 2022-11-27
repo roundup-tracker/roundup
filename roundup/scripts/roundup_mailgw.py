@@ -94,7 +94,7 @@ POP:
  are both valid.
 
 POPS:
- Connect to a POP server over ssl.
+ Connect to a POP server over ssl/tls.
  This supports the same notation as POP.
 
 APOP:
@@ -110,17 +110,17 @@ IMAP:
     imap username:password@server mailbox
 
 IMAPS:
- Connect to an IMAP server over ssl.
+ Connect to an IMAP server over ssl/tls.
  This supports the same notation as IMAP.
     imaps username:password@server [mailbox]
 
 IMAPS_CRAM:
- Connect to an IMAP server over ssl using CRAM-MD5 authentication.
+ Connect to an IMAP server over ssl/tls using CRAM-MD5 authentication.
  This supports the same notation as IMAP.
     imaps_cram username:password@server [mailbox]
 
 IMAPS_OAUTH:
- Connect to an IMAP server over ssl using OAUTH authentication.
+ Connect to an IMAP server over ssl/tls using OAUTH authentication.
  Note that this does not support a password in imaps URLs.
  Instead it uses only the user and server and a command-line option for
  the directory with the files 'access_token', 'refresh_token',
@@ -150,7 +150,7 @@ def parse_arguments(argv):
     cmd.add_argument('args', nargs='*')
     cmd.add_argument('-v', '--version', action='store_true',
         help='print version and exit')
-    cmd.add_argument('-c', '--default_class', default='',
+    cmd.add_argument('-c', '--default-class', default='',
         help="Default class of item to create (else the tracker's "
         "MAILGW_DEFAULT_CLASS)")
     cmd.add_argument('-O', '--oauth-directory',
