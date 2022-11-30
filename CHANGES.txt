@@ -52,6 +52,9 @@ Fixed:
 - issue2551195 - port scripts from optparse to argparse (Ralf Schlatterbeck)
 - issue2551246 - mitigation, document how -u doesn't work for
   roundup-admin. (John Rouillard)
+- Document better that files in the template or static_files
+  directories accessed via @@file are available to any user with the
+  url.
 
 Features:
 
