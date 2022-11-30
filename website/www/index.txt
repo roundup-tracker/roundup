@@ -41,7 +41,7 @@ Roundup Issue Tracker
        <span style="padding-inline-start: 10.75ch"></span>
        <img
 	 src="https://img.shields.io/badge/dynamic/json?color=blue&label=downloads%2Fmonth&cacheSeconds=86400&query=data.last_month&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Froundup%2Frecent"
-	 alt=""
+	 alt="Badge displaying downloads per month."
 	 height="18" width="127">
      </a>
 
@@ -52,7 +52,7 @@ Roundup Issue Tracker
        <span>Build Status:</span>
        <img
 	   src="https://img.shields.io/github/workflow/status/roundup-tracker/roundup/roundup-ci?label=roundup-ci&logo=github"
-	   alt="Current build status on GitHub"
+	   alt="Current build status on GitHub."
            height="18" width="127">
      </a>
    </div>
