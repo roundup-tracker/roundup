@@ -18,6 +18,9 @@ class Request_Token:
         self.url     = '/'.join ((args.url.rstrip ('/'), args.tenant))
         self.url     = '/'.join ((self.url, 'oauth2/v2.0'))
         self.state   = None
+        self.use_tls = self.args.use_tls
+        if self.use_tls is None:
+            self.use_tls = self.args.redirect_uri.startswith ('https')
     # end def __init__
 
     def check_err (self, r):
@@ -145,12 +148,13 @@ class Request_Token:
         port  = self.args.https_server_port
         httpd = HTTPServer (('localhost', port), RQ_Handler)
 
-        httpd.socket = ssl.wrap_socket \
-            ( httpd.socket
-            , keyfile     = "/etc/ssl/private/ssl-cert-snakeoil.key"
-            , certfile    = "/etc/ssl/certs/ssl-cert-snakeoil.pem"
-            , server_side = True
-            )
+        if self.use_tls:
+            httpd.socket = ssl.wrap_socket \
+                ( httpd.socket
+                , keyfile     = self.args.keyfile
+                , certfile    = self.args.certfile
+                , server_side = True
+                )
 
         while not self.request_received:
             httpd.handle_request ()
@@ -176,7 +180,13 @@ put the client id (also called application id) into the file
 'oauth/client_secret'.
 
 By default calling the script with no arguments, the whole process is
-automatic, but you may want to specify the tenant explicitly using:
+automatic. Note that the default TLS key used for the built-in server is
+a self-signed certificate which is automatically created on Debian-based
+(including Ubuntu) Linux distributions. But the key-file is not readable
+for everyone, you need to be in the group 'ssl-cert' or need otherwise
+elevated privileges. If you're using a http (as opposed to https)
+redirect URI, of course no TLS files are needed. You may want to specify
+the tenant explicitly using:
 
  ./oauth-get-token.py -t $TENANT
 
@@ -238,13 +248,18 @@ def main ():
     cmd = ArgumentParser \
         (epilog=epilog, formatter_class=RawDescriptionHelpFormatter)
     cmd.add_argument \
-        ( '-T', '--request-token'
-        , help    = "Run only the token-request step"
-        , action  = 'store_true'
-        )
-    cmd.add_argument \
         ( '-b', '--browser'
         , help    = "Use non-default browser"
+        )
+    cmd.add_argument \
+        ( '--certfile'
+        , help    = "TLS certificate file, default=%(default)s"
+        , default = "/etc/ssl/certs/ssl-cert-snakeoil.pem"
+        )
+    cmd.add_argument \
+        ( '--keyfile'
+        , help    = "TLS key file, default=%(default)s"
+        , default = "/etc/ssl/private/ssl-cert-snakeoil.key"
         )
     cmd.add_argument \
         ( '-n', '--dont-request-tokens'
@@ -274,9 +289,27 @@ def main ():
         , default = True
         )
     cmd.add_argument \
+        ( '-T', '--request-token'
+        , help    = "Run only the token-request step"
+        , action  = 'store_true'
+        )
+    cmd.add_argument \
         ( '-t', '--tenant'
         , help    = "Tenant part of url, default=%(default)s"
         , default = 'organizations'
+        )
+    cmd.add_argument \
+        ( '--use-tls'
+        , help    = "Enforce use of TLS even if the redirect uri is http"
+        , action  = 'store_true'
+        , default = None
+        )
+    cmd.add_argument \
+        ( '--no-use-tls', '--dont-use-tls'
+        , help    = "Disable use of TLS even if the redirect uri is https"
+        , dest    = 'use_tls'
+        , action  = 'store_false'
+        , default = None
         )
     cmd.add_argument \
         ( '-u', '--url'

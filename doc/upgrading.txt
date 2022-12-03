@@ -3670,7 +3670,7 @@ copy.
 
 
 .. _`customisation documentation`: customizing.html
-.. _`security documentation`: security.html
+.. _`security documentation`: security-history.html
 .. _`administration guide`: admin_guide.html
 .. _`xmlrpc guide`: xmlrpc.html
 .. _FTS5 full-text search engine: https://www.sqlite.org/fts5.html
