@@ -22,6 +22,7 @@ Contents
    user_guide
    customizing
    admin_guide
+   security
    debugging
    xmlrpc
    rest
