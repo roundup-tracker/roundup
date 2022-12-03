@@ -1,0 +1,27 @@
+.. meta::
+    :description:
+        Documentation on how to report security issues with
+        Roundup. Also index to security related portions in other
+        Roundup documentation.
+
+.. index::
+   single: Reporting Security Issues
+   single: Security Issues, Reporting
+
+
+======================================
+Reporting Security Issues with Roundup
+======================================
+
+Security issues with Roundup should be reported by email to:
+
+   rouilj@users.sourceforge.net  (John Rouillard)
+
+   schlatterbeck@users.sourceforge.net (Ralf Schlatterbeck)
+
+Also you can find rouilj on irc in channel #roundup at irc.oftc.net (see
+Contact_ for more directions and web interface).
+
+Use these mechanisms to establish initial contact.
+
+.. _Contact: https://www.roundup-tracker.org/contact.html

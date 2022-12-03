@@ -1,3 +1,9 @@
+.. meta::
+   :description:
+        Security mechanism implementation document for historical purposes.
+
+:orphan:
+
 ===================
 Security Mechanisms
 ===================

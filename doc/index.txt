@@ -17,6 +17,7 @@ Contents
    features
    installation
    upgrading
+   security
    FAQ
    user_guide
    customizing
