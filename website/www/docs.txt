@@ -12,6 +12,7 @@ Docs
    docs/features
    docs/installation
    docs/upgrading
+   docs/security
    docs/FAQ
    docs/user_guide
    docs/customizing

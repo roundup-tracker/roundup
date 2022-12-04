@@ -26,16 +26,16 @@ Contents
    debugging
    xmlrpc
    rest
-   overview
-   Design (original) <design>
-   developers
    tracker_templates
-   Notes about the MySQL Database backend <mysql>
-   Notes about the PostgreSQL Database backend <postgresql>
    glossary
    acknowledgements
-   Richard Jones implementation notes <implementation>
    license
+   Design Overview <overview>
+   Design (original) <design>
+   developers
+   Notes about the MySQL Database backend <mysql>
+   Notes about the PostgreSQL Database backend <postgresql>
+   Richard Jones implementation notes <implementation>
 
 See: https://wiki.roundup-tracker.org/ReleaseErrata for fixes to
 documentation.
