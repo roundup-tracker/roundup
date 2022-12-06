@@ -56,7 +56,7 @@ jobs:
 
         include:
             # example: if 3.12 fails the jobs still succeeds
-            - python-version: 3.12
+            - python-version: 3.12.0-alpha
               os: ubuntu-22.04
               experimental: [true]
             # version 2.7 not available on unbuntu-22.04 github
@@ -66,6 +66,11 @@ jobs:
             - python-version: 3.11-dev
               os: ubuntu-22.04
               experimental: [true]
+            # Fail the run if these fail
+            #- python-version: 3.6
+            #  os: ubuntu-20.04
+            #- python-version: 2.7
+            #  os: ubuntu-20.04
 
         exclude:
             # skip all python versions on 22.04 except explicitly included
