@@ -149,13 +149,13 @@ class Request_Token:
         httpd = HTTPServer (('localhost', port), RQ_Handler)
 
         if self.use_tls:
-            httpd.socket = ssl.wrap_socket \
-                ( httpd.socket
-                , keyfile     = self.args.keyfile
-                , certfile    = self.args.certfile
-                , server_side = True
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.load_cert_chain \
+                ( keyfile  = self.args.keyfile
+                , certfile = self.args.certfile
                 )
-
+            httpd.socket = context.wrap_socket \
+                (httpd.socket, server_side = True)
         while not self.request_received:
             httpd.handle_request ()
     # end def https_server
