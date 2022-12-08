@@ -149,7 +149,19 @@ class Request_Token:
         httpd = HTTPServer (('localhost', port), RQ_Handler)
 
         if self.use_tls:
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            # note this opens a server on localhost. Only
+            # a process on the same host can get the credentials.
+            # Even unencrypted (http://) url is fine as the credentials
+            # will be saved in clear text on disk for use. So a
+            # compromised local host will still get the credentials.
+            context = ssl.SSLContext(ssl_version=ssl.PROTOCOL_TLS_SERVER)
+
+            # This should not be needed. Uses Python 3.10+ setting.
+            # context.maximum_version = ssl.TLSVersion.TLSv1_2
+            # for previous versions maybe:
+            #   ssl.PROTOCOL_TLSv1_2
+            # would work?
+
             context.load_cert_chain \
                 ( keyfile  = self.args.keyfile
                 , certfile = self.args.certfile
