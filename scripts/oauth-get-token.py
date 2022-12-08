@@ -156,9 +156,10 @@ class Request_Token:
             # compromised local host will still get the credentials.
             context = ssl.SSLContext(ssl_version=ssl.PROTOCOL_TLS_SERVER)
 
-            # This should not be needed. Uses Python 3.10+ setting.
-            # context.maximum_version = ssl.TLSVersion.TLSv1_2
-            # for previous versions maybe:
+            # This should not be needed as PROTOCOL_TLS_SERVER disables
+            # unsafe protocols. Uses Python 3.10+ setting ssl.TLSVersion....
+            # context.minimum_version = ssl.TLSVersion.TLSv1_2
+            # for previous Python versions 3.6+ maybe:
             #   ssl.PROTOCOL_TLSv1_2
             # would work?
 
