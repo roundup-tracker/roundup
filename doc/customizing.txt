@@ -2309,6 +2309,16 @@ Serving static content
 See the previous section `determining web context`_ where it describes
 ``@@file`` paths.
 
+These files are served without any permission checks. Any user on the
+internet with the url can download the file.
+
+This is rarely an issue since the html templates are just source code
+and much of it can be found in the Roundup repository. Other
+decoration (logos, stylesheets) are similarly not security sensitive.
+You can use the static_files setting in config.ini to eliminate
+access to the templates directory if desired.
+
+If a file resolves to a symbolic link, it is not served.
 
 Performing actions in web requests
 ----------------------------------

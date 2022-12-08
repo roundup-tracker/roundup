@@ -73,7 +73,6 @@ release = '2.2.0'
 exclude_patterns = ['docs/index.txt',
                     'docs/whatsnew-0.7.txt',
                     'docs/whatsnew-0.8.txt',
-                    'docs/security.txt',
                     'robots.txt',
                     '_tmp']
 

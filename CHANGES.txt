@@ -50,6 +50,11 @@ Fixed:
   more than one issue with a matching parent message, fall back to
   subject matching. See upgrading.txt for details. (John Rouillard)
 - issue2551195 - port scripts from optparse to argparse (Ralf Schlatterbeck)
+- issue2551246 - mitigation, document how -u doesn't work for
+  roundup-admin. (John Rouillard)
+- Document better that files in the template or static_files
+  directories accessed via @@file are available to any user with the
+  url.
 
 Features:
 
@@ -182,6 +187,9 @@ Fixed:
   if the user doesn't have edit permissions. (John Rouillard)
 - issue2551216 - create new mysql databases using COLLATE
   utf8_general_ci to prevent crashes in test suite. (John Rouillard)
+- issue2551146 - fix issues with strings that have multiple %s
+  substutions that were not labeled making i18n difficult/impossible.
+  (John Rouillard)
 
 Features:
 

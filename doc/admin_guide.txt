@@ -878,6 +878,22 @@ A brief (incomplete) summary is::
 
 Run ``roundup-admin help commands`` for a complete list of subcommands.
 
+One thing to note, The ``-u user`` setting does not currently operate
+like a user logging in via the web. The user running roundup-admin
+must have read access to the tracker home directory. As a result the
+user has access to the files and the database info contained in
+config.ini.
+
+Using ``-u user`` sets the actor/user parameter in the
+journal. Changes that are made are attributed to that
+user. The password is ignored if provided. Any existing
+username has full access to the data just like the admin
+user. This is an area for further development so that
+roundup-admin could be used with sudo to provide secure
+command line access to a tracker.
+
+In general you should forget that there is a -u parameter.
+
 .. _`customisation documentation`: customizing.html
 .. _`upgrading documentation`: upgrading.html
 .. _`installation documentation`: installation.html

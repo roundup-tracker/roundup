@@ -991,13 +991,16 @@ SETTINGS = (
             "Path to the HTML templates directory."),
         (MultiFilePathOption, "static_files", "",
             "A list of space separated directory paths (or a single\n"
-            "directory).  These directories hold additional static\n"
-            "files available via Web UI.  These directories may\n"
-            "contain sitewide images, CSS stylesheets etc. If a '-'\n"
-            "is included, the list processing ends and the TEMPLATES\n"
-            "directory is not searched after the specified\n"
+            "directory).  These directories hold additional public\n"
+            "static files available via Web UI.  These directories\n"
+            "may contain sitewide images, CSS stylesheets etc. If a\n"
+            "'-' is included, the list processing ends and the\n"
+            "TEMPLATES directory is not searched after the specified\n"
             "directories.  If this option is not set, all static\n"
-            "files are taken from the TEMPLATES directory."),
+            "files are taken from the TEMPLATES directory. Access to\n"
+            "these files is public, it is not checked against\n"
+            "registered users. So do not put any sensitive data in\n"
+            "the files in these directories."),
         (MailAddressOption, "admin_email", "roundup-admin",
             "Email address that roundup will complain to if it runs\n"
             "into trouble.\n"

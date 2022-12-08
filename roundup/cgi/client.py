@@ -477,6 +477,9 @@ class Client:
         # flag to indicate that the HTTP headers have been sent
         self.headers_done = 0
 
+        # record of headers sent for debugging
+        self.headers_sent = []
+
         # additional headers to send with the request - must be registered
         # before the first write
         self.additional_headers = {}
@@ -495,6 +498,8 @@ class Client:
         self.nodeid = None
         self.classname = None
         self.template = None
+        self._ok_message = []
+        self._error_message = []
 
     def _gen_nonce(self):
         """ generate a unique nonce """

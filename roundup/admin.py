@@ -240,7 +240,7 @@ login may be specified as either "name" or "name:password".
  . ROUNDUP_LOGIN environment variable
  . the -u command-line option
 If either the name or password is not supplied, they are obtained from the
-command-line.
+command-line. (See admin guide before using -u.)
 
 Date format examples:
   "2000-04-17.03:45" means <Date 2000-04-17.08:45:00>
