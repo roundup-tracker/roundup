@@ -57,6 +57,7 @@ Fixed:
   url. (John Rouillard)
 - Fix final exception handler in roundup-server to send proper
   Content-Length header to the client. (John Rouillard)
+- Fix traceback if Origin header is missing. (John Rouillard)
 
 Features:
 

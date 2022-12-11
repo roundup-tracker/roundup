@@ -1259,7 +1259,11 @@ class Client:
                                           "allowed to use the web interface"))
 
     def is_origin_header_ok(self, api=False):
-        origin = self.env['HTTP_ORIGIN']
+        try:
+            origin = self.env['HTTP_ORIGIN']
+        except KeyError:
+            return False
+
         # note base https://host/... ends host with with a /,
         # so add it to origin.
         foundat = self.base.find(origin + '/')
