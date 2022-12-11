@@ -272,31 +272,33 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
                 self.log_error('timeout')
             else:
-                # it'd be nice to be able to detect if these are going to have
-                # any effect...
                 self.send_response(400)
                 self.send_header('Content-Type', 'text/html')
-                self.end_headers()
                 if self.DEBUG_MODE:
                     try:
                         reload(cgitb)
-                        self.wfile.write(s2b(cgitb.breaker()))
-                        self.wfile.write(s2b(cgitb.html()))
+                        output = s2b(cgitb.breaker()) + s2b(cgitb.html())
                     except Exception:
                         s = StringIO()
                         traceback.print_exc(None, s)
-                        self.wfile.write(b"<pre>")
-                        self.wfile.write(s2b(html_escape(s.getvalue())))
-                        self.wfile.write(b"</pre>\n")
+                        output = b"<pre>%s</pre>" % s2b(
+                            html_escape(s.getvalue()))
                 else:
                     # user feedback
-                    self.wfile.write(s2b(cgitb.breaker()))
                     ts = time.ctime()
-                    self.wfile.write(s2b('''<p>%s: An error occurred. Please check
-                    the server log for more information.</p>''' % ts))
+                    output = (
+                        s2b('''<body><p>%s: An error occurred. Please check
+                        the server log for more information.</p></body>''' %
+                            ts)
+                    )
                     # out to the logfile
                     print('EXCEPTION AT', ts)
                     traceback.print_exc()
+
+                # complete output to user.
+                self.send_header('Content-Length', len(output))
+                self.end_headers()
+                self.wfile.write(output)
 
     do_GET = do_POST = do_HEAD = do_PUT = do_DELETE = \
         do_PATCH = do_OPTIONS = run_cgi

@@ -54,7 +54,9 @@ Fixed:
   roundup-admin. (John Rouillard)
 - Document better that files in the template or static_files
   directories accessed via @@file are available to any user with the
-  url.
+  url. (John Rouillard)
+- Fix final exception handler in roundup-server to send proper
+  Content-Length header to the client. (John Rouillard)
 
 Features:
 
