@@ -1183,8 +1183,9 @@ class Class:
         db.addclass(self)
 
         actions = "create set retire restore".split()
-        self.auditors = dict([(a, PrioList()) for a in actions])
-        self.reactors = dict([(a, PrioList()) for a in actions])
+        skey = lambda x: x[:2]
+        self.auditors = dict([(a, PrioList(key=skey)) for a in actions])
+        self.reactors = dict([(a, PrioList(key=skey)) for a in actions])
 
     def __repr__(self):
         """Slightly more useful representation

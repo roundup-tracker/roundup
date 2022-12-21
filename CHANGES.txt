@@ -58,6 +58,9 @@ Fixed:
 - Fix final exception handler in roundup-server to send proper
   Content-Length header to the client. (John Rouillard)
 - Fix traceback if Origin header is missing. (John Rouillard)
+- issue2551250: Fix sorting of detectors even if there are two with the
+  same name and priority (can happen if they are created in two
+  different files).
 
 Features:
 
