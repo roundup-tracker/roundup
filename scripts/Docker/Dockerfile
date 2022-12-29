@@ -66,6 +66,16 @@ COPY scripts/Docker/sphinxdeps.txt .
 ENV PIP_ROOT_USER_ACTION=ignore
 
 RUN set -xv && CWD=$PWD && \
+    upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
+	list --outdated | awk 'NR > 2 {print $1}'); \
+    if [ -n "$upgrades" ]; then \
+        echo Pip updating $upgrades; \
+        python -m pip --no-cache --disable-pip-version-check \
+           install -U $upgrades < /dev/null; \
+    else \
+        echo Nothing to pip update; \
+    fi; \
+    ls -l /usr/local/lib/python3.11/site-packages; \
     VER=$(apk list -I 'xapian-core-dev' | \
           sed 's/^xapian-core-dev-\([0-9.]*\)-.*/\1/') && \
     cd /tmp && \
@@ -148,7 +158,7 @@ RUN apk --update-cache upgrade; \
     if [ -n "$upgrades" ]; then \
         echo Pip updating $upgrades; \
         python -m pip --no-cache --disable-pip-version-check \
-           install -U $upgrades; \
+           install -U $upgrades < /dev/null; \
     else \
         echo Nothing to pip update; \
     fi
