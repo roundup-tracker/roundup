@@ -128,9 +128,11 @@ WORKDIR $appdir
 ENV PIP_ROOT_USER_ACTION=ignore
 
 # upgrade to get any security updates; bundle with
-# rest of apk actions to reduce layers/wasted space 
+#    rest of apk actions to reduce layers/wasted space 
 # add libraries needed to run gpg/mysql/pgsql/brotli
 # clean out any caches to save space
+# upgrade pip packages to get security and other updates
+#   bundle with apk updates
 RUN apk --update-cache upgrade; \
     apk add \
      brotli-libs \
@@ -140,7 +142,16 @@ RUN apk --update-cache upgrade; \
      libstdc++ \
      libxapian \
      zstd-libs; \
-    rm -f /var/cache/apk/*
+    rm -f /var/cache/apk/*; \
+    upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
+	list --outdated | awk 'NR > 2 {print $1}'); \
+    if [ -n "$upgrades" ]; then \
+        echo Pip updating $upgrades; \
+        python -m pip --no-cache --disable-pip-version-check \
+           install -U $upgrades; \
+    else \
+        echo Nothing to pip update; \
+    fi
 
 ARG source
 LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
