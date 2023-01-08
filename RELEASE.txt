@@ -196,36 +196,49 @@ Roundup release checklist:
 17 Push release docker image to dockerhub
 17a. install docker
 17b. run: (issues, how to release a version e.g. to update alpine for
-           secuity issues. Should release tag be
-	   roundup-tracker/roundup:2.2.0-1, -2 etc? Then add a tag
-	   roundup-tracker/roundup:2.2.0 that changes and always tags
-	   the latest -X release??)
+           security issues. Currently thinking that release tag is
+	   rounduptracker/roundup:2.2.0-1, -2 etc? Then add a tag
+	   rounduptracker/roundup:2.2.0 that moves to always tag
+	   the latest -N release??)
 
-        docker build -t roundup-tracker/roundup:2.2.0 \
+        docker build -t rounduptracker/roundup:2.2.0 \
            --build-arg="source=pypi" -f scripts/Docker/Dockerfile .
 
-     to create the dockerfile. *Change 2.2.0 to current version*
+     to create the docker image. *Change 2.2.0 to current version*
      Always use the exact release tag.
 17c. vulnerability scan local image using:
 
         docker run --rm --volume \
 	/var/run/docker.sock:/var/run/docker.sock \
-            --name Grype anchore/grype:latest roundup-tracker/roundup:2.2.0
+            --name Grype anchore/grype:latest rounduptracker/roundup:2.2.0
 
      should report no vulnerabilities (note match version with current
      build)
+
+     Also can scan (optionally) using trivy:
+
+        docker run --rm --volume \
+	/var/run/docker.sock:/var/run/docker.sock \
+          --name trivy aquasec/trivy:latest image rounduptracker/roundup:2.2.0
+
+     You may need to explicitly update/refresh the scanners with:
+     "docker pull anchore/grype:latest" and similarly for
+     aquasec/trivy if used.
 17d. test roundup in demo mode:
 
         docker run -it --rm -p 8917:8080 \
          -v $PWD/tracker:/usr/src/app/tracker \
-         roundup-tracker/roundup:2.2.0 demo
-17e. push to DockerHub login (login using 'docker login <username>'
-     first and user must be member of roundup-tracker org with ability
-     to publish)
+         rounduptracker/roundup:2.2.0 demo
 
-	 docker tag roundup-tracker/roundup:2.2.0 roundup-tracker/roundup
-         docker push roundup-tracker/roundup:2.2.0
-         docker push roundup-tracker/roundup  # update roundup:latest
+17e. push to DockerHub login (login using 'docker login <username>'
+     first and user must be member of rounduptracker org with ability
+     to publish). Replace -N with the release number (e.g. -1, -2, -3...)
+
+	 docker tag rounduptracker/roundup:2.2.0 roundup-tracker/roundup
+	 docker tag rounduptracker/roundup:2.2.0 roundup-tracker/roundup:2.2.0-N
+         docker push rounduptracker/roundup:2.2.0
+         docker push rounduptracker/roundup:2.2.0-N
+         docker push rounduptracker/roundup  # update roundup:latest
 
 -------------
 
