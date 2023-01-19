@@ -2947,12 +2947,15 @@ def make_key_function(db, classname, sort_on=None):
     linkcl = db.getclass(classname)
     if sort_on is None:
         sort_on = linkcl.orderprop()
+    prop = linkcl.getprops()[sort_on]
 
     def keyfunc(a):
         if num_re.match(a):
             a = linkcl.get(a, sort_on)
             # In Python3 we may not compare strings and None
             if a is None:
+                if isinstance(prop, hyperdb.Number):
+                    return 0
                 return ''
         return a
     return keyfunc

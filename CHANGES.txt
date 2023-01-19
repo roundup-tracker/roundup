@@ -61,6 +61,8 @@ Fixed:
 - issue2551250: Fix sorting of detectors even if there are two with the
   same name and priority (can happen if they are created in two
   different files).
+- Fix Traceback when a numeric order attribute is empty (Ralf
+  Schlatterbeck)
 
 Features:
 
