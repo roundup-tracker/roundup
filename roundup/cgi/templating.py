@@ -2952,9 +2952,9 @@ def make_key_function(db, classname, sort_on=None):
     def keyfunc(a):
         if num_re.match(a):
             a = linkcl.get(a, sort_on)
-            # In Python3 we may not compare strings and None
+            # In Python3 we may not compare numbers/strings and None
             if a is None:
-                if isinstance(prop, hyperdb.Number):
+                if isinstance(prop, (hyperdb.Number, hyperdb.Integer)):
                     return 0
                 return ''
         return a
