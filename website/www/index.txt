@@ -21,12 +21,12 @@ Roundup Issue Tracker
    <div class="release_info note">
      <!-- package version/pypi download -->
      <a
-	  href="https://pypi.org/project/roundup/#files">
+          href="https://pypi.org/project/roundup/#files">
        <span style="padding-inline-end: 1.75ch">Download:</span>
        <img style="vertical-align: text-top"
-	   src="https://img.shields.io/pypi/v/roundup?color=blue&label=Current%20Version&cacheSeconds=86400"
-	   alt="Display current version of Roundup on PyPI."
-	   height="18" width="127">
+           src="https://img.shields.io/pypi/v/roundup?color=blue&label=Current%20Version&cacheSeconds=86400"
+           alt="Display current version of Roundup on PyPI."
+           height="18" width="127">
      </a>
 
      <!-- supported python versions: <img src="https://shields.io/pypi/pyversions/roundup"> -->
@@ -34,26 +34,37 @@ Roundup Issue Tracker
      <!-- changes since 2.2.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.2.0/master?sort=semver"> -->
      <!-- status beta, stable, mature.... <img src="https://img.shields.io/pypi/status/roundup"> -->
      <!-- mozilla observatory <img src="https://img.shields.io/mozilla-observatory/grade/www.roundup-tracker.org?publish"> -->
+     <!-- commits from last named release: <img alt="GitHub commits difference between two branches/tags/commits" src="https://img.shields.io/github/commits-difference/roundup-tracker/roundup?base=2.2.0&head=master">a -->
+     <!-- newest tag by date - use for alpha/beta release notifications?
+     <img alt="GitHub tag (latest by date)" src="https://img.shields.io/github/v/tag/roundup-tracker/roundup"> -->
 
      <!-- downloads/month -->
-     <a style="display:block; margin-block-start: 1em;"
-	  href="https://pypistats.org/packages/roundup">
+     <a style="display:block; margin-block-start: 0.5em;"
+          href="https://pypistats.org/packages/roundup">
        <span style="padding-inline-start: 10.75ch"></span>
        <img
-	 src="https://img.shields.io/badge/dynamic/json?color=blue&label=downloads%2Fmonth&cacheSeconds=86400&query=data.last_month&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Froundup%2Frecent"
-	 alt="Badge displaying downloads per month."
-	 height="18" width="127">
+         src="https://img.shields.io/badge/dynamic/json?color=blue&label=Downloads%2FMonth&cacheSeconds=86400&query=data.last_month&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Froundup%2Frecent"
+         alt="Badge displaying number of downloads per month."
+         height="18" width="127">
+     </a>
+     <a style="display:block; margin-block-start: 0.5em;"
+        href="https://hub.docker.com/r/rounduptracker/roundup">
+     <span style="padding-inline-start: 10.75ch"></span>
+     <img
+        src="https://img.shields.io/docker/image-size/rounduptracker/roundup?label=Docker%20Size"
+        alt="Graphic displaying size of newest docker image on hub.docker.com."
+        height="18" width="127">
      </a>
 
      <!-- build status -->
      <a 
-	 style="display:block; margin-block-start: 1em;"
-	 href="https://github.com/roundup-tracker/roundup/actions?query=workflow%3Aroundup-ci++">
+         style="display:block; margin-block-start: 1em;"
+         href="https://github.com/roundup-tracker/roundup/actions?query=workflow%3Aroundup-ci++">
        <span>Build Status:</span>
        <img
-	   src="https://img.shields.io/github/workflow/status/roundup-tracker/roundup/roundup-ci?label=roundup-ci&logo=github"
-	   alt="Current build status on GitHub."
-           height="18" width="127">
+         src="https://github.com/roundup-tracker/roundup/actions/workflows/ci-test.yml/badge.svg"
+         alt="Status of primary regression test job on github."
+         height="18" width="127"><br>
      </a>
    </div>
 
@@ -121,10 +132,20 @@ has been deployed for:
 
 ...and so on. It's been designed with :doc:`flexibility
 <docs/customizing>` in mind - it's not just another bug
-tracker. Roundup ships with a *demo tracker* to play with - after
-you've unpacked the source, just run "python demo.py" and load up the
+tracker. Roundup ships with a **demo tracker** to play with - you don't
+need to install Roundup. After
+you've unpacked the source, just run "``python demo.py``" and load up the
 URL it prints out!
 
+To create a source directory and run the demo follow these simple
+steps (change the ``-2.2.0`` version identifier to match your downloaded
+file).
+
+  1. ``python -m pip download roundup``
+  2. ``python -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz``
+  3. ``cd roundup-2.2.0``
+  4. ``python demo.py``
+ 
 Roundup was originally released as version 0.1.1 in late August, 2001.
 The first `change note`_ written said:
 
