@@ -48,9 +48,9 @@ jobs:
         python-version:
           - "2.7"
           - "3.10"
-          - "3.9"
+          # - "3.9"
           - "3.8"
-          - "3.7"
+          # - "3.7"
           - "3.11"
 
         # use for multiple os or ubuntu versions
@@ -66,8 +66,8 @@ jobs:
             - python-version: 3.12-dev
               os: ubuntu-22.04
               experimental: [true]
-            - python-version: 3.11-dev
-              os: ubuntu-20.04
+            #- python-version: 3.11-dev
+            #  os: ubuntu-20.04
             # 3.6 not available on new 22.04 runners, so run on 20.04 ubuntu
             - python-version: 3.6
               os: ubuntu-20.04
