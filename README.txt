@@ -34,6 +34,10 @@ Upgrading
 Please see "doc/upgrading.txt"
 
 
+Security Issues
+===============
+Please see "doc/security.txt" for directions on reporting security issues.
+
 Usage and Other Information
 ===========================
 Start with the index.txt file in the "doc" directory. These
