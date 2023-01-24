@@ -21,18 +21,21 @@ on:
   schedule:
     - cron: '28 17 * * 1'
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
-permissions:
-  contents: read
-  security-events: write
 
 jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
 
     strategy:
       fail-fast: false
