@@ -142,7 +142,10 @@ steps (change the ``-2.2.0`` version identifier to match your downloaded
 file).
 
   1. ``python -m pip download roundup``
-  2. ``python -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz``
+  2. ``tar -xzvf roundup-2.2.0.tar.gz``
+
+     * if you don't have a tar command, ``python -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz`` can be used.
+
   3. ``cd roundup-2.2.0``
   4. ``python demo.py``
  
