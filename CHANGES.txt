@@ -63,6 +63,8 @@ Fixed:
   different files).
 - Fix Traceback when a numeric order attribute is empty (Ralf
   Schlatterbeck)
+- Update some template schema files to assign Register permissions for the
+  Anonymous user. Replaces the old Create permission. (John Rouillard)
 
 Features:
 

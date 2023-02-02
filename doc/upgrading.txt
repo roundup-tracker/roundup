@@ -66,8 +66,8 @@ You can then merge any local comments from the tracker's
 ``config.ini`` to ``newconfig.ini`` and replace
 ``config.ini`` with ``newconfig.ini``.
 
-Using the roundup-mailgw script
--------------------------------
+Using the roundup-mailgw script (required)
+------------------------------------------
 
 In previous versions the roundup-mailgw script had a ``-C`` (or
 ``--class``) option for specifying a class to be used with ``-S`` (or
@@ -95,6 +95,24 @@ versions).
 
 If you do not use the ``-C`` (or ``--class``) option in your current
 setup of mailgw you don't need to change anything.
+
+Replace Create User permission for Anonymous with Register (required)
+---------------------------------------------------------------------
+
+Check your trackers schema.py. If you have the following code::
+
+    db.security.addPermissionToRole('Anonymous', 'Create', 'user')
+
+after the permission for Anonymous 'Email Access', change it to::
+
+    db.security.addPermissionToRole('Anonymous', 'Register', 'user')
+
+The comment for Anonymous 'Email Access' may refer to Create. Change
+it to refer to Register.
+
+This will be an issue if you used the devel or responsive tracker
+templates. If you used a classic, minimal or jinja2 template the
+permission change (but not the comment change) should be done already.
 
 Rdbms version change from 7 to 8 (required)
 -------------------------------------------
