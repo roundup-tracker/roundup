@@ -220,6 +220,5 @@ linkcheck_ignore = [
     r'http://www.bizarsoftware.com.au/', # reference in license,
     r'http://11.11.11.101',              # dummy example url
     r'https://.../rest/.*',              # dummy example url
-    r'http://myroundup.com/roundup.*',   # dummy example url
     r'http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport',                 # dead link, there for historic
 ]

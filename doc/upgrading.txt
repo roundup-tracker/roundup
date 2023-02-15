@@ -1868,11 +1868,11 @@ If you are using the xml-rpc interface, there is a change
   roundup url and get a response, you must use the /xmlrpc
   url. For example, if you used to send your xmlrpc request to:
 
-   http://myroundup.com/roundup
+   \http://myroundup.com/roundup
 
   you need to change the url to read:
 
-   http://myroundup.com/roundup/xmlrpc
+   \http://myroundup.com/roundup/xmlrpc
 
   to invoke the xmlrpc handler. This allows us to send xml
   data to roundup for other handlers (e.g. REST, SOAP ...)
