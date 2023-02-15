@@ -143,7 +143,7 @@
 {%- block extrahead %} {% endblock %}
   </head>
   <body>
-    <div class="header"><h1>Roundup</h1>
+    <div class="header"><div class="label">Roundup</div>
       {%- if pagename != "search" %}
         <div id="searchbox" style="display: none">
           <form class="search" action="{{ pathto('search') }}" method="get">
