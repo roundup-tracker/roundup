@@ -616,7 +616,7 @@ or ``c:\winnt\system32\inetsrv\adminsamples\`` or
 
 See:
 
-   https://docs.microsoft.com/en-us/iis/web-dev-reference/server-variables
+   https://learn.microsoft.com/en-us/iis/web-dev-reference/server-variables
 
 More information about ISS setup may be found at:
 
@@ -1353,7 +1353,7 @@ implement a custom router & transport to accomplish mail delivery to
 roundup-mailgw. A configuration for Exim3 is similar but not
 included, since Exim3 is considered obsolete.
 
-.. _Exim 4: http://www.exim.org/
+.. _Exim 4: https://www.exim.org/
 
 This configuration is similar to the previous section, in that it uses
 a pipe process. However, there are advantages to using a custom
@@ -1798,6 +1798,6 @@ please let us know!
 .. _Redis: https://redis.io
 .. _redis-py: https://pypi.org/project/redis/
 .. _requests: https://requests.readthedocs.io/en/latest/
-.. _Whoosh: https://whoosh.readthedocs.org/en/latest
+.. _Whoosh: https://whoosh.readthedocs.org/en/latest/
 .. _Xapian: https://xapian.org/
 .. _zstd: https://pypi.org/project/zstd/
