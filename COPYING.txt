@@ -1,9 +1,13 @@
 Note links for http://www.zope.com/Marks and  http://www.ekit.com/ are dead.
 
+Roundup, exclusive of the Zope page templates, is `MIT licensed`_.
+
+.. _MIT licensed: https://opensource.org/license/mit/
+
 Roundup Licensing
 -----------------
 
-Copyright (c) 2009-2022 Roundup-Team
+Copyright (c) 2009-2022 Roundup-Team (https://opensource.org/license/mit/)
 Copyright (c) 2003-2009 Richard Jones (richard@mechanicalcat.net)
 Copyright (c) 2002 eKit.com Inc (http://www.ekit.com/)
 Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
@@ -46,6 +50,8 @@ the following manner:
 The license for this code is the `Zope Public License (ZPL) Version 2.0`_,
 included below.
 
+
+.. _Zope Public License (ZPL) Version 2.0: https://opensource.org/license/zpl-php/
 
 Zope Public License (ZPL) Version 2.0
 -------------------------------------
