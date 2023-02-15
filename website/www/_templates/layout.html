@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {%- if 'name="description"' not in metatags %}
       <meta name="description"
@@ -21,7 +21,6 @@
     {%- endfor %}
     {%- else %}
     <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
-
     {%- endif %}
     {%- if builder != 'htmlhelp' %}
     <script type="text/javascript">
