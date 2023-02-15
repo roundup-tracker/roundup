@@ -36,6 +36,46 @@ Roundup scripts
  These include the email gateway, the roundup
  HTTP server, the roundup administration command-line interface, etc.
 
+For The Really Impatient
+========================
+
+If you just want to give Roundup a whirl Right Now, follow these
+directions to download, unpack and run ``demo.py``. (Replace
+``-2.2.0`` with the version number of the file you downloaded. On
+systems that don't provide a ``python3`` program you can run
+``python demo.py``.)
+
+1. ``python3 -m pip download roundup``
+2. ``tar -xzvf roundup-2.2.0.tar.gz``
+
+   * if you don't have a tar command, ``python3 -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz`` can be used.
+
+3. ``cd roundup-2.2.0``
+4. ``python3 demo.py``
+
+This will set up a simple demo tracker on your machine. [1]_
+When it's done, it'll print out a URL to point your web browser at
+so you may start playing. Three users will be set up:
+
+1. anonymous - the "default" user with permission to do very little
+2. demo (password "demo") - a normal user who may create issues
+3. admin (password "admin") - an administrative user who has complete
+   access to the tracker
+
+Note the demo tracker removes the detector (nosyreaction.py) that
+sends email notifications. If you later convert your demo tracker to
+production you will need to copy in the detector to send notification
+emails.
+
+If you install Roundup, the ``demo.py`` script is available as
+``roundup-demo``.
+
+.. [1] Demo tracker is set up to be accessed by localhost browser.
+       If you run demo on a server host, please stop the demo (using
+       Control-C) after it has shown the startup notice, open file
+       ``demo/config.ini`` with your editor, change host name in
+       the ``web`` option in section ``[tracker]``, save the file,
+       then re-run the demo.py program.
 
 Prerequisites
 =============
@@ -167,29 +207,6 @@ Getting Roundup
     beter off installing it from the roundup web site or pypi.
 
 Download the latest version from https://www.roundup-tracker.org/.
-
-For The Really Impatient
-========================
-
-If you just want to give Roundup a whirl Right Now, then simply unpack
-and run ``demo.py`` (it will be available as ``roundup-demo`` script
-after installation). (On systems that don't provide a ``python3``
-program you might need to run ``python demo.py``.)
-
-This will set up a simple demo tracker on your machine. [1]_
-When it's done, it'll print out a URL to point your web browser at
-so you may start playing. Three users will be set up:
-
-1. anonymous - the "default" user with permission to do very little
-2. demo (password "demo") - a normal user who may create issues
-3. admin (password "admin") - an administrative user who has complete
-   access to the tracker
-
-.. [1] Demo tracker is set up to be accessed by localhost browser.
-       If you run demo on a server host, please stop the demo when
-       it has shown startup notice, open file ``demo/config.ini`` with
-       your editor, change host name in the ``web`` option in section
-       ``[tracker]``, save the file, then re-run the demo.py program.
 
 Installation
 ============

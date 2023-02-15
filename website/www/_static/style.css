@@ -184,3 +184,7 @@ div.highlight pre { background: lightyellow;}
 /* remove solid black border when focus is around the main section
    due to activation of skip-link. Page jumps there, that's enough. */
 #main:focus-visible {outline: none;}
+
+table.footnote {
+  font-size: calc(1em - 1pt);
+}
