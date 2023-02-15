@@ -17,8 +17,8 @@ Getting Started
 ---------------
 
 If you are looking for a good first issue, search for `StarterTicket
-on https://issues.Roundup-tracker.org`_. These include issues where
-Python development, Documentation or Web design skills are useful.
+on https://issues.roundup-tracker.org`_. These include issues where
+Python development, documentation or web design skills are useful.
 
 You can continue the conversation using the issue or join the
 Roundup-devel list to get assistance and verify your planned changes.
@@ -26,9 +26,9 @@ Roundup-devel list to get assistance and verify your planned changes.
 All development is coordinated through two resources:
 
 - Roundup-devel mailing list at
-  https://sourceforge.net/projects/Roundup/lists/Roundup-devel
+  https://sourceforge.net/projects/roundup/lists/roundup-devel
 - The issue tracker running at
-  https://issues.Roundup-tracker.org/
+  https://issues.roundup-tracker.org/
 
 In addition, the Roundup IRC channel on irc.oftc.net can be accessed
 via the web interface shown on the Contact page. The channel is logged
@@ -93,7 +93,7 @@ Source Repository Access
 
 Roundup is developed using the `Mercurial distributed version control
 system (DVCS)`_ [1]_. It is `hosted at Sourceforge`_. See
-https://www.Roundup-tracker.org/code.html for details.
+https://www.roundup-tracker.org/code.html for details.
 For all other questions ask on the development mailing list.
 
 Other Resources - CI, Code Coverage 
