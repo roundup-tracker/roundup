@@ -149,7 +149,7 @@ If the client has requested a deprecated API endpoint, the header:
    available. This is not returned by current code, but can be used
    when `Programming the REST API`_. It should be used as a hint that
    the REST endpoint will be going away. See
-   https://tools.ietf.org/html/rfc8594 for details on this header and
+   https://www.rfc-editor.org/rfc/rfc8594 for details on this header and
    the sunset link type.
 
 Hyperdb Stats
@@ -878,7 +878,7 @@ creation of a duplicate issue.
 
 To solve this problem, a two step process inspired by the POE - Post
 Once Exactly spec:
-https://tools.ietf.org/html/draft-nottingham-http-poe-00 is provided.
+https://datatracker.ietf.org/doc/html/draft-nottingham-http-poe-00 is provided.
 
 This mechanism returns a single use URL. POSTing to the URL creates
 a new object in the class.
