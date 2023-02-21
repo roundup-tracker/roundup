@@ -616,10 +616,17 @@ class BaseTestCases(WsgiSetup):
 
         self.assertEqual(f.status_code, 404)
 
-    def test_rest_login_rate_limit(self):
+    def DISABLEtest_rest_login_rate_limit(self):
         """login rate limit applies to api endpoints. Only failure
             logins count though. So log in 10 times in a row
             to verify that valid username/passwords aren't limited.
+     
+            FIXME: client.py does not implement this. Also need a live
+            server instance that has
+
+               cls.db.config.WEB_LOGIN_ATTEMPTS_MIN = 4
+
+            not 0.
         """
 
         for i in range(10):
@@ -627,7 +634,8 @@ class BaseTestCases(WsgiSetup):
         
             f = requests.options(self.url_base() + '/rest/data',
                                  auth=('admin', 'sekrit'),
-                                 headers = {'content-type': ""}
+                                 headers = {'content-type': "",
+                                            'Origin': "http://localhost:9001",}
             )
             print(f.status_code)
             print(f.headers)
@@ -645,13 +653,17 @@ class BaseTestCases(WsgiSetup):
         
             f = requests.options(self.url_base() + '/rest/data',
                                  auth=('admin', 'ekrit'),
-                                 headers = {'content-type': ""}
+                                 headers = {'content-type': "",
+                                            'Origin': "http://localhost:9001",}
             )
             print(i, f.status_code)
             print(f.headers)
             print(f.text)
 
-            self.assertEqual(f.status_code, 401)
+            if (i < 3): # assuming limit is 4.
+                self.assertEqual(f.status_code, 401)
+            else:
+                self.assertEqual(f.status_code, 429)
 
     def test_ims(self):
         ''' retreive the user_utils.js file with old and new
