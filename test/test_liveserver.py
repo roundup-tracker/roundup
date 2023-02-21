@@ -424,6 +424,20 @@ class BaseTestCases(WsgiSetup):
                    'allowed to use Rest Interface." } }'
         self.assertEqual(b2s(f.content), expected)
 
+        # Test when Origin is not sent.
+        f = requests.options(self.url_base() + '/rest/data/user',
+                             headers = {'content-type': "application/json",
+                             'x-requested-with': "rest",
+                             'Access-Control-Request-Headers':
+                                 "x-requested-with",
+                             'Access-Control-Request-Method': "PUT",})
+
+        self.assertEqual(f.status_code, 400)
+
+        expected = ('{ "error": { "status": 400, "msg": "Required'
+                    ' Header Missing" } }')
+        self.assertEqual(b2s(f.content), expected)
+
 
     def test_rest_invalid_method_collection(self):
         # use basic auth for rest endpoint
@@ -595,7 +609,8 @@ class BaseTestCases(WsgiSetup):
         ## test a property that doesn't exist
         f = requests.options(self.url_base() + '/rest/data/user/1/zot',
                              auth=('admin', 'sekrit'),
-                             headers = {'content-type': ""})
+                             headers = {'content-type': "",
+                                        'Origin': "http://localhost:9001",})
         print(f.status_code)
         print(f.headers)
 
@@ -936,7 +951,7 @@ class BaseTestCases(WsgiSetup):
                              headers = {'content-type': "",
                                         'Accept-Encoding': '%s, foo'%method,
                                         'Accept': '*/*',
-                                        'Origin': 'ZZZZ'})
+                                        'Origin': 'https://client.com'})
         print(f.status_code)
         print(f.headers)
 
@@ -944,7 +959,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.status_code, 400)
         expected = { 'Content-Type': 'application/json',
                      'Access-Control-Allow-Credentials': 'true',
-                     'Access-Control-Allow-Origin': 'ZZZZ',
+                     'Access-Control-Allow-Origin': 'https://client.com',
                      'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
                      'Vary': 'Origin'
         }

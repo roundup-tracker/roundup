@@ -621,6 +621,25 @@ class Client:
         self.setHeader("Content-Length", str(len(output)))
         self.write(output)
 
+    def is_cors_preflight(self):
+        return (
+            self.env['REQUEST_METHOD'] == "OPTIONS"
+            and self.request.headers.get("Access-Control-Request-Headers")
+            and self.request.headers.get("Access-Control-Request-Method")
+            and self.request.headers.get("Origin"))
+
+    def handle_preflight(self):
+        # Call rest library to handle the pre-flight request
+        handler = rest.RestfulInstance(self, self.db)
+        output = handler.dispatch(self.env['REQUEST_METHOD'],
+                                      self.path, self.form)
+
+        if self.response_code == 204:
+            self.write("")
+        else:
+            self.setHeader("Content-Length", str(len(output)))
+            self.write(output)
+
     def handle_rest(self):
         # Set the charset and language
         self.determine_charset()
@@ -640,32 +659,32 @@ class Client:
             self.write(output)
             return
 
-        # allow preflight request even if unauthenticated
-        if (
-            self.env['REQUEST_METHOD'] == "OPTIONS"
-            and self.request.headers.get("Access-Control-Request-Headers")
-            and self.request.headers.get("Access-Control-Request-Method")
-            and self.request.headers.get("Origin")
-        ):
-            # verify Origin is allowed
-            if not self.is_origin_header_ok(api=True):
-                # Use code 400 as 401 and 403 imply that authentication
-                # is needed or authenticates person is not authorized.
-                # Preflight doesn't do authentication.
-                self.response_code = 400
+        # verify Origin is allowed on all requests including GET.
+        # If a GET, missing origin is allowed  (i.e. same site GET request)
+        if not self.is_origin_header_ok(api=True):
+            # Use code 400. Codes 401 and 403 imply that authentication
+            # is needed or authenticated person is not authorized.
+            # Preflight doesn't do authentication.
+            self.response_code = 400
+
+            if 'HTTP_ORIGIN' not in self.env:
+                msg = self._("Required Header Missing")
+            else:
                 msg = self._("Client is not allowed to use Rest Interface.")
-                output = s2b(
-                    '{ "error": { "status": 400, "msg": "%s" } }' % msg)
-                self.setHeader("Content-Length", str(len(output)))
-                self.setHeader("Content-Type", "application/json")
-                self.write(output)
-                return
 
-            # Call rest library to handle the pre-flight request
-            handler = rest.RestfulInstance(self, self.db)
-            output = handler.dispatch(self.env['REQUEST_METHOD'],
-                                      self.path, self.form)
+            output = s2b(
+                '{ "error": { "status": 400, "msg": "%s" } }' % msg)
+            self.setHeader("Content-Length", str(len(output)))
+            self.setHeader("Content-Type", "application/json")
+            self.write(output)
+            return
 
+        # Handle CORS preflight request. We know rest is enabled
+        # because handle_rest is called. Preflight requests 
+        # are unauthenticated, so no need to check permissions.
+        if ( self.is_cors_preflight() ):
+            self.handle_preflight()
+            return
         elif not self.db.security.hasPermission('Rest Access', self.userid):
             self.response_code = 403
             output = s2b('{ "error": { "status": 403, "msg": "Forbidden." } }')
@@ -680,6 +699,8 @@ class Client:
             # Call csrf with api (xmlrpc, rest) checks enabled.
             # It will return True if everything is ok,
             # raises exception on check failure.
+            # Note this returns true for a GET request.
+            # Must check supplied Origin header for bad value first.
             csrf_ok = self.handle_csrf(api=True)
         except (Unauthorised, UsageError) as msg:
             # FIXME should return what the client requests
@@ -695,7 +716,7 @@ class Client:
 
         # With the return above the if will never be false,
         # Keeping the if so we can remove return to pass
-        # output though  and format output according to accept
+        # output though and format output according to accept
         # header.
         if csrf_ok is True:
             # Call rest library to handle the request
@@ -1259,10 +1280,23 @@ class Client:
                                           "allowed to use the web interface"))
 
     def is_origin_header_ok(self, api=False):
+        """Determine if origin is valid for the context
+
+           Allow (return True) if ORIGIN is missing and it is a GET.
+           Allow if ORIGIN matches the base url.
+           If this is a API call:
+             Allow if ORIGIN matches an element of allowed_api_origins.
+             Allow if allowed_api_origins includes '*' as first element..
+           Otherwise disallow.
+        """
+
         try:
             origin = self.env['HTTP_ORIGIN']
         except KeyError:
-            return False
+            if self.env['REQUEST_METHOD'] == 'GET':
+                return True
+            else:
+                return False
 
         # note base https://host/... ends host with with a /,
         # so add it to origin.
