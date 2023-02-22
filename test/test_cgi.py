@@ -1348,6 +1348,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
 
     def testRestOptionsBadAttribute(self):
+        import json
         out = []
         def wh(s):
             out.append(s)
@@ -1378,6 +1379,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.write = wh # capture output
         cl.handle_rest()
 
+        _py3 = sys.version_info[0] > 2
+
         expected_headers = {
             'Access-Control-Allow-Credentials': 'true',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization, '
@@ -1386,7 +1389,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             'Access-Control-Allow-Origin': 'http://whoami.com',
             'Access-Control-Max-Age': '86400',
             'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-            'Content-Length': '104',
+            # string representation under python2 has an extra space.
+            'Content-Length': '104' if _py3 else '105',
             'Content-Type': 'application/json',
             'Vary': 'Origin'
         }
@@ -1394,7 +1398,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         expected_body = b'{\n    "error": {\n        "status": 404,\n        "msg": "Attribute zot not valid for Class user"\n    }\n}\n'
 
         self.assertEqual(cl.response_code, 404)
-        self.assertEqual(out[0], expected_body)
+        # json payload string representation differs. Compare as objects.
+        self.assertEqual(json.loads(b2s(out[0])), json.loads(expected_body))
         self.assertEqual(cl.additional_headers, expected_headers)
 
         del(out[0])
