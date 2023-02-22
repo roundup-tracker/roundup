@@ -640,6 +640,13 @@ class Client:
             self.setHeader("Content-Length", str(len(output)))
             self.write(output)
 
+    def reject_request(self, message, message_type="text/plain",
+                       status=http_.client.UNAUTHORIZED):
+        self.response_code = status
+        self.setHeader("Content-Length", str(len(message)))
+        self.setHeader("Content-Type", message_type)
+        self.write(message)
+
     def handle_rest(self):
         # Set the charset and language
         self.determine_charset()
@@ -652,31 +659,26 @@ class Client:
             self.db.tx_Source = "rest"
             self.db.i18n = self.translator
         except LoginError as err:
-            self.response_code = http_.client.UNAUTHORIZED
             output = s2b("Invalid Login - %s" % str(err))
-            self.setHeader("Content-Length", str(len(output)))
-            self.setHeader("Content-Type", "text/plain")
-            self.write(output)
+            self.reject_request(output, status=http_.client.UNAUTHORIZED)
             return
 
         # verify Origin is allowed on all requests including GET.
         # If a GET, missing origin is allowed  (i.e. same site GET request)
         if not self.is_origin_header_ok(api=True):
-            # Use code 400. Codes 401 and 403 imply that authentication
-            # is needed or authenticated person is not authorized.
-            # Preflight doesn't do authentication.
-            self.response_code = 400
-
             if 'HTTP_ORIGIN' not in self.env:
                 msg = self._("Required Header Missing")
             else:
                 msg = self._("Client is not allowed to use Rest Interface.")
 
+            # Use code 400. Codes 401 and 403 imply that authentication
+            # is needed or authenticated person is not authorized.
+            # Preflight doesn't do authentication.
             output = s2b(
                 '{ "error": { "status": 400, "msg": "%s" } }' % msg)
-            self.setHeader("Content-Length", str(len(output)))
-            self.setHeader("Content-Type", "application/json")
-            self.write(output)
+            self.reject_request(output,
+                                message_type="application/json",
+                                status=400)
             return
 
         # Handle CORS preflight request. We know rest is enabled
@@ -686,11 +688,10 @@ class Client:
             self.handle_preflight()
             return
         elif not self.db.security.hasPermission('Rest Access', self.userid):
-            self.response_code = 403
             output = s2b('{ "error": { "status": 403, "msg": "Forbidden." } }')
-            self.setHeader("Content-Length", str(len(output)))
-            self.setHeader("Content-Type", "application/json")
-            self.write(output)
+            self.reject_request(output,
+                                message_type="application/json",
+                                status=403)
             return
 
         self.check_anonymous_access()
@@ -703,14 +704,13 @@ class Client:
             # Must check supplied Origin header for bad value first.
             csrf_ok = self.handle_csrf(api=True)
         except (Unauthorised, UsageError) as msg:
-            # FIXME should return what the client requests
-            # via accept header.
+            # FIXME should format return value according to
+            # client's accept header, so application/xml, text/plain etc..
             output = s2b('{ "error": { "status": 400, "msg": "%s"}}' %
                          str(msg))
-            self.response_code = 400
-            self.setHeader("Content-Length", str(len(output)))
-            self.setHeader("Content-Type", "application/json")
-            self.write(output)
+            self.reject_request(output,
+                                message_type="application/json",
+                                status=400)
             csrf_ok = False  # we had an error, failed check
             return
 
