@@ -68,6 +68,8 @@ Fixed:
 - Allow '*' and explicit origins in allowed_api_origins. Only return 
   'Access-Control-Allow-Credentials' when not matching '*'. Fixes
   security issue with rest when using '*'.
+- issue2551263: In REST response expose rate limiting, sunset, allow
+  HTTP headers to calling javascript.
 
 Features:
 

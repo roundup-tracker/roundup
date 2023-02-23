@@ -3468,6 +3468,49 @@ class TestCase():
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertListEqual(results['attributes']['nosy'], [])
 
+    def testRestExposeHeaders(self):
+
+        local_client = self.server.client
+        body = b'{ "data": "Joe Doe 1" }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "PUT",
+                "HTTP_ORIGIN": "http://tracker.example"
+        }
+        local_client.env.update(env)
+
+        local_client.db.config["WEB_ALLOWED_API_ORIGINS"] = " * "
+
+        headers={"accept": "application/json; version=1",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+                 "origin": env['HTTP_ORIGIN']
+        }
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        local_client.request.headers.get=self.get_header
+        results = self.server.dispatch('PUT',
+                            "/rest/data/user/%s/realname"%self.joeid,
+                            form)
+
+        for header in [ "X-RateLimit-Limit",
+                        "X-RateLimit-Remaining",
+                        "X-RateLimit-Reset",
+                        "X-RateLimit-Limit-Period",
+                        "Retry-After",
+                        "Sunset",
+                        "Allow",
+                        ]:
+            self.assertIn(
+                header,
+                self.server.client.additional_headers[
+                    "Access-Control-Expose-Headers"])
 
     def testRestMatchWildcardOrigin(self):
         # cribbed from testDispatch #1

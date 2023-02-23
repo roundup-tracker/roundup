@@ -2194,6 +2194,24 @@ class RestfulInstance(object):
         # response may change based on Origin value.
         self.client.setVary("Origin")
 
+        # expose these headers to rest clients. Otherwise they can't
+        # respond to:
+        #   rate limiting (*RateLimit*, Retry-After)
+        #   obsolete API endpoint (Sunset)
+        #   options request to discover supported methods (Allow)
+        self.client.setHeader(
+            "Access-Control-Expose-Headers",
+            ", ".join( [
+                "X-RateLimit-Limit",
+                "X-RateLimit-Remaining",
+                "X-RateLimit-Reset",
+                "X-RateLimit-Limit-Period",
+                "Retry-After",
+                "Sunset",
+                "Allow",
+            ] )
+        )
+
         # Allow-Origin must match origin supplied by client. '*' doesn't
         # work for authenticated requests.
         self.client.setHeader(
