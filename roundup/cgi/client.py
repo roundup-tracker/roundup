@@ -846,7 +846,7 @@ class Client:
                 # exception handlers.
                 self.determine_language()
                 self.db.i18n = self.translator
-
+                self.setHeader("X-Content-Type-Options", "nosniff")
                 self.serve_file(designator)
             except SendStaticFile as file:
                 self.serve_static_file(str(file))

@@ -1197,6 +1197,7 @@ class BaseTestCases(WsgiSetup):
         # download file and verify content
         f = session.get(self.url_base()+'/file%(file)s/text1.txt'%m.groupdict())
         self.assertEqual(f.text, file_content)
+        self.assertEqual(f.headers["X-Content-Type-Options"], "nosniff")
         print(f.text)
 
     def test_new_file_via_rest(self):
