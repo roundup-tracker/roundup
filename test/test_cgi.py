@@ -1461,6 +1461,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             'Access-Control-Allow-Headers': 'Content-Type, Authorization, '
                                  'X-Requested-With, X-HTTP-Method-Override',
             'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
+            'Access-Control-Expose-Headers': 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Limit-Period, Retry-After, Sunset, Allow',
             'Access-Control-Allow-Origin': 'http://whoami.com',
             'Access-Control-Max-Age': '86400',
             'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
@@ -1519,6 +1520,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             'Access-Control-Allow-Headers': 'Content-Type, Authorization, '
                                  'X-Requested-With, X-HTTP-Method-Override',
             'Access-Control-Allow-Methods': 'OPTIONS, GET, POST',
+            'Access-Control-Expose-Headers': 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Limit-Period, Retry-After, Sunset, Allow',
             'Access-Control-Allow-Origin': 'http://whoami.com',
             'Access-Control-Max-Age': '86400',
             'Allow': 'OPTIONS, GET, POST',
