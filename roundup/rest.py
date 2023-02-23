@@ -2075,7 +2075,19 @@ class RestfulInstance(object):
                     # User exceeded limits: tell humans how long to wait
                     # Headers above will do the right thing for api
                     # aware clients.
-                    msg = _("Api rate limits exceeded. Please wait: %s seconds.") % limitStatus['Retry-After']
+		    try:
+		    	retry_after = limitStatus['Retry-After']
+		    except KeyError:
+                        # handle race condition. If the time between
+                        # the call to grca.update and grca.status
+                        # is sufficient to reload the bucket by 1
+                        # item, Retry-After will be missing from
+                        # limitStatus. So report a 1 second delay back
+                        # to the client. We treat update as sole
+                        # source of truth for exceeded rate limits.
+		        retry_after = 1
+
+                    msg = _("Api rate limits exceeded. Please wait: %s seconds.") % retry_after
                     output = self.error_obj(429, msg, source="ApiRateLimiter")
             else:
                 for header, value in limitStatus.items():
