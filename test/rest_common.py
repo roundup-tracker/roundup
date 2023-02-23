@@ -233,13 +233,17 @@ class TestCase():
 
         tx_Source_init(self.db)
 
-        env = {
+        self.client_env = {
             'PATH_INFO': 'http://localhost/rounduptest/rest/',
             'HTTP_HOST': 'localhost',
-            'TRACKER_NAME': 'rounduptest'
+            'TRACKER_NAME': 'rounduptest',
+            'HTTP_ORIGIN': 'http://tracker.example'
         }
-        self.dummy_client = client.Client(self.instance, MockNull(), env, [], None)
+        self.dummy_client = client.Client(self.instance, MockNull(),
+                                          self.client_env, [], None)
         self.dummy_client.request.headers.get = self.get_header
+        self.dummy_client.db = self.db
+
         self.empty_form = cgi.FieldStorage()
         self.terse_form = cgi.FieldStorage()
         self.terse_form.list = [
@@ -264,6 +268,8 @@ class TestCase():
         try:
             return self.headers[header.lower()]
         except (AttributeError, KeyError, TypeError):
+            if header.upper() in self.client_env:
+                return self.client_env[header.upper()]
             return not_found
 
     def create_stati(self):
@@ -311,6 +317,7 @@ class TestCase():
         Retrieve all three users
         obtain data for 'joe'
         """
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
         # Retrieve all three users.
         results = self.server.get_collection('user', self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -1082,6 +1089,7 @@ class TestCase():
         for i in range(20):
             # i is 0 ... 19
             self.client_error_message = []
+            self.server.client.env.update({'REQUEST_METHOD': 'GET'})
             results = self.server.dispatch('GET',
                             "/rest/data/user/%s/realname"%self.joeid,
                             self.empty_form)
@@ -1318,6 +1326,8 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
+        self.server.client.env.update(env)
+
         headers={"accept": "application/json; version=1",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": env['CONTENT_LENGTH'],
@@ -1360,6 +1370,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
+        self.server.client.env.update(env)
         headers={"accept": "application/json; version=1",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": env['CONTENT_LENGTH'],
@@ -1383,6 +1394,7 @@ class TestCase():
         self.assertEqual(json_dict['data']['link'],
                          "http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/issue/1")
         self.assertEqual(json_dict['data']['id'], "1")
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
         results = self.server.dispatch('GET',
                             "/rest/data/issue/1", self.empty_form)
         print(results)
@@ -1408,6 +1420,7 @@ class TestCase():
         # simulate: /rest/data/issue
         env = { "REQUEST_METHOD": "DELETE"
         }
+        self.server.client.env.update(env)
         headers={"accept": "application/json; version=1",
         }
         self.headers=headers
@@ -1441,6 +1454,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
+        self.server.client.env.update(env)
 
         headers={"accept": "application/json; version=1",
                  "content-type": env['CONTENT_TYPE'],
@@ -1489,7 +1503,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
-
+        self.server.client.env.update(env)
         headers={"accept": "application/zot; version=1; q=0.5",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": env['CONTENT_LENGTH'],
@@ -1518,7 +1532,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
-
+        self.server.client.env.update(env)
         headers={"accept": "application/zot; version=1; q=0.75, "
                            "application/json; version=1; q=0.5",
                  "content-type": env['CONTENT_TYPE'],
@@ -1660,6 +1674,7 @@ class TestCase():
         form.list = [
             cgi.MiniFieldStorage('@stats', 'False'),
         ]
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
         results = self.server.dispatch('GET',
                  "/rest/data/user/1/realname",
                                  form)
@@ -1717,6 +1732,7 @@ class TestCase():
         self.headers = headers
         self.server.client.request.headers.get = self.get_header
         self.db.setCurrentUser('admin') # must be admin to change user
+        self.server.client.env.update({'REQUEST_METHOD': 'PUT'})
         results = self.server.dispatch('PUT',
                             "/rest/data/user/1/realname",
                             form)
@@ -1740,8 +1756,11 @@ class TestCase():
         body=b'{ "data": "Joe Doe 1" }'
         env = { "CONTENT_TYPE": "application/json",
                 "CONTENT_LENGTH": len(body),
-                "REQUEST_METHOD": "PUT"
+                "REQUEST_METHOD": "PUT",
+                "HTTP_ORIGIN": "https://invalid.origin"
         }
+        self.server.client.env.update(env)
+
         headers={"accept": "application/json; version=1",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": env['CONTENT_LENGTH'],
@@ -1760,6 +1779,9 @@ class TestCase():
                             "/rest/data/user/%s/realname"%self.joeid,
                             form)
 
+        # invalid origin, no credentials allowed.
+        self.assertNotIn("Access-Control-Allow-Credentials",
+                         self.server.client.additional_headers)
         self.assertEqual(self.server.client.response_code, 200)
         results = self.server.get_element('user', self.joeid, self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -1841,6 +1863,7 @@ class TestCase():
                             "/rest/data/user/%s/realname"%self.joeid,
                             form)
         self.assertEqual(self.dummy_client.response_code, 200)
+        self.server.client.env.update({'REQUEST_METHOD': "GET"})
         results = self.server.dispatch('GET',
                             "/rest/data/user/%s/realname"%self.joeid,
                                        self.empty_form)
@@ -1872,6 +1895,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "PATCH"
         }
+        self.server.client.env.update(env)
         headers={"accept": "application/json",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": len(body)
@@ -1925,6 +1949,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
+        self.server.client.env.update(env)
         headers={"accept": "application/json",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": len(body)
@@ -1958,6 +1983,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
+        self.server.client.env.update(env)
         headers={"accept": "application/json",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": len(body)
@@ -1989,6 +2015,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
+        self.server.client.env.update(env)
         headers={"accept": "application/json; version=1",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": len(body)
@@ -2003,7 +2030,7 @@ class TestCase():
         results = self.server.dispatch('POST',
                             "/rest/data/status",
                             form)
-
+        self.server.client.env.update(env)
         self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
         status=json_dict['error']['status']
@@ -2021,6 +2048,7 @@ class TestCase():
         env = {"CONTENT_TYPE": "application/json",
                "CONTENT_LEN": 0,
                "REQUEST_METHOD": "DELETE" }
+        self.server.client.env.update(env)
         # use text/plain header and request json output by appending
         # .json to the url.
         headers={"accept": "text/plain",
@@ -2044,6 +2072,7 @@ class TestCase():
         status=json_dict['data']['status']
         self.assertEqual(status, 'ok')
 
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
         results = self.server.dispatch('GET',
                             "/rest/data/issuetitle:=asdf.jon",
                             form)
@@ -2071,6 +2100,9 @@ class TestCase():
         form.list = [
             cgi.MiniFieldStorage('@apiver', 'L'),
         ]
+
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
+
         headers={"accept": "application/json; notversion=z" }
         self.headers=headers
         self.server.client.request.headers.get=self.get_header
@@ -2228,6 +2260,8 @@ class TestCase():
         del(self.headers)
 
     def testAcceptHeaderParsing(self):
+        self.server.client.env['REQUEST_METHOD'] = 'GET'
+
         # TEST #1
         # json highest priority
         self.server.client.request.headers.get=self.get_header
@@ -2377,6 +2411,9 @@ class TestCase():
                                          headers=headers,
                                          environ=env)
             self.db.setCurrentUser('admin') # must be admin to create status
+
+            self.server.client.env.update({'REQUEST_METHOD': method})
+
             results = self.server.dispatch(method,
                                            "/rest/data/status",
                                            form)
@@ -2407,6 +2444,7 @@ class TestCase():
                                 environ=env)
         self.server.client.request.headers.get=self.get_header
         self.db.setCurrentUser('admin') # must be admin to delete issue
+        self.server.client.env.update({'REQUEST_METHOD': 'POST'})
         results = self.server.dispatch('POST',
                             "/rest/data/status/1",
                             form)
@@ -2430,6 +2468,8 @@ class TestCase():
                 "CONTENT_LENGTH": len(empty_body),
                 "REQUEST_METHOD": "POST"
         }
+        self.server.client.env.update(env)
+
         headers={"accept": "application/json",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": len(empty_body)
@@ -2460,6 +2500,7 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
+        self.server.client.env.update(env)
         headers={"accept": "application/json",
                  "content-type": env['CONTENT_TYPE'],
                  "content-length": len(body)
@@ -2499,6 +2540,7 @@ class TestCase():
 
         ## Try using GET on POE url. Should fail with method not
         ## allowed (405)
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
         self.server.client.request.headers.get=self.get_header
         results = self.server.dispatch('GET',
                             "/rest/data/issue/@poe",
@@ -2513,6 +2555,7 @@ class TestCase():
                                 headers=headers,
                                 environ=env)
         self.server.client.request.headers.get=self.get_header
+        self.server.client.env.update({'REQUEST_METHOD': 'POST'})
         results = self.server.dispatch('POST',
                             "/rest/data/issue/@poe",
                             form)
@@ -3424,6 +3467,68 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(len(results['attributes']['nosy']), 0)
         self.assertListEqual(results['attributes']['nosy'], [])
+
+
+    def testRestMatchWildcardOrigin(self):
+        # cribbed from testDispatch #1
+        # PUT: joe's 'realname' using json data.
+        # simulate: /rest/data/user/<id>/realname
+        # use etag in header
+
+        # verify that credential header is missing, valid allow origin
+        # header and vary includes origin.
+
+        local_client = self.server.client
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
+        body = b'{ "data": "Joe Doe 1" }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "PUT",
+                "HTTP_ORIGIN": "https://bad.origin"
+        }
+        local_client.env.update(env)
+
+        local_client.db.config["WEB_ALLOWED_API_ORIGINS"] = " * "
+
+        headers={"accept": "application/json; version=1",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+                 "if-match": etag,
+                 "origin": env['HTTP_ORIGIN']
+        }
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        local_client.request.headers.get=self.get_header
+        results = self.server.dispatch('PUT',
+                            "/rest/data/user/%s/realname"%self.joeid,
+                            form)
+
+        self.assertNotIn("Access-Control-Allow-Credentials",
+                         local_client.additional_headers)
+
+        self.assertIn("Access-Control-Allow-Origin",
+                      local_client.additional_headers)
+        self.assertEqual(
+            headers['origin'], 
+            local_client.additional_headers["Access-Control-Allow-Origin"])
+
+
+        self.assertIn("Vary", local_client.additional_headers)
+        self.assertIn("Origin",
+                      local_client.additional_headers['Vary'])
+
+        self.assertEqual(local_client.response_code, 200)
+        results = self.server.get_element('user', self.joeid, self.empty_form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attributes']['realname'],
+                         'Joe Doe 1')
 
     @skip_jwt
     def test_expired_jwt(self):

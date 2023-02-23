@@ -1279,15 +1279,20 @@ class Client:
                 raise Unauthorised(self._("Anonymous users are not "
                                           "allowed to use the web interface"))
 
-    def is_origin_header_ok(self, api=False):
+    def is_origin_header_ok(self, api=False, credentials=False):
         """Determine if origin is valid for the context
 
-           Allow (return True) if ORIGIN is missing and it is a GET.
-           Allow if ORIGIN matches the base url.
+           Header is ok (return True) if ORIGIN is missing and it is a GET.
+           Header is ok if ORIGIN matches the base url.
            If this is a API call:
-             Allow if ORIGIN matches an element of allowed_api_origins.
-             Allow if allowed_api_origins includes '*' as first element..
-           Otherwise disallow.
+             Header is ok if ORIGIN matches an element of allowed_api_origins.
+             Header is ok if allowed_api_origins includes '*' as first
+               element and credentials is False.
+           Otherwise header is not ok.
+
+           In a credentials context, if we match * we will return
+           header is not ok. All credentialed requests must be
+           explicitly matched.
         """
 
         try:
@@ -1312,9 +1317,15 @@ class Client:
         # Original spec says origin is case sensitive match.
         # Living spec doesn't address Origin value's case or
         # how to compare it. So implement case sensitive....
-        if allowed_origins:
-            if allowed_origins[0] == '*' or origin in allowed_origins:
-                return True
+        if origin in allowed_origins:
+             return True
+        # Block use of * when origin match is used for
+        # allowing credentials. See:
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+        # under Credentials Requests and Wildcards
+        if ( allowed_origins and allowed_origins[0] == '*'
+             and not credentials):
+            return True
 
         return False
 

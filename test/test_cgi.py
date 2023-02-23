@@ -1190,8 +1190,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             os.remove(SENDMAILDEBUG)
         #raise ValueError
 
-    @pytest.mark.xfail
-    def testRestOriginValidation(self):
+    def testRestOriginValidationCredentials(self):
         import json
         # set the password for admin so we can log in.
         passwd=password.Password('admin')
@@ -1251,6 +1250,72 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
 
 
+        # Origin not set. AKA same origin GET request.
+        # Should be like valid origin.
+        # Because of HTTP_X_REQUESTED_WITH header it should be
+        # preflighted.
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'GET',
+                            'PATH_INFO':'rest/data/issue',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_ACCEPT': "application/json;version=1",
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_rest()
+        self.assertIn('Access-Control-Allow-Credentials',
+                      cl.additional_headers)
+
+        self.assertEqual(json.loads(b2s(out[0])),json.loads(expected))
+        del(out[0])
+
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'OPTIONS',
+                            'HTTP_ORIGIN': 'http://invalid.com',
+                            'PATH_INFO':'rest/data/issue',
+                            'Access-Control-Request-Headers': 'Authorization',
+                            'Access-Control-Request-Method': 'GET',
+                           }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json',
+              'access-control-request-headers': 'Authorization',
+              'access-control-request-method': 'GET',
+        }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_rest()
+        self.assertNotIn('Access-Control-Allow-Credentials',
+                      cl.additional_headers)
+
+        self.assertNotIn('Access-Control-Allow-Origin',
+            cl.additional_headers
+        )
+
+        self.assertEqual(cl.response_code, 400)
+        del(out[0])
+
         # origin not set to allowed value
         # prevents authenticated request like this from
         # being shared with the requestor because
@@ -1283,12 +1348,20 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         self.assertEqual(json.loads(b2s(out[0])),
                          json.loads(expected)
         )
-        self.assertNotIn('Access-Control-Allow-Credentials', cl.additional_headers)
+        self.assertNotIn('Access-Control-Allow-Credentials',
+                         cl.additional_headers)
+        self.assertIn('Access-Control-Allow-Origin',
+                      cl.additional_headers)
+        self.assertEqual(
+            h['origin'],
+            cl.additional_headers['Access-Control-Allow-Origin']
+        )
+
         self.assertIn('Content-Length', cl.additional_headers)
         del(out[0])
 
 
-        # origin not set. Same rules as for invalid origin
+        # CORS Same rules as for invalid origin
         cl = client.Client(self.instance, None,
                            {'REQUEST_METHOD':'GET',
                             'PATH_INFO':'rest/data/issue',
@@ -1311,16 +1384,18 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # Should return explanation because content type is text/plain
         # and not text/xml
         cl.handle_rest()
-        self.assertNotIn('Access-Control-Allow-Credentials', cl.additional_headers)
+        self.assertIn('Access-Control-Allow-Credentials',
+                      cl.additional_headers)
 
         self.assertEqual(json.loads(b2s(out[0])),json.loads(expected))
         del(out[0])
 
-        # origin set to special "null" value. Same rules as for invalid origin
+        # origin set to special "null" value. Same rules as for
+        # invalid origin
         cl = client.Client(self.instance, None,
                            {'REQUEST_METHOD':'GET',
                             'PATH_INFO':'rest/data/issue',
-                            'ORIGIN': 'null',
+                            'HTTP_ORIGIN': 'null',
                             'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",

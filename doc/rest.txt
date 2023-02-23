@@ -231,14 +231,26 @@ the browser and must all be present:
 * `Access-Control-Request-Method`
 * `Origin`
 
-The 204 response will include the headers:
+The headers of the 204 response depend on the
+``allowed_api_origins`` setting. If a ``*`` is included as the
+first element, any client can read the data but they can not
+provide authentication. This limits the available data to what
+the anonymous user can see in the web interface.
+
+All 204 responses will include the headers:
 
 * `Access-Control-Allow-Origin`
 * `Access-Control-Allow-Headers`
 * `Access-Control-Allow-Methods`
-* `Access-Control-Allow-Credentials: true`
 * `Access-Control-Max-Age: 86400`
 
+If the client's ORIGIN header matches an entry besides ``*`` in the
+``allowed_api_origins`` it will also include:
+
+* `Access-Control-Allow-Credentials: true`
+
+permitting the client to log in and perform authenticated operations.
+  
 If the endpoint accepts the PATCH verb the header `Accept-Patch` with
 valid mime types (usually `application/x-www-form-urlencoded,
 multipart/form-data`) will be included.

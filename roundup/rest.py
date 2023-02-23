@@ -2201,11 +2201,24 @@ class RestfulInstance(object):
             self.client.request.headers.get("Origin")
         )
 
-        # allow credentials
-        self.client.setHeader(
-            "Access-Control-Allow-Credentials",
-            "true"
-        )
+        # Allow credentials if origin is acceptable.
+        #
+        # If Access-Control-Allow-Credentials header not returned,
+        # but the client request is made with credentials
+        # data will be sent but not made available to the
+        # calling javascript in browser.
+        # Prevents exposure of data to an invalid origin when
+        # credentials are sent by client.
+        #
+        # If admin puts * first in allowed_api_origins
+        # we do not allow credentials but do reflect the origin.
+        # This allows anonymous access.
+        if self.client.is_origin_header_ok(api=True, credentials=True):
+            self.client.setHeader(
+                "Access-Control-Allow-Credentials",
+                "true"
+            )
+
         # set allow header in case of error. 405 handlers below should
         # replace it with a custom version as will OPTIONS handler
         # doing CORS.

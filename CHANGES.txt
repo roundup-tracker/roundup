@@ -65,6 +65,9 @@ Fixed:
   Schlatterbeck)
 - Update some template schema files to assign Register permissions for the
   Anonymous user. Replaces the old Create permission. (John Rouillard)
+- Allow '*' and explicit origins in allowed_api_origins. Only return 
+  'Access-Control-Allow-Credentials' when not matching '*'. Fixes
+  security issue with rest when using '*'.
 
 Features:
 

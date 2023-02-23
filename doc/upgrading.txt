@@ -236,6 +236,25 @@ are not used.)
 For details on WAL mode see `<https://www.sqlite.org/wal.html>`_
 and `<https://www.sqlite.org/pragma.html#pragma_journal_mode>`_.
 
+Change in processing allowed_api_origins setting
+------------------------------------------------
+
+In this release you can use both ``*`` (as the first origin) and
+explicit origins in the `allowed_api_origins`` setting in
+``config.ini``. (Before it was only one or the other.)
+
+You do not need to use ``*``. If you do, it allows any client
+anonymous (unauthenticated) access to the Roundup tracker. This
+is the same as browsing the tracker without logging in. If they
+try to provide credentials, access to the data will be denied by
+`CORS`_.
+
+If you include explicit origins (e.g. \https://example.com),
+users from those origins will not be blocked if they use
+credentials to log in.
+
+.. _CORS: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+
 Change in processing of In-Reply_to email header
 ------------------------------------------------
 

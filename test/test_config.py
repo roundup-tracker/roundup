@@ -305,12 +305,13 @@ class ConfigTest(unittest.TestCase):
         config = configuration.CoreConfig()
 
         with self.assertRaises(configuration.OptionValueError) as cm:
-            config._get_option('WEB_ALLOWED_API_ORIGINS').set("* https://foo.edu")
+            config._get_option('WEB_ALLOWED_API_ORIGINS').set("https://foo.edu *")
 
-        config._get_option('WEB_ALLOWED_API_ORIGINS').set("https://foo.edu HTTP://baR.edu")
+        config._get_option('WEB_ALLOWED_API_ORIGINS').set("* https://foo.edu HTTP://baR.edu")
 
-        self.assertEqual(config['WEB_ALLOWED_API_ORIGINS'][0], 'https://foo.edu')
-        self.assertEqual(config['WEB_ALLOWED_API_ORIGINS'][1], 'HTTP://baR.edu')
+        self.assertEqual(config['WEB_ALLOWED_API_ORIGINS'][0], '*')
+        self.assertEqual(config['WEB_ALLOWED_API_ORIGINS'][1], 'https://foo.edu')
+        self.assertEqual(config['WEB_ALLOWED_API_ORIGINS'][2], 'HTTP://baR.edu')
         
 
 

@@ -571,9 +571,10 @@ class OriginHeadersListOption(Option):
         pathlist = self._value = []
         for elem in _val.split():
             pathlist.append(elem)
-        if '*' in pathlist and len(pathlist) != 1:
-            raise OptionValueError(self, _val,
-                                   "If using '*' it must be the only element.")
+        if '*' in pathlist and pathlist[0] != '*':
+            raise OptionValueError(
+                self, _val,
+                "If using '*' it must be the first element.")
 
     def _value2str(self, value):
         return ','.join(value)
@@ -1317,13 +1318,13 @@ value of the Origin header exactly. So 'https://bar.edu' and
 'https://Bar.edu' are two different Origin values. Note that
 the origin value is scheme://host. There is no path
 component. So 'https://bar.edu/' would never be valid.
-Also the value * can be used to match any origin. Note that
-this value allows any web page on the internet to make
-authenticated requests against your Roundup tracker and
-is not a good idea.
+The value '*' can be used to match any origin. It must be
+first in the list if used. Note that this value allows
+any web page on the internet to make anonymous requests
+against your Roundup tracker.
 
 You need to set these if you have a web application on a
-different origin accessing your roundup instance.
+different origin accessing your Roundup instance.
 
 (The origin from the tracker.web setting in config.ini is
 always valid and does not need to be specified.)"""),
