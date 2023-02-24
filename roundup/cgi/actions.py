@@ -1399,8 +1399,7 @@ class LoginAction(Action):
         db = self.db
         stored = db.user.get(userid, 'password')
         if givenpw == stored:
-            if (db.config.WEB_MIGRATE_PASSWORDS and
-                stored.needs_migration(config=db.config)):
+            if db.config.WEB_MIGRATE_PASSWORDS and stored.needs_migration():
                 newpw = password.Password(givenpw, config=db.config)
                 db.user.set(userid, password=newpw)
                 db.commit()

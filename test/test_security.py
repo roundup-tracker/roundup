@@ -422,14 +422,4 @@ class PermissionTest(MyTestCase, unittest.TestCase):
             roundup.password.test_missing_crypt()
         roundup.password.crypt = orig_crypt
 
-    def test_pbkdf2_migrate_rounds(self):
-        self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 10000
-
-        p = roundup.password.Password('sekrit', 'PBKDF2',
-                                      config=self.db.config)
-
-        self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 2000000
-
-        self.assertEqual(p.needs_migration(config=self.db.config), True)
-
 # vim: set filetype=python sts=4 sw=4 et si :
