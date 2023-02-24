@@ -190,7 +190,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             if config:
                 rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
             else:
-                rounds = 10000
+                rounds = 2000000
         if rounds < 1000:
             raise PasswordValueError("invalid PBKDF2 hash (rounds too low)")
         raw_digest = pbkdf2(plaintext, raw_salt, rounds, 20)
@@ -325,7 +325,7 @@ class Password(JournalPassword):
     def __repr__(self):
         return self.__str__()
 
-    def needs_migration(self):
+    def needs_migration(self, config):
         """ Password has insecure scheme or other insecure parameters
             and needs migration to new password scheme
         """
@@ -334,6 +334,10 @@ class Password(JournalPassword):
         rounds, salt, raw_salt, digest = pbkdf2_unpack(self.password)
         if rounds < 1000:
             return True
+        if (self.scheme == "PBKDF2"):
+            new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+            if rounds < int(new_rounds):
+                return True
         return False
 
     def unpack(self, encrypted, scheme=None, strict=False, config=None):
