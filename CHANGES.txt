@@ -72,6 +72,8 @@ Fixed:
   HTTP headers to calling javascript.
 - issue2551257: When downloading an attached (user supplied file),
   make sure that an 'X-Content-Type-Options: nosniff' header is sent.
+- issue2551252 - default number of rounds for PKDF2 password increased
+  to 2,000,000.
 
 Features:
 
