@@ -575,16 +575,17 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             self.db.user.set(chef, password=pw1)
             self.db.commit()
             actions.LoginAction(cl).handle()
-            pw = self.db.user.get(chef, 'password')
+            pw = cl.db.user.get(chef, 'password')
             print(pw)
             self.assertEqual(pw, 'foo')
             self.assertEqual(pw.needs_migration(), False)
+        cl.db.Otk = self.db.Otk
         pw1 = pw
         self.assertEqual(pw1.needs_migration(), False)
         scheme = password.Password.known_schemes[0]
         self.assertEqual(scheme, pw1.scheme)
         actions.LoginAction(cl).handle()
-        pw = self.db.user.get(chef, 'password')
+        pw = cl.db.user.get(chef, 'password')
         self.assertEqual(pw, 'foo')
         self.assertEqual(pw, pw1)
         cl.db.close()
@@ -1888,6 +1889,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         if nodeid is not None:
             cl.nodeid = nodeid
         cl.db = self.db
+        cl.db.Otk =  cl.db.getOTKManager()
         #cl.db.Otk = MockNull()
         #cl.db.Otk.data = {}
         #cl.db.Otk.getall = self.data_get
@@ -3056,6 +3058,7 @@ class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery, testCsvExport):
         if nodeid is not None:
             cl.nodeid = nodeid
         cl.db = self.db
+        cl.db.Otk =  cl.db.getOTKManager()
         #cl.db.Otk = MockNull()
         #cl.db.Otk.data = {}
         #cl.db.Otk.getall = self.data_get
