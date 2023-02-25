@@ -560,7 +560,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # assume that the "best" algorithm is the first one and doesn't
         # need migration, all others should be migrated.
         cl.db.config.WEB_LOGIN_ATTEMPTS_MIN = 200
-
+        cl.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 10000
         # The third item always fails. Regardless of what is there.
         #  ['plaintext', 'SHA', 'crypt', 'MD5']:
         print(password.Password.deprecated_schemes)
@@ -571,23 +571,38 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                 continue  # crypt is not available on Windows
             pw1 = password.Password('foo', scheme=scheme)
             print(pw1)
-            self.assertEqual(pw1.needs_migration(), True)
+            self.assertEqual(pw1.needs_migration(config=cl.db.config), True)
             self.db.user.set(chef, password=pw1)
             self.db.commit()
             actions.LoginAction(cl).handle()
             pw = cl.db.user.get(chef, 'password')
             print(pw)
             self.assertEqual(pw, 'foo')
-            self.assertEqual(pw.needs_migration(), False)
+            self.assertEqual(pw.needs_migration(config=cl.db.config), False)
         cl.db.Otk = self.db.Otk
         pw1 = pw
-        self.assertEqual(pw1.needs_migration(), False)
+        self.assertEqual(pw1.needs_migration(config=cl.db.config), False)
         scheme = password.Password.known_schemes[0]
         self.assertEqual(scheme, pw1.scheme)
         actions.LoginAction(cl).handle()
         pw = cl.db.user.get(chef, 'password')
         self.assertEqual(pw, 'foo')
         self.assertEqual(pw, pw1)
+
+        # migrate if rounds has increased above rounds was 10000
+        # below will be 100000
+        cl.db.Otk = self.db.Otk
+        pw1 = pw
+        cl.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 100000
+        self.assertEqual(pw1.needs_migration(config=cl.db.config), True)
+        scheme = password.Password.known_schemes[0]
+        self.assertEqual(scheme, pw1.scheme)
+        actions.LoginAction(cl).handle()
+        pw = cl.db.user.get(chef, 'password')
+        self.assertEqual(pw, 'foo')
+        # do not assert self.assertEqual(pw, pw1) as pw is a 100,000
+        # cycle while pw1 is only 10,000. They won't compare equally.
+
         cl.db.close()
 
     def testPasswordConfigOption(self):
@@ -596,7 +611,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl = self._make_client(form)
         self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 1000
         pw1 = password.Password('foo', scheme='MD5')
-        self.assertEqual(pw1.needs_migration(), True)
+        self.assertEqual(pw1.needs_migration(config=cl.db.config), True)
         self.db.user.set(chef, password=pw1)
         self.db.commit()
         actions.LoginAction(cl).handle()

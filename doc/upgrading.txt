@@ -179,6 +179,42 @@ ephemeral, there is no plan to migrate this data to the new
 SQLite databases. If you want to keep using the data set the
 ``sessiondb`` ``backend`` option as described above.
 
+Update ``config.ini``'s ``password_pbkdf2_default_rounds`` (required)
+---------------------------------------------------------------------
+
+Roundup hashes passwords using PBKDF2 with SHA1. PBKDF2 has a
+parameter that makes hashing a password more difficult to do.
+The original 10000 value was set years ago. It has not been
+updated for advancements in computing power.
+
+This release of Roundup changes the value to 2000000 (2
+million). This exceeds the current `recommended setting of
+1,300,000`_ for PBKDF2 when used with SHA1.
+
+After the change users will still be able to log in using the
+older 10000 round hashed passwords. If ``migrate_passwords`` is
+set to ``yes``, passwords will be automatically re-hashed using
+the new higher value when the user logs in.
+
+This re-hashing might result in a slight delay (under 1
+second). If you see a large slowdown, check to see if you can
+execute::
+
+  python3 -c 'from hashlib import pbkdf2_hmac'
+
+without an error.
+
+If you get an ImportError, you are using Roundup's fallback
+PBKDF2 implementation. It is written in Python and is much slower
+than the library version.  As a result re-encrypting the password
+(and logging in which requires calculating the encrypted
+password) will be very slow.
+
+You should find out how to make this succeed. You may need to
+install an OS vendor package or some other library.
+
+.. _recommended setting of 1,300,000: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
+
 Session/OTK data storage using Redis (optional)
 -----------------------------------------------
 
