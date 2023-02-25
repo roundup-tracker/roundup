@@ -151,6 +151,7 @@ script:
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
   - if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
     py.test -r a
+      --durations=20
       -W default
       -W "ignore:SelectableGroups:DeprecationWarning" 
       -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 

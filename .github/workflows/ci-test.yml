@@ -205,6 +205,7 @@ jobs:
         run: |
           if [[ "$PYTHON_VERSION" != "2."* ]]; then 
             pytest -r a \
+              --durations=20 \
               -W default \
               -W "ignore:SelectableGroups:DeprecationWarning" \
               -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" \
