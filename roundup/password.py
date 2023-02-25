@@ -29,7 +29,7 @@ from hashlib import md5, sha1
 import roundup.anypy.random_ as random_
 
 from roundup.anypy.strings import us2s, b2s, s2b
-
+from roundup.exceptions import RoundupException
 
 try:
     with warnings.catch_warnings():
@@ -41,6 +41,8 @@ except ImportError:
 _bempty = b""
 _bjoin = _bempty.join
 
+class ConfigNotSet(RoundupException):
+    pass
 
 def bchr(c):
     if bytes == str:
@@ -190,7 +192,37 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             if config:
                 rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
             else:
-                rounds = 2000000
+                import os
+                import sys
+                if ("pytest" in sys.modules and
+                    "PYTEST_CURRENT_TEST" in os.environ):
+                    # Set rounds to 1000 if no config is passed and
+                    # we are running within a pytest test. Using
+                    # actual 2M production values makes testing
+                    # increase from 12 minutes to 1 hour in CI.
+                    rounds = 1000
+                else:
+                    import logging
+                    # Log and abort.  Initialize rounds and log (which
+                    # will probably be ignored) with traceback in case
+                    # ConfigNotSet exception is removed in the
+                    # future.
+                    rounds = 2000000
+                    logger = logging.getLogger('roundup')
+                    if sys.version_info[0] > 2:
+                        logger.critical(
+                            "encodePassword called without config.",
+                            stack_info = True)
+                    else:
+                        import inspect, traceback
+                        where = inspect.currentframe()
+                        trace = traceback.format_stack(where)
+                        logger.critical(
+                            "encodePassword called without config. %s",
+                            trace[:-1]
+                        )
+                    raise ConfigNotSet("encodePassword called without config.")
+
         if rounds < 1000:
             raise PasswordValueError("invalid PBKDF2 hash (rounds too low)")
         raw_digest = pbkdf2(plaintext, raw_salt, rounds, 20)

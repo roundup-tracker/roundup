@@ -432,4 +432,15 @@ class PermissionTest(MyTestCase, unittest.TestCase):
 
         self.assertEqual(p.needs_migration(config=self.db.config), True)
 
+    def test_encodePasswordNoConfig(self):
+        # should run cleanly as we are in a test.
+        #
+        p = roundup.password.encodePassword('sekrit', 'PBKDF2')
+
+        del(os.environ["PYTEST_CURRENT_TEST"])
+        self.assertNotIn("PYTEST_CURRENT_TEST", os.environ)
+
+        with self.assertRaises(roundup.password.ConfigNotSet) as ctx:
+            roundup.password.encodePassword('sekrit', 'PBKDF2')
+
 # vim: set filetype=python sts=4 sw=4 et si :
