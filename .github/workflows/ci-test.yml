@@ -219,7 +219,7 @@ jobs:
             fi
           else
             # python2 case
-            pytest -v -r a test/ --cov=roundup
+            pytest -v -r a --durations=20 test/ --cov=roundup
           fi
 
       - name: Upload coverage to Codecov
