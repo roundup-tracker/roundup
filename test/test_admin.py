@@ -9,7 +9,6 @@ import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from roundup.admin import AdminTool
 
-from . import db_test_base
 from .test_mysql import skip_mysql
 from .test_postgresql import skip_postgresql
 
