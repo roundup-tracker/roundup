@@ -19,8 +19,10 @@
 """
 __docformat__ = 'restructuredtext'
 
+import os
 import re
 import string
+import sys
 import warnings
 
 from base64 import b64encode, b64decode
@@ -192,8 +194,6 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             if config:
                 rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
             else:
-                import os
-                import sys
                 if ("pytest" in sys.modules and
                     "PYTEST_CURRENT_TEST" in os.environ):
                     # Set rounds to 1000 if no config is passed and
