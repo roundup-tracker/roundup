@@ -94,13 +94,50 @@ class AdminTest(object):
         self.assertEqual(ret, 0)
 
 
+    def testBasicInteractive(self):
+        # first command is an error that should be handled
+        inputs = iter(["'quit", "quit"])
+
+        orig_input = AdminTool.my_input
+
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'ready for input.\nType "help" for help.'
+        self.assertEqual(expected, out[-1*len(expected):])
+
+        inputs = iter(["list user", "quit"])
+
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'help.\n   1: admin\n   2: anonymous'
+        self.assertEqual(expected, out[-1*len(expected):])
+
+
+        AdminTool.my_input = orig_input
+
     def testGet(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -187,7 +224,6 @@ class AdminTest(object):
         self.assertEqual(len(err), 0)
 
     def testInit(self):
-        import sys
         self.admin=AdminTool()
         sys.argv=['main', '-i', self.dirname, 'install', 'classic', self.backend]
         ret = self.admin.main()
@@ -197,7 +233,6 @@ class AdminTest(object):
         self.assertTrue(os.path.isfile(self.dirname + "/schema.py"))
 
     def testInitWithConfig_ini(self):
-        import sys
         from roundup.configuration import CoreConfig
         self.admin=AdminTool()
         sys.argv=['main', '-i', self.dirname, 'install', 'classic', self.backend]
@@ -233,8 +268,6 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.admin=AdminTool()
         self.install_init()
 
@@ -304,7 +337,7 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys, filecmp
+        import filecmp
 
         self.admin=AdminTool()
         self.install_init()
@@ -369,8 +402,6 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.admin=AdminTool()
         self.install_init()
 
@@ -443,8 +474,6 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.admin=AdminTool()
         self.install_init()
 
@@ -664,8 +693,6 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -687,8 +714,6 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -759,8 +784,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.maxDiff = None # we want full diff
 
         self.install_init()
@@ -838,8 +861,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -945,8 +966,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
 
         self.admin=AdminTool()
@@ -1018,8 +1037,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -1048,8 +1065,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         # create user1 at id 3
         self.install_init()
         self.admin=AdminTool()
@@ -1136,8 +1151,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 

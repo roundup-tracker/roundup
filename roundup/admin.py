@@ -83,6 +83,12 @@ class AdminTool:
 
         Additional help may be supplied by help_*() methods.
     """
+
+    # Make my_input a property to allow overriding in testing.
+    # my_input is imported in other places, so just set it from
+    # the imported value rather than moving def here.
+    my_input = my_input
+
     def __init__(self):
         self.commands = CommandDict()
         for k in AdminTool.__dict__:
@@ -442,7 +448,7 @@ Command help:
         if list(filter(os.path.exists, [config_ini_file,
                 os.path.join(tracker_home, 'config.py')])):
             if not self.force:
-                ok = my_input(_(
+                ok = self.my_input(_(
 """WARNING: There appears to be a tracker in "%(tracker_home)s"!
 If you re-install it, you will lose all the data!
 Erase it? Y/N: """) % locals())  # noqa: E122
@@ -548,7 +554,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             return default
         sys.stdout.write('%s: %s\n' % (list_name, ', '.join(options)))
         while argument not in options:
-            argument = my_input('%s [%s]: ' % (prompt, default))
+            argument = self.my_input('%s [%s]: ' % (prompt, default))
             if not argument:
                 return default
         return argument
@@ -605,7 +611,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
         # is there already a database?
         if tracker.exists():
             if not self.force:
-                ok = my_input(_(
+                ok = self.my_input(_(
 """WARNING: The database is already initialised!
 If you re-initialise it, you will lose all the data!
 Erase it? Y/N: """))  # noqa: E122
@@ -1017,7 +1023,7 @@ Erase it? Y/N: """))  # noqa: E122
                     if value:
                         props[key] = value
                 else:
-                    value = my_input(_('%(propname)s (%(proptype)s): ') % {
+                    value = self.my_input(_('%(propname)s (%(proptype)s): ') % {
                         'propname': key.capitalize(), 'proptype': name})
                     if value:
                         props[key] = value
@@ -1751,7 +1757,7 @@ Desc: %(description)s
         # make sure we have a tracker_home
         while not self.tracker_home:
             if not self.force:
-                self.tracker_home = my_input(_('Enter tracker home: ')).strip()
+                self.tracker_home = self.my_input(_('Enter tracker home: ')).strip()
             else:
                 self.tracker_home = os.curdir
 
@@ -1825,7 +1831,7 @@ Desc: %(description)s
 
         while 1:
             try:
-                command = my_input('roundup> ')
+                command = self.my_input('roundup> ')
             except EOFError:
                 print(_('exit...'))
                 break
@@ -1840,7 +1846,7 @@ Desc: %(description)s
 
         # exit.. check for transactions
         if self.db and self.db_uncommitted:
-            commit = my_input(_('There are unsaved changes. Commit them (y/N)? '))
+            commit = self.my_input(_('There are unsaved changes. Commit them (y/N)? '))
             if commit and commit[0].lower() == 'y':
                 self.db.commit()
         return 0
