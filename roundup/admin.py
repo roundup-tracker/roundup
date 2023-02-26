@@ -32,7 +32,7 @@ import re
 import shutil
 import sys
 
-from roundup import date, hyperdb, init, password, token
+from roundup import date, hyperdb, init, password, token_r
 from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.configuration import (CoreConfig, NoConfigError, OptionUnsetError,
@@ -1831,7 +1831,7 @@ Desc: %(description)s
                 break
             if not command: continue  # noqa: E701
             try:
-                args = token.token_split(command)
+                args = token_r.token_split(command)
             except ValueError:
                 continue        # Ignore invalid quoted token
             if not args: continue  # noqa: E701

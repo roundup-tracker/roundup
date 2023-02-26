@@ -5,7 +5,7 @@ import re
 import sys
 from datetime import timedelta
 
-from roundup import hyperdb, token, date, password
+from roundup import hyperdb, token_r, date, password
 from roundup.actions import Action as BaseAction
 from roundup.anypy import urllib_
 from roundup.anypy.html import html_escape
@@ -427,7 +427,7 @@ class SearchAction(Action):
                 if isinstance(prop, hyperdb.String):
                     v = self.form[key].value
                     # If this ever has unbalanced quotes, hilarity will ensue
-                    tokens = token.token_split(v)
+                    tokens = token_r.token_split(v)
                     if len(tokens) != 1 or tokens[0] != v:
                         self.form.value.remove(self.form[key])
                         # replace the single value with the split list
