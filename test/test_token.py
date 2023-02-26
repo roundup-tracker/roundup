@@ -10,7 +10,7 @@
 
 import unittest, time
 
-from roundup.token import token_split
+from roundup.token_r import token_split
 
 class TokenTestCase(unittest.TestCase):
     def testValid(self):
