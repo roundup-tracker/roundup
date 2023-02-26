@@ -193,13 +193,24 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             salt = h64encode(raw_salt)
             if config:
                 rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+
+                # if we are testing
+                if ("pytest" in sys.modules and 
+                    "PYTEST_CURRENT_TEST" in os.environ):
+                    if ("PYTEST_USE_CONFIG" in os.environ):
+                        rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+                    else:
+                        # Use 1000 rounds unless the test signals it
+                        # wants the config numberby setting
+                        # PYTEST_USE_CONFIG Using the production 2M
+                        # round values makes testing increase from 12
+                        # minutes to 1 hour in CI.
+                        rounds = 1000
             else:
                 if ("pytest" in sys.modules and
                     "PYTEST_CURRENT_TEST" in os.environ):
                     # Set rounds to 1000 if no config is passed and
-                    # we are running within a pytest test. Using
-                    # actual 2M production values makes testing
-                    # increase from 12 minutes to 1 hour in CI.
+                    # we are running within a pytest test.
                     rounds = 1000
                 else:
                     import logging

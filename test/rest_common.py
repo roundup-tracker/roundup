@@ -245,6 +245,13 @@ class TestCase():
         self.dummy_client.db = self.db
 
         self.empty_form = cgi.FieldStorage()
+        # under python2 invoking:
+        #    python2 -m pytest --durations=20
+        # loads the form with:
+        #   FieldStorage(None, None, [MiniFieldStorage('--durations', '2')])
+        # Invoking it as: python2 -m pytest -v --durations=20
+        # results in an empty list. In any case, force it to be empty.
+        self.empty_form.list = []
         self.terse_form = cgi.FieldStorage()
         self.terse_form.list = [
             cgi.MiniFieldStorage('@verbose', '0'),
