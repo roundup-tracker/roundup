@@ -1373,6 +1373,7 @@ class LoginAction(Action):
     def verifyLogin(self, username, password):
         # make sure the user exists
         try:
+            # Note: lookup only searches non-retired items.
             self.client.userid = self.db.user.lookup(username)
         except KeyError:
             # Perform password check against anonymous user.
