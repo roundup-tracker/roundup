@@ -2213,7 +2213,7 @@ class RestfulInstance(object):
         #   options request to discover supported methods (Allow)
         self.client.setHeader(
             "Access-Control-Expose-Headers",
-            ", ".join( [
+            ", ".join([
                 "X-RateLimit-Limit",
                 "X-RateLimit-Remaining",
                 "X-RateLimit-Reset",
@@ -2221,7 +2221,7 @@ class RestfulInstance(object):
                 "Retry-After",
                 "Sunset",
                 "Allow",
-            ] )
+            ])
         )
 
         # Allow-Origin must match origin supplied by client. '*' doesn't
