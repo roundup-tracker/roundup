@@ -423,14 +423,20 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         roundup.password.crypt = orig_crypt
 
     def test_pbkdf2_migrate_rounds(self):
-        self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 10000
+        '''Check that migration happens when number of rounds in
+           config is larger than number of rounds in current password.
+        '''
+
 
         p = roundup.password.Password('sekrit', 'PBKDF2',
                                       config=self.db.config)
 
         self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 2000000
 
+        os.environ["PYTEST_USE_CONFIG"] = "True"
         self.assertEqual(p.needs_migration(config=self.db.config), True)
+        del(os.environ["PYTEST_USE_CONFIG"])
+
 
     def test_encodePasswordNoConfig(self):
         # should run cleanly as we are in a test.

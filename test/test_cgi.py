@@ -593,6 +593,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # below will be 100000
         cl.db.Otk = self.db.Otk
         pw1 = pw
+        # do not use the production number of PBKDF2
+        os.environ["PYTEST_USE_CONFIG"] = "True"
         cl.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 100000
         self.assertEqual(pw1.needs_migration(config=cl.db.config), True)
         scheme = password.Password.known_schemes[0]
@@ -600,6 +602,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         actions.LoginAction(cl).handle()
         pw = cl.db.user.get(chef, 'password')
         self.assertEqual(pw, 'foo')
+        del(os.environ["PYTEST_USE_CONFIG"])
         # do not assert self.assertEqual(pw, pw1) as pw is a 100,000
         # cycle while pw1 is only 10,000. They won't compare equally.
 
