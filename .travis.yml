@@ -45,6 +45,8 @@ addons:
     #  - sourceline: ppa:xapian-backports/ppa
 
     packages:
+      # pin setuptools to try to get gpgme to build
+      - setuptools<66
       # Required to build/install the xapian-binding
       - libxapian-dev
       # Required to install gpg
