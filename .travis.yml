@@ -31,7 +31,7 @@ python:
 services:
   - mysql
   - postgresql
-  - redis-server
+  - redis
 
 jobs:
     allow_failures:  # releases not ready for prime time yet.
