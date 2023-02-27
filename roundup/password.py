@@ -421,13 +421,13 @@ class Password(JournalPassword):
         return '{%s}%s' % (self.scheme, self.password)
 
 
-def test_missing_crypt():
+def test_missing_crypt(config=None):
     p = encodePassword('sekrit', 'crypt')      # noqa: F841   - test only
 
 
-def test():
+def test(config=None):
     # SHA
-    p = Password('sekrit')
+    p = Password('sekrit', config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
@@ -436,7 +436,7 @@ def test():
     assert 'not sekrit' != p
 
     # MD5
-    p = Password('sekrit', 'MD5')
+    p = Password('sekrit', 'MD5',  config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
@@ -446,7 +446,7 @@ def test():
 
     # crypt
     if crypt:  # not available on Windows
-        p = Password('sekrit', 'crypt')
+        p = Password('sekrit', 'crypt',  config=config)
         assert Password(encrypted=str(p)) == 'sekrit'
         assert 'sekrit' == Password(encrypted=str(p))
         assert p == 'sekrit'
@@ -455,7 +455,7 @@ def test():
         assert 'not sekrit' != p
 
     # SSHA
-    p = Password('sekrit', 'SSHA')
+    p = Password('sekrit', 'SSHA',  config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
@@ -473,7 +473,7 @@ def test():
     assert encodePassword("sekrit", "PBKDF2", h) == h
 
     # PBKDF2 - high level integration
-    p = Password('sekrit', 'PBKDF2')
+    p = Password('sekrit', 'PBKDF2', config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
@@ -483,7 +483,15 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
-    test_missing_crypt()
+    from roundup.configuration import CoreConfig
+    test(CoreConfig())
+    crypt = None
+    exception = None
+    try:
+        test_missing_crypt(CoreConfig())
+    except PasswordValueError as e:
+        exception = e
+    assert exception != None
+    assert exception.__str__() == "Unsupported encryption scheme 'crypt'"
 
 # vim: set filetype=python sts=4 sw=4 et si :
