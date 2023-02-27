@@ -40,6 +40,8 @@ jobs:
     # use below if running on multiple OS's.
     runs-on: ${{ matrix.os }}
 
+    if: "!contains(github.event.head_commit.message, 'no-github-ci')"
+
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -263,6 +265,9 @@ jobs:
   finish:
     needs: test
     runs-on: ubuntu-latest
+
+    if: "!contains(github.event.head_commit.message, 'no-github-ci')"
+    
     steps:
       - name: Coveralls Finished
         uses: coverallsapp/github-action@0363cd28f449b7e5d3b6c6d269d31fe7c1201b68 # master

@@ -21,6 +21,9 @@ jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+
+    if: "!contains(github.event.head_commit.message, 'no-github-ci')"
+
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
