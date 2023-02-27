@@ -109,6 +109,7 @@ before_install:
   # gpgme
   #- GPGME_VERSION=1.18.0
   #- cd /tmp
+  - pip install "setuptools<66"
   #- curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
   #- tar -jxf gpgme-$GPGME_VERSION.tar.bz2
   #- cd gpgme-$GPGME_VERSION
