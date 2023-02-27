@@ -45,8 +45,6 @@ addons:
     #  - sourceline: ppa:xapian-backports/ppa
 
     packages:
-      # pin setuptools to try to get gpgme to build
-      - setuptools<66
       # Required to build/install the xapian-binding
       - libxapian-dev
       # Required to install gpg
@@ -59,6 +57,8 @@ before_install:
   # pkg_resources.extern.packaging.version.InvalidVersion: Invalid
   #    version: '0.23ubuntu1' (package: distro-info)
   - sudo apt-get remove distro-info
+  # pin setuptools to try to get gpgme to build
+  - pip install "setuptools<66"
   # build xapian
   - echo "$TRAVIS_PYTHON_VERSION"
   # Sphinx required to build the xapian python bindings. Use 1.8.5 on
