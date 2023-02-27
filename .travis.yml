@@ -53,6 +53,10 @@ addons:
       - gpgsm
 
 before_install:
+  # deal with setuptools error:
+  # pkg_resources.extern.packaging.version.InvalidVersion: Invalid
+  #    version: '0.23ubuntu1' (package: distro-info)
+  - sudo apt-get remove distro-info
   # build xapian
   - echo "$TRAVIS_PYTHON_VERSION"
   # Sphinx required to build the xapian python bindings. Use 1.8.5 on
