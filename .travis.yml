@@ -60,7 +60,6 @@ before_install:
   - sudo apt-get remove distro-info
   # pin setuptools to try to get gpgme to build
   - pip install "setuptools<66"
-  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then sudo apt-get install python-gpg; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then sudo apt-get install python3-gpg; fi
   # build xapian
   - echo "$TRAVIS_PYTHON_VERSION"
