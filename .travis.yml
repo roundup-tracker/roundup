@@ -51,6 +51,7 @@ addons:
       - swig
       # Required to build gpgme.
       - gpgsm
+      - libgpgme-dev
 
 before_install:
   # deal with setuptools error:
