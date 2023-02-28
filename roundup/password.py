@@ -26,7 +26,7 @@ import sys
 import warnings
 
 from base64 import b64encode, b64decode
-from hashlib import md5, sha1
+from hashlib import md5, sha1, sha512
 
 import roundup.anypy.random_ as random_
 
@@ -90,6 +90,9 @@ try:
 
     def _pbkdf2(password, salt, rounds, keylen):
         return pbkdf2_hmac('sha1', password, salt, rounds, keylen)
+
+    def _pbkdf2_sha512(password, salt, rounds, keylen):
+        return pbkdf2_hmac('sha512', password, salt, rounds, keylen)
 except ImportError:
     # no hashlib.pbkdf2_hmac - make our own pbkdf2 function
     from struct import pack
@@ -100,10 +103,17 @@ except ImportError:
         return _bjoin(bchr(bord(l) ^ bord(r))
                       for l, r in zip(left, right))  # noqa: E741
 
-    def _pbkdf2(password, salt, rounds, keylen):
-        digest_size = 20  # sha1 generates 20-byte blocks
+    def _pbkdf2(password, salt, rounds, keylen, sha=sha1):
+        if sha not in [sha1, sha512]:
+            raise ValueError(
+                "Invalid sha value passed to _pbkdf2: %s" % sha)
+        if sha == sha512:
+            digest_size = 64  # sha512 generates 64-byte blocks.
+        else:
+            digest_size = 20  # sha1 generates 20-byte blocks
+
         total_blocks = int((keylen+digest_size-1)/digest_size)
-        hmac_template = HMAC(password, None, sha1)
+        hmac_template = HMAC(password, None, sha)
         out = _bempty
         for i in range(1, total_blocks+1):
             hmac = hmac_template.copy()
@@ -117,6 +127,9 @@ except ImportError:
                 block = xor_bytes(block, tmp)
             out += block
         return out[:keylen]
+ 
+    def _pbkdf2_sha512(password, salt, rounds, keylen):
+       return _pbkdf2(password, salt, rounds, keylen, sha=sha512)
 
 
 def ssha(password, salt):
@@ -129,6 +142,35 @@ def ssha(password, salt):
     ssha_digest = b2s(b64encode(shaval.digest() + salt).strip())
     return ssha_digest
 
+
+def pbkdf2_sha512(password, salt, rounds, keylen):
+    """PBKDF2-HMAC-SHA512 password-based key derivation
+
+    :arg password: passphrase to use to generate key (if unicode,
+     converted to utf-8)
+    :arg salt: salt bytes to use when generating key
+    :param rounds: number of rounds to use to generate key
+    :arg keylen: number of bytes to generate
+
+    If hashlib supports pbkdf2, uses it's implementation as backend.
+
+    Unlike pbkdf2, this uses sha512 not sha1 as it's hash.
+
+    :returns:
+        raw bytes of generated key
+    """
+    password = s2b(us2s(password))
+    if keylen > 64:
+        # This statement may be old. - not seeing issues in testing
+        # with keylen > 40.
+        #
+        # NOTE: pbkdf2 allows up to (2**31-1)*20 bytes,
+        # but m2crypto has issues on some platforms above 40,
+        # and such sizes aren't needed for a password hash anyways...
+        raise ValueError("key length too large")
+    if rounds < 1:
+        raise ValueError("rounds must be positive number")
+    return _pbkdf2_sha512(password, salt, rounds, keylen)
 
 def pbkdf2(password, salt, rounds, keylen):
     """pkcs#5 password-based key derivation v2.0
@@ -185,6 +227,20 @@ def encodePassword(plaintext, scheme, other=None, config=None):
     """
     if plaintext is None:
         plaintext = ""
+    if scheme == "PBKDF2S5":  # sha512 variant
+        if other:
+            rounds, salt, raw_salt, digest = pbkdf2_unpack(other)
+        else:
+            raw_salt = random_.token_bytes(20)
+            salt = h64encode(raw_salt)
+            if config:
+                rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+            else:
+                rounds = 300000 # sha512 secure with fewer rounds than sha1
+        if rounds < 1000:
+            raise PasswordValueError("invalid PBKDF2 hash (rounds too low)")
+        raw_digest = pbkdf2_sha512(plaintext, raw_salt, rounds, 64)
+        return "%d$%s$%s" % (rounds, salt, h64encode(raw_digest))
     if scheme == "PBKDF2":
         if other:
             rounds, salt, raw_salt, digest = pbkdf2_unpack(other)
@@ -346,10 +402,11 @@ class Password(JournalPassword):
     >>> 'not sekrit' != p
     1
     """
-    # TODO: code to migrate from old password schemes.
 
     deprecated_schemes = ["SHA", "MD5", "crypt", "plaintext"]
-    known_schemes = ["PBKDF2", "SSHA"] + deprecated_schemes
+    experimental_schemes = [ "PBKDF2S5" ]
+    known_schemes = ["PBKDF2", "SSHA"] + experimental_schemes + \
+                    deprecated_schemes
 
     def __init__(self, plaintext=None, scheme=None, encrypted=None,
                  strict=False, config=None):
@@ -470,7 +527,7 @@ def test(config=None):
 
     # PBKDF2 - hash function
     h = "5000$7BvbBq.EZzz/O0HuwX3iP.nAG3s$g3oPnFFaga2BJaX5PoPRljl4XIE"
-    assert encodePassword("sekrit", "PBKDF2", h) == h
+    assert encodePassword("sekrit", "PBKDF2", h, config=config) == h
 
     # PBKDF2 - high level integration
     p = Password('sekrit', 'PBKDF2', config=config)
@@ -481,6 +538,15 @@ def test(config=None):
     assert 'sekrit' == p
     assert 'not sekrit' != p
 
+    # PBKDF2S5 - high level integration
+    p = Password('sekrit', 'PBKDF2S5', config=config)
+    print(p)
+    assert Password(encrypted=str(p)) == 'sekrit'
+    assert 'sekrit' == Password(encrypted=str(p))
+    assert p == 'sekrit'
+    assert p != 'not sekrit'
+    assert 'sekrit' == p
+    assert 'not sekrit' != p
 
 if __name__ == '__main__':
     from roundup.configuration import CoreConfig
