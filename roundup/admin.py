@@ -566,12 +566,38 @@ Erase it? Y/N: """) % locals())  # noqa: E122
         """
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
+
         if update:
             # load current config for writing
             config = CoreConfig(self.tracker_home)
+
+            # change config to update settings to new defaults
+            # where prior defaults were chosen
+            default_ppdr = config._get_option(
+                'PASSWORD_PBKDF2_DEFAULT_ROUNDS')._default_value
+
+            print("")  # put a blank line before feedback
+            if config.PASSWORD_PBKDF2_DEFAULT_ROUNDS in [10000]:
+                print(_("Changing option\n"
+                        "   'password_pbkdf2_default_rounds'\n"
+                        "from old default of %(old_number)s to new "
+                        "default of %(new_number)s.") % {
+                            "old_number":
+                            config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
+                            "new_number": default_ppdr
+                        }
+                )
+                config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = default_ppdr
+
+            if config.PASSWORD_PBKDF2_DEFAULT_ROUNDS < default_ppdr:
+                print(_("Update "
+                        "'password_pbkdf2_default_rounds'"
+                        "to a number equal to or larger\nthan %s.") %
+                      default_ppdr)
         else:
             # generate default config
             config = CoreConfig()
+
         config.save(args[0])
 
     def do_updateconfig(self, args):

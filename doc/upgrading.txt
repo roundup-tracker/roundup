@@ -66,6 +66,9 @@ You can then merge any local comments from the tracker's
 ``config.ini`` to ``newconfig.ini`` and replace
 ``config.ini`` with ``newconfig.ini``.
 
+``updateconfig`` will tell you if it is changing old default
+values or if a value must be changed manually.
+
 Using the roundup-mailgw script (required)
 ------------------------------------------
 
@@ -190,6 +193,11 @@ updated for advancements in computing power.
 This release of Roundup changes the value to 2000000 (2
 million). This exceeds the current `recommended setting of
 1,300,000`_ for PBKDF2 when used with SHA1.
+
+If you were using the old 10000 value, it will be automatically
+upgraded to 2 million by using ``roundup-admin``'s
+``updateconfig``.  If you were not using the old 10000 default,
+you should update it manually.
 
 After the change users will still be able to log in using the
 older 10000 round hashed passwords. If ``migrate_passwords`` is
