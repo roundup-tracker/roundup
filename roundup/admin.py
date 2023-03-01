@@ -591,7 +591,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
 
             if config.PASSWORD_PBKDF2_DEFAULT_ROUNDS < default_ppdr:
                 print(_("Update "
-                        "'password_pbkdf2_default_rounds'"
+                        "'password_pbkdf2_default_rounds' "
                         "to a number equal to or larger\nthan %s.") %
                       default_ppdr)
         else:

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 2.2.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2023-03-01 10:35-0500\n"
+"POT-Creation-Date: 2023-03-01 12:54-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -288,7 +288,7 @@ msgstr ""
 #: ../roundup/admin.py:593
 #, python-format
 msgid ""
-"Update 'password_pbkdf2_default_rounds'to a number equal to or larger\n"
+"Update 'password_pbkdf2_default_rounds' to a number equal to or larger\n"
 "than %s."
 msgstr ""
 
