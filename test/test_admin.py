@@ -66,7 +66,7 @@ def find_in_file(filename, regexp):
 
     if not m: return False
 
-    return m[0]
+    return m.group(0)
 
 class AdminTest(object):
 
