@@ -71,9 +71,9 @@ diff:
 	                             -I '^#:\s*:[0-9]*.*$$' \
                                      - roundup.pot || exit 0
 potest:
-	for file in $(PO_FILES); do \
-	  ${MSGFMT} -cv $$file; \
-	done
+	 sh -c 'for file in $(PO_FILES); do \
+	  ${MSGFMT} -cv --statistics $$file; \
+	done' 2>&1 | sort -k 2,2n
 
 %.po: $(TEMPLATE)
 	${MSGMERGE} -U --suffix=.bak $@ $<
