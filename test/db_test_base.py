@@ -290,6 +290,8 @@ class DBTest(commonDBTest):
             # test upgrade adding index
             self.db.post_init()
 
+            self.assertEqual(self.db.db_version_updated, True)
+
             # they're back
             self.db.sql('show indexes from _user;')
             self.assertEqual(5,len(self.db.cursor.fetchall()))

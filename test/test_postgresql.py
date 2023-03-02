@@ -143,6 +143,8 @@ class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
         # test upgrade path
         self.db.post_init()
 
+        self.assertEqual(self.db.db_version_updated, True)
+
         # This insert with text of expected column size should succeed
         self.db.sql("insert into __words VALUES('%s',1)" % long_string)
 
@@ -203,6 +205,8 @@ class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
 
         # test upgrade altering row
         self.db.post_init()
+
+        self.assertEqual(self.db.db_version_updated, True)
 
         # verify they keep all signifcant digits before the decimal point
         for tablename in ['otk', 'session']:
