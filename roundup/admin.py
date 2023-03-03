@@ -1739,10 +1739,12 @@ Desc: %(description)s
         into the habit.
         """
         if self.db.db_version_updated:
-            print(_('Tracker updated'))
+            print(_('Tracker updated to schema version %s.') % 
+                  self.db.database_schema['version'])
             self.db_uncommitted = True
         else:
-            print(_('No migration action required'))
+            print(_('No migration action required. At schema version %s.') %
+            self.db.database_schema['version'])
         return 0
 
     def run_command(self, args):
