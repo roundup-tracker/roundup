@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 2.3.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2023-03-01 12:54-0500\n"
+"POT-Creation-Date: 2023-03-03 17:28-0500\n"
 "PO-Revision-Date: 2016-04-11 09:13+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
@@ -1253,41 +1253,78 @@ msgstr ""
 "        "
 
 #: ../roundup/admin.py:1742
-msgid "Tracker updated"
-msgstr "Tracker aktualisiert"
+#, python-format
+msgid "Tracker updated to schema version %s."
+msgstr ""
 
-#: ../roundup/admin.py:1745
-msgid "No migration action required"
+#: ../roundup/admin.py:1746
+#, fuzzy, python-format
+msgid "No migration action required. At schema version %s."
 msgstr "Keine Migration notwendig"
 
-#: ../roundup/admin.py:1771
+#: ../roundup/admin.py:1751
+msgid ""
+"Usage: perftest [mode] [arguments]*\n"
+"\n"
+"        Time operations in Roundup. Supported arguments:\n"
+"\n"
+"            [password] [rounds=<integer>] [scheme=<scheme>]\n"
+"\n"
+"        'password' is the default mode.  The tracker's config.ini\n"
+"        setting for 'password_pbkdf2_default_rounds' is the default\n"
+"        value for 'rounds'. On the command line, 'rounds' can include\n"
+"        thousands separator of ',' or '.'.  'scheme' is the default\n"
+"        coded into Roundup. List supported schemes by using 'scheme='.\n"
+"\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1785
+msgid "Invalid 'rounds'. Must be larger than 999."
+msgstr ""
+
+#: ../roundup/admin.py:1789
+#, python-format
+msgid "Invalid 'rounds'. It must be an integer not: %s"
+msgstr ""
+
+#: ../roundup/admin.py:1816
+msgid "scheme does not support rounds."
+msgstr ""
+
+#: ../roundup/admin.py:1819
+#, python-format
+msgid "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, rounds: %(rounds)s"
+msgstr ""
+
+#: ../roundup/admin.py:1847
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr "Der Befehl \"%(command)s\" existiert nicht (siehe \"help commands\")"
 
-#: ../roundup/admin.py:1777
+#: ../roundup/admin.py:1853
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "Zur Abkürzung \"%(command)s\" passen mehrere Befehle: %(list)s"
 
-#: ../roundup/admin.py:1786
+#: ../roundup/admin.py:1862
 msgid "Enter tracker home: "
 msgstr "Tracker-Verzeichnis: "
 
 # ../roundup/admin.py:1263 :1269 :1289
-#: ../roundup/admin.py:1795 ../roundup/admin.py:1801 ../roundup/admin.py:1838
-#: ../roundup/admin.py:1795:1801:1838
+#: ../roundup/admin.py:1871 ../roundup/admin.py:1877 ../roundup/admin.py:1914
+#: ../roundup/admin.py:1871:1877:1914
 #, python-format
 msgid "Error: %(message)s"
 msgstr "Fehler: %(message)s"
 
-#: ../roundup/admin.py:1811 ../roundup/admin.py:1815
-#: ../roundup/admin.py:1811:1815
+#: ../roundup/admin.py:1887 ../roundup/admin.py:1891
+#: ../roundup/admin.py:1887:1891
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Fehler: Die Tracker-Instanz konnte nicht geöffnet werden: %(message)s"
 
-#: ../roundup/admin.py:1851
+#: ../roundup/admin.py:1927
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1296,15 +1333,15 @@ msgstr ""
 "Roundup %s ist bereit.\n"
 "Schreiben Sie \"help\", um zur Hilfe zu gelangen."
 
-#: ../roundup/admin.py:1856
+#: ../roundup/admin.py:1932
 msgid "Note: command history and editing not available"
 msgstr "Bemerkung: Befehlsverlauf/-bearbeitung möglicherweise nicht verfügbar"
 
-#: ../roundup/admin.py:1862
+#: ../roundup/admin.py:1938
 msgid "exit..."
 msgstr "beenden..."
 
-#: ../roundup/admin.py:1875
+#: ../roundup/admin.py:1951
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Es gibt noch ungespeicherte Änderungen. Änderungen speichern (y/N)?"
 
@@ -5662,6 +5699,9 @@ msgstr "Aufgabe anzeigen"
 #, fuzzy
 msgid "Password"
 msgstr "Passwort"
+
+#~ msgid "Tracker updated"
+#~ msgstr "Tracker aktualisiert"
 
 #~ msgid "roundup> "
 #~ msgstr "roundup> "

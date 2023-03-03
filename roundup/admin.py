@@ -1747,6 +1747,80 @@ Desc: %(description)s
             self.db.database_schema['version'])
         return 0
 
+    def do_perftest(self, args):
+        ''"""Usage: perftest [mode] [arguments]*
+
+        Time operations in Roundup. Supported arguments:
+
+            [password] [rounds=<integer>] [scheme=<scheme>]
+
+        'password' is the default mode.  The tracker's config.ini
+        setting for 'password_pbkdf2_default_rounds' is the default
+        value for 'rounds'. On the command line, 'rounds' can include
+        thousands separator of ',' or '.'.  'scheme' is the default
+        coded into Roundup. List supported schemes by using 'scheme='.
+
+        """
+        from roundup.anypy.time_ import perf_counter
+
+        props = { "rounds": self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
+                  "scheme": password.Password.known_schemes[0]
+        }
+
+        print_supported_schemes = lambda: print(
+                    "Supported schemes (default is first, case "
+                    "sensitive):\n   %s." %
+                     ", ".join(password.Password.known_schemes))
+
+        if (args[0].find("=") != -1):
+            args.insert(0, 'password')
+
+        props.update(self.props_from_args(args[1:]))
+
+        if args[0] == "password":
+            try:
+                # convert 10,000,000 or 10.000.000 to 10000000
+                r = int(re.sub('[,.]','',props['rounds']))
+                if r < 1000:
+                    print(_("Invalid 'rounds'. Must be larger than 999."))
+                    return
+                props['rounds'] = r
+            except (TypeError, ValueError):
+                print(_("Invalid 'rounds'. It must be an integer not: %s") %
+                      props['rounds'])
+                return
+            if props['scheme'] == None:
+                print_supported_schemes()
+                return
+
+            self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = props['rounds']
+
+            try:
+                tic = perf_counter()
+                pw_hash = password.encodePassword(
+                    "this is a long password to hash",
+                    props['scheme'],
+                    None,
+                    config=self.db.config
+                )
+                toc = perf_counter()
+            except password.PasswordValueError as e:
+                print(e)
+                print_supported_schemes()
+                return
+
+            if props['scheme'].startswith('PBKDF2'):
+                (rounds, salt, _raw_salt, digest) = password.pbkdf2_unpack(
+                    pw_hash)
+            else:
+                rounds = _("scheme does not support rounds.")
+
+            print(_(
+                "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, "
+                "rounds: %(rounds)s") %
+                  { "time": toc-tic, "scheme": props['scheme'],
+                    "rounds": rounds})
+
     def run_command(self, args):
         """Run a single command
         """

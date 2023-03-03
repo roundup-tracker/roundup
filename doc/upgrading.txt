@@ -204,21 +204,41 @@ older 10000 round hashed passwords. If ``migrate_passwords`` is
 set to ``yes``, passwords will be automatically re-hashed using
 the new higher value when the user logs in.
 
-This re-hashing might result in a slight delay (under 1
-second). If you see a large slowdown, check to see if you can
-execute::
+Increasing the number of rounds will slow down re-hashing. That's the
+whole point.  Sadly it will also slow down logins.  Usually the hash
+takes under 1 second, but if you are using a slow chip (e.g. an ARM V6
+at 700 bogo mips) it can take 30 seconds to compute the 2000000
+rounds. The slowdown is linear. So what takes .001 seconds at 10000
+rounds will take: ``2000000/10000 * .001 = 200 * .001`` seconds or 0.2
+seconds.
+
+You can see how long it will take by using the new ``roundup-admin``
+``perftest`` command. After you have finished migrating your database,
+run::
+
+   roundup-admin -i <tracker_home> perftest password rounds=10000
+
+and then::
+
+   roundup-admin -i <tracker_home> perftest password rounds=2,000,000
+
+so see the difference. Output from this command looks like::
+
+   Hash time: 0.203151849s scheme: PBKDF2 rounds: 10000
+
+If your testing reports a hash time in the 0.5 second range for 10000
+rounds, there may be another issue. See if executing::
 
   python3 -c 'from hashlib import pbkdf2_hmac'
 
-without an error.
+produces an error.
 
-If you get an ImportError, you are using Roundup's fallback
-PBKDF2 implementation. It is written in Python and is much slower
-than the library version.  As a result re-encrypting the password
-(and logging in which requires calculating the encrypted
-password) will be very slow.
+If you get an ImportError, you are using Roundup's fallback PBKDF2
+implementation. It is much slower than the library version.  As a
+result re-encrypting the password (and logging in, which requires
+calculating the encrypted password) will be very slow.
 
-You should find out how to make this succeed. You may need to
+You should find out how to make the import succeed. You may need to
 install an OS vendor package or some other library.
 
 .. _recommended setting of 1,300,000: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
