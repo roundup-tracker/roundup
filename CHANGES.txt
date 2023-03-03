@@ -107,6 +107,7 @@ Features:
   cleanup and python2 support. (John Rouillard)
 - issue2551253 - new password hash PBDKF2-SHA512 added. Not available
   by default. See issue ticket for details.
+- roundup-admin migrate command reports the schema version.
 
 2022-07-13 2.2.0
 
