@@ -117,17 +117,19 @@ def install_demo(home, backend, template):
 
     # open the tracker and initialise
     tracker = instance.open(home)
-    tracker.init(password.Password('admin'))
+    tracker.init(password.Password('admin', config=config))
 
     # add the "demo" user
     db = tracker.open('admin')
     # FIXME: Move tracker-specific demo initialization into the tracker
     # templates.
     if os.path.basename(template) == 'minimal':
-        db.user.create(username='demo', password=password.Password('demo'),
+        db.user.create(username='demo',
+                       password=password.Password('demo', config=db.config),
                        roles='User')
     else:
-        db.user.create(username='demo', password=password.Password('demo'),
+        db.user.create(username='demo',
+                       password=password.Password('demo', config=db.config),
                        realname='Demo User', roles='User')
     db.commit()
     db.close()
