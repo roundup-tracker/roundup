@@ -101,6 +101,8 @@ user = Class(db, "user",
              vcs_name=String())
 
 user.setkey("username")
+db.security.addPermission(name='Register', klass='user',
+                          description='User is allowed to register new user')
 
 # Permissions for revision creation and repository viewing.
 for role in ('User',):
