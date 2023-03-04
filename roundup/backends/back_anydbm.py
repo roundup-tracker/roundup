@@ -503,7 +503,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             elif isinstance(prop, hyperdb.Interval) and v is not None:
                 d[k] = date.Interval(v)
             elif isinstance(prop, hyperdb.Password) and v is not None:
-                d[k] = password.Password(encrypted=v)
+                d[k] = password.Password(encrypted=v, config=self.config)
             else:
                 d[k] = v
         return d
@@ -2147,7 +2147,8 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Interval):
                 value = date.Interval(value)
             elif isinstance(prop, hyperdb.Password):
-                value = password.Password(encrypted=value)
+                value = password.Password(encrypted=value,
+                                          config=self.db.config)
             d[propname] = value
 
         # get a new id if necessary

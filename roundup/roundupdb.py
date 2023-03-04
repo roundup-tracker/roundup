@@ -114,7 +114,8 @@ class Database(object):
             elif isinstance(proptype, hyperdb.Interval):
                 props[propname] = date.Interval(value)
             elif isinstance(proptype, hyperdb.Password):
-                props[propname] = password.Password(encrypted=value)
+                props[propname] = password.Password(encrypted=value,
+                                                    config=self.config)
 
         # tag new user creation with 'admin'
         self.journaltag = 'admin'
