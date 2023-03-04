@@ -44,6 +44,15 @@ Python version 2.7 that is newer than 2.7.2 is required to run
 Roundup.  Starting with Roundup version 2.0.0 we also support Python 3
 versions newer than 3.4.
 
+Recent release notes have the following labels:
+
+   * required - Roundup will not work properly if these steps are not done
+   * recommended - Roundup will still work, but these steps can cause
+     security or stability issues if not done.
+   * optional - new features or changes to existing features you might
+     want to use
+   * info - important possibly visible changes in how things operate
+
 Contents:
 
 .. contents::
@@ -243,6 +252,20 @@ install an OS vendor package or some other library.
 
 .. _recommended setting of 1,300,000: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
 
+jQuery updated with updates to user.help.html (recommended)
+-----------------------------------------------------------
+
+The devel and responsive templates shipped with an old version of
+jQuery. According to automated tests, it my have a security issue. It
+has been updated to the current version: 3.6.3. If your tracker is
+based on one of these templates (see the ``TEMPLATE-INFO.txt`` file in
+your tracker), remove the old ``html/jquery.js`` file from your
+tracker and copy the new ``jquery-3.6.3.js`` file from the template
+directory to your tracker's ``html`` directory. Also copy in the new
+``user.help.html`` file. It now references the new ``jquery-3.6.3.js``
+file.
+
+
 Session/OTK data storage using Redis (optional)
 -----------------------------------------------
 
@@ -300,8 +323,8 @@ are not used.)
 For details on WAL mode see `<https://www.sqlite.org/wal.html>`_
 and `<https://www.sqlite.org/pragma.html#pragma_journal_mode>`_.
 
-Change in processing allowed_api_origins setting
-------------------------------------------------
+Change in processing allowed_api_origins setting (info)
+-------------------------------------------------------
 
 In this release you can use both ``*`` (as the first origin) and
 explicit origins in the `allowed_api_origins`` setting in
@@ -319,8 +342,8 @@ credentials to log in.
 
 .. _CORS: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
 
-Change in processing of In-Reply_to email header
-------------------------------------------------
+Change in processing of In-Reply_to email header (info)
+-------------------------------------------------------
 
 Messages received via email usually include a ``[issue23]``
 designator in the subject line. This indicates what issue is
