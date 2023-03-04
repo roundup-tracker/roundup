@@ -114,7 +114,8 @@ class Password(_Type):
             return None
         try:
             return password.Password(encrypted=value, scheme=self.scheme,
-                                     strict=True)
+                                     strict=True,
+                                     config=kw['db'].config)
         except password.PasswordValueError as message:
             raise HyperdbValueError(_('property %(property)s: %(errormsg)s') %
                                     {'property': kw['propname'],
