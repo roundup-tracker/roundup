@@ -830,7 +830,7 @@ class RedisUrlOption(SecretNullableOption):
 
 
 class SessiondbBackendOption(Option):
-    """Make sure that sessiondb is compatile with the primary db.
+    """Make sure that sessiondb is compatible with the primary db.
        Fail with error and suggestions if they are incompatible.
     """
 
