@@ -19,7 +19,9 @@
 # SOFTWARE.
 
 from __future__ import print_function
-import os, unittest, shutil
+import os
+import shutil
+import unittest
 
 from roundup import backends
 import roundup.password
@@ -41,19 +43,23 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         # TODO: some asserts
 
     def testInitialiseSecurity(self):
-        ei = self.db.security.addPermission(name="Edit", klass="issue",
-                        description="User is allowed to edit issues")
+        ei = self.db.security.addPermission(
+            name="Edit", klass="issue",
+            description="User is allowed to edit issues")
         self.db.security.addPermissionToRole('User', ei)
-        ai = self.db.security.addPermission(name="View", klass="issue",
-                        description="User is allowed to access issues")
+        ai = self.db.security.addPermission(
+            name="View", klass="issue",
+            description="User is allowed to access issues")
         self.db.security.addPermissionToRole('User', ai)
 
     def testAdmin(self):
-        ei = self.db.security.addPermission(name="Edit", klass="issue",
-                        description="User is allowed to edit issues")
+        ei = self.db.security.addPermission(
+            name="Edit", klass="issue",
+            description="User is allowed to edit issues")
         self.db.security.addPermissionToRole('User', ei)
-        ei = self.db.security.addPermission(name="Edit", klass=None,
-                        description="User is allowed to edit issues")
+        ei = self.db.security.addPermission(
+            name="Edit", klass=None,
+            description="User is allowed to edit issues")
         self.db.security.addPermissionToRole('Admin', ei)
 
         u1 = self.db.user.create(username='one', roles='Admin')
@@ -62,13 +68,12 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertTrue(self.db.security.hasPermission('Edit', u1, None))
         self.assertTrue(not self.db.security.hasPermission('Edit', u2, None))
 
-
     def testGetPermission(self):
         self.db.security.getPermission('Edit')
         self.db.security.getPermission('View')
         self.assertRaises(ValueError, self.db.security.getPermission, 'x')
         self.assertRaises(ValueError, self.db.security.getPermission, 'Edit',
-            'fubar')
+                          'fubar')
 
         add = self.db.security.addPermission
         get = self.db.security.getPermission
@@ -83,9 +88,11 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         epi1 = add(name="Edit", klass="issue", properties=['title'])
         self.assertEqual(get('Edit', 'issue', properties=['title']), epi1)
         epi2 = add(name="Edit", klass="issue", properties=['title'],
-                  props_only=True)
-        self.assertEqual(get('Edit', 'issue', properties=['title'], props_only=False), epi1)
-        self.assertEqual(get('Edit', 'issue', properties=['title'], props_only=True), epi2)
+                   props_only=True)
+        self.assertEqual(get('Edit', 'issue', properties=['title'],
+                             props_only=False), epi1)
+        self.assertEqual(get('Edit', 'issue', properties=['title'],
+                             props_only=True), epi2)
         self.db.security.set_props_only_default(True)
         self.assertEqual(get('Edit', 'issue', properties=['title']), epi2)
         api1 = add(name="View", klass="issue", properties=['title'])
@@ -94,7 +101,7 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         api2 = add(name="View", klass="issue", properties=['title'])
         self.assertEqual(get('View', 'issue', properties=['title']), api2)
         self.assertNotEqual(get('View', 'issue', properties=['title']), api1)
-        
+
         # check function
         dummy = lambda: 0
         eci = add(name="Edit", klass="issue", check=dummy)
@@ -102,36 +109,36 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         # props_only only makes sense if you are setting props.
         # make it a no-op unless properties is set.
         self.assertEqual(get('Edit', 'issue', check=dummy,
-                              props_only=True), eci)
+                             props_only=True), eci)
         aci = add(name="View", klass="issue", check=dummy)
         self.assertEqual(get('View', 'issue', check=dummy), aci)
 
         # all
         epci = add(name="Edit", klass="issue", properties=['title'],
-            check=dummy)
+                   check=dummy)
 
         self.db.security.set_props_only_default(False)
         # implicit props_only=False
         self.assertEqual(get('Edit', 'issue', properties=['title'],
-                              check=dummy), epci)
+                             check=dummy), epci)
         # explicit props_only=False
         self.assertEqual(get('Edit', 'issue', properties=['title'],
-                              check=dummy, props_only=False), epci)
+                             check=dummy, props_only=False), epci)
 
         # implicit props_only=True
         self.db.security.set_props_only_default(True)
         self.assertRaises(ValueError, get, 'Edit', 'issue',
-                                          properties=['title'],
-                                          check=dummy)
+                          properties=['title'],
+                          check=dummy)
         # explicit props_only=False
         self.assertRaises(ValueError, get, 'Edit', 'issue',
-                                          properties=['title'],
-                                          check=dummy, props_only=True)
+                          properties=['title'],
+                          check=dummy, props_only=True)
 
         apci = add(name="View", klass="issue", properties=['title'],
-            check=dummy)
+                   check=dummy)
         self.assertEqual(get('View', 'issue', properties=['title'],
-            check=dummy), apci)
+                             check=dummy), apci)
 
         # Reset to default. Somehow this setting looks like it
         # was bleeding through to other tests in test_xmlrpc.
@@ -165,18 +172,19 @@ class PermissionTest(MyTestCase, unittest.TestCase):
 
         # property
         addRole(name='Role2')
-        addToRole('Role2', add(name="Test", klass="test", properties=['a','b']))
+        addToRole('Role2', add(name="Test", klass="test",
+                               properties=['a', 'b']))
         user2 = self.db.user.create(username='user2', roles='Role2')
 
         # check function
         check_old_style = lambda db, userid, itemid: itemid == '2'
-        #def check_old_style(db, userid, itemid):
+        # def check_old_style(db, userid, itemid):
         #    print "checking userid, itemid: %r"%((userid,itemid),)
         #    return(itemid == '2')
 
         # setup to check function new style. Make sure that
         # other args are passed.
-        def check(db,userid,itemid, **other):
+        def check(db, userid, itemid, **other):
             prop = other['property']
             prop = other['classname']
             prop = other['permission']
@@ -185,7 +193,7 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         # also create a check as a callable of a class
         #   https://issues.roundup-tracker.org/issue2550952
         class CheckClass(object):
-            def __call__(self, db,userid,itemid, **other):
+            def __call__(self, db, userid, itemid, **other):
                 prop = other['property']
                 prop = other['classname']
                 prop = other['permission']
@@ -239,7 +247,6 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         # if there is no itemid no check command is run
         self.assertEqual(has('Test', user7, 'test'), 1)
         self.assertEqual(has('Test', none, 'test'), 0)
-
 
         # *any* access to item
         self.assertEqual(has('Test', user1, 'test', itemid='1'), 1)
@@ -313,48 +320,48 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         # now mix property and check commands
         # check is old style props_only = false
         self.assertEqual(has('Test', user7, 'test', property="c",
-                              itemid='2'), 0)
+                             itemid='2'), 0)
         self.assertEqual(has('Test', user7, 'test', property="c",
-                              itemid='1'), 0)
+                             itemid='1'), 0)
 
         self.assertEqual(has('Test', user7, 'test', property="a",
-                              itemid='2'), 1)
+                             itemid='2'), 1)
         self.assertEqual(has('Test', user7, 'test', property="a",
-                              itemid='1'), 0)
+                             itemid='1'), 0)
 
         # check is new style props_only = false
         self.assertEqual(has('Test', user6, 'test', itemid='2',
-                              property='c'), 0)
+                             property='c'), 0)
         self.assertEqual(has('Test', user6, 'test', itemid='1',
-                              property='c'), 0)
+                             property='c'), 0)
         self.assertEqual(has('Test', user6, 'test', itemid='2',
-                              property='b'), 0)
+                             property='b'), 0)
         self.assertEqual(has('Test', user6, 'test', itemid='1',
-                              property='b'), 1)
+                             property='b'), 1)
         self.assertEqual(has('Test', user6, 'test', itemid='2',
-                              property='a'), 0)
+                             property='a'), 0)
         self.assertEqual(has('Test', user6, 'test', itemid='1',
-                              property='a'), 1)
+                             property='a'), 1)
 
         # check is old style props_only = true
         self.assertEqual(has('Test', user5, 'test', itemid='2',
-                              property='b'), 0)
+                             property='b'), 0)
         self.assertEqual(has('Test', user5, 'test', itemid='1',
-                              property='b'), 0)
+                             property='b'), 0)
         self.assertEqual(has('Test', user5, 'test', itemid='2',
-                              property='a'), 1)
+                             property='a'), 1)
         self.assertEqual(has('Test', user5, 'test', itemid='1',
-                              property='a'), 0)
+                             property='a'), 0)
 
         # check is new style props_only = true
         self.assertEqual(has('Test', user4, 'test', itemid='2',
-                              property='b'), 0)
+                             property='b'), 0)
         self.assertEqual(has('Test', user4, 'test', itemid='1',
-                              property='b'), 0)
+                             property='b'), 0)
         self.assertEqual(has('Test', user4, 'test', itemid='2',
-                              property='a'), 0)
+                             property='a'), 0)
         self.assertEqual(has('Test', user4, 'test', itemid='1',
-                              property='a'), 1)
+                             property='a'), 1)
 
     def testTransitiveSearchPermissions(self):
         add = self.db.security.addPermission
@@ -420,6 +427,8 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         roundup.password.crypt = None
         with self.assertRaises(roundup.password.PasswordValueError) as ctx:
             roundup.password.test_missing_crypt()
+        self.assertEqual(ctx.exception.args[0],
+                         "Unsupported encryption scheme 'crypt'")
         roundup.password.crypt = orig_crypt
 
     def test_pbkdf2_unpack_errors(self):
@@ -428,13 +437,13 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         with self.assertRaises(roundup.password.PasswordValueError) as ctx:
             pbkdf2_unpack("fred$password")
 
-        self.assertEqual(ctx.exception.args[0], 
+        self.assertEqual(ctx.exception.args[0],
                          'invalid PBKDF2 hash (wrong number of separators)')
 
         with self.assertRaises(roundup.password.PasswordValueError) as ctx:
             pbkdf2_unpack("0200000$salt$password")
 
-        self.assertEqual(ctx.exception.args[0], 
+        self.assertEqual(ctx.exception.args[0],
                          'invalid PBKDF2 hash (zero-padded rounds)')
 
         with self.assertRaises(roundup.password.PasswordValueError) as ctx:
@@ -465,7 +474,6 @@ class PermissionTest(MyTestCase, unittest.TestCase):
            config is larger than number of rounds in current password.
         '''
 
-
         p = roundup.password.Password('sekrit', 'PBKDF2',
                                       config=self.db.config)
 
@@ -480,23 +488,23 @@ class PermissionTest(MyTestCase, unittest.TestCase):
 
         os.environ["PYTEST_USE_CONFIG"] = "True"
         with self.assertRaises(roundup.password.PasswordValueError) as ctx:
-            p = roundup.password.encodePassword('sekrit', 'PBKDF2',
-            config=self.db.config)
+            roundup.password.encodePassword('sekrit', 'PBKDF2',
+                                            config=self.db.config)
 
-        self.assertEqual(ctx.exception.args[0], 
+        self.assertEqual(ctx.exception.args[0],
                          'invalid PBKDF2 hash (rounds too low)')
 
         del(os.environ["PYTEST_USE_CONFIG"])
 
         with self.assertRaises(roundup.password.PasswordValueError) as ctx:
-            p = roundup.password.encodePassword('sekrit', 'fred',
-            config=self.db.config)
+            roundup.password.encodePassword('sekrit', 'fred',
+                                            config=self.db.config)
 
-        self.assertEqual(ctx.exception.args[0], 
+        self.assertEqual(ctx.exception.args[0],
                          "Unknown encryption scheme 'fred'")
 
     def test_pbkdf2_errors(self):
-        
+
         with self.assertRaises(ValueError) as ctx:
             roundup.password.pbkdf2('sekret', b'saltandpepper', 0, 41)
 
@@ -510,7 +518,7 @@ class PermissionTest(MyTestCase, unittest.TestCase):
                          "rounds must be positive number")
 
     def test_pbkdf2_sha512_errors(self):
-        
+
         with self.assertRaises(ValueError) as ctx:
             roundup.password.pbkdf2_sha512('sekret', b'saltandpepper', 0, 65)
 
@@ -523,11 +531,12 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertEqual(ctx.exception.args[0],
                          "rounds must be positive number")
 
-
     def test_encodePasswordNoConfig(self):
         # should run cleanly as we are in a test.
         #
         p = roundup.password.encodePassword('sekrit', 'PBKDF2')
+        # verify 1000 rounds being used becaue we are in test mode
+        self.assertTrue(p.startswith("1000$"))
 
         del(os.environ["PYTEST_CURRENT_TEST"])
         self.assertNotIn("PYTEST_CURRENT_TEST", os.environ)
@@ -535,4 +544,6 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         with self.assertRaises(roundup.password.ConfigNotSet) as ctx:
             roundup.password.encodePassword('sekrit', 'PBKDF2')
 
+        self.assertEqual(ctx.exception.args[0],
+                         "encodePassword called without config.")
 # vim: set filetype=python sts=4 sw=4 et si :
