@@ -462,7 +462,11 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         self.assertEqual(ctx.exception.args[0],
                          'Password not set')
 
-        p = roundup.password.Password()
+        with self.assertRaises(ValueError) as ctx:
+            p.__str__()
+
+        self.assertEqual(ctx.exception.args[0],
+                         'Password not set')
 
         # make sure it uses the default scheme
         default_scheme = roundup.password.Password.default_scheme
@@ -482,6 +486,11 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         os.environ["PYTEST_USE_CONFIG"] = "True"
         self.assertEqual(p.needs_migration(config=self.db.config), True)
         del(os.environ["PYTEST_USE_CONFIG"])
+
+        # set up p with rounds under 1000. This is usually prevented,
+        # but older software could generate smaller rounds.
+        p.password = p.password.replace('1000$', '900$')
+        self.assertEqual(p.needs_migration(config=self.db.config), True)
 
     def test_encodePassword_errors(self):
         self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 999
@@ -530,6 +539,47 @@ class PermissionTest(MyTestCase, unittest.TestCase):
 
         self.assertEqual(ctx.exception.args[0],
                          "rounds must be positive number")
+
+    def test_misc_functions(self):
+        import random  # for fuzzing later
+
+        v = roundup.password.bchr(64)
+        if bytes == str:
+            self.assertEqual(v, '@')
+        else:
+            self.assertEqual(v, b'@')
+
+        v = roundup.password.bord(b'@')
+        if bytes == str:
+            self.assertEqual(v, 64)
+        else:
+            self.assertEqual(v, b'@')
+
+        for plain, encode in (
+                (b'tes', 'dGVz'),
+                (b'test', 'dGVzdA'),
+                (b'testb', "dGVzdGI"),
+        ):
+            v = roundup.password.h64encode(plain)
+            self.assertEqual(v, encode)
+            v = roundup.password.h64decode(v)
+            self.assertEqual(v, plain)
+
+        with self.assertRaises(ValueError) as ctx:
+            v = roundup.password.h64decode("dGVzd")
+            self.assertEqual(ctx.exception.args[0], "Invalid base64 input")
+
+        # poor man's fuzzer
+        if bytes == str:
+            # alias range to xrange for python2, more efficient.
+            range_ = xrange  # noqa: F821
+        else:
+            range_ = range
+
+        for i in range_(25):
+            plain = bytearray(random.getrandbits(8) for _ in range_(i*4))
+            e = roundup.password.h64encode(plain)
+            self.assertEqual(roundup.password.h64decode(e), plain)
 
     def test_encodePasswordNoConfig(self):
         # should run cleanly as we are in a test.
