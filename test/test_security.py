@@ -440,8 +440,25 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         with self.assertRaises(roundup.password.PasswordValueError) as ctx:
             pbkdf2_unpack("fred$salt$password")
 
-        self.assertEqual(ctx.exception.args[0], 
+        self.assertEqual(ctx.exception.args[0],
                          'invalid PBKDF2 hash (invalid rounds)')
+
+    def test_empty_passwords(self):
+
+        p = roundup.password.Password()
+
+        with self.assertRaises(ValueError) as ctx:
+            p == "foo"
+
+        self.assertEqual(ctx.exception.args[0],
+                         'Password not set')
+
+        p = roundup.password.Password()
+
+        # make sure it uses the default scheme
+        default_scheme = roundup.password.Password.default_scheme
+        p.setPassword("sekret", config=self.db.config)
+        self.assertEqual(p.scheme, default_scheme)
 
     def test_pbkdf2_migrate_rounds(self):
         '''Check that migration happens when number of rounds in
@@ -457,6 +474,54 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         os.environ["PYTEST_USE_CONFIG"] = "True"
         self.assertEqual(p.needs_migration(config=self.db.config), True)
         del(os.environ["PYTEST_USE_CONFIG"])
+
+    def test_encodePassword_errors(self):
+        self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 999
+
+        os.environ["PYTEST_USE_CONFIG"] = "True"
+        with self.assertRaises(roundup.password.PasswordValueError) as ctx:
+            p = roundup.password.encodePassword('sekrit', 'PBKDF2',
+            config=self.db.config)
+
+        self.assertEqual(ctx.exception.args[0], 
+                         'invalid PBKDF2 hash (rounds too low)')
+
+        del(os.environ["PYTEST_USE_CONFIG"])
+
+        with self.assertRaises(roundup.password.PasswordValueError) as ctx:
+            p = roundup.password.encodePassword('sekrit', 'fred',
+            config=self.db.config)
+
+        self.assertEqual(ctx.exception.args[0], 
+                         "Unknown encryption scheme 'fred'")
+
+    def test_pbkdf2_errors(self):
+        
+        with self.assertRaises(ValueError) as ctx:
+            roundup.password.pbkdf2('sekret', b'saltandpepper', 0, 41)
+
+        self.assertEqual(ctx.exception.args[0],
+                         "key length too large")
+
+        with self.assertRaises(ValueError) as ctx:
+            roundup.password.pbkdf2('sekret', b'saltandpepper', 0, 40)
+
+        self.assertEqual(ctx.exception.args[0],
+                         "rounds must be positive number")
+
+    def test_pbkdf2_sha512_errors(self):
+        
+        with self.assertRaises(ValueError) as ctx:
+            roundup.password.pbkdf2_sha512('sekret', b'saltandpepper', 0, 65)
+
+        self.assertEqual(ctx.exception.args[0],
+                         "key length too large")
+
+        with self.assertRaises(ValueError) as ctx:
+            roundup.password.pbkdf2_sha512('sekret', b'saltandpepper', 0, 64)
+
+        self.assertEqual(ctx.exception.args[0],
+                         "rounds must be positive number")
 
 
     def test_encodePasswordNoConfig(self):
