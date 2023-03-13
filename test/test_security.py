@@ -422,6 +422,27 @@ class PermissionTest(MyTestCase, unittest.TestCase):
             roundup.password.test_missing_crypt()
         roundup.password.crypt = orig_crypt
 
+    def test_pbkdf2_unpack(self):
+        pbkdf2_unpack = roundup.password.pbkdf2_unpack
+
+        with self.assertRaises(roundup.password.PasswordValueError) as ctx:
+            pbkdf2_unpack("fred$password")
+
+        self.assertEqual(ctx.exception.args[0], 
+                         'invalid PBKDF2 hash (wrong number of separators)')
+
+        with self.assertRaises(roundup.password.PasswordValueError) as ctx:
+            pbkdf2_unpack("0200000$salt$password")
+
+        self.assertEqual(ctx.exception.args[0], 
+                         'invalid PBKDF2 hash (zero-padded rounds)')
+
+        with self.assertRaises(roundup.password.PasswordValueError) as ctx:
+            pbkdf2_unpack("fred$salt$password")
+
+        self.assertEqual(ctx.exception.args[0], 
+                         'invalid PBKDF2 hash (invalid rounds)')
+
     def test_pbkdf2_migrate_rounds(self):
         '''Check that migration happens when number of rounds in
            config is larger than number of rounds in current password.
