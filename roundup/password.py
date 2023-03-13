@@ -227,21 +227,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
     """
     if plaintext is None:
         plaintext = ""
-    if scheme == "PBKDF2S5":  # sha512 variant
-        if other:
-            rounds, salt, raw_salt, digest = pbkdf2_unpack(other)
-        else:
-            raw_salt = random_.token_bytes(20)
-            salt = h64encode(raw_salt)
-            if config:
-                rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
-            else:
-                rounds = 300000 # sha512 secure with fewer rounds than sha1
-        if rounds < 1000:
-            raise PasswordValueError("invalid PBKDF2 hash (rounds too low)")
-        raw_digest = pbkdf2_sha512(plaintext, raw_salt, rounds, 64)
-        return "%d$%s$%s" % (rounds, salt, h64encode(raw_digest))
-    if scheme == "PBKDF2":
+    if scheme in ["PBKDF2", "PBKDF2S5"]:  # all PBKDF schemes
         if other:
             rounds, salt, raw_salt, digest = pbkdf2_unpack(other)
         else:
@@ -257,10 +243,10 @@ def encodePassword(plaintext, scheme, other=None, config=None):
                         rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
                     else:
                         # Use 1000 rounds unless the test signals it
-                        # wants the config numberby setting
-                        # PYTEST_USE_CONFIG Using the production 2M
-                        # round values makes testing increase from 12
-                        # minutes to 1 hour in CI.
+                        # wants the config number by setting
+                        # PYTEST_USE_CONFIG. Using the production
+                        # rounds value of 2,000,000 (for sha1) makes
+                        # testing increase from 12 minutes to 1 hour in CI.
                         rounds = 1000
             else:
                 if ("pytest" in sys.modules and
@@ -292,7 +278,10 @@ def encodePassword(plaintext, scheme, other=None, config=None):
 
         if rounds < 1000:
             raise PasswordValueError("invalid PBKDF2 hash (rounds too low)")
-        raw_digest = pbkdf2(plaintext, raw_salt, rounds, 20)
+        if scheme == "PBKDF2S5":
+            raw_digest = pbkdf2_sha512(plaintext, raw_salt, rounds, 64)
+        else:
+            raw_digest = pbkdf2(plaintext, raw_salt, rounds, 20)
         return "%d$%s$%s" % (rounds, salt, h64encode(raw_digest))
     elif scheme == 'SSHA':
         if other:
@@ -549,6 +538,21 @@ def test(config=None):
     assert 'not sekrit' != p
 
 if __name__ == '__main__':
+    # invoking this with:
+    #  PYTHONPATH=. python2 roundup/password.py
+    # or with python3, results in sys.path starting with:
+    #   ['/path/to/./roundup',
+    #    '/path/to/.',
+    #    '/usr/lib/python2.7',
+    # which makes import roundup.anypy.html fail in python2
+    # when importing
+    #    from cgi import escape as html_escape
+    # because cgi is not /usr/lib/python2.7/cgi but
+    # roundup/cgi. Modify the path to remove the bogus trailing /roundup
+
+    sys.path[0] = sys.path[0][:sys.path[0].rindex('/')]
+
+    # we continue with our regularly scheduled tests
     from roundup.configuration import CoreConfig
     test(CoreConfig())
     crypt = None
