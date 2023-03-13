@@ -422,7 +422,7 @@ class PermissionTest(MyTestCase, unittest.TestCase):
             roundup.password.test_missing_crypt()
         roundup.password.crypt = orig_crypt
 
-    def test_pbkdf2_unpack(self):
+    def test_pbkdf2_unpack_errors(self):
         pbkdf2_unpack = roundup.password.pbkdf2_unpack
 
         with self.assertRaises(roundup.password.PasswordValueError) as ctx:
