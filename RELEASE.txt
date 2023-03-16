@@ -261,3 +261,47 @@ repository: https://test.pypi.org/legacy/
 username: <your username on test.pypi.org here>
 password: <your password here>
 ========
+
+-------------
+
+==========================
+GPG public key operations.
+==========================
+
+LIST IN KEYRING
+===============
+
+$ gpg --list-keys -a roundup-devel@lists.sourceforge.net
+
+   pub   rsa4096 2018-07-11 [SC] [expires: 2028-07-17]
+         411E354B5D1AF26125D621221F2DD0CB756A76D8
+   uid           [ultimate] Roundup Team (signing key for roundup
+         releases) <roundup-devel@lists.sourceforge.net>
+   sub   rsa4096 2018-07-11 [E] [expires: 2028-07-17]
+
+EXTEND EXPIRATION DATE
+======================
+
+Needs private key and passphrse for private key
+
+$ gpg --edit-key 411E354B5D1AF26125D621221F2DD0CB756A76D8
+
+  > expire
+  [add some number of months/years to it]
+  > key 1
+    [ this chooses the subkey "sub" ]
+  > expire
+  [add some number of months/years to the sub key ]
+  > save
+  [ saves both keys, will need the private key and passphrase ]
+
+EXPORT NEW KEY
+==============
+
+$ gpg --export -a roundup-devel@lists.sourceforge.net >> \
+   tools/roundup.public.pgp.key
+
+then edit roundup.public.pgp.key keeping only the last key stat starts
+with: -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+Commmit new key to mercurial.
