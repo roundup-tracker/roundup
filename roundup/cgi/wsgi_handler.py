@@ -46,7 +46,7 @@ class Headers(object):
 class Writer(object):
     '''Perform a start_response if need be when we start writing.'''
     def __init__(self, request):
-        self.request = request  #weakref.ref(request)
+        self.request = request  # weakref.ref(request)
 
     def write(self, data):
         f = self.request.get_wfile()
@@ -80,10 +80,11 @@ class RequestDispatcher(object):
         self.home = home
         self.debug = debug
         self.timing = timing
-        self.feature_flags= feature_flags or {}
+        self.feature_flags = feature_flags or {}
         self.tracker = None
         if lang:
-            self.translator = TranslationService.get_translation(lang,
+            self.translator = TranslationService.get_translation(
+                lang,
                 tracker_home=home)
         else:
             self.translator = None
@@ -125,12 +126,12 @@ class RequestDispatcher(object):
 
         if "cache_tracker" in self.feature_flags:
             client = self.tracker.Client(self.tracker, request, environ, form,
-                                    self.translator)
+                                         self.translator)
             try:
                 client.main()
             except roundup.cgi.client.NotFound:
                 request.start_response([('Content-Type', 'text/html')], 404)
-                request.wfile.write(s2b('Not found: %s' % 
+                request.wfile.write(s2b('Not found: %s' %
                                         html_escape(client.path)))
         else:
             with self.get_tracker() as tracker:
@@ -140,7 +141,7 @@ class RequestDispatcher(object):
                     client.main()
                 except roundup.cgi.client.NotFound:
                     request.start_response([('Content-Type', 'text/html')], 404)
-                    request.wfile.write(s2b('Not found: %s' % 
+                    request.wfile.write(s2b('Not found: %s' %
                                             html_escape(client.path)))
 
         # all body data has been written using wfile

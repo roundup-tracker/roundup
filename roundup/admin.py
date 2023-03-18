@@ -653,7 +653,7 @@ Erase it? Y/N: """))  # noqa: E122
                          tx_Source='cli')
         except OptionUnsetError as e:
             raise UsageError("In %(tracker_home)s/config.ini - %(error)s" % {
-                'error': str(e), 'tracker_home': tracker_home })
+                'error': str(e), 'tracker_home': tracker_home})
 
         return 0
 
@@ -1739,12 +1739,12 @@ Desc: %(description)s
         into the habit.
         """
         if self.db.db_version_updated:
-            print(_('Tracker updated to schema version %s.') % 
+            print(_('Tracker updated to schema version %s.') %
                   self.db.database_schema['version'])
             self.db_uncommitted = True
         else:
             print(_('No migration action required. At schema version %s.') %
-            self.db.database_schema['version'])
+                  self.db.database_schema['version'])
         return 0
 
     def do_perftest(self, args):
@@ -1763,14 +1763,13 @@ Desc: %(description)s
         """
         from roundup.anypy.time_ import perf_counter
 
-        props = { "rounds": self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
-                  "scheme": password.Password.known_schemes[0]
-        }
+        props = {"rounds": self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
+                 "scheme": password.Password.known_schemes[0]}
 
         print_supported_schemes = lambda: print(
-                    "Supported schemes (default is first, case "
-                    "sensitive):\n   %s." %
-                     ", ".join(password.Password.known_schemes))
+            "Supported schemes (default is first, case "
+            "sensitive):\n   %s." %
+            ", ".join(password.Password.known_schemes))
 
         if (args[0].find("=") != -1):
             args.insert(0, 'password')
@@ -1780,7 +1779,7 @@ Desc: %(description)s
         if args[0] == "password":
             try:
                 # convert 10,000,000 or 10.000.000 to 10000000
-                r = int(re.sub('[,.]','',props['rounds']))
+                r = int(re.sub('[,.]', '', props['rounds']))
                 if r < 1000:
                     print(_("Invalid 'rounds'. Must be larger than 999."))
                     return
@@ -1789,7 +1788,7 @@ Desc: %(description)s
                 print(_("Invalid 'rounds'. It must be an integer not: %s") %
                       props['rounds'])
                 return
-            if props['scheme'] == None:
+            if props['scheme'] is None:
                 print_supported_schemes()
                 return
 

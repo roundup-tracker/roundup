@@ -64,7 +64,7 @@ import sys
 # os.prefix should be /usr, /usr/local or root of virtualenv
 #    strip leading / to make os.path.join work right.
 path = __file__
-for N in 1, 2:
+for _N in 1, 2:
     path = os.path.dirname(path)
     # path is /usr/local/lib/python3.10/site-packages
 _ldir = os.path.join(path, sys.prefix[1:], 'share', 'locale')

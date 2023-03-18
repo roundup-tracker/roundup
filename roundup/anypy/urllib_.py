@@ -6,6 +6,6 @@ try:
     from urllib.request import urlopen
 except ImportError:
     # Python 2.5-2.7
-    from urllib import quote, unquote, urlencode
-    from urllib2 import urlopen
-    from urlparse import urlparse, parse_qs, urlunparse
+    from urllib import quote, unquote, urlencode         # noqa: F401
+    from urllib2 import urlopen                          # noqa: F401
+    from urlparse import urlparse, parse_qs, urlunparse  # noqa: F401

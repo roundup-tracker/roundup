@@ -31,7 +31,6 @@ minimal set (to avoid Roundup state changes from template).
 
 from __future__ import print_function
 import jinja2
-import gettext
 import mimetypes
 import sys
 

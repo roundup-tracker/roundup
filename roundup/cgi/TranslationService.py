@@ -26,7 +26,7 @@ class TranslationServiceMixin:
     def translate(self, domain, msgid, mapping=None,
                   context=None, target_language=None, default=None):
         _msg = self.gettext(msgid)
-        #print ("TRANSLATE", msgid, _msg, mapping, context)
+        # print ("TRANSLATE", msgid, _msg, mapping, context)
         _msg = TALInterpreter.interpolate(_msg, mapping)
         return _msg
 

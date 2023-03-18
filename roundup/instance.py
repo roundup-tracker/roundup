@@ -40,7 +40,6 @@ except ImportError:
 
 import os
 import sys
-import warnings
 
 from roundup import configuration, mailgw
 from roundup import hyperdb, backends, actions

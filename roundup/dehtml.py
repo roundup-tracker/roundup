@@ -5,6 +5,7 @@ from roundup.anypy.strings import u2s, uchr
 import sys
 _pyver = sys.version_info[0]
 
+
 class dehtml:
     def __init__(self, converter):
         if converter == "none":

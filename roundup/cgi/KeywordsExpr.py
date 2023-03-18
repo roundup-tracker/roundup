@@ -47,7 +47,7 @@ function Not(x) {
     this.brackets = false;
 
     this.infix = function() {
-        return this.x.brackets 
+        return this.x.brackets
             ? "NOT(" + this.x.infix() + ")"
             : "NOT " + this.x.infix();
     }
@@ -126,7 +126,7 @@ function render_select(handler) {
     out += '>';
     out += '<option value="-1"><\/option>';
     for (var i = 0; i < KEYWORDS.length; ++i) {
-        out += '<option value="' + KEYWORDS[i][0] + 
+        out += '<option value="' + KEYWORDS[i][0] +
                '">' + KEYWORDS[i][1] + "<\/option>";
     }
     out += '<\/select>';
@@ -175,7 +175,7 @@ function or_clicked() {
 }
 
 function undo_clicked() {
-    current = undo.length > 0 
+    current = undo.length > 0
         ? undo.pop()
         : original;
     set_content();

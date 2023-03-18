@@ -43,8 +43,10 @@ except ImportError:
 _bempty = b""
 _bjoin = _bempty.join
 
+
 class ConfigNotSet(RoundupException):
     pass
+
 
 def bchr(c):
     if bytes == str:
@@ -127,9 +129,9 @@ except ImportError:
                 block = xor_bytes(block, tmp)
             out += block
         return out[:keylen]
- 
+
     def _pbkdf2_sha512(password, salt, rounds, keylen):
-       return _pbkdf2(password, salt, rounds, keylen, sha=sha512)
+        return _pbkdf2(password, salt, rounds, keylen, sha=sha512)
 
 
 def ssha(password, salt):
@@ -171,6 +173,7 @@ def pbkdf2_sha512(password, salt, rounds, keylen):
     if rounds < 1:
         raise ValueError("rounds must be positive number")
     return _pbkdf2_sha512(password, salt, rounds, keylen)
+
 
 def pbkdf2(password, salt, rounds, keylen):
     """pkcs#5 password-based key derivation v2.0
@@ -237,7 +240,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
                 rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
 
                 # if we are testing
-                if ("pytest" in sys.modules and 
+                if ("pytest" in sys.modules and
                     "PYTEST_CURRENT_TEST" in os.environ):
                     if ("PYTEST_USE_CONFIG" in os.environ):
                         rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
@@ -265,7 +268,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
                     if sys.version_info[0] > 2:
                         logger.critical(
                             "encodePassword called without config.",
-                            stack_info = True)
+                            stack_info=True)
                     else:
                         import inspect, traceback
                         where = inspect.currentframe()

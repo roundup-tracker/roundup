@@ -632,7 +632,7 @@ class Client:
         # Call rest library to handle the pre-flight request
         handler = rest.RestfulInstance(self, self.db)
         output = handler.dispatch(self.env['REQUEST_METHOD'],
-                                      self.path, self.form)
+                                  self.path, self.form)
 
         if self.response_code == 204:
             self.write("")
@@ -682,9 +682,9 @@ class Client:
             return
 
         # Handle CORS preflight request. We know rest is enabled
-        # because handle_rest is called. Preflight requests 
+        # because handle_rest is called. Preflight requests
         # are unauthenticated, so no need to check permissions.
-        if ( self.is_cors_preflight() ):
+        if (self.is_cors_preflight()):
             self.handle_preflight()
             return
         elif not self.db.security.hasPermission('Rest Access', self.userid):
@@ -1318,13 +1318,13 @@ class Client:
         # Living spec doesn't address Origin value's case or
         # how to compare it. So implement case sensitive....
         if origin in allowed_origins:
-             return True
+            return True
         # Block use of * when origin match is used for
         # allowing credentials. See:
         # https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
         # under Credentials Requests and Wildcards
-        if ( allowed_origins and allowed_origins[0] == '*'
-             and not credentials):
+        if (allowed_origins and allowed_origins[0] == '*'
+            and not credentials):
             return True
 
         return False
