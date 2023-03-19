@@ -25,7 +25,7 @@ Roundup-devel list to get assistance and verify your planned changes.
 
 All development is coordinated through two resources:
 
-- Roundup-devel mailing list at
+- roundup-devel mailing list at
   https://sourceforge.net/projects/roundup/lists/roundup-devel
 - The issue tracker running at
   https://issues.roundup-tracker.org/
@@ -42,14 +42,6 @@ helpful.
 
 People working on Documentation or designing changes to the Web
 interface don't need to get into the implementation internals.
-
-
-Small Changes
--------------
-
-Most small changes can be submitted as patches through the
-`issue tracker`_ or sent to `Roundup-devel mailing list`_.
-
 
 Project Rules
 -------------
@@ -69,32 +61,81 @@ Other project rules:
   changes to tracker configuration must be logged in the
   upgrading document.
 - discuss any changes with the other developers on
-  Roundup-dev. If nothing else, this makes sure there's no
+  roundup-dev. If nothing else, this makes sure there's no
   rude shocks.
 - write unit tests for changes you make (where possible),
   and ensure that all unit tests run before committing
   changes.
 - run flake8_ or pylint_ over changed code.
 - if you have direct commit access to the repository,
-  subscribe to Roundup-checkins to receive checkin
+  subscribe to roundup-checkins to receive checkin
   notifications from the other developers with write access
   to the source-code repository.
 
-The goal is to have no flake8 issues. Current code does include long
-lines and use of mutable objects in function signatures. Some third
-party code (e.g. ZPT) vendored into the codebase has more issues.
+The goal is to have no flake8 issues. Current code has
+complex functions, some long lines and use of mutable
+objects in function signatures. Some third party code
+(e.g. ZPT) vendored into the codebase has more issues.
 
-The administrators of the project reserve the right to boot developers who
-consistently check in code which is either broken or takes the codebase in
-directions that have not been agreed to.
+The administrators of the project reserve the right to boot
+developers who consistently check in code which is either
+broken or takes the codebase in directions that have not
+been agreed to.
 
-Source Repository Access
-------------------------
+Setting up a Development Environment
+------------------------------------
 
-Roundup is developed using the `Mercurial distributed version control
-system (DVCS)`_ [1]_. It is `hosted at Sourceforge`_. See
+Roundup doesn't require any external libraries. Installing
+Python 3 and its core libraries is enough to get Roundup
+running.
+
+The easiest way to work with Roundup is to clone the
+repository.  Roundup is developed using the `Mercurial
+distributed version control system (DVCS)`_ [1]_. It is
+`hosted at Sourceforge`_. See
 https://www.roundup-tracker.org/code.html for details.
-For all other questions ask on the development mailing list.
+
+If you are used to git, Mercurial's `command equivalence
+table`_ can help. Most of the concepts from git (except for
+staging) should be familiar.
+
+To clone the repository use::
+
+   hg clone http://hg.code.sf.net/p/roundup/code roundup
+
+(Yes, that is an http url.) 
+
+This will create a read only clone (you can't ``hg push``)
+of the repo. Changes you make can be attached as patches
+(created using ``hg diff``) to tickets in our `issue
+tracker`_.
+
+See https://www.roundup-tracker.org/code.html for URL's and
+directions on getting read write access which allows pushing
+to the repository.
+
+Once you have your clone, you can run ``python3 ./demo -b
+sqlite`` and get a working Roundup server. This will start
+the server using the ``sqlite`` backend. The code is in the
+``roundup`` subdirectory.
+
+Submitting Changes
+------------------
+
+Most small changes can be submitted as patches through the
+`issue tracker`_ or sent to `Roundup-devel mailing list`_.
+
+Your account on sourceforge can be set up to allow direct
+pushes to the repo. Once that is done, using::
+
+   hg push https://user@hg.code.sf.net/p/roundup/code
+
+or 
+
+   hg push ssh://user@hg.code.sf.net/p/roundup/code
+
+will commit your changes.
+
 
 Other Resources - CI, Code Coverage 
 -----------------------------------
@@ -114,10 +155,11 @@ services:
 GitHub actions upload coverage statistics to both `CodeCov`_ and
 `Coveralls`_. TravisCI only uploads to CodeCov.
 
-We run our own issue tracker so we can dogfood the code. So we do not
-use GitHub issues. Pull requests are grudgingly accepted. They have to
-be exported and applied to the Mercurial repository. This is time
-consuming so patches attached to the issue are preferred.
+We run our own issue tracker so we can dogfood the code. As
+a result, we do not use GitHub issues. Pull requests are
+grudgingly accepted. They have to be exported and applied to
+the Mercurial repository. This is time consuming so patches
+attached to an issue in our tracker are preferred.
 
 Debugging Aids
 --------------
@@ -464,6 +506,7 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _CodeCov: https://app.codecov.io/gh/roundup-tracker/roundup
 .. _copy of the mercurial repository on GitHub:
     https://github.com/roundup-tracker/roundup
+.. _command equivalence table: https://www.mercurial-scm.org/wiki/GitConcepts#Command_equivalence_table
 .. _Coveralls: https://coveralls.io/github/roundup-tracker/roundup
 .. _cygwin: https://www.cygwin.com/
 .. _emacs: https://www.gnu.org/software/emacs/
