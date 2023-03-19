@@ -14,13 +14,14 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
+#
 
 """Support module to generate and check fingerprints of installed files.
 """
 __docformat__ = 'restructuredtext'
 
-import os, shutil
+import os
+import shutil
 from hashlib import sha1
 
 from roundup.anypy.strings import s2b

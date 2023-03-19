@@ -1465,10 +1465,10 @@ The mail gateway is not properly set up. Please contact
         with open(os.path.join(self.oauth_path, 'client_id'), 'r') as f:
             client_id = f.read().strip()
         data = dict(
-            client_id = client_id,
-            client_secret = client_secret,
-            refresh_token = self.refresh_token,
-            grant_type = 'refresh_token'
+            client_id=client_id,
+            client_secret=client_secret,
+            refresh_token=self.refresh_token,
+            grant_type='refresh_token'
         )
         session = requests.session()
         r = session.post(self.token_endpoint, data=data)
