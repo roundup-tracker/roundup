@@ -110,6 +110,10 @@ Features:
 - issue2551253 - new password hash PBDKF2-SHA512 added. Not available
   by default. See issue ticket for details.
 - roundup-admin migrate command reports the schema version.
+- issue2551262 - the mail gateway subject prefix now allows spaces
+  before/after prefix. Also allow spaces between classname and id
+  number in prefix designator. So "[ issue 23   ] subject" is parsed
+  like "[issue23] subject".
 
 2022-07-13 2.2.0
 

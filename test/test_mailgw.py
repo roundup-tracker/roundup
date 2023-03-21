@@ -4290,6 +4290,21 @@ Message-Id: <dummy_test_message_id>
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
 
+    def testSpacedPrefixSubject(self):
+        self.db.keyword.create(name='Foo')
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: VeryStrangeRe: [  keyword  1  ] Testing.. [name=Bar]
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
+
     def testUnknownPrefixSubject(self):
         self.db.keyword.create(name='Foo')
         self._handle_mail('''Content-Type: text/plain;

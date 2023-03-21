@@ -636,12 +636,12 @@ Emails to Roundup trackers must include a Subject: line!
             tmpsubject = tmpsubject[len(self.matches['quote']):]
 
         # Check if the subject includes a prefix
-        self.has_prefix = re.search(r'^%s(\w+)%s' % (delim_open,
+        self.has_prefix = re.search(r'^%s\s*(\w+)\s*%s' % (delim_open,
                                                      delim_close),
                                     tmpsubject.strip())
 
         # Match the classname if specified
-        class_re = r'%s(?P<classname>(%s))(?P<nodeid>\d+)?%s' %  \
+        class_re = r'%s\s*(?P<classname>(%s))\s*(?P<nodeid>\d+)?\s*%s' %  \
                    (delim_open, "|".join(self.db.getclasses()),
                     delim_close)
         # Note: re.search, not re.match as there might be garbage

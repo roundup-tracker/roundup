@@ -454,9 +454,11 @@ If a one-time key is found, we're processing an in-progress
 registration confirmation.
 
 If the subject line contains a prefix in ``[square brackets]`` then
-we're looking at case 3 or 4 above. Any "re:" or "fwd:" prefixes are
-stripped off the subject line before we start looking for real
-information.
+we're looking at case 3 or 4 above. Spaces are allowed inside the
+brackets and after the class item name. So ``[issue2]`` and
+``[ issue 2 ]`` are treted the same where any whitespace is optional.
+Any "re:" or "fwd:" prefixes are stripped off the subject line before
+we start looking for real information.
 
 If an item designator (class name and id number, for example
 ``issue123``) is found there, a new "msg" item is added to the
@@ -492,15 +494,15 @@ For example,
 
 - adding yourself to a nosy list::
 
-   Subject: Re: [issue2] we're out of widgets [nosy=+richard]
+   Subject: Re: [ issue2 ] we're out of widgets [nosy=+richard]
 
 - setting the nosy list to just you and cliff::
 
-   Subject: Re: [issue2] we're out of widgets [nosy=richard,cliff]
+   Subject: Re: [issue 2] we're out of widgets [nosy=richard,cliff]
 
 - removing yourself from a nosy list and setting the priority::
 
-   Subject: Re: [issue2] we're out of widgets [nosy=-richard;priority=bug]
+   Subject: Re: [ issue 2 ] we're out of widgets [nosy=-richard;priority=bug]
 
 In all cases, the message relates to issue 2. The ``Re:`` prefix is
 stripped off.
