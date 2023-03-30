@@ -67,19 +67,20 @@ Fixed:
   Anonymous user. Replaces the old Create permission. (John Rouillard)
 - Allow '*' and explicit origins in allowed_api_origins. Only return 
   'Access-Control-Allow-Credentials' when not matching '*'. Fixes
-  security issue with rest when using '*'.
+  security issue with rest when using '*'.  (John Rouillard)
 - issue2551263: In REST response expose rate limiting, sunset, allow
-  HTTP headers to calling javascript.
+  HTTP headers to calling javascript.  (John Rouillard)
 - issue2551257: When downloading an attached (user supplied file),
   make sure that an 'X-Content-Type-Options: nosniff' header is sent.
+  (John Rouillard)
 - issue2551252 - default number of rounds for PKDF2 password increased
-  to 2,000,000.
+  to 2,000,000.  (John Rouillard)
 - issue2551251 - migrate/re-encrypt PBKDF2 password if stored
   password used a smaller number of rounds than set in
-  password_pbkdf2_default_rounds.
+  password_pbkdf2_default_rounds.  (John Rouillard)
 - upgrade from jquery-3.5.1 to jquery-3.6.3. Update user.help.html
-  to new version.
-- Dockerfile scanned with hadolint. Fixed multiple issues.
+  to new version.  (John Rouillard)
+- Dockerfile scanned with hadolint. Fixed multiple issues. (John Rouillard)
 
 Features:
 
@@ -109,12 +110,14 @@ Features:
 - issue2551243: schema-dump.py enhanced with anti-CSRF headers. Flake8
   cleanup and python2 support. (John Rouillard)
 - issue2551253 - new password hash PBDKF2-SHA512 added. Not available
-  by default. See issue ticket for details.
+  by default. See issue ticket for details.  (John Rouillard)
 - roundup-admin migrate command reports the schema version.
 - issue2551262 - the mail gateway subject prefix now allows spaces
   before/after prefix. Also allow spaces between classname and id
   number in prefix designator. So "[ issue 23   ] subject" is parsed
-  like "[issue23] subject".
+  like "[issue23] subject". (John Rouillard)
+- [doc]: add section on implementing CSP for Roundup to admin
+  doc. (John Rouillard)
 
 2022-07-13 2.2.0
 
