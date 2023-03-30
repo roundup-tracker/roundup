@@ -286,6 +286,173 @@ get the gzip version and not a brotli compressed version. This
 mechanism allows the admin to allow use of brotli and zstd for
 dynamic content, but not for static content.
 
+Adding a Web Content Security Policy (CSP)
+==========================================
+
+A Content Security Policy (`CSP`_) adds a layer of security to
+Roundup's web interface. It makes it more difficult for an
+attacker to compromise Roundup.  By default Roundup does not add
+a CSP. If you need to implement a CSP, this section will help you
+understand how to add one and document the current level of
+support for CSP in Roundup.
+
+Roundup's web interface has remained mostly unchanged since it
+was created over a decade ago. Current releases have been slowly
+modernizing the HTML to improve security. There are still some
+improvements that need to happen before the tightest CSP
+configurations can be used.
+
+Writing a CSP is complex.  This section just touches on how to
+create and install a CSP to improve security. Some of it might
+break functionality.
+
+There are two ways to add a CSP:
+
+  1. a fixed CSP added by a server
+  2. a dynamic CSP added by Roundup
+
+Fixed CSP
+---------
+
+If you are using a web server (Apache, Nginx) to run Roundup, you can
+add a ``Content-Security-Policy`` header using that server. WSGI
+servers like uWSGI can also be configured to add headers.  An example
+header would look like::
+
+  Content-Security-Policy: default-src 'self' 'unsafe-inline' 'strict-dynamic';
+
+One thing that may need to be included is the ``unsafe-inline``.
+The default templates use ``onload``, ``onchange``, ``onsubmit``,
+and ``onclick`` JavaScript handlers. Without ``unsafe-inline``
+these won't work and popup helpers will not work. Sadly the use
+of ``unsafe-inline`` is a pretty big hole in this CSP.  You can
+set the hashes for all the JavaScript handlers in the CSP. Then
+replace ``unsafe-inline`` with ``unsafe-hashes`` to help close
+this hole, but has its own issues. See `remediating
+unsafe-inline`_ for another way to mitigate this.
+
+The inclusion of ``strict-dynamic`` allows trusted JavaScript
+files that are downloaded from Roundup to make changes to the web
+interface. These changes are also trusted code that will be run
+when invoked.
+
+More secure CSPs can also be created. However because of the ability
+to customize the web interface, it is difficult to provide guidance.
+
+Dynamic CSP
+-----------
+
+Roundup creates a cryptographic nonce for every client request. The
+nonce is the value of the ``client.client_nonce`` property.
+
+By changing the templates to use the nonce, we can better secure the 
+Roundup instance. However the nonce has to be set in the CSP returned
+by Roundup.
+
+One way to do this is to add a templating utility to the extensions
+directory that generates the CSP on the fly. For example::
+
+    default_security_headers = {
+	'Content-Security-Policy': (
+	    "default-src 'self'; "
+	    "base-uri 'self'; "
+	    "script-src https: 'nonce-{nonce}' 'strict-dynamic'; "
+	    "style-src 'self' 'nonce-{nonce}'; "
+	    "img-src 'self' data:; "
+	    "frame-ancestors 'self'; "
+	    "object-src 'self' 'nonce-{nonce}'; "
+	),
+    }
+
+
+    def AddHtmlHeaders(client, header_dict=None):
+	''' Generate https headers from dict use default security headers
+
+	    Setting the header with a value of None will not inject the
+	    header and can override the default set.
+
+	    Header values will be formatted with a dictionary including a
+	    nonce. Use to set a nonce for inline scripts.
+	'''
+	try:
+	    if client.client_nonce is None:
+		# logger.warning("client_nonce is None")
+		client.client_nonce = client.session_api._gen_sid()
+	except AttributeError:
+	    # client.client_nonce doesn't exist, create it
+	    # logger.warning("client_nonce does not exist, creating")
+	    client.client_nonce = client.session_api._gen_sid()
+
+	headers = default_security_headers.copy()
+	if isinstance(header_dict, dict):
+            headers.update(header_dict)
+
+	client_headers = client.additional_headers
+
+	for header, value in list(headers.items()):
+	    if value is None:
+		continue
+	    client_headers[header] = value.format(
+                nonce=client.client_nonce)
+
+    def init(instance):
+        instance.registerUtil('AddHtmlHeaders', AddHtmlHeaders)
+
+
+Adding the following to ``page.html`` right after the opening
+``<html....`>`` tag::
+
+   <tal:code tal:content="python:utils.AddHtmlHeaders(request.client)" />
+
+will invoke ``AddHtmlHeaders()`` to add the CSP header with the nonce.
+
+With this set of CSP headers, all style, script and object tags will
+need a ``nonce`` attribute. This can be added by changing::
+
+    <script src="javascript.js"></script>
+
+to::
+
+    <script
+        tal:attributes="nonce request/client/client_nonce"
+        src="javascript.js"></script>
+
+for each script, object or style tag.
+
+Remediating ``unsafe-inline``
+-----------------------------
+.. _remediating unsafe-inline:
+
+Using a trusted script to set event handlers to replace the ``onX``
+handlers allows removal of the ``unsafe-inline`` handlers.  If you
+remove ``unsafe-inline`` the ``onX`` handlers will not run. However
+you can use the label provided by the ``onX`` attribute to securely
+enable a callback function.
+
+This method is a work in progress. As an example proof of concept,
+adding this "decorator" script at the end of page.html::
+
+   <script tal:attributes="nonce request/client/client_nonce">
+    /* set submit event listener on forms that have an
+    onsubmit (case insensitive) attribute */
+    forms = document.querySelectorAll(form[onsubmit])
+    for (let form of f) {
+        form.addEventListener('submit',
+                              () => submit_once());
+     };
+   </script>
+
+will set callback for the submit even on any form that has an onsubmit
+attribute to ``submit_once()``. ``submit_once`` is defined in Roundup's
+base_javascript and is generated with a proper nonce.
+
+By including the nonce in the dynamic CSP, we can use our trusted
+"decorator" script to add event listeners. These listeners will call
+the trusted function in base_javascript to replace the ignored ``onX``
+handlers.
+
+.. _CSP: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+
 Configuring native-fts Full Text Search
 =======================================
 
@@ -527,7 +694,7 @@ port 7200 using the password ``mypassword`` to open database
 10. The ``redis_url`` setting can load a file to better
 secure the url. If you are using redis 6.0 or newer, you can
 specify a username/password and access control lists to
-improv the security of your data. Another good alternative
+improve the security of your data. Another good alternative
 is to talk to redis using a Unix domain socket.
 
 If you are connecting to redis across the network rather
@@ -586,7 +753,7 @@ may be found in the `customisation documentation`_.
 Configuring Authentication Header/Variable
 ------------------------------------------
 
-The front end server running roundup can perform the user
+The front end server running Roundup can perform the user
 authentication. It pass the authenticated username to the backend in a
 variable. By default roundup looks for the ``REMOTE_USER`` variable
 This can be changed by setting the parameter ``http_auth_header`` in the
