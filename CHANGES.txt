@@ -79,6 +79,7 @@ Fixed:
   password_pbkdf2_default_rounds.
 - upgrade from jquery-3.5.1 to jquery-3.6.3. Update user.help.html
   to new version.
+- Dockerfile scanned with hadolint. Fixed multiple issues.
 
 Features:
 

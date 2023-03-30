@@ -1,3 +1,4 @@
+# hadolint global ignore=DL3003
 # build in root dir using:
 #
 #     docker build -t roundup-app --rm -f scripts/Dockerfile .
@@ -31,12 +32,12 @@ ARG appdir
 WORKDIR $appdir
 
 # Update to get security and other improvements;
-RUN apk --update-cache upgrade
+RUN apk --no-cache upgrade
 
 # Add packages needed to compile mysql, pgsql and other python modules.
-# Can't use apk to add them as that installs a 3.9 python version.
+# Can't use apk to add python packages as it installs 3.9 python version.
 #        g++ installs cc1plus needed by pip install
-RUN apk add \
+RUN apk --no-cache add \
     g++ \
     gcc \
     gpgme-dev \
@@ -54,7 +55,7 @@ ARG pythonversion
 RUN image_python_version=$(python -c 'import sys; print("%s.%s"%sys.version_info[0:2])'); \
     if [ "${pythonversion}" != "${image_python_version}" ]; then \
        printf "\n\n*****\npythonversion does not match.\n" ; \
-       printf "Add:\n   --build-arg=\"pythonversion=${image_python_version}\"\nto docker build\n******\n\n"; \
+       printf "Add:\n   --build-arg=\"pythonversion=%s\"\nto docker build\n******\n\n" "${image_python_version}"; \
        exit 1; \
     fi
 
@@ -66,11 +67,12 @@ COPY scripts/Docker/sphinxdeps.txt .
 # suppress warning when running pip as root
 ENV PIP_ROOT_USER_ACTION=ignore
 
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 RUN set -xv && CWD=$PWD && \
     upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
 	list --outdated | awk 'NR > 2 {print $1}'); \
     if [ -n "$upgrades" ]; then \
-        echo Pip updating $upgrades; \
+        echo "Pip updating $upgrades"; \
         python -m pip --no-cache --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
@@ -80,8 +82,8 @@ RUN set -xv && CWD=$PWD && \
     VER=$(apk list -I 'xapian-core-dev' | \
           sed 's/^xapian-core-dev-\([0-9.]*\)-.*/\1/') && \
     cd /tmp && \
-    wget https://oligarchy.co.uk/xapian/$VER/xapian-bindings-$VER.tar.xz && \
-    tar -Jxvf xapian-bindings-$VER.tar.xz && \
+    wget -q "https://oligarchy.co.uk/xapian/$VER/xapian-bindings-$VER.tar.xz" && \
+    tar -Jxvf "xapian-bindings-$VER.tar.xz" && \
     cd xapian-bindings-$VER/ && \
     pip --no-cache-dir install sphinx && \
     sed -i -e '/PYTHON3_SO=/s/distutils\.//g' \
@@ -116,10 +118,12 @@ RUN set -xv && if [ "$source" = "local" ] ||  \
            else echo "invalid value for source: $source"; \
                 echo "must be local or pypi"; exit 1; fi; \
     if [ "$source" = "local" ]; then cd install && ./setup.py install; fi; \
-    if [ "$source" = "local_pip" ]; then cd install && pip install \
-                            --use-feature=in-tree-build . ; fi; \
-    if [ "$source" = "pypi" ]; then pip install roundup; \
-       cp -ril /usr/local/lib/python${pythonversion}/site-packages/usr/local/share/* \
+    if [ "$source" = "local_pip" ]; then cd install && \
+               pip -V && \
+               pip install --no-cache-dir . ; \
+    fi; \
+    if [ "$source" = "pypi" ]; then pip install --no-cache-dir roundup; \
+       cp -ril /usr/local/lib/"python${pythonversion}"/site-packages/usr/local/share/* \
 	   /usr/local/share; fi
 
 # Allow user to add more modules during build
@@ -145,8 +149,9 @@ ENV PIP_ROOT_USER_ACTION=ignore
 # clean out any caches to save space
 # upgrade pip packages to get security and other updates
 #   bundle with apk updates
-RUN apk --update-cache upgrade; \
-    apk add \
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+RUN apk --no-cache upgrade; \
+    apk --no-cache add \
      brotli-libs \
      gpgme \
      mariadb-connector-c \
@@ -154,11 +159,10 @@ RUN apk --update-cache upgrade; \
      libstdc++ \
      libxapian \
      zstd-libs; \
-    rm -f /var/cache/apk/*; \
     upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
 	list --outdated | awk 'NR > 2 {print $1}'); \
     if [ -n "$upgrades" ]; then \
-        echo Pip updating $upgrades; \
+        echo "Pip updating $upgrades"; \
         python -m pip --no-cache --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
