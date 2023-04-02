@@ -270,7 +270,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
                             "encodePassword called without config.",
                             stack_info=True)
                     else:
-                        import inspect, traceback
+                        import inspect, traceback   # noqa: E401
                         where = inspect.currentframe()
                         trace = traceback.format_stack(where)
                         logger.critical(
@@ -396,7 +396,7 @@ class Password(JournalPassword):
     """
 
     deprecated_schemes = ["SHA", "MD5", "crypt", "plaintext"]
-    experimental_schemes = [ "PBKDF2S5" ]
+    experimental_schemes = ["PBKDF2S5"]
     known_schemes = ["PBKDF2", "SSHA"] + experimental_schemes + \
                     deprecated_schemes
 
@@ -428,7 +428,7 @@ class Password(JournalPassword):
             return True
         if (self.scheme == "PBKDF2"):
             new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
-            if ("pytest" in sys.modules and 
+            if ("pytest" in sys.modules and
                 "PYTEST_CURRENT_TEST" in os.environ):
                 if ("PYTEST_USE_CONFIG" in os.environ):
                     new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
@@ -540,6 +540,7 @@ def test(config=None):
     assert 'sekrit' == p
     assert 'not sekrit' != p
 
+
 if __name__ == '__main__':
     # invoking this with:
     #  PYTHONPATH=. python2 roundup/password.py
@@ -564,7 +565,7 @@ if __name__ == '__main__':
         test_missing_crypt(CoreConfig())
     except PasswordValueError as e:
         exception = e
-    assert exception != None
+    assert exception is not None
     assert exception.__str__() == "Unsupported encryption scheme 'crypt'"
 
 # vim: set filetype=python sts=4 sw=4 et si :
