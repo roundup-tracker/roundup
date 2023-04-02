@@ -395,9 +395,9 @@ class Password(JournalPassword):
     1
     """
 
-    deprecated_schemes = ["SHA", "MD5", "crypt", "plaintext"]
+    deprecated_schemes = ["SSHA", "SHA", "MD5", "crypt", "plaintext"]
     experimental_schemes = ["PBKDF2S5"]
-    known_schemes = ["PBKDF2", "SSHA"] + experimental_schemes + \
+    known_schemes = ["PBKDF2"] + experimental_schemes + \
                     deprecated_schemes
 
     def __init__(self, plaintext=None, scheme=None, encrypted=None,

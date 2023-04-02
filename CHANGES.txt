@@ -118,6 +118,9 @@ Features:
   like "[issue23] subject". (John Rouillard)
 - [doc]: add section on implementing CSP for Roundup to admin
   doc. (John Rouillard)
+- issue2551265 - deprecate SSHA password hash method. Users using SSHA
+  passwords will have their passwords transprently upgraded to PBKDF2
+  derived hash on next login. (John Rouillard)
 
 2022-07-13 2.2.0
 
