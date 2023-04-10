@@ -5,15 +5,15 @@ body
   background-color: white;
   color: #333;
   margin:0;
-  padding: 0 3em 0 13em;
+  padding: 0 3em 0 14em;
 }
-body > .header { margin: 0 0 0 -13em;}
+body > .header { margin: 0 0 0 -14em;}
 body > .header div.label { font-size: 2em; font-weight: bold; margin: 0.67em 0 0.67em 1em;}
-body > .footer { margin: 1em 0 0 -13em; clear:both;}
+body > .footer { margin: 1em 0 1em -14em; clear:both;}
 body > .navigation 
 {
-  margin-left: -13em;
-  width: 13em;
+  margin-left: -14em;
+  width: 14em;
   float: left;
 }
 body > .content 
@@ -188,3 +188,32 @@ div.highlight pre { background: lightyellow;}
 table.footnote {
   font-size: calc(1em - 1pt);
 }
+
+div.admonition {
+  padding-inline: 1em;
+  padding-block: 0.25em;
+  border-inline-start: grey solid 4px;
+  background-color: #dfdfdf;
+}
+
+div.admonition.caution {
+  border-inline-start: red solid 4px;
+}
+
+div.admonition.warning {
+  border-inline-start: yellow solid 4px;
+}
+
+p.admonition-title {
+  border-block-end: grey solid 2px;
+  font-weight: bold;
+  font-size: larger;
+  margin-block: 0;
+}
+
+div.admonition.caution p.admonition-title {
+  border-block-end: red solid 2px;
+}
+
+dt { font-weight: bold; margin-block-start: 1em;}
+dd p.first { margin-block-start: 0; }

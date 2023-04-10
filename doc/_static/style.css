@@ -118,3 +118,32 @@ a.headerlink {
 table.footnote {
   font-size: calc(1em - 1pt);
 }
+
+div.admonition {
+  padding-inline: 1em;
+  padding-block: 0.25em;
+  border-inline-start: grey solid 4px;
+  background-color: #dfdfdf;
+}
+
+div.admonition.caution {
+  border-inline-start: red solid 4px;
+}
+
+div.admonition.warning {
+  border-inline-start: yellow solid 4px;
+}
+
+p.admonition-title {
+  border-block-end: grey solid 2px;
+  font-weight: bold;
+  font-size: larger;
+  margin-block: 0;
+}
+
+div.admonition.caution p.admonition-title {
+  border-block-end: red solid 2px;
+}
+
+dt { font-weight: bold; margin-block-start: 1em;}
+dd p.first { margin-block-start: 0; }
