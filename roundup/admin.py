@@ -1817,8 +1817,8 @@ Desc: %(description)s
             print(_(
                 "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, "
                 "rounds: %(rounds)s") %
-                  { "time": toc-tic, "scheme": props['scheme'],
-                    "rounds": rounds})
+                  {"time": toc-tic, "scheme": props['scheme'],
+                   "rounds": rounds})
 
     def run_command(self, args):
         """Run a single command
