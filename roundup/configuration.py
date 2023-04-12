@@ -1756,7 +1756,7 @@ class Config:
 
     # List of option names that need additional validation after
     # all options are loaded.
-    option_validators = []
+    option_validators = None
 
     def __init__(self, config_path=None, layout=None, settings=None):
         """Initialize confing instance
@@ -1782,6 +1782,7 @@ class Config:
         self.section_descriptions = {}
         self.section_options = {}
         self.options = {}
+        self.option_validators = []
         # add options from the layout structure
         if layout:
             for section in layout:

@@ -81,6 +81,9 @@ Fixed:
 - upgrade from jquery-3.5.1 to jquery-3.6.3. Update user.help.html
   to new version.  (John Rouillard)
 - Dockerfile scanned with hadolint. Fixed multiple issues. (John Rouillard)
+- fix crash due to invalid initialization/reset of configuration.py
+  option_validators. Crashed roundup-admin on second command if an
+  option_validator was added by a detector or extension. (John Rouillard)
 
 Features:
 
