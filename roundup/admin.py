@@ -98,6 +98,7 @@ class AdminTool:
         for k in AdminTool.__dict__:
             if k[:5] == 'help_':
                 self.help[k[5:]] = getattr(self, k)
+        self.tracker = None
         self.tracker_home = ''
         self.db = None
         self.db_uncommitted = False
@@ -1974,7 +1975,13 @@ Desc: %(description)s
 
         # get the tracker
         try:
-            tracker = roundup.instance.open(self.tracker_home)
+            if self.tracker and not self.settings['_reopen_tracker']:
+                tracker = self.tracker
+            else:
+                if self.settings["verbose"]:
+                    print("Reopening tracker")
+                tracker = roundup.instance.open(self.tracker_home)
+                self.tracker = tracker
         except ValueError as message:  # noqa: F841
             self.tracker_home = ''
             print(_("Error: Couldn't open tracker: %(message)s") % locals())
