@@ -205,6 +205,21 @@ before a certain date.
 Run performance test. For example test the effect
 of changing password hashing parameters.
 .TP
+\fBpragma\fP \fIsetting=value\fP|\fBlist\fP
+Set internal settings to a value. E.G.
+
+     pragma verbose=True
+     pragma verbose=yes
+     pragma verbose=on
+     pragma verbose=1
+
+will turn on verbose mode for roundup-admin.
+
+     pragma list
+
+will show all settings and their current values. If verbose
+is enabled hidden settings and descriptions will be shown.
+.TP
 \fBreindex\fP \fI[classname|designator]*\fP
 This will re-generate the search indexes for a tracker.
 .TP

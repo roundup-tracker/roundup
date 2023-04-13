@@ -102,6 +102,31 @@ class AdminTool:
         self.db = None
         self.db_uncommitted = False
         self.force = None
+        self.settings = {
+            'display_protected': False,
+            'indexer_backend': "as set in config.ini",
+            '_reopen_tracker': False,
+            'show_retired': False,
+            'verbose': False,
+            '_inttest': 3,
+            '_floattest': 3.5,
+        }
+        self.settings_help = {
+            'display_protected':
+            _("Have 'display designator' show protected fields: creator. NYI"),
+
+            'indexer_backend': 
+            _("Set indexer to use when running 'reindex' NYI"),
+
+            '_reopen_tracker':
+            _("Force reopening of tracker when running each command."),
+
+            'show_retired': _("Show retired items in table, list etc. NYI"),
+            'verbose': _("Enable verbose output: tracing, descriptions..."),
+
+            '_inttest': "Integer valued setting. For testing only.",
+            '_floattest': "Float valued setting. For testing only.",
+        }
 
     def get_class(self, classname):
         """Get the class - raise an exception if it doesn't exist.
@@ -440,8 +465,9 @@ Command help:
                     if value:
                         props[key] = value
                 else:
-                    value = self.my_input(_('%(propname)s (%(proptype)s): ') % {
-                        'propname': key.capitalize(), 'proptype': name})
+                    value = self.my_input(_(
+                        '%(propname)s (%(proptype)s): ') % {
+                            'propname': key.capitalize(), 'proptype': name})
                     if value:
                         props[key] = value
         else:
@@ -797,8 +823,7 @@ Command help:
                             "old_number":
                             config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
                             "new_number": default_ppdr
-                        }
-                )
+                        })
                 config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = default_ppdr
 
             if config.PASSWORD_PBKDF2_DEFAULT_ROUNDS < default_ppdr:
@@ -1434,6 +1459,75 @@ Erase it? Y/N: """) % locals())  # noqa: E122
                 "rounds: %(rounds)s") %
                   {"time": toc-tic, "scheme": props['scheme'],
                    "rounds": rounds})
+
+    def do_pragma(self, args):
+        ''"""Usage: pragma setting=value | 'list'
+        Set internal admin settings to a value. E.G.
+
+            pragma verbose=True
+            pragma verbose=yes
+            pragma verbose=on
+            pragma verbose=1
+
+         will turn on verbose mode for roundup-admin.
+
+            pragma list
+
+         will show all settings and their current values. If verbose
+         is enabled hidden settings and descriptions will be shown.
+        """
+
+        if len(args) < 1:
+            raise UsageError(_('Not enough arguments supplied'))
+
+        try:
+            (setting, value) = args[0].split("=", 1)
+        except ValueError:
+            if args[0] != "list":
+                raise UsageError(_(
+                    'Argument must be setting=value, was given: %s.') %
+                                 args[0])
+            else:
+                print(_("Current settings and values "
+                        "(NYI - not yet implemented):"))
+                is_verbose = self.settings['verbose']
+                for key in sorted(list(self.settings.keys())):
+                    if key.startswith('_') and not is_verbose:
+                        continue
+                    print("   %s=%s" % (key, self.settings[key]))
+                    if is_verbose:
+                        print("      %s" % self.settings_help[key])
+
+                return
+
+        if setting not in self.settings:
+            raise UsageError(_('Unknown setting %s.') % setting)
+        if type(self.settings[setting]) is bool:
+            value = value.lower()
+            if value in ("yes", "true", "on", "1"):
+                value = True
+            elif value in ("no", "false", "off", "0"):
+                value = False
+            else:
+                raise UsageError(_(
+                    'Incorrect value for boolean setting %(setting)s: '
+                    '%(value)s.') % {"setting": setting, "value": value})
+        elif type(self.settings[setting]) is int:
+            try:
+                _val = int(value)
+            except ValueError:
+                raise UsageError(_(
+                    'Incorrect value for integer setting %(setting)s: '
+                    '%(value)s.') % {"setting": setting, "value": value})
+            value = _val
+        elif type(self.settings[setting]) is str:
+            pass
+        else:
+            raise UsageError(_('Internal error: pragma can not handle '
+                               'values of type: %s') %
+                             type(self.settings[setting]).__name__)
+
+        self.settings[setting] = value
 
     designator_re = re.compile('([A-Za-z]+)([0-9]+)')
 

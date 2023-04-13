@@ -803,6 +803,173 @@ class AdminTest(object):
         print(err.getvalue().strip())
         self.assertEqual(out, "issue1:issue2")
 
+    def testPragma(self):
+        """Uses interactive mode since pragmas only apply when using multiple
+           commands.
+        """
+        if self.backend not in ['anydbm']:
+            self.skipTest("For speed only run test with anydbm.")
+
+        orig_input = AdminTool.my_input
+
+        for i in ["oN", "1", "yeS", "True"]:
+            inputs = iter(["pragma verbose=%s" % i, "pragma list", "quit"])
+            AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+            self.install_init()
+            self.admin=AdminTool()
+            sys.argv=['main', '-i', self.dirname]
+
+            with captured_output() as (out, err):
+                ret = self.admin.main()
+
+            out = out.getvalue().strip().split('\n')
+        
+            print(ret)
+            self.assertTrue(ret == 0)
+            expected = '   verbose=True'
+            self.assertIn(expected, out)
+            self.assertIn('descriptions...', out[-1])
+
+        # -----
+        for i in ["oFf", "0", "NO", "FalSe"]:
+            inputs = iter(["pragma verbose=true", "pragma verbose=%s" % i,
+                           "pragma list", "quit"])
+            AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+            self.install_init()
+            self.admin=AdminTool()
+            sys.argv=['main', '-i', self.dirname]
+
+            with captured_output() as (out, err):
+                ret = self.admin.main()
+
+            out = out.getvalue().strip().split('\n')
+        
+            print(ret)
+            self.assertTrue(ret == 0)
+            expected = '   verbose=False'
+            self.assertIn(expected, out)
+
+        # -----  test syntax errors
+        inputs = iter(["pragma", "pragma arg",
+                       "pragma foo=3","quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'Error: Not enough arguments supplied'
+        self.assertIn(expected, out)
+        expected = 'Error: Argument must be setting=value, was given: arg.'
+        self.assertIn(expected, out)
+        expected = 'Error: Unknown setting foo.'
+        self.assertIn(expected, out)
+
+        # -----
+        inputs = iter(["pragma verbose=foo", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'Error: Incorrect value for boolean setting verbose: foo.'
+        self.assertIn(expected, out)
+
+        # -----
+        inputs = iter(["pragma verbose=on", "pragma _inttest=5",
+                       "pragma list", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = '   _inttest=5'
+        self.assertIn(expected, out)
+        self.assertIn('descriptions...', out[-1])
+
+
+        # -----
+        inputs = iter(["pragma verbose=on", "pragma _inttest=fred",
+                       "pragma list", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'Error: Incorrect value for integer setting _inttest: fred.'
+        self.assertIn(expected, out)
+        self.assertIn('descriptions...', out[-1])
+
+        # -----
+        inputs = iter(["pragma indexer_backend=whoosh", "pragma list",
+                       "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        expected = '   indexer_backend=whoosh'
+        self.assertIn(expected, out)
+
+        # -----
+        inputs = iter(["pragma _floattest=4.5", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        expected = 'Error: Internal error: pragma can not handle values of type: float'
+        self.assertIn(expected, out)
+
+        # -----
+        AdminTool.my_input = orig_input
 
     def disabletestHelpInitopts(self):
 
