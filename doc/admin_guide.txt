@@ -607,7 +607,7 @@ Also there are various `dictionaries`_ that allow you to:
 Use of these is beyond this documentation. Please visit the
 appropriate PostgreSQL documents. The following my also be helpful:
 
-* http://rachbelaid.com/postgres-full-text-search-is-good-enough/
+* https://rachbelaid.com/postgres-full-text-search-is-good-enough/
 
 Ranking information is not used in this implementation. Also stop
 words set in config.ini are ignored. These are areas for improvement.
