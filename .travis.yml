@@ -128,7 +128,7 @@ install:
   - pip install redis
   - pip install pytz whoosh pyjwt requests
   - pip install jinja2
-  - pip install pytest-cov codecov
+  - pip install pytest-cov
   - pip install beautifulsoup4
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune==0.8.4; fi
@@ -177,4 +177,13 @@ script:
   - ./setup.py build_doc
 
 after_success:
-  - codecov
+  # from https://docs.codecov.com/docs/codecov-uploader#integrity-checking-the-uploader
+  - curl https://keybase.io/codecovsecurity/pgp_keys.asc |
+    gpg --no-default-keyring --keyring trustedkeys.gpg --import # One-time step
+  - curl -Os https://uploader.codecov.io/latest/linux/codecov
+  - curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
+  - curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM.sig
+  - gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+  - shasum -a 256 -c codecov.SHA256SUM
+  - chmod +x codecov
+  - ./codecov -t ${CODECOV_TOKEN}
