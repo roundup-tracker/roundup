@@ -185,7 +185,7 @@ jobs:
           case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Install pytest and other packages needed for running tests
-        run: pip install codecov flake8 mock pytest pytest-cov requests
+        run: pip install flake8 mock pytest pytest-cov requests
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
