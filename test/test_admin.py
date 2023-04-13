@@ -803,6 +803,58 @@ class AdminTest(object):
         print(err.getvalue().strip())
         self.assertEqual(out, "issue1:issue2")
 
+    def testPragma_reopen_tracker(self):
+        """test that _reopen_tracker works.
+        """
+        if self.backend not in ['anydbm']:
+            self.skipTest("For speed only run test with anydbm.")
+
+        orig_input = AdminTool.my_input
+
+        # must set verbose to see _reopen_tracker hidden setting.
+        # and to get "Reopening tracker" verbose log output
+        inputs = iter(["pragma verbose=true", "pragma list", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = '   _reopen_tracker=False'
+        self.assertIn(expected, out)
+        self.assertIn('descriptions...', out[-1])
+        self.assertNotIn('Reopening tracker', out)
+
+        # -----
+        inputs = iter(["pragma verbose=true", "pragma _reopen_tracker=True",
+                       "pragma list", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        self.assertEqual('Reopening tracker', out[2])
+        expected = '   _reopen_tracker=True'
+        self.assertIn(expected, out)
+
+        # -----
+        AdminTool.my_input = orig_input
+
     def testPragma(self):
         """Uses interactive mode since pragmas only apply when using multiple
            commands.
