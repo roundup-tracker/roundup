@@ -820,9 +820,6 @@ class Client:
                 # now render the page
                 # we don't want clients caching our dynamic pages
                 self.additional_headers['Cache-Control'] = 'no-cache'
-                # Pragma: no-cache makes Mozilla and its ilk
-                # double-load all pages!!
-                #            self.additional_headers['Pragma'] = 'no-cache'
 
                 # pages with messages added expire right now
                 # simple views may be cached for a small amount of time
