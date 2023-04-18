@@ -127,7 +127,7 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
  - CORS support for use by third party web pages.
  - see the `rest guide`_ for details.
 
-.. _sqlite: http://www.hwaci.com/sw/sqlite/
+.. _sqlite: https://www.sqlite.org/index.html
 .. _mysql: https://pypi.org/project/MySQL-python/
 .. _postgresql: https://www.psycopg.org/
 .. _`xmlrpc guide`: xmlrpc.html
