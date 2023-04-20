@@ -234,7 +234,7 @@ jobs:
       - name: Upload coverage to Coveralls
         # python 2.7 and 3.6 versions of coverage can't produce lcov files.
         if: matrix.python-version != '2.7' && matrix.python-version != '3.6'
-        uses: coverallsapp/github-action@045a25193560dc194e405657f552faeb6b9433aa # master
+        uses: coverallsapp/github-action@f350da2c033043742f89e8c0b7b5145a1616da6d # master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage.lcov
@@ -270,7 +270,7 @@ jobs:
     
     steps:
       - name: Coveralls Finished
-        uses: coverallsapp/github-action@045a25193560dc194e405657f552faeb6b9433aa # master
+        uses: coverallsapp/github-action@f350da2c033043742f89e8c0b7b5145a1616da6d # master
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true
