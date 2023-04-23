@@ -788,6 +788,12 @@ By only requiring a link on the issue (which is stored as a single
 number) we reduce the chance that someone mis-types a priority or
 status - or simply makes a new one up.
 
+Class names are used to access items of that class in the `REST api`_
+interface. The classic tracker was created before the REST interface
+was added. It uses the single form (i.e. issue and user not issues and
+users) for its classes. Most REST documentation suggests using plural
+forms. However, to make your API consistent, use singular forms for
+classes that you add.
 
 Class and Items
 ~~~~~~~~~~~~~~~
