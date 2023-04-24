@@ -256,7 +256,7 @@ jQuery updated with updates to user.help.html (recommended)
 -----------------------------------------------------------
 
 The devel and responsive templates shipped with an old version of
-jQuery. According to automated tests, it my have a security issue. It
+jQuery. According to automated tests, it may have a security issue. It
 has been updated to the current version: 3.6.3. If your tracker is
 based on one of these templates (see the ``TEMPLATE-INFO.txt`` file in
 your tracker), remove the old ``html/jquery.js`` file from your
