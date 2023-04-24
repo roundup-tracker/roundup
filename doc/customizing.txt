@@ -851,24 +851,24 @@ behaviour:
 
 * All properties support the following attributes:
 
-   - ``required``: see `design documentation`_. Adds the property to
-     the list returned by calling get_required_props for the class.
-   - ``default_value``: see `design documentation`_ Sets the default
-     value if the property is not set.
-   - ``quiet``: see `design documentation`_. Suppresses user visible
-     to changes to this property. The property change is not reported:
+  - ``required``: see `design documentation`_. Adds the property to
+    the list returned by calling get_required_props for the class.
+  - ``default_value``: see `design documentation`_ Sets the default
+    value if the property is not set.
+  - ``quiet``: see `design documentation`_. Suppresses user visible
+    to changes to this property. The property change is not reported:
 
-      - in the change feedback/confirmation message in the web
-        interface
-      - the property change section of the nosy email
-      - the web history at the bottom of an item's page
+    - in the change feedback/confirmation message in the web
+      interface
+    - the property change section of the nosy email
+    - the web history at the bottom of an item's page
 
-    This can be used to store state of the user interface (e.g. the
-    names of elements that are collapsed or hidden from the
-    user). Making properties that are updated as an indirect result of
-    a user's change (e.g. updating a blockers property, counting
-    number of times an issue was reopened or reassigned etc.) should
-    not be displayed to the user as they can be confusing.
+  This can be used to store state of the user interface (e.g. the
+  names of elements that are collapsed or hidden from the
+  user). Making properties that are updated as an indirect result of
+  a user's change (e.g. updating a blockers property, counting
+  number of times an issue was reopened or reassigned etc.) should
+  not be displayed to the user as they can be confusing.
 
 .. index:: triple: schema; property attributes; indexme
 
@@ -1091,21 +1091,20 @@ interface. Note that this will NOT result in an entry in the journal,
 so again it allows a silent change. To do this you need to make two
 rest requests. An example using curl is::
 
-     $ curl -u demo:demo -s
-            -H "X-requested-with: rest" \
-            -H "Referer:  https://tracker.example.com/demo/" \
-            -X GET \
-            https://tracker.example.com/demo/rest/data/file/30/content
-     {
-        "data": {
-            "id": "30",
-            "type": "<class 'str'>",
-            "link": "https://tracker.example.com/demo/rest/data/file/30/conten
-  t",
-            "data": "hello3",
-            "@etag": "\"3f2f8063dbce5b6bd43567e6f4f3c671\""
-        }
-     }
+   $ curl -u demo:demo -s
+          -H "X-requested-with: rest" \
+          -H "Referer:  https://tracker.example.com/demo/" \
+          -X GET \
+          https://tracker.example.com/demo/rest/data/file/30/content
+   {
+      "data": {
+          "id": "30",
+          "type": "<class 'str'>",
+          "link": "https://tracker.example.com/demo/rest/data/file/30/content",
+          "data": "hello3",
+          "@etag": "\"3f2f8063dbce5b6bd43567e6f4f3c671\""
+      }
+   }
 
 using the etag, overwrite the content with::
 
@@ -1254,11 +1253,12 @@ Examples of adding to your schema
 
 Some examples are in the :ref:`CustomExamples` section below.
 
-Also the `Roundup wiki`_ has additional examples of how schemas can be
-customised to add new functionality.
+Also you can start with `Roundup wiki CategorySchema`_ to see a list
+of additional examples of how schemas can be customised to add new
+functionality.
 
-.. _Roundup wiki:
-   https://wiki.roundup-tracker.org/
+.. _Roundup wiki CategorySchema:
+   https://wiki.roundup-tracker.org/CategorySchema
 
 .. index:: !detectors
 .. _detectors:
@@ -1389,7 +1389,7 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
   The reason for this is that Microsoft Internet Explorer will not open
   things with a .eml attachment, as they deem it 'unsafe'. Worse yet,
   they'll just give you an incomprehensible error message. For more 
-  information, see the detector code - it has a length explanation.
+  information, see the detector code - it has a lengthy explanation.
 
 
 .. index:: auditors; rules for use
