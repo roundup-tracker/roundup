@@ -65,11 +65,9 @@ jobs:
 
         include:
             # example: if 3.12 fails the jobs still succeeds
-            - python-version: 3.12-dev
+            - python-version: 3.12
               os: ubuntu-22.04
               experimental: [true]
-            #- python-version: 3.11-dev
-            #  os: ubuntu-20.04
             # 3.6 not available on new 22.04 runners, so run on 20.04 ubuntu
             - python-version: 3.6
               os: ubuntu-20.04
@@ -99,6 +97,7 @@ jobs:
         uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b # v4.6.0
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
           cache: 'pip'
 
       # Display the Python version being used
