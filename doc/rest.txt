@@ -1,8 +1,8 @@
 .. meta::
     :description:
         Documentation on the RESTful interface to the Roundup Issue
-	Tracker.
-
+	Tracker. Enable REST access, endpoints, methods,
+        authentication, discovery.
 
 .. index:: pair: api; Representational state transfer
    pair: api; rest
