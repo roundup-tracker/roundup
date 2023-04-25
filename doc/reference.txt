@@ -1,0 +1,39 @@
+.. meta::
+    :description:
+        Reference for the internals of Roundup. Includes background
+        information for cookbook and how-to examples.
+        Reference for the design and internals needed to understand
+        and extend the examples to meet new needs.
+
+:tocdepth: 2
+
+=================
+Roundup Reference
+=================
+
+.. This document borrows from the ZopeBook section on ZPT. The original is at:
+   http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
+
+.. contents::
+   :depth: 2
+   :local:
+
+Welcome
+=======
+
+This document used to be part of the `customization document`_.  The
+customization document was getting large and unwieldy.  It was a
+combination of examples and internal information that made finding
+information difficult. We often had questions on the mailing list that
+were well answered in the customization document, but finding the info
+was difficult.
+
+The documentation is slowly being reorganized using the `Diataxis
+framework`_. Help with the reorganization is welcome.
+
+
+This is the document you should look at for background on a tutorial
+or how-to guide in the customization document.
+
+.. _customization document: customizing.html
+.. _diataxis framework: https://diataxis.fr/
