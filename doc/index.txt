@@ -20,9 +20,11 @@ Contents
    security
    FAQ
    user_guide
+   reference
    customizing
    admin_guide
-   security
+   security-history
+   upgrading-history
    debugging
    xmlrpc
    rest

@@ -16,7 +16,10 @@ Docs
    docs/FAQ
    docs/user_guide
    docs/customizing
+   docs/reference
    docs/admin_guide
+   docs/security-history
+   docs/upgrading-history
    docs/debugging
    docs/xmlrpc
    docs/rest
