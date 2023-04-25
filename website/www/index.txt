@@ -78,40 +78,40 @@ and feature release for the 2.1.0 release
 
 Some improvements from the 2.1.0 release are:
 
-    * Roundup supports dynamic and static compression of http
-      responses. This improves performance when a front end web
-      server isn't serving compressed assets.
+* Roundup supports dynamic and static compression of http
+  responses. This improves performance when a front end web
+  server isn't serving compressed assets.
 
-    * REST interface: supports CORS allowing Roundup to be
-      used by third party web sites. Origins allowed to use
-      REST can be specified. OpenAPI (Swagger) docs can be
-      added. Error handling/reporting improved.
+* REST interface: supports CORS allowing Roundup to be
+  used by third party web sites. Origins allowed to use
+  REST can be specified. OpenAPI (Swagger) docs can be
+  added. Error handling/reporting improved.
 
-    * Dockerfile support. Docker-compose for a mysql based
-      tracker.
+* Dockerfile support. Docker-compose for a mysql based
+  tracker.
 
-    * New full text search methods. SQLite FTS and PostgreSQL
-      full text search are supported. These allow search
-      expressions in addition to simple word based searches.
+* New full text search methods. SQLite FTS and PostgreSQL
+  full text search are supported. These allow search
+  expressions in addition to simple word based searches.
 
-    * Secret values in config.ini can be stored in external
-      files. This allows config.ini to be stored in a VCS
-      without exposing secrets.
+* Secret values in config.ini can be stored in external
+  files. This allows config.ini to be stored in a VCS
+  without exposing secrets.
 
-    * Translation object added to internal database handle. This
-      allows auditors and extensions to provide efficient
-      translations.
+* Translation object added to internal database handle. This
+  allows auditors and extensions to provide efficient
+  translations.
 
-    * MySQL database creation uses COLLATE utf8_general_ci
+* MySQL database creation uses COLLATE utf8_general_ci
 
-    * Wsgi startup improvements (must be enabled by setting
-      feature flag).
+* Wsgi startup improvements (must be enabled by setting
+  feature flag).
 
-    * Fix crash when importing legacy Roundup tracker with long
-      integers.
+* Fix crash when importing legacy Roundup tracker with long
+  integers.
 
-    * Fix issues with Roundup unable to find supporting files
-      when installed via pip.
+* Fix issues with Roundup unable to find supporting files
+  when installed via pip.
 
 More info on the 57 changes can be found in the `change note`_.
 
@@ -119,16 +119,16 @@ For more information on Roundup see the :doc:`design overview
 <docs/design>`, and all the other :doc:`documentation <docs>`. Roundup
 has been deployed for:
 
-    * bug tracking and TODO list management (the classic
-      installation)
-    * customer help desk support (with a wizard for the phone
-      answerers, linking to networking, system and development
-      issue trackers)
-    * issue management for IETF working groups
-    * sales lead tracking
-    * conference paper submission and double-blind referee
-      management
-    * weblogging (well, almost :) 
+* bug tracking and TODO list management (the classic
+  installation)
+* customer help desk support (with a wizard for the phone
+  answerers, linking to networking, system and development
+  issue trackers)
+* issue management for IETF working groups
+* sales lead tracking
+* conference paper submission and double-blind referee
+  management
+* weblogging (well, almost :) 
 
 ...and so on. It's been designed with :doc:`flexibility
 <docs/customizing>` in mind - it's not just another bug
@@ -141,13 +141,13 @@ To create a source directory and run the demo follow these simple
 steps (change the ``-2.2.0`` version identifier to match your downloaded
 file).
 
-  1. ``python -m pip download roundup``
-  2. ``tar -xzvf roundup-2.2.0.tar.gz``
+1. ``python -m pip download roundup``
+2. ``tar -xzvf roundup-2.2.0.tar.gz``
 
-     * if you don't have a tar command, ``python -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz`` can be used.
+   * if you don't have a tar command, ``python -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz`` can be used.
 
-  3. ``cd roundup-2.2.0``
-  4. ``python demo.py``
+3. ``cd roundup-2.2.0``
+4. ``python demo.py``
  
 Roundup was originally released as version 0.1.1 in late August, 2001.
 The first `change note`_ written said:
