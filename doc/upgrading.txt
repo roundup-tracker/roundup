@@ -1098,11 +1098,11 @@ have a ``detectors/config.ini`` file. (Note this is
 ``config.ini`` file at the root of the tracker home.)
 
 This enhancement is disabled by default. Enable it by changing the
-value in ``detectors/config.ini`` from:
+value in ``detectors/config.ini`` from::
 
    chatting_requires_two_users = False
 
-to
+to::
 
    chatting_requires_two_users = True
 
@@ -1142,15 +1142,15 @@ Jinja template changes
 
 Auto escaping has been enabled in the jinja template engine, this
 means it is no longer necessary to manually escape dynamic strings
-with "\|e", but strings that should not be escaped need to be marked
-with "\|safe" (e.g. "{{ context.history()|u|safe }}"). Also, the i18n
+with ``|e``, but strings that should not be escaped need to be marked
+with ``|safe`` (e.g. ``{{ context.history()|u|safe }}``). Also, the i18n
 extension has been enabled and the template has been updated to use
-the extension for translatable text instead of explicit "i18n.gettext"
-calls:
+the extension for translatable text instead of explicit ``i18n.gettext``
+calls::
 
    {% trans %}List of issues{% endtrans %}
 
-instead of:
+instead of::
 
    {{ i18n.gettext('List of issues')|u }}
 
@@ -1185,14 +1185,14 @@ Update tracker config file
 After installing the new version of roundup, you should
 update the ``config.ini`` file for your tracker. To do this:
 
- 1. backup your existing ``config.ini`` file
- 2. using the newly installed code, run::
+1. backup your existing ``config.ini`` file
+2. using the newly installed code, run::
 
-       roundup-admin -i /path/to/tracker updateconfig config.ini.new
+      roundup-admin -i /path/to/tracker updateconfig config.ini.new
 
-    to create the file config.ini.new. Replace
-    ``/path/to/tracker`` with the path to your tracker.
- 3. replace your tracker's config.ini with config.ini.new
+   to create the file config.ini.new. Replace
+   ``/path/to/tracker`` with the path to your tracker.
+3. replace your tracker's config.ini with config.ini.new
 
 Using updateconfig keeps all the settings from your
 tracker's config.ini file and adds settings for all the new
@@ -1278,7 +1278,7 @@ is not true the post is rejected and the user is notified.
 The standard context/submit templating item creates CSRF tokens by
 default. If you have forms using the POST method that are not using
 the standard submit routine, you should add the following field to all
-forms:
+forms::
 
    <input name="@csrf" type="hidden"
       tal:attributes="value python:utils.anti_csrf_nonce()">
@@ -1288,7 +1288,7 @@ utils.anti_csrf_nonce() and is put in a database to be
 retreived if the token is used. Token lifetimes are 2 weeks
 by default but can be configured in config.ini. Roundup will
 automatically prune old tokens. Calling anti_csrf_nonce with
-an integer lifetime, for example:
+an integer lifetime, for example::
 
    <input name="@csrf" type="hidden"
       tal:attributes="value python:utils.anti_csrf_nonce(lifetime=10)">
@@ -1502,11 +1502,17 @@ tracker's base url. If the base_url uses http, you can set the url to
 https.
 
 Replace the existing code in the tracker's html/page.html page that
-looks similar to (look for name="__came_from")::
+looks similar to (look for name="__came_from"):
 
-  <input type="hidden" name="__came_from" tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
+.. code::
+   :class: big-code
 
-with the following::
+   <input type="hidden" name="__came_from" tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
+
+with the following:
+
+.. code:: html
+  :class: big-code
 
   <input type="hidden" name="__came_from"
     tal:condition="exists:request/env/QUERY_STRING"
@@ -1552,7 +1558,10 @@ a new checkbox (checked by default) that keeps you on the same page so
 you can add a new keywords one after the other.
 
 To add this to your own tracker, add the following code (prefixed with
-a +) after the entry box for the new keyword in html/keyword.item.html::
+a +) after the entry box for the new keyword in html/keyword.item.html:
+
+.. code::
+  :class: big-code
 
       <tr>
        <th i18n:translate="">Keyword</th>
@@ -1643,7 +1652,10 @@ The default templates have been updated to use this in the "Your
 Query" section of the trackers html/page.html file. You will want to
 change your template. Lines starting with - are the original line and
 you want to change it to match the line starting with the + (remove
-the + from the line)::
+the + from the line):
+
+.. code::
+  :class: big-code
 
       <tal:block tal:repeat="qs request/user/queries">
   -    <a href="#" tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name}"
