@@ -1,12 +1,86 @@
 /* layout*/
+
+/* Set up fluid type scale. Major third for smaller screens
+   and perfect fourth for larger screens.
+   Allow override using --font-level-X.
+
+   https://set.studio/some-simple-ways-to-make-content-look-good/
+*/
+
+:root {
+  --_font-level-0: var(--font-level-0,
+		       clamp(1rem,
+			     0.96rem + 0.22vw,
+			     1.13rem)
+		      );
+  --_font-level-1: var(--font-level-1,
+		       clamp(
+			   1.25 * var(--_font-level-0),
+			   1.16rem + 0.43vw,
+			   1.5rem)
+		      );
+  --_font-level-2: var(--font-level-2,
+		       clamp(
+			   1.25 * var(--_font-level-1),
+			   1.41rem + 0.76vw,
+			   2rem)
+		      );
+  --_font-level-3: var(--font-level-3,
+		       clamp(
+			   1.25 * var(--_font-level-2),
+			   1.71rem + 1.24vw,
+			   2.66rem)
+		      );
+  --_font-level-4: var(--font-level-4,
+		       clamp(
+			   1.25 * var(--_font-level-3),
+			   2.05rem + 1.93vw,
+			   3.55rem)
+		      );
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.25;
+    /* Larger spacing before header and smaller after to make
+       header part of following section */
+    margin-block-end: 0.3em;
+}
+
+h1 {
+    font-size: var(--_font-level-4);
+}
+
+/* remove whitespace at top of main column */ 
+main h1 { margin-block-start: 0; }
+
+h2 {
+  font-size: var(--_font-level-3);
+}
+
+h3 {
+  font-size: var(--_font-level-2);
+}
+
+h4 {
+  font-size: var(--_font-level-1);
+}
+
+/* snug header up to first paragraph of it's section. */
+:is(h1,h2,h3,h4,h5,h6) + p {
+    margin-block-start: 0;
+}
+
 body 
 {
+  background-color: #f5f5f5;
+  color: #222;
   font-family: sans-serif, Arial, Helvetica;
-  background-color: white;
-  color: #333;
+  font-size: var(--_font-level-0);
   margin:0;
   padding: 0 3em 0 14em;
 }
+
+/* -14em is size of table of contents/nav */
 body > .header { margin: 0 0 0 -14em;}
 body > .header div.label { font-size: 2em; font-weight: bold; margin: 0.67em 0 0.67em 1em;}
 body > .footer { margin: 1em 0 1em -14em; clear:both;}
@@ -18,26 +92,27 @@ body > .navigation
 }
 body > .content 
 {
-  width: 100%;
   margin: 0;
+  width: 100%;
 }
 body > .header > #searchbox { position: absolute; right: 1em; top: 1em;}
-body > .content > #subnav    { position: absolute; right: 1.5em; top: 5em;}
+body > .content > #subnav    { position: absolute; right: 1.5em; top: 6em;}
+
+/* limit width of main column to 65 characters. On wider screens can
+   be 100+ chars: too wide */
+main {
+  max-width: 65ch;
+  line-height: calc(1.5 * 1em);
+}
 
 /* style */
 
 :link { color: #bb0000; text-decoration: none;}
+:link:hover {text-decoration: underline;}
 :visited { color: #770000; text-decoration: none;}
 a.toc-backref { color: #000000; }
 
 .header h1 { margin-left: 1em; }
-
-body
-{
-  font-family: sans-serif, Arial, Helvetica;
-  background-color: #f5f5f5;
-  color: #333;
-}
 
 .menu { padding: 0; margin-right: 1em;}
 .menu ul 
@@ -73,7 +148,7 @@ body
 }
 .menu ul ul 
 {
-  margin-left: 2em;
+  margin-left: 1em;
   font-size: smaller;
 }
 
@@ -91,6 +166,35 @@ body
   border-top: none;
 }
 
+.menu ul li.toctree-l2.current {
+  background-color: #dddddd;
+  pading-block: 0.25em;
+}
+
+/* related */
+div.related 
+{
+  width: 100%;
+  font-size: 90%;
+}
+div.related-top { border-bottom: solid thin #dadada;}
+div.related-bottom { border-top: solid thin #dadada;}
+
+div.related ul 
+{
+  margin: 0;
+  padding: 0 0 0 10px;
+  list-style: none;
+}
+
+div.related li { display: inline;}
+
+div.related li.right 
+{
+  float: right;
+  margin-right: 5px;
+}
+
 .footer
 {
   font-size: small;
@@ -106,7 +210,7 @@ body
 { 
   padding: 1em;
   border: solid thin #dadada;
-  background-color: #ffffff;
+  background-color: #f7f7f7;
 }
 
 /* This is a little hack to inject a 'news' block into the title
@@ -129,64 +233,34 @@ table
   background-color: #fafafa;
 }
 
-input, textarea { border-width: 1px; }
-
-
-/* Contact page */
-div#contact table td {
-  white-space: nowrap;
-  padding: 1pt 1em;
+table:has(caption) {
+    margin-block: 1em;
 }
 
-@media only screen and (max-width:960px) {
-/* setup for layout/page frame */
-body { padding-inline-start: unset; /* remove space for float menu */}
-body > .header { margin-inline-start: unset;
-	         margin-block-start: 3em; /* move down from search */}
-body > .navigation { margin-inline-start: unset;
-		     float: none;}
-body > .navigation li > ul > li { padding-block: 1em;
-                /* move links away from each other */ }
-#roundup-issue-tracker .note { float: none; /* download box */}
-body > .footer { margin-inline-start: unset; }
-
-/* changes for content */
- /* stop paths and things from overflowing the viewport. */
-div.content { overflow-wrap: break-word; }
-/* add spaces around items in TOC to make hitting the links easier */
-div.contents ul.simple li { padding-block: .5em; }
-ul.simple li a { min-height: 48px;
-			      display: block;}
-/* make examples with long lines scrollable */
-div.highlight pre { overflow: auto;}
-}
-/* set background when using borland pygments style */
-div.highlight pre { background: lightyellow;}
-
-#skiplink { display: block;
-                   margin-block-start: 1em;
-                   margin-inline-start: 1em;}
-#skiplink a {
-  /* force stuff for screenreader off screen */
-  position:absolute;
-  left:-10000px;
-  top:auto;
-  width:1px;
-  height:1px;
-  overflow:hidden;
-  padding: 0 0.75em;
-  font-weight: bold;
-}
-#skiplink a:focus { position: static;
-                    width: auto;
-                    height: auto; }
-
-/* remove solid black border when focus is around the main section
-   due to activation of skip-link. Page jumps there, that's enough. */
-#main:focus-visible {outline: none;}
+table caption { font-weight: bold; font-size: smaller; }
 
 table.footnote {
   font-size: calc(1em - 1pt);
+}
+
+td {
+  /* pull text away from borders */
+  padding-inline: 0.5em;
+}
+
+td > p {
+  /* remove top margin on a p inside table cell so that
+     columns with paragraphs align at top of cell rather
+     than leaving a blank margin */
+  margin-block-start: 0px;
+}
+
+input, textarea { border-width: 1px; }
+
+a.headerlink {
+  font-size: 0.8em;
+  margin-left: 0.3em;
+  color: #c99;
 }
 
 div.admonition {
@@ -217,3 +291,59 @@ div.admonition.caution p.admonition-title {
 
 dt { font-weight: bold; margin-block-start: 1em;}
 dd p.first { margin-block-start: 0; }
+
+#skiplink { display: block;
+                   margin-block-start: 1em;
+                   margin-inline-start: 1em;}
+#skiplink a {
+  /* force stuff for screenreader off screen */
+  position:absolute;
+  left:-10000px;
+  top:auto;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  padding: 0 0.75em;
+  font-weight: bold;
+}
+#skiplink a:focus { position: static;
+                    width: auto;
+                    height: auto; }
+
+/* remove solid black border when focus is around the main section
+   due to activation of skip-link. Page jumps there, that's enough. */
+#main:focus-visible {outline: none;}
+
+/* website only */
+/* assume desktop reader for local html files, also no contact
+   page for local doc files */
+
+@media only screen and (max-width:960px) {
+    /* setup for layout/page frame */
+    body { padding-inline-start: unset; /* remove space for float menu */}
+    body > .header { margin-inline-start: unset;
+	             margin-block-start: 3em; /* move down from search */}
+    body > .navigation { margin-inline-start: unset;
+			 float: none;}
+    body > .navigation li > ul > li { padding-block: 1em;
+    /* move links away from each other */ }
+    #roundup-issue-tracker .note { float: none; /* download box */}
+    body > .footer { margin-inline-start: unset; }
+
+    /* changes for content */
+    /* stop paths and things from overflowing the viewport. */
+    div.content { overflow-wrap: break-word; }
+    /* add spaces around items in TOC to make hitting the links easier */
+    div.contents ul.simple li { padding-block: .5em; }
+    ul.simple li a { min-height: 48px;
+		     display: block;}
+    /* make examples with long lines scrollable */
+    div.highlight pre { overflow: auto;}
+}
+
+/* Contact page */
+div#contact table td {
+  white-space: nowrap;
+  padding: 1pt 1em;
+}
+
