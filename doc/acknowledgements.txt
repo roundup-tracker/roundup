@@ -1,3 +1,9 @@
+.. meta::
+    :description:
+        Display contributions of code and documentation to the Roundup
+        Issue Tracker. Includes users who reported issues. Updated for
+        each release.
+
 Acknowledgements
 ================
 The Roundup Initative is a group of people that regularly work
