@@ -1,6 +1,7 @@
 .. meta::
     :description:
         Additional implementation notes for the Roundup Issue Tracker.
+        Supplement for docstrings in the Roundup package.
 
 ====================
 Implementation notes
