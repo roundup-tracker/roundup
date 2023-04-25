@@ -1,7 +1,7 @@
 .. meta::
     :description:
         Definitions of terms used in the Roundup Issue Tracker
-	documentation.
+	documentation. Referenced by other documents.
 
 ================
 Roundup Glossary
