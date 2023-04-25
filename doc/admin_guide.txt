@@ -1018,8 +1018,133 @@ solution to this is to:
 2. Set the scheduled task to run in the context of this user instead
    of your normal login
 
+Mail gateway script command line
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Usage::
+
+    usage: roundup_mailgw.py [-h] [-v] [-c DEFAULT_CLASS] [-I OAUTH_CLIENT_ID]
+			     [-O OAUTH_DIRECTORY] [-S SET_VALUE]
+			     [-T OAUTH_TOKEN_ENDPOINT]
+			     [args ...]
+
+
+The roundup mail gateway may be called in one of three ways:
+
+ - without arguments. Then the env var ROUNDUP_INSTANCE will be tried.
+ - with an instance home as the only argument,
+ - with both an instance home and a mail spool file, or
+ - with an instance home, a mail source type and its specification.
+
+It also supports optional ``-S`` (or ``--set-value``) arguments that allows you
+to set fields for a class created by the roundup-mailgw. The format for
+this option is [class.]property=value where class can be omitted and
+defaults to msg. The ``-S`` options uses the same
+property=value[;property=value] notation accepted by the command line
+roundup command or the commands that can be given on the Subject line of
+an email message (if you're using multiple properties delimited with a
+semicolon the class must be specified only once in the beginning).
+
+It can let you set the type of the message on a per e-mail address basis
+by calling roundup-mailgw with different email addresses and other
+settings.
+
+PIPE:
+ If there is no mail source specified, the mail gateway reads a single
+ message from the standard input and submits the message to the
+ roundup.mailgw module.
+
+UNIX mailbox:
+ In this case, the gateway reads all messages from the UNIX mail spool
+ file and submits each in turn to the roundup.mailgw module. The file is
+ emptied once all messages have been successfully handled. The file is
+ specified as::
+
+   mailbox /path/to/mailbox
+
+In all of the following mail source types, the username and password
+can be stored in a ``~/.netrc`` file. If done so, only the server name
+needs to be specified on the command-line.
+The username and/or password will be prompted for if not supplied on
+the command-line or in ``~/.netrc``.
+
+POP:
+ For the mail source "pop", the gateway reads all messages from the POP
+ server specified and submits each in turn to the roundup.mailgw module.
+ The server is specified as::
+
+    pop username:password@server
+
+ The username and password may be omitted::
+
+    pop username@server
+    pop server
+
+ are both valid.
+
+POPS:
+ Connect to a POP server over tls/ssl.
+ This supports the same notation as POP::
+
+    pops username:password@server
+
+APOP:
+ Same as POP, but using Authenticated POP::
+
+    apop username:password@server
+
+IMAP:
+ Connect to an IMAP server. This supports the same notation as that of
+ POP mail::
+
+    imap username:password@server
+
+ It also allows you to specify a specific mailbox other than INBOX using
+ this format::
+
+    imap username:password@server mailbox
+
+IMAPS:
+ Connect to an IMAP server over tls/ssl.
+ This supports the same notation as IMAP::
+
+    imaps username:password@server [mailbox]
+
+IMAPS_CRAM:
+ Connect to an IMAP server over tls/ssl using CRAM-MD5 authentication.
+ This supports the same notation as IMAP::
+
+    imaps_cram username:password@server [mailbox]
+
+IMAPS_OAUTH:
+ Connect to an IMAP server over tls/ssl using OAUTH authentication.
+ Note that this does not support a password in imaps URLs.
+ Instead it uses only the user and server and a command-line option for
+ the directory with the files ``access_token``, ``refresh_token``,
+ ``client_secret``, and ``client_id``.
+ By default this directory is ``oauth`` in your tracker home directory. The
+ access token is tried first and, if expired, the refresh token together
+ with the client secret is used to retrieve a new access token. Note that
+ both token files need to be *writeable*, the access token is
+ continuously replaced and some cloud providers may also renew the
+ refresh token from time to time::
+
+   imaps_oauth username@server [mailbox]
+
+ The refresh and access tokens (the latter can be left empty), the
+ client id and the client secret need to be retrieved via cloud provider
+ specific protocols or websites.
+
+ You need the requests_ library installed for OAuth.
+
+.. _requests: https://requests.readthedocs.io/en/latest/
+
+
 .. index:: ! roundup-admin
+   single: roundup-admin; usage
+   single: roundup-admin; data formats
    single: roundup-admin; man page reference
+   pair: roundup-admin; designator
 
 Using roundup-admin
 ===================
@@ -1036,14 +1161,63 @@ Examples above show how to use it to:
    * creating a new user fom the command line
    * list/find users in the tracker
 
-A brief (incomplete) summary is::
+The basic usage is::
 
-    roundup-admin help
-    roundup-admin -i <tracker_dir> get [-list] designator[, designator,...] propname
-    roundup-admin -i <tracker_dir> set designator[, designator,...] propname=value ...
-    roundup-admin -i <tracker_dir> find [-list] classname propname=value ...
+ Usage: roundup-admin [options] [<command> <arguments>]
 
-Run ``roundup-admin help commands`` for a complete list of subcommands.
+ Options:
+  -i instance home  -- specify the issue tracker "home directory" to administer
+  -u                -- the user[:password] to use for commands
+  -d                -- print full designators not just class id numbers
+  -c                -- when outputting lists of data, comma-separate them.
+               Same as '-S ","'.
+  -S <string>       -- when outputting lists of data, string-separate them
+  -s                -- when outputting lists of data, space-separate them.
+               Same as '-S " "'.
+  -V                -- be verbose when importing
+  -v                -- report Roundup and Python versions (and quit)
+
+  Only one of -s, -c or -S can be specified.
+
+ Help:
+  roundup-admin -h
+  roundup-admin help                       -- this help
+  roundup-admin help <command>             -- command-specific help
+  roundup-admin help all                   -- all available help
+
+ Commands:
+  commit
+  create classname property=value ...
+  display designator[,designator]*
+  export [[-]class[,class]] export_dir
+  exporttables [[-]class[,class]] export_dir
+  filter classname propname=value ...
+  find classname propname=value ...
+  genconfig <filename>
+  get property designator[,designator]*
+  help topic
+  history designator [skipquiet]
+  import import_dir
+  importtables export_dir
+  initialise [adminpw]
+  install [template [backend [key=val[,key=val]]]]
+  list classname [property]
+  migrate
+  pack period | date
+  perftest [mode] [arguments]*
+  pragma setting=value
+  reindex [classname|designator]*
+  restore designator[,designator]*
+  retire designator[,designator]*
+  rollback
+  security [Role name]
+  set items property=value property=value ...
+  specification classname
+  table classname [property[,property]*]
+  templates [trace_search]
+  updateconfig <filename>
+ Commands may be abbreviated as long as the abbreviation
+ matches only one command, e.g. l == li == lis == list.
 
 One thing to note, The ``-u user`` setting does not currently operate
 like a user logging in via the web. The user running roundup-admin
@@ -1060,6 +1234,168 @@ roundup-admin could be used with sudo to provide secure
 command line access to a tracker.
 
 In general you should forget that there is a -u parameter.
+
+All commands (except help) require a tracker specifier. This is just the
+path to the roundup tracker you're working with. A roundup tracker is
+where roundup keeps the database and configuration file that defines an
+issue tracker. It may be thought of as the issue tracker's "home
+directory". It may be specified in the environment variable
+``TRACKER_HOME`` or on the command line as "``-i tracker``".
+
+A designator is a classname and an itemid concatenated, eg. bug1,
+user10, ... Property values are represented as strings in command
+arguments and in the printed results:
+
+- Strings are, well, strings.
+- Password values will display as their encoded value.
+- Date values are printed in the full date format in the local time
+  zone, and accepted in the full format or any of the partial formats
+  explained below.::
+
+    Input of...        Means...
+    "2000-04-17.03:45" 2000-04-17.03:45:00
+    "2000-04-17"       2000-04-17.00:00:00
+    "01-25"            yyyy-01-25.00:00:00
+    "08-13.22:13"      yyyy-08-13.22:13:00
+    "11-07.09:32:43"   yyyy-11-07.09:32:43
+    "14:25"            yyyy-mm-dd.14:25:00
+    "8:47:11"          yyyy-mm-dd.08:47:11
+    "2003"             2003-01-01.00:00:00
+    "2003-04"          2003-04-01.00:00:00
+    "."                "right now"
+
+- Link values are printed as item designators. When given as an
+  argument, item designators and key strings are both accepted.
+- Multilink values are printed as lists of item designators joined by
+  commas. When given as an argument, item designators and key strings
+  are both accepted; an empty string, a single item, or a list of items
+  joined by commas is accepted.
+
+When multiple items are specified to the roundup get or roundup set
+commands, the specified properties are retrieved or set on all the
+listed items.  When multiple results are returned by the roundup get or
+roundup find commands, they are printed one per line (default) or joined
+by commas (with the "``-c``" option).
+
+Where the command changes data, a login name/password is required. The
+login may be specified as either "``name``" or "``name:password``".
+
+- ``ROUNDUP_LOGIN`` environment variable
+- the "``-u``" command-line option
+
+If either the name or password is not supplied, they are obtained from
+the command-line.
+
+The ``-u user`` setting does not currently operate like a
+user logging in via the web. The user running roundup-admin
+must have read access to the tracker home directory. As a
+result the user has access to the files and the database
+info contained in config.ini.
+
+Using ``-u user`` sets the actor/user parameter in the
+journal. Changes that are made are attributed to that
+user. The password is ignored if provided. Any existing
+username has full access to the data just like the admin
+user. This is an area for further development so that
+roundup-admin could be used with sudo to provide secure
+command line access to a tracker.
+
+When you initialise a new tracker instance you are prompted for the
+admin password. If you want to initialise a tracker non-interactively
+you can put the initialise command and password on the command
+line. But this allows others on the host to see the password (using
+the ps command). To initialise a tracker non-interactively without
+exposing the password, create a file (e.g init_tracker) set to mode
+600 (so only the owner can read it) with the contents:
+
+   initialise admin_password
+
+and feed it to roundup-admin on standard input. E.G.
+
+  cat init_tracker | roundup-admin -i tracker_dir
+
+(for more details see https://issues.roundup-tracker.org/issue2550789.)
+
+.. index:: ! roundup-admin; usage in scripts
+
+Using with the shell
+--------------------
+
+With version 0.6.0 or newer of roundup (which introduced support for
+multiple designators to display and the -d, -S and -s flags):
+
+To find all messages regarding chatting issues that contain the word
+"spam", for example, you could execute the following command from the
+directory where the database dumps its files::
+
+    shell% for issue in `roundup-admin -ds find issue status=chatting`; do
+    > grep -l spam `roundup-admin -ds ' ' get messages $issue`
+    > done
+    msg23
+    msg49
+    msg50
+    msg61
+    shell%
+
+Or, using the -dc option, this can be written as a single command::
+
+    shell% grep -l spam `roundup get messages \
+        \`roundup -dc find issue status=chatting\``
+    msg23
+    msg49
+    msg50
+    msg61
+    shell%
+
+You can also display issue contents::
+
+    shell% roundup-admin display `roundup-admin -dc get messages \
+               issue3,issue1`
+    files: []
+    inreplyto: None
+    recipients: []
+    author: 1
+    date: 2003-02-16.21:23:03
+    messageid: None
+    summary: jkdskldjf
+    files: []
+    inreplyto: None
+    recipients: []
+    author: 1
+    date: 2003-02-15.01:59:11
+    messageid: None
+    summary: jlkfjadsf
+
+or status::
+
+    shell% roundup-admin get name `/tools/roundup/bin/roundup-admin \
+          -dc -i /var/roundup/sysadmin get status issue3,issue1`
+    unread
+    deferred
+
+or status on a single line::
+
+    shell% echo `roundup-admin get name \`/tools/roundup/bin/roundup-admin \
+             -dc -i /var/roundup/sysadmin get status issue3,issue1\``
+    unread deferred
+
+which is the same as::
+
+    shell% roundup-admin -s get name `/tools/roundup/bin/roundup-admin \
+             -dc -i /var/roundup/sysadmin get status issue3,issue1`
+    unread deferred
+
+Also the tautological::
+
+   shell% roundup-admin get name \
+      `roundup-admin -dc get status \`roundup-admin -dc find issue \
+          status=chatting\``
+   chatting
+   chatting
+
+Remember the roundup commands that accept multiple designators accept
+them ',' separated so using '-dc' is almost always required.
+
 
 .. _`customisation documentation`: customizing.html
 .. _`upgrading documentation`: upgrading.html
