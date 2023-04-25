@@ -1742,7 +1742,7 @@ Other Examples
 --------------
 
 See the `rest interface documentation`_ for instructions on how to add
-new rest endpoints using interfaces.py.
+new rest endpoints or `change the rate limiting method`_  using interfaces.py.
 
 Database Content
 ================
@@ -6283,6 +6283,7 @@ rather than requiring a web server restart.
 .. _`design documentation`: design.html
 .. _`developer's guide`: developers.html
 .. _`rest interface documentation`: rest.html#programming-the-rest-api
+.. _change the rate limiting method: rest.html#creating-custom-rate-limits
 .. _`directions in the rest interface documentation`: rest.html#enabling-the-rest-api
 .. _`xmlrpc interface documentation`: xmlrpc.html#through-roundup
 .. _`zxcvbn`: https://github.com/dwolfhub/zxcvbn-python
