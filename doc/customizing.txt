@@ -675,7 +675,7 @@ and what you can do with them.
 
 The initial_data.py module sets up the initial state of your
 tracker. It’s called exactly once - by the ``roundup-admin initialise``
-command. See the start of the section on database content for more
+command. See the start of the section on `database content`_ for more
 info about how this works.
 
 .. index:: schema; classic - description of
