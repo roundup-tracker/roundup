@@ -547,4 +547,4 @@ At run time, Roundup automatically compiles message catalogs whenever
    https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
 .. _TravisCI: https://app.travis-ci.com/github/roundup-tracker/roundup
 .. _vim: https://www.vim.org/
-.. _ZPTInternationalization: http://grok.zope.org/documentation/how-to/how-to-internationalize-your-application/view
+.. _ZPTInternationalization: http://grok.zope.org/doc/community/view_generation/i18n_of_your_app.html
