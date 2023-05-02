@@ -1072,7 +1072,7 @@ placeholder. E.G. replace a password with the text::
 
 If you need to delete an entire file, replace the file contents with::
 
-    [file contents deleted due to spam 202-10-21 --myname]
+    [file contents deleted due to spam 2020-10-21 --myname]
 
 rather than deleting the file. If you actually delete the file Roundup
 will report an error to the user and email the administrator. If you
