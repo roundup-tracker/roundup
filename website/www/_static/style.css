@@ -318,6 +318,9 @@ dd p.first { margin-block-start: 0; }
 /* assume desktop reader for local html files, also no contact
    page for local doc files */
 
+/* make examples with long lines scrollable */
+div.highlight { overflow: auto;}
+
 @media only screen and (max-width:960px) {
     /* setup for layout/page frame */
     body { padding-inline-start: unset; /* remove space for float menu */}
@@ -337,8 +340,6 @@ dd p.first { margin-block-start: 0; }
     div.contents ul.simple li { padding-block: .5em; }
     ul.simple li a { min-height: 48px;
 		     display: block;}
-    /* make examples with long lines scrollable */
-    div.highlight pre { overflow: auto;}
 }
 
 /* Contact page */
