@@ -10,13 +10,13 @@
 Upgrading to newer versions of Roundup
 ======================================
 
-Please read each section carefully and edit your tracker home files
+Please read each section carefully and edit the files in your tracker home
 accordingly. Note that there is information about upgrade procedures in the
 `administration guide`_ in the `Software Upgrade`_ section.
 
-If a specific version transition isn't mentioned here (eg. 0.6.7 to 0.6.8)
+If a specific version transition isn't mentioned here (e.g. 0.6.7 to 0.6.8)
 then you don't need to do anything. If you're upgrading from 0.5.6 to
-0.6.8 though, you'll need to check the "0.5 to 0.6" and "0.6.x to 0.6.3"
+0.6.8 though, you'll need to apply the "0.5 to 0.6" and "0.6.x to 0.6.3"
 steps.
 
 General steps:
@@ -25,16 +25,17 @@ General steps:
    2. Take your Roundup installation offline (web, email,
       cron scripts, roundup-admin etc.)
    3. Backup your Roundup instance
-   4. Install a new version of Roundup
+   4. Install the new version of Roundup (preferably in a new virtual
+      environment)
    5. Make version specific changes as described below for
       each version transition. If you are starting at 1.5.0
-      and installing to 2.3, you need to make the changes for **all**
+      and installing to 2.3.0, you need to make the changes for **all**
       versions starting at 1.5 and ending at 2.3. E.G.
       1.5.0 -> 1.5.1, 1.5.1 -> 1.6.0, ..., 2.1.0 -> 2.2.0,
       2.2.0 -> 2.3.0.
-   6. Run ``roundup-admin -i <tracker_home> migrate`` for
-      **all** your trackers. This will update the database if
-      it is required.
+   6. Run ``roundup-admin -i <tracker_home> migrate`` using the newer
+      version of Roundup for **all** the trackers you have
+      upgraded. This will update the database if it is required.
    7. Bring your Roundup instance back online
    8. Test
 
@@ -42,7 +43,7 @@ General steps:
 Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
 Python version 2.7 that is newer than 2.7.2 is required to run
 Roundup.  Starting with Roundup version 2.0.0 we also support Python 3
-versions newer than 3.4.
+versions newer than 3.6.
 
 Recent release notes have the following labels:
 
@@ -52,6 +53,12 @@ Recent release notes have the following labels:
    * optional - new features or changes to existing features you might
      want to use
    * info - important possibly visible changes in how things operate
+
+If you use virtual environments for your installation, you can run
+trackers with different versions of Roundup. So you can have one tracker
+using version 2.2.0 and another tracker using version 1.6.1. This
+allows you to upgrade trackers one at a time rather than having to
+upgrade all your trackers at once.
 
 Contents:
 
