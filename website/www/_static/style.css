@@ -314,12 +314,15 @@ dd p.first { margin-block-start: 0; }
    due to activation of skip-link. Page jumps there, that's enough. */
 #main:focus-visible {outline: none;}
 
+/* Prevent examples from extending outside the viewport */
+div.highlight > pre {
+    overflow-wrap: anywhere;
+    white-space: break-spaces;
+}
+
 /* website only */
 /* assume desktop reader for local html files, also no contact
    page for local doc files */
-
-/* make examples with long lines scrollable */
-div.highlight { overflow: auto;}
 
 @media only screen and (max-width:960px) {
     /* setup for layout/page frame */

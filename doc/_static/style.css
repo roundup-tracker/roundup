@@ -313,3 +313,9 @@ dd p.first { margin-block-start: 0; }
 /* remove solid black border when focus is around the main section
    due to activation of skip-link. Page jumps there, that's enough. */
 #main:focus-visible {outline: none;}
+
+/* Prevent examples from extending outside the viewport */
+div.highlight > pre {
+    overflow-wrap: anywhere;
+    white-space: break-spaces;
+}
