@@ -2227,7 +2227,7 @@ The `REST api`_ is accessed via:
 
 and the `XMLRPC api`_ is available at:
 
-6. ``/rest/``
+6. ``/xmlrpc``
 
 .. _`XMLRPC api`: xmlrpc.html
 
@@ -3476,7 +3476,7 @@ sorted      only on Multilink properties - produce a list of the linked
             
                 python:context.files.sorted('creation')
 
-            Will list the files by upload date. While
+            Will list the files by upload date. While::
 
                python:context.files.sorted('creation', reverse=True)
 
