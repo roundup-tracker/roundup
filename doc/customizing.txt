@@ -2266,27 +2266,27 @@ where tracker root is ``/tracker/`` or ``/cgi-bin/roundup.cgi/tracker/``
 We're looking at "issue", "issue1", "@@file/style.css", "file1" and
 "file1/kitten.png" in the cases above.
 
-a. with is no path we are in the "home" context. See `the "home"
+1. with is no path we are in the "home" context. See `the "home"
    context`_ below for details. "index" or "home" paths may also be used
    to switch into "home" context.
-b. for paths starting with "@@file" the additional path entry ("style.css"
+2. for paths starting with "@@file" the additional path entry ("style.css"
    in the example above) specifies the static file to be served
    from the tracker TEMPLATES directory (or STATIC_FILES, if configured).
    This is usually the tracker's "html" directory. Internally this works
    by raising SendStaticFile exception.
-c. if there is something in the path (as in example 1, "issue"), it
+3. if there is something in the path (as in example 1, "issue"), it
    identifies the tracker class to display.
-d. if the path is an item designator (as in examples 2 and 4, "issue1"
+4. if the path is an item designator (as in examples 2 and 4, "issue1"
    and "file1"), then we're to display a specific item.
    :ref:`Note. <strip_zeros>`
-e. if the path starts with an item designator and is longer than one
+5. if the path starts with an item designator and is longer than one
    entry (as in example 5, "file1/kitten.png"), then we're assumed to be
    handling an item of a ``FileClass``, and the extra path information
    gives the filename that the client is going to label the download
    with (i.e. "file1/kitten.png" is nicer to download than "file1").
    This raises a ``SendFile`` exception.
 
-Neither b. or e. use templates and stop before the template is
+Neither 2. or 5. use templates and stop before the template is
 determined. For other contexts the template used is specified by the
 ``@template`` variable, which defaults to:
 
