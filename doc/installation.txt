@@ -103,9 +103,8 @@ Timezone Definitions
 An RDBMS
   Sqlite, MySQL and Postgresql are all supported by Roundup and will be
   used if available. One of these is recommended if you are anticipating a
-  large user base (see `choosing your backend`_ below).
-
-.. index:: roundup-admin:: reindex subcommand
+  large user base (see `choosing your backend`_ below). Sqlite should
+  always be available.
 
 Xapian full-text indexer
   The Xapian_ full-text indexer is also supported and will be used by
@@ -220,7 +219,7 @@ installation:
 3. then optionally `configure a web interface`_
 4. and optionally `configure an email interface`_
 5. `UNIX environment steps`_ to take if you're installing on a shared
-   UNIX machine and want to restrict local access to roundup
+   UNIX machine and want to restrict local access to Roundup
 
 For information about how Roundup installs, see the `administration
 guide`_.
@@ -231,7 +230,7 @@ Basic Installation Steps
 ------------------------
 
 Installation of Roundup using Python3 in a virtual environment is
-probably the path of least resistance. Use::
+recommended. Use::
 
    python3 -m venv /path/to/environment/roundup
 
@@ -240,7 +239,7 @@ the Python environment using::
 
    . /path/to/environment/roundup/bin/activate
 
-then use the alias ``deactivate`` to return to the normal Python
+You can use the alias ``deactivate`` to return to the normal Python
 environment. If you create the virtual envirnment as a non-root user,
 you can install below using the same user.
 
@@ -461,15 +460,14 @@ Configuring your first tracker
       third-party database modules.  Standard python distribution
       includes anydbm and sqlite module only.
 
-      The "support" part of the tracker name can be anything you want - it
-      is going to be used as the directory that the tracker information
-      will be stored in.
+      The "support" part of the tracker home can be anything you want - it
+      is the directory where the tracker information will be stored.
 
       You will now be directed to edit the tracker configuration and
-      initial schema.  At a minimum, you must set "tracker :: web",
+      initial schema.  At a minimum, you must set "tracker :: web"
+      (that's the "web" option in the "tracker" section),
       "mail :: host", and "mail :: domain". You should also
-      set "main :: admin_email" (that's the "admin_email" option in
-      the "main" section) to your local admin address to get email
+      set "main :: admin_email" to your local admin address to get email
       on unusual occurances. If you get stuck,
       and get configuration file errors, then see the `tracker
       configuration`_ section of the `customisation documentation`_.
@@ -519,12 +517,12 @@ Configuring your first tracker
    and you should see the tracker interface.
 
    To run your tracker on some interface other than 127.0.0.1 and port
-   8080 (make sure you change the "tracker :: web" changes to match) use::
+   8080 (make sure you change the "tracker :: web" option to match) use::
 
      roundup-server -p 1080 -n 0.0.0.0 support=/opt/roundup/trackers/support
 
    to run the server at port 1080 and bind to all ip addresses on your system.
-   Then direct your web browser to ``http://your_host_name:1080/support``.
+   Then direct your web browser to ``http://your_host_name:1080/support/``.
 
 Choosing Your Template
 ----------------------
