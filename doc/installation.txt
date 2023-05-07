@@ -532,17 +532,49 @@ Choosing Your Template
 Classic Template
 ~~~~~~~~~~~~~~~~
 
-The classic template is the one defined in the `Roundup Specification`_. It
-holds issues which have priorities and statuses. Each issue may also have a
-set of messages which are disseminated to the issue's list of nosy users.
+The classic template is the one defined in the `Roundup
+Specification`_. It holds issues which have priorities and
+statuses. Each issue may also have a set of messages which are
+disseminated to the issue's list of nosy users.
 
 Minimal Template
 ~~~~~~~~~~~~~~~~
 
 The minimal template has the minimum setup required for a tracker
-installation. That is, it has the configuration files, defines a user database
-and the basic HTML interface to that. It's a completely clean slate for you to
-create your tracker on.
+installation. That is, it has the configuration files, defines a user
+database and the basic HTML interface to that. It's a completely clean
+slate for you to create your tracker on.
+
+Other Templates
+~~~~~~~~~~~~~~~
+
+There are three other templates distributed with Roundup:
+
+responsive
+   This issue tracker uses the same schema as devel.  The difference
+   between devel and responsive templates is the use of Twitter
+   bootstrap (https://github.com/twbs/bootstrap) in templates and
+   HTML5 markup.  Make sure the "static_files" setting in your
+   config.ini of your instance is set to the directory where the
+   static files live (the subdirectory "static" in the default of the
+   template).
+
+devel
+   This is a generic issue tracker that may be used to track bugs,
+   feature requests, project issues or any number of other types of
+   issues. Most users of Roundup will find that this template suits
+   them, with perhaps a few customisations.
+
+
+jinja2
+   This is a generic issue tracker based on classic schema.  It uses
+   Jinja2 for templating and Twitter bootstrap for responsive markup.
+   You will need jinja and gettext for this to work.  See the wiki
+   page https://wiki.roundup-tracker.org/Jinja2 for updates
+   between releases.
+
+Also other people have listed their trackers for different needs at:
+https://wiki.roundup-tracker.org/TrackerTemplates.
 
 .. index:: database; choosing your backend
 
