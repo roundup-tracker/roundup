@@ -67,7 +67,7 @@ def pt_html(context=5, i18n=None):
     from roundup.cgi.PageTemplates.Expressions import TraversalError
     t = inspect.trace(context)
     t.reverse()
-    for frame, file, lnum, func, lines, index in t:
+    for frame, _file, _lnum, _func, _lines, _index in t:
         args, varargs, varkw, locals = inspect.getargvalues(frame)
         if '__traceback_info__' in locals:
             ti = locals['__traceback_info__']

@@ -116,7 +116,7 @@ class AdminTool:
             'display_protected':
             _("Have 'display designator' show protected fields: creator. NYI"),
 
-            'indexer_backend': 
+            'indexer_backend':
             _("Set indexer to use when running 'reindex' NYI"),
 
             '_reopen_tracker':

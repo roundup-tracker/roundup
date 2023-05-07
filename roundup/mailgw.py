@@ -637,7 +637,7 @@ Emails to Roundup trackers must include a Subject: line!
 
         # Check if the subject includes a prefix
         self.has_prefix = re.search(r'^%s\s*(\w+)\s*%s' % (delim_open,
-                                                     delim_close),
+                                                           delim_close),
                                     tmpsubject.strip())
 
         # Match the classname if specified

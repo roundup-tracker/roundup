@@ -37,6 +37,7 @@ __docformat__ = 'restructuredtext'
 
 import gettext as gettext_module
 import os
+import sys
 
 from roundup import msgfmt
 from roundup.anypy.strings import is_us
@@ -58,7 +59,6 @@ if _mo_path not in LOCALE_DIRS:
     LOCALE_DIRS.append(_mo_path)
 del _mo_path
 
-import sys
 # __file__ should be something like:
 #    /usr/local/lib/python3.10/site-packages/roundup/i18n.py
 # os.prefix should be /usr, /usr/local or root of virtualenv
@@ -82,7 +82,7 @@ try:
     if os.path.isdir(_ldir):
         LOCALE_DIRS.append(_ldir)
 except AttributeError:
-    pass # no base_prefix on 2.7
+    pass  # no base_prefix on 2.7
 del _ldir
 
 # Roundup text domain
