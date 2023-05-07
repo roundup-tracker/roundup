@@ -200,11 +200,12 @@ Getting Roundup
 
 .. note::
     Some systems, such as Gentoo and NetBSD, already have Roundup
-    installed. Try running the command "roundup-admin" with no arguments,
-    and if it runs you may skip the `Basic Installation Steps`_
-    below and go straight to `configuring your first tracker`_.
-    However they may install an old version, so you are probably
-    beter off installing it from the roundup web site or pypi.
+    installed. Try running the command "roundup-admin -v".
+    If it runs and reports a current version, you may skip the
+    `Basic Installation Steps`_ below and go straight to
+    `configuring your first tracker`_. However it may be an old
+    version. If so you should probably install it in a virtual
+    environment from the Roundup web site or pypi.
 
 Download the latest version from https://www.roundup-tracker.org/.
 
