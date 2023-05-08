@@ -24,7 +24,7 @@ ARG source=local
 ARG pythonversion=3.11
 
 #FROM python:3-alpine
-FROM python@sha256:507818d46649f8543e58d19a00e3a1a428bb7e87c0bf7f7d1ffe7b076cda11be as build
+FROM python@sha256:50d75c092a5b58e9e62249ad02a0cbc66360c48e6f653f66d24d6d229f5fba1a as build
 
 # Inherit global values https://github.com/moby/moby/issues/37345
 ARG appdir
@@ -133,7 +133,7 @@ RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
 # build a new smaller docker image for execution. Build image above
 # is 1G in size.
 # FROM python:3-alpine
-FROM python@sha256:507818d46649f8543e58d19a00e3a1a428bb7e87c0bf7f7d1ffe7b076cda11be
+FROM python@sha256:50d75c092a5b58e9e62249ad02a0cbc66360c48e6f653f66d24d6d229f5fba1a
 
 # import from global
 ARG appdir
