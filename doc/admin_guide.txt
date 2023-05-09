@@ -792,6 +792,39 @@ At the time this is written, support is experimental. If you use it
 you should notify the roundup maintainers using the roundup-users
 mailing list.
 
+
+Securing Secrets
+================
+
+Roundup can read secrets from a file that is referenced from any
+of the config.ini files. If you use Docker, you can bind mount
+the files from a secure location, or store them in a subdirectory
+of the tracker home.
+
+You can also use a secrets management tool like Docker Swarm's
+secrets management. This example config.ini configuration gets
+the database password from a file populated by Swarm secrets::
+
+   [rdbms]
+   # Database user password.
+   # A string that starts with 'file://' is interpreted as a file
+   # path relative to the tracker home. Using 'file:///' defines
+   # an absolute path. The first line of the file will be used as
+   # the value. Any string that does not start with 'file://' is
+   # used as is. It removes any whitespace at the end of the
+   # line, so a newline can be put in the file.
+   # 
+   # Default: roundup
+   password = file:///run/secrets/db_password
+
+assuming that Docker Swarm secrets has the key ``db_password``
+and the ``--secret db_password`` option is used when starting the
+Roundup service.
+
+Because environment variables can be inadvertently exposed in
+logs or process listings, Roundup does not currently support
+loading secrets from environment variables.
+
 Tasks
 =====
 
