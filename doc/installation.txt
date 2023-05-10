@@ -691,9 +691,10 @@ More information about ISS setup may be found at:
 
    https://docs.microsoft.com/en-us/iis/
 
-Copy the ``frontends/roundup.cgi`` file to your web server's ``cgi-bin``
-directory. You will need to configure it to tell it where your tracker home
-is. You can do this either:
+Copy the ``share/roundup/cgi-bin/roundup-cgi``
+(``frontends/roundup.cgi`` in source tree) file to your web
+server's ``cgi-bin`` directory. You will need to configure it to
+tell it where your tracker home is. You can do this either:
 
 Through an environment variable
   Set the variable TRACKER_HOMES to be a colon (":") separated list of
@@ -785,9 +786,10 @@ name of a file to write the server process id (pid) to.
 Zope Product - ZRoundup
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-ZRoundup installs as a regular Zope product. Copy the ZRoundup directory to
-your Products directory either in INSTANCE_HOME/Products or the Zope
-code tree lib/python/Products.
+ZRoundup installs as a regular Zope product. Copy the
+``share/roundup/frontends/ZRoundup`` (frontends/ZRoundup in the
+source tree) directory to your Products directory either in
+INSTANCE_HOME/Products or the Zope code tree lib/python/Products.
 
 When you next (re)start up Zope, you will be able to add a ZRoundup object
 that interfaces to your new tracker.
