@@ -631,7 +631,28 @@ privileges to create databases.
 Configure a Web Interface
 -------------------------
 
-There are multiple web interfaces to choose from:
+There are multiple ways to deploy the web interface. If your
+tracker will be heavily used and accessible from the internet, we
+suggest using Apache or Nginx in WSGI mode or as a reverse proxy
+to the stand alone web server or WSGI server like gunicorn.
+
+A FastCGI deployment with an alternate web server is suitable for
+lower traffic sites.
+
+If you already run Zope, Roundup should deploy nicely in that
+framework.
+
+If you are internet accessible, but expect a few users, or are on
+a hosted web server, using cgi-bin is a reasonable deployment.
+
+Using a true HTTP server provide tools including: DOS prevention,
+throttling, web application firewalls etc. that are worth having
+in an internet facing application.
+
+If you are running on an internal intranet, you can use the
+stand alone server: roundup-server, but even in this environment,
+using a real web server to serve static files and other resources
+will perform better.
 
 .. contents::
    :depth: 1
