@@ -87,6 +87,7 @@ body > .footer { margin: 1em 0 1em -14em; clear:both;}
 body > .navigation 
 {
   margin-left: -14em;
+  margin-inline-start: -14em;
   width: 14em;
   float: left;
 }
@@ -330,6 +331,7 @@ div.highlight > pre {
     body > .header { margin-inline-start: unset;
 	             margin-block-start: 3em; /* move down from search */}
     body > .navigation { margin-inline-start: unset;
+			 width: unset;
 			 float: none;}
     body > .navigation li > ul > li { padding-block: 1em;
     /* move links away from each other */ }
