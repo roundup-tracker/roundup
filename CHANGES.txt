@@ -84,6 +84,10 @@ Fixed:
 - fix crash due to invalid initialization/reset of configuration.py
   option_validators. Crashed roundup-admin on second command if an
   option_validator was added by a detector or extension. (John Rouillard)
+- Dockerfile uses dumb-init to properly wait for child/zombie
+  processes. Defense against child process starting from detector
+  and becoming a zombie when its roundup-server instance exits.
+  (John Rouillard)
 
 Features:
 

@@ -153,6 +153,7 @@ SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 RUN apk --no-cache upgrade; \
     apk --no-cache add \
      brotli-libs \
+     dumb-init \
      gpgme \
      mariadb-connector-c \
      libpq \
@@ -183,8 +184,13 @@ COPY --from=build /usr/local/share /usr/local/share/
 COPY scripts/Docker/roundup_start .
 COPY scripts/Docker/roundup_healthcheck .
 
+# Do not run roundup as root. This creates roundup user and group.
+ARG roundup_uid
+RUN adduser -D -h ${appdir} -u ${roundup_uid:-1000} roundup
+
 # make roundup scripts execuable and mount a trackerdir on tracker location
-RUN chmod +x roundup_start roundup_healthcheck; mkdir tracker
+RUN chmod +x roundup_start roundup_healthcheck; \
+    mkdir tracker; chown ${roundup_uid:-1000}:${roundup_uid:-1000} tracker
 VOLUME $appdir/tracker
 
 # map port 8080 to your local port
@@ -193,15 +199,13 @@ EXPOSE 8080/tcp
 HEALTHCHECK --start-period=1m \
    CMD ./roundup_healthcheck
 
-# do not run roundup as root. This creates roundup user and group.
-ARG roundup_uid
-RUN adduser -D -h ${appdir} -u ${roundup_uid:-1000} roundup
+# switch to using roundup user
 USER roundup
 
 # run the server, disable output buffering so we can see logs.
 ENV PYTHONUNBUFFERED=1
 #ENTRYPOINT [ "roundup-server", "-n", "0.0.0.0" ]
-ENTRYPOINT [ "./roundup_start" ]
+ENTRYPOINT [ "/usr/bin/dumb-init", "./roundup_start" ]
 
 # allow the invoker to override cmd with multiple trackers
 # in each subdirectory under $appdir/tracker. E.G.
