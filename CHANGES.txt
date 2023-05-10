@@ -88,6 +88,10 @@ Fixed:
   processes. Defense against child process starting from detector
   and becoming a zombie when its roundup-server instance exits.
   (John Rouillard)
+- Move installed frontend/Zope back to frontend/ZRoundup
+  directory. This better identifies the directory when copied into
+  the Zope framework. It also matches existing
+  documentation. (John Rouilard)
 
 Features:
 

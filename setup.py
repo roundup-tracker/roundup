@@ -125,9 +125,9 @@ def main():
     data_files = [
         ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
         ('share/roundup/frontends', ['frontends/wsgi.py']),
-        ('share/roundup/frontends/Zope', Zope['module']),
-        ('share/roundup/frontends/Zope/icons', Zope['icons']),
-        ('share/roundup/frontends/Zope/dtml', Zope['dtml'])
+        ('share/roundup/frontends/ZRoundup', Zope['module']),
+        ('share/roundup/frontends/ZRoundup/icons', Zope['icons']),
+        ('share/roundup/frontends/ZRoundup/dtml', Zope['dtml'])
     ]
     # install man pages on POSIX platforms
     if os.name == 'posix':
