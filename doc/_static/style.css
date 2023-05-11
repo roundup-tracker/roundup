@@ -41,6 +41,9 @@
 
 * + * { margin-block-start: 1.2em;}
 
+/* shrink spacing between list elements in tables of contents */
+div.contents * + * { margin-block-start: 0.25em;}
+
 h1, h2, h3, h4, h5, h6 {
     line-height: 1.25;
     /* Larger spacing before header and smaller after to make
@@ -329,7 +332,40 @@ dd p.first { margin-block-start: 0; }
 #main:focus-visible {outline: none;}
 
 /* Prevent examples from extending outside the viewport */
-div.highlight > pre {
+/*div.highlight > pre {
     overflow-wrap: anywhere;
     white-space: break-spaces;
+}*/
+
+/* Forcing wrap in a pre leads to some confusing line breaks.
+   Use a horizontal scroll. Indicate the scroll by using
+   rounded scroll shadows.
+
+  https://css-tricks.com/books/greatest-css-tricks/scroll-shadows/
+  https://blogit.create.pt/pedrolopes/2022/03/24/css-scroll-shadows/
+ */
+div.highlight > pre {
+    overflow-wrap: none;
+    overflow-x: auto;
+    /* Shadows */
+    background-image:
+       /* Shadow covers */
+       linear-gradient(to right, white, white),
+       linear-gradient(to right, white, white),
+       /* Shadow */
+       radial-gradient(farthest-side at 0px 50%,
+		       rgba(0, 0, 20, 0.5), rgba(255, 255, 255, 0)),
+       radial-gradient(farthest-side at 100% 50%,
+		       rgba(0, 0, 20, 0.5), rgba(255, 255, 255, 0));
+    /* square shadows */
+    /*
+    linear-gradient(to right, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0)),
+    linear-gradient(to left, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0));
+    */
+    background-position: left center, right center,
+                         left center, right center;
+    background-repeat: no-repeat;
+    background-color: white;
+    background-size: 20px 100%, 20px 100%, 16px 100%, 16px 100%;
+    background-attachment: local, local, scroll, scroll;
 }
