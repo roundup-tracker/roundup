@@ -81,7 +81,7 @@ h4 {
 body 
 {
   background-color: #f5f5f5;
-  color: #222;
+  color: rgb(20,20,20);
   font-family: sans-serif, Arial, Helvetica;
   font-size: var(--_font-level-0);
   margin:0;
@@ -116,9 +116,9 @@ main {
 
 /* style */
 
-:link { color: #bb0000; text-decoration: none;}
+:link { color: rgb(220,0,0); text-decoration: none;}
 :link:hover {text-decoration: underline;}
-:visited { color: #770000; text-decoration: none;}
+:visited { color: rgb(187,0,0); text-decoration: none;}
 a.toc-backref { color: #000000; }
 
 .header h1 { margin-left: 1em; }
