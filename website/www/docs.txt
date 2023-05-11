@@ -6,6 +6,14 @@
 Docs
 ====
 
+.. note::
+   The documentation is slowly being reorganized using the `Diataxis
+   framework`_. Help with the reorganization is welcome. If a page you
+   used to see is missing, try checking the `Other Docs
+   <olderdocs.html>`_ page.
+
+.. _diataxis framework: https://diataxis.fr/
+
 .. toctree::
    :maxdepth: 2
 
