@@ -2,9 +2,11 @@
 pytz
 # indexer
 Whoosh
+# xapian is also installed
 # extra database support
 psycopg2
 mysqlclient
+redis
 # encryption
 gpg
 # java web tokens
