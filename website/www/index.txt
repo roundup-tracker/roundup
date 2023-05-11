@@ -175,7 +175,7 @@ You can install using a virtual environment with pip by:
 6. when you are done, use `deactivate` to return your shell to using
    the system python.
 
-Or choose the shorter source directory gratification to run the demo
+Or choose the source directory gratification mode to run the demo
 with these steps (change the ``-2.2.0`` version identifier to match
 your downloaded file).
 
