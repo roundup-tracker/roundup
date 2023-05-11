@@ -1,0 +1,20 @@
+Other Docs
+==========
+
+.. toctree::
+   :maxdepth: 2
+
+   docs/upgrading-history
+
+   docs/tracker_templates
+
+   Design Overview <docs/overview>
+   Design (original) <docs/design>
+
+   docs/developers
+
+   Notes about the MySQL Database backend <docs/mysql>
+   Notes about the PostgreSQL Database backend <docs/postgresql>
+
+   Richard Jones implementation notes <docs/implementation>
+   docs/security-history
