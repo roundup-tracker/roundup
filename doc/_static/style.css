@@ -347,7 +347,7 @@ dd p.first { margin-block-start: 0; }
   https://blogit.create.pt/pedrolopes/2022/03/24/css-scroll-shadows/
  */
 div.highlight > pre {
-    overflow-wrap: none;
+    overflow-wrap: normal;
     overflow-x: auto;
     /* Shadows */
     background-image:
