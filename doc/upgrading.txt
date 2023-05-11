@@ -14,10 +14,10 @@ Please read each section carefully and edit the files in your tracker home
 accordingly. Note that there is information about upgrade procedures in the
 `administration guide`_ in the `Software Upgrade`_ section.
 
-If a specific version transition isn't mentioned here (e.g. 0.6.7 to 0.6.8)
-then you don't need to do anything. If you're upgrading from 0.5.6 to
-0.6.8 though, you'll need to apply the "0.5 to 0.6" and "0.6.x to 0.6.3"
-steps.
+If a specific version transition isn't mentioned here (e.g. 0.6.7 to
+0.6.8) then you don't need to do anything.  If you're upgrading from
+0.5.6 to 0.6.8 though, you'll need to apply the "0.5 to 0.6" and
+"0.6.x to 0.6.3" steps.
 
 General steps:
 
@@ -39,11 +39,12 @@ General steps:
    7. Bring your Roundup instance back online
    8. Test
 
-**IMPORTANT** The v1.5.x releases of Roundup were the last to support
-Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
-Python version 2.7 that is newer than 2.7.2 is required to run
-Roundup.  Starting with Roundup version 2.0.0 we also support Python 3
-versions newer than 3.6.
+.. note::
+   The v1.5.x releases of Roundup were the last to support
+   Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
+   Python version 2.7 that is newer than 2.7.2 is required to run
+   Roundup.  Starting with Roundup version 2.0.0 we also support Python 3
+   versions newer than 3.6.
 
 Recent release notes have the following labels:
 
@@ -59,6 +60,13 @@ trackers with different versions of Roundup. So you can have one tracker
 using version 2.2.0 and another tracker using version 1.6.1. This
 allows you to upgrade trackers one at a time rather than having to
 upgrade all your trackers at once.
+
+.. note::
+
+   This file only includes versions released in the last 10
+   years. If you are upgrading from an older version, start with the
+   changes in the `historical migration <upgrading-history.html>`_
+   document.
 
 Contents:
 
@@ -1975,6 +1983,12 @@ vs.::
 
 The new calls escape the passed string by default and avoid XSS security
 issues.
+
+
+Migrating from older versions
+=============================
+
+See the `historical migration <upgrading-history.html>`_ document.
 
 .. _`customisation documentation`: customizing.html
 .. _`security documentation`: security-history.html
