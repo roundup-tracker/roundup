@@ -42,7 +42,9 @@
 * + * { margin-block-start: 1.2em;}
 
 /* shrink spacing between list elements in tables of contents */
-div.contents * + * { margin-block-start: 0.25em;}
+div.toctree-wrapper * + *, div.contents * + * {
+    margin-block-start: 0.25em;
+}
 
 h1, h2, h3, h4, h5, h6 {
     line-height: 1.25;
