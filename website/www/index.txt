@@ -149,18 +149,48 @@ Roundup ships with a **demo tracker** to play with - you don't need to
 install Roundup. After you've unpacked the source, just run "``python
 demo.py``" and load up the URL it prints out!
 
-To create a source directory and run the demo follow these simple
-steps (change the ``-2.2.0`` version identifier to match your downloaded
-file).
+You can install using a virtual environment with pip by:
 
-1. ``python -m pip download roundup``
+1. create a virtual environment with::
+
+     python3 -m venv roundup
+
+2. activate the environment with (assuming your shell is
+   sh/bash/zsh/ksh like)::
+
+     . roundup/bin/activate
+
+3. install the latest release of Roundup with::
+
+     python3 -m pip install roundup
+
+4. create a demo tracker with::
+
+     roundup-demo
+
+   using ``./demo`` as the directory and the ``classic`` tracker.
+
+5. load the URL printed by the demo tracker
+
+6. when you are done, use `deactivate` to return your shell to using
+   the system python.
+
+Or choose the shorter source directory gratification to run the demo
+with these steps (change the ``-2.2.0`` version identifier to match
+your downloaded file).
+
+1. ``python3 -m pip download roundup``
 2. ``tar -xzvf roundup-2.2.0.tar.gz``
 
    * if you don't have a tar command, ``python -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz`` can be used.
 
 3. ``cd roundup-2.2.0``
-4. ``python demo.py``
- 
+4. ``python3 demo.py``
+
+Both of these methods produce the same result.
+
+(The source download can also be used to create a Docker image.)
+
 Origin Story
 ============
 Roundup was originally released as version 0.1.1 in late August, 2001.
