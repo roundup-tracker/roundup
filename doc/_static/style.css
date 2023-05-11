@@ -87,6 +87,7 @@ body > .footer { margin: 1em 0 1em -14em; clear:both;}
 body > .navigation 
 {
   margin-left: -14em;
+  margin-inline-start: -14em;
   width: 14em;
   float: left;
 }
@@ -241,6 +242,17 @@ table caption { font-weight: bold; font-size: smaller; }
 
 table.footnote {
   font-size: calc(1em - 1pt);
+  margin-block-start: 1em;
+  position: relative
+}
+
+table.footnote::before {
+  border: 1px solid black;
+  content: "";
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 25%;
 }
 
 td {

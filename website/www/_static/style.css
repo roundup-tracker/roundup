@@ -242,6 +242,16 @@ table caption { font-weight: bold; font-size: smaller; }
 
 table.footnote {
   font-size: calc(1em - 1pt);
+  position: relative
+}
+
+table.footnote::before {
+  border: 1px solid black;
+  content: "";
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 25%;
 }
 
 td {
