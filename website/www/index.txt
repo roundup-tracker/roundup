@@ -1,3 +1,4 @@
+=====================
 Roundup Issue Tracker
 =====================
 
@@ -76,6 +77,9 @@ on the winning design from Ka-Ping Yee in the Software Carpentry
 The current stable version of Roundup is 2.2.0. It is a bug fix
 and feature release for the 2.1.0 release 
 
+Release Highlights
+==================
+
 Some improvements from the 2.1.0 release are:
 
 * Roundup supports dynamic and static compression of http
@@ -115,9 +119,12 @@ Some improvements from the 2.1.0 release are:
 
 More info on the 57 changes can be found in the `change note`_.
 
-For more information on Roundup see the :doc:`design overview
-<docs/design>`, and all the other :doc:`documentation <docs>`. Roundup
-has been deployed for:
+Roundup Use Cases
+=================
+
+For more information on Roundup see the :doc:`features list
+<docs/features>`, :doc:`design overview <docs/design>`, and all the
+other :doc:`documentation <docs>`. Roundup has been deployed for:
 
 * bug tracking and TODO list management (the classic
   installation)
@@ -132,10 +139,15 @@ has been deployed for:
 
 ...and so on. It's been designed with :doc:`flexibility
 <docs/customizing>` in mind - it's not just another bug
-tracker. Roundup ships with a **demo tracker** to play with - you don't
-need to install Roundup. After
-you've unpacked the source, just run "``python demo.py``" and load up the
-URL it prints out!
+tracker.
+
+
+Try It Out
+==========
+
+Roundup ships with a **demo tracker** to play with - you don't need to
+install Roundup. After you've unpacked the source, just run "``python
+demo.py``" and load up the URL it prints out!
 
 To create a source directory and run the demo follow these simple
 steps (change the ``-2.2.0`` version identifier to match your downloaded
@@ -149,6 +161,8 @@ file).
 3. ``cd roundup-2.2.0``
 4. ``python demo.py``
  
+Origin Story
+============
 Roundup was originally released as version 0.1.1 in late August, 2001.
 The first `change note`_ written said:
 
