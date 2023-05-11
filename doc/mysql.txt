@@ -54,7 +54,7 @@ Roundup tests expect an empty MySQL database. Two alternate ways to provide
 this:
 
 1. If you have root permissions on the MySQL server, you can create 
-   the necessary database entries using the follwing SQL sequence. Use
+   the necessary database entries using the following SQL sequence. Use
    ``mysql`` on the command line to enter::
 
        CREATE DATABASE rounduptest;
