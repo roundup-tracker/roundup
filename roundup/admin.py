@@ -1932,6 +1932,8 @@ Desc: %(description)s
             self.help_commands()
             self.help_all()
             return 0
+        if command == 'templates':
+            return self.do_templates(args[1:])
 
         # figure what the command is
         try:
@@ -1970,8 +1972,6 @@ Desc: %(description)s
             except UsageError as message:  # noqa: F841
                 print(_('Error: %(message)s') % locals())
                 return 1
-        elif command == "templates":
-            return self.do_templates(args[1:])
 
         # get the tracker
         try:
