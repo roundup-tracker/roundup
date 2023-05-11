@@ -39,6 +39,8 @@
 		      );
 }
 
+* + * { margin-block-start: 1.2em;}
+
 h1, h2, h3, h4, h5, h6 {
     line-height: 1.25;
     /* Larger spacing before header and smaller after to make
@@ -242,7 +244,6 @@ table caption { font-weight: bold; font-size: smaller; }
 
 table.footnote {
   font-size: calc(1em - 1pt);
-  margin-block-start: 1em;
   position: relative
 }
 
@@ -302,6 +303,7 @@ div.admonition.caution p.admonition-title {
 }
 
 dt { font-weight: bold; margin-block-start: 1em;}
+dt + dd { margin-block-start: 0.25em; }
 dd p.first { margin-block-start: 0; }
 
 #skiplink { display: block;
