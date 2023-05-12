@@ -15,29 +15,38 @@ Contents
    :maxdepth: 2
 
    features
+
    installation
    upgrading
    security
    FAQ
+
    user_guide
-   reference
+
    customizing
-   admin_guide
-   security-history
-   upgrading-history
-   debugging
-   xmlrpc
    rest
-   tracker_templates
+   xmlrpc
+   reference
    glossary
-   acknowledgements
+
+   admin_guide
    license
+   acknowledgements
+
+   upgrading-history
+
+   tracker_templates
+
    Design Overview <overview>
    Design (original) <design>
+
    developers
+
    Notes about the MySQL Database backend <mysql>
    Notes about the PostgreSQL Database backend <postgresql>
+
    Richard Jones implementation notes <implementation>
+   security-history
 
 See: https://wiki.roundup-tracker.org/ReleaseErrata for fixes to
 documentation.
