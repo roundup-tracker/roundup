@@ -48,12 +48,12 @@ General steps:
 
 Recent release notes have the following labels:
 
-   * required - Roundup will not work properly if these steps are not done
-   * recommended - Roundup will still work, but these steps can cause
-     security or stability issues if not done.
-   * optional - new features or changes to existing features you might
-     want to use
-   * info - important possibly visible changes in how things operate
+* required - Roundup will not work properly if these steps are not done
+* recommended - Roundup will still work, but these steps can cause
+  security or stability issues if not done.
+* optional - new features or changes to existing features you might
+  want to use
+* info - important possibly visible changes in how things operate
 
 If you use virtual environments for your installation, you can run
 trackers with different versions of Roundup. So you can have one tracker
@@ -537,10 +537,10 @@ Change passwords using crypt module (optional)
 
 The crypt module is being removed from the standard library.  Any
 stored password using crypt encoding will fail to verify once the
-crypt module is removed (expected in Python 3.13 see
-pep-0594). Automatic migration of passwords (if enabled in config.ini)
-re-encrypts old passwords using something other than crypt if a user
-logs in using the web interface.
+crypt module is removed (expected in Python 3.13 see `pep-0594
+<https://peps.python.org/pep-0594/>`_). Automatic migration of
+passwords (if enabled in config.ini) re-encrypts old passwords using
+something other than crypt if a user logs in using the web interface.
 
 You can find users with passwords still encrypted using crypt by
 running::
@@ -593,7 +593,7 @@ in your TAL based templates. The ``jinja2`` based templates are
 missing this file, but if you implemented one you want to surround the
 jinja2 code with::
 
-  {% if context.is_view_ok() %}
+  {% if context.is_edit_ok() %}
     <submit button code here>
   {% endif %}
 
@@ -1255,6 +1255,8 @@ content.
 
 See: https://sourceforge.net/p/roundup/mailman/message/35763294/
 for the initial discussion of the issue.
+
+.. _cross site request forgery detection added:
 
 Cross Site Request Forgery Detection Added (recommended)
 --------------------------------------------------------
