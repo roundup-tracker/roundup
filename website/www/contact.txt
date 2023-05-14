@@ -9,7 +9,9 @@ Contact
 =======
 
 We maintain the following mailing lists:
-  
+
+.. rst-class:: linkspacing
+
 =================== ==========================
 roundup-users_      archives `[SourceForge]`__
 roundup-devel_      archives `[SourceForge]`__
