@@ -47,6 +47,14 @@ nodaemon = no
 # Default: no
 log_hostnames = no
 
+# Have http(s) request logging done via python logger module.
+# If set to yes the python logging module is used with qualname
+# 'roundup.http'. Otherwise logging is done to stderr or the file
+# specified using the -l/logfile option.
+# Allowed values: yes, no
+# Default: no
+loghttpvialogger = no
+
 # File to which the server records the process id of the daemon.
 # If this option is not set, the server will run in foreground
 # 
@@ -83,6 +91,19 @@ ssl = no
 # to the directory containing this config file.
 # Default: 
 pem = 
+
+# Comma separated list of extra headers that should
+# be copied into the CGI environment.
+# E.G. if you want to access the REMOTE_USER and
+# X-Proxy-User headers in the back end,
+# set to the value REMOTE_USER,X-Proxy-User.
+# Allowed values: comma-separated list of words
+# Default: 
+include_headers = 
+
+# Change to HTTP/1.0 if needed. This disables keepalive.
+# Default: HTTP/1.1
+http_version = HTTP/1.1
 
 # Roundup trackers to serve.
 # Each option in this section defines single Roundup tracker.
