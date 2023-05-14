@@ -850,9 +850,9 @@ method.
    rule.
 5. Test with ``mod_wsgi-express start-server``. This should serve
    up content on localhost port 8000. You can then direct a browser on
-   the server itself to http://localhost:8000/ or on another machine at
+   the server itself to ``http://localhost:8000/`` or on another machine at
    the server's domain name or ip address followed by colon then 8000
-   (e.g. http://11.11.11.101:8000/). If successful, you should see a
+   (e.g. ``http://11.11.11.101:8000/``). If successful, you should see a
    Malt Whiskey image.
 
 Package manager install of mod_wsgi
@@ -889,7 +889,7 @@ To run the tracker on Port 8000 as a foreground process
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 1. Change the ``tracker.web`` url in ``config.ini`` to port 8000 at the
-   server domain name or ip address (e.g. http://11.11.11.101:8000/).
+   server domain name or ip address (e.g. ``http://11.11.11.101:8000/``).
 2. Open port 8000 for TCP on the server if you didn't already do so.
 3. ``cd`` to your tracker home directory, then run
    ``mod_wsgi-express start-server wsgi.py``.
@@ -920,7 +920,7 @@ To run mod_wsgi on PORT 80
 ''''''''''''''''''''''''''
 
 1. Change the ``tracker.web`` url in ``config.ini`` to the server url
-   with no port designator. E.g. http://11.11.11.101.
+   with no port designator. E.g. ``http://11.11.11.101``.
 2. Open port 80 on the server for TCP traffic if it isn't open already.
 3. Stop the system instance of Apache to make sure it isn't holding on
    to port 80 run: ``sudo service apache2 stop``.
@@ -1070,7 +1070,7 @@ In this example the directory hosting all of the tracker homes is
 inside the httpd.conf file!)
 
 The URL for accessing these trackers then become:
-`http://<roundupserver>/roundup/support/`` and
+``http://<roundupserver>/roundup/support/`` and
 ``http://<roundupserver>/roundup/devel/``
 
 Note that in order to use https connections you must set up Apache for secure
