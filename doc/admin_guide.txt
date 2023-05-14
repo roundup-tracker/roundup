@@ -230,10 +230,10 @@ roundup-server command line use::
  roundup_server -p 8017  -u roundup --save-config  demo=/trackers/demo \
     sysadmin=/trackers/sysadmin
 
-Note it will save the old file to config.bak and create a new
-config.ini. The file is recreated from scratch ignoring the contents
-of the current config.ini. So you may need to merge the backup and
-config files.
+Note it will save an old config.ini file to config.bak and create a
+new config.ini. The file is recreated from scratch ignoring the
+contents of the current config.ini. You may need to merge the
+backup and config files.
 
 Configuring Compression
 =======================
