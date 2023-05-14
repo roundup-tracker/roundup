@@ -411,6 +411,10 @@ this::
     # fire before changes are made
     db.status.audit('create', statusfail)
 
+.. index::
+     i18n; adding translations for your tracker
+     see: internatonalization; i18n
+     see: localization; i18n
 
 Extracting Translatable Messages
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
