@@ -78,7 +78,12 @@ Print version and exit.
 Print help and exit.
 .TP
 \fB--save-config\fP
-Create or update configuration file and exit.
+Create configuration file and exit. The old config.ini will be saved to
+config.bak. Note that this command doesn't attempt to load or verify
+an existing config.ini. Running this in a tracker home directory will
+move the existing config.ini to config.bak and replace it with the
+roundup-server's config.ini. This will make the tracker in the
+directory fail to start until the original config.ini is restored.
 .TP
 \fBname=\fP\fItracker home\fP
 Sets the tracker home(s) to use. The \fBname\fP variable is how the tracker is
