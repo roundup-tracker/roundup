@@ -603,8 +603,8 @@ jinja2 code with::
 Migrating from 2.0.0 to 2.1.0
 =============================
 
-Rdbms version change from 5 to 6 (**)
--------------------------------------
+Rdbms version change from 5 to 6 (required)
+-------------------------------------------
 
 To fix an issue with importing databases, the database has to be
 upgraded for rdbms backends.
@@ -678,16 +678,16 @@ then upgraded to version 5 you have the uniqueness enforcing
 constraint. Running migrate updates to schema version 6 and installs
 the unique index constraint if it is missing.
 
-Setuptools is now required to install
--------------------------------------
+Setuptools is now required to install (info)
+--------------------------------------------
 
 Roundup install now uses setuptools rather than distutils. You must
 install setuptools.  Use the version packgaged by your OS vendor.  If
 your OS vendor doesn't supply setuptools use ``pip install
 setuptools``. (You may need pip3 rather than pip if using python3.)
 
-Define Authentication Header
-----------------------------
+Define Authentication Header (optional)
+---------------------------------------
 
 The web server in front of roundup (apache, nginx) can perform user
 authentication. It can pass the authenticated username to the backend
@@ -729,8 +729,8 @@ At the time this is written, support is experimental. If you use it
 you should notify the roundup maintainers using the roundup-users
 at lists.sourceforge.net mailing list.
 
-Classname Format Enforced
--------------------------
+Classname Format Enforced (info)
+--------------------------------
 
 Check schema.py and look at all Class(), IssueClass(), FileClass()
 calls. The second argument is the classname. All classnames must:
@@ -742,8 +742,8 @@ calls. The second argument is the classname. All classnames must:
 this was not enforced before. Using non-standard classnames could lead
 to other issues.
 
-jQuery updated with updates to user.help.html
----------------------------------------------
+jQuery updated with updates to user.help.html (recommended)
+-----------------------------------------------------------
 
 The devel and responsive templates shipped with an old version of
 jQuery with some security issues. It has been updated to the current
@@ -756,8 +756,8 @@ references the new ``jquery-3.5.1.js`` file and also fixes a bug that
 prevented applying the change from the helper to the field on the main
 form.
 
-Roundup-admin security stops on incorrect properties
-----------------------------------------------------
+Roundup-admin security stops on incorrect properties (info)
+-----------------------------------------------------------
 
 The ``roundup-admin ... security`` command used to continue
 running through the rest of the security roles after reporting a
@@ -766,8 +766,8 @@ property error. Now it stops after reporting the incorrect property.
 If run non-interactively, it exits with status 1. It can now be
 used in a startup script to detect permission errors.
 
-Futureproof devel and responsive timezone selection extension
--------------------------------------------------------------
+Futureproof devel and responsive timezone selection extension (recommended)
+---------------------------------------------------------------------------
 
 The devel and responsive (derived from devel) templates use a select
 control to list all available timezones when pytz is used. It
@@ -801,8 +801,8 @@ Migrating from 1.6.X to 2.0.0
 .. index:: roundup-admin; updateconfig subcommand
 
 
-Python 2 MYSQL users MUST READ
-------------------------------
+Python 2 MYSQL users MUST READ (required)
+-----------------------------------------
 
 To fix issues with encoding of data and text searching, roundup now
 explicitly sets the database connection character set. Roundup prior
@@ -888,8 +888,8 @@ roundup-users AT lists.sourceforge.net mailing list.
 As people report successful or unsuccessful conversions, we will update
 the errata page at: https://wiki.roundup-tracker.org/ReleaseErrata.
 
-Upgrade tracker's config.ini file
----------------------------------
+Upgrade tracker's config.ini file (recommended)
+-----------------------------------------------
 
 Once you have installed the new roundup, use::
 
@@ -901,8 +901,10 @@ merge any local comments from the tracker's ``config.ini`` into
 settings as you want. Then replace ``config.ini`` with the
 ``newconfig.ini`` file.
 
-Python 3 support
-----------------
+.. _Python 3 support:
+
+Python 3 support (info)
+-----------------------
 
 Many of the ``.html`` and ``.py`` files from Roundup that are copied
 into tracker directories have changed for Python 3 support.  If you
@@ -934,8 +936,8 @@ back to using python 2. (Note going back to Python 2 will require
 the same steps as moving from 2 to 3 except using Python 3 to perform
 the export.)
 
-Rate Limit New User Registration
---------------------------------
+Rate Limit New User Registration (info)
+---------------------------------------
 
 The new user registration form can be abused by bots to allow
 automated registration for spamming. This can be limited by using the
@@ -968,23 +970,23 @@ can back the code out of the tracker. You must change the name of the
 field in the html template to ``opaqueregistration`` from ``opaque``
 in order to use the core code.
 
-PGP mail processing
--------------------
+PGP mail processing (required)
+------------------------------
 
 Roundup now uses the ``gpg`` module instead of ``pyme`` to process PGP
 mail.  If you have PGP processing enabled, make sure the ``gpg``
 module is installed.
 
-MySQL client module
--------------------
+MySQL client module (recommended)
+---------------------------------
 
 Although the ``MySQLdb`` module from
 https://pypi.org/project/MySQL-python/ is still supported, it is
 recommended to switch to the updated module from
 https://pypi.org/project/mysqlclient/.
 
-XMLRPC Access Role
-------------------
+XMLRPC Access Role (info/required)
+----------------------------------
 
 A new permission has been added to control access to the XMLRPC
 endpoint. If the user doesn't have the new "Xmlrpc Access" permission,
@@ -997,8 +999,8 @@ tracker's schema.py and add::
 This is usually included near where other permissions like "Web Access"
 or "Email Access" are assigned.
 
-New values for db.tx_Source
----------------------------
+New values for db.tx_Source (info)
+----------------------------------
 
 The database attribute tx_Source reports "xmlrpc" and "rest" when the
 /xmlrpc and /rest web endpoints are used. Check all code (extensions,
@@ -1021,8 +1023,8 @@ or::
     if db.tx_Source in ['web', 'rest', 'xmlrpc', 'email-sig-openpgp', 'cli' ]:
 
 
-CSV export changes
-------------------
+CSV export changes (info)
+-------------------------
 
 The original Roundup CSV export function for indexes reported id
 numbers for links. The wiki had a version that resolved the id's to
@@ -1051,8 +1053,8 @@ be added for missing parameters.
 This turns exported values that may look like formulas into strings so
 some versions of Excel won't try to interpret them as a formula.
 
-Update userauditor.py to restrict usernames
--------------------------------------------
+Update userauditor.py to restrict usernames (recommended)
+---------------------------------------------------------
 
 A username can be created with embedded commas and < and >
 characters. Even though the < and > are usually escaped when
@@ -1065,8 +1067,8 @@ detectors directory. Otherwise merge the changes from the template
 userauditor.py. https://issues.roundup-tracker.org/issue2550921 may be
 helpful.
 
-Consider reindexing if you use European languages
--------------------------------------------------
+Consider reindexing if you use European languages (recommended)
+---------------------------------------------------------------
 
 A couple of bugs dealing with incorrect indexing of European languages
 (Russian and German were reported) have been fixed. Note reindexing
@@ -1085,8 +1087,8 @@ minutes. Using whoosh took about 2 hours. Using xapian took about 6
 hours. All examples were with Python 2. Anecdotal evidence shows
 Python 3 is faster, but YMMV.
 
-Merge improvements in statusauditor.py
---------------------------------------
+Merge improvements in statusauditor.py (optional)
+-------------------------------------------------
 
 By default the detector statusauditor.py will change the status from
 "unread" to "chatting" when a second message is added to an issue.
@@ -1146,14 +1148,14 @@ If you have an incorrect value (say you use ``T`` rather than
 
 to fix this set the value to ``yes`` (True) or ``no`` (False).
 
-Responsive template changes
----------------------------
+Responsive template changes (optional)
+--------------------------------------
 
 There have been some changes to the responsive template. You can
 diff/merge these changes into your responsive template based tracker.
 
-Jinja template changes
-----------------------
+Jinja template changes (required)
+---------------------------------
 
 Auto escaping has been enabled in the jinja template engine, this
 means it is no longer necessary to manually escape dynamic strings
@@ -1221,7 +1223,7 @@ Read the new config.ini and configure it to enable new
 features. Details on using these features can be found in
 this section.
 
-Make sure that user can view labelprop on classes (REQUIRED)
+Make sure that user can view labelprop on classes (required)
 ------------------------------------------------------------
 
 If you have View permissions that use ```properties=...```,
@@ -1254,8 +1256,8 @@ content.
 See: https://sourceforge.net/p/roundup/mailman/message/35763294/
 for the initial discussion of the issue.
 
-Cross Site Request Forgery Detection Added
-------------------------------------------
+Cross Site Request Forgery Detection Added (recommended)
+--------------------------------------------------------
 
 Roundup 1.6. supports a number of defenses against CSRF.
 
@@ -1396,7 +1398,7 @@ made it difficult to exploit. However allowing the use of
 subdirectories to organize the templates required that it be fixed.
 
 
-Database back end specified in config.ini (REQUIRED)
+Database back end specified in config.ini (required)
 ----------------------------------------------------
 
 The ``db/backend_name`` file is no longer used to configure the database
@@ -1505,7 +1507,7 @@ the email entry in the tracker section::
   # Default: 
   replyto_address = 
 
-Login from a search or after logout works better (REQUIRED)
+Login from a search or after logout works better (required)
 -----------------------------------------------------------
 
 The login form has been improved to work with some back end code
