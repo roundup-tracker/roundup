@@ -3761,7 +3761,8 @@ Translations
 
 Should you wish to enable multiple languages in template content that you
 create you'll need to add new locale files in the tracker home under a
-``locale`` directory. Use the instructions in the ``developer's guide`` to
+``locale`` directory. Use the `translation instructions in the
+developer's guide <developers.html#extracting-translatable-messages>`_ to
 create the locale files.
 
 
