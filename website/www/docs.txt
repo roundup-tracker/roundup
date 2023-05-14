@@ -12,6 +12,9 @@ Docs
    used to see is missing, try checking the `Other Docs
    <olderdocs.html>`_ page.
 
+See: https://wiki.roundup-tracker.org/ReleaseErrata for fixes to
+documentation.
+
 .. _diataxis framework: https://diataxis.fr/
 
 .. toctree::
