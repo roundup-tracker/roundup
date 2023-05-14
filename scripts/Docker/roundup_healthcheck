@@ -1,5 +1,7 @@
 #! /bin/sh
 
+# if there are multiple trackers, d=demo t=tracker ...
+# returns last one for testing that server is up. Does not test
+# each tracker.
 tracker=$(ps -ef | sed -ne '/roundup-server/s/^.*\s\(\w*\)=.*$/\1/p')
-wget -q -O /dev/null --no-verbose http://localhost:8080/$tracker/
-
+wget -q -O /dev/null --no-verbose http://localhost:8080/${tracker:-demo}/

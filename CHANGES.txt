@@ -92,6 +92,10 @@ Fixed:
   directory. This better identifies the directory when copied into
   the Zope framework. It also matches existing
   documentation. (John Rouilard)
+- Dockerfile supports demo mode for instant gratification
+  8-). Also supports shell and admin mode (John Rouillard)
+- Multiple fixes/updates for installation documentation.
+  Including docker shell/admin/demo mdoes. (John Rouillard)
 
 Features:
 

@@ -14,47 +14,163 @@ trap exit INT
 
 do_exit=0
 
+if test -t 0 -a -t 1; then  # see if stdin/out are associated with a tty
+    might_be_interactive="true"
+else
+    might_be_interactive="false"
+fi
+
 for tracker_spec in "$@"; do
-    # IFS== set a=b doesn't assign $1 and $2 in busybox ash
-    # it also clobbers '$@'. 'echo mumble | read' starts read in a
+    # IFS== set a=b doesn't just assign $1 and $2 in busybox ash
+    # it also clobbers '$@'. 'printf mumble | read' starts read in a
     # subshell so vars are not available in parent.
     IFS="=" read tracker directory <<- EOE
-    $tracker_spec
+	$tracker_spec
 	EOE
     # ^ is a tab for use with <<-
 
-    # was $tracker_spec in the form of a=b, if not ignore it.
-    # allows setting CMD to -i index_template issue=tracker for example.
-    if [ -z "$directory" ]; then continue; fi
+    if [ -z "$directory" ]; then
+	# $tracker_spec was not in the form of a=b, check to see
+	# if it's a request to start in demo/shell mode:
+	case "$tracker" in
+	    demo)
+		if [ -z "$PORT_8080" ]; then
+		    PORT_8080=8917
+		    printf "If docker reports a bind error, you can set the\n"
+		    printf "Docker environment variable PORT_8080 to fix it.\n"
+		    printf "Please add -e PORT_8080=port_number. The\n"
+		    printf "port_number must match the first value to -p \n"
+		    printf "which must be an unused port on your server.\n"
+		fi
+		template=classic
+	        backend=sqlite
+
+		shift
+
+		demoArgs=$#
+
+		for arg in "$@"; do
+		    # all keywords are unique, so iterate over all and
+		    # assign as appropriate
+		    case "$arg" in
+			classic|devel|jinja2|minimal|responsive)
+			    template="$arg";;
+
+			anydbm|sqlite)
+			    backend="$arg";;
+			postgres|mysql)
+			    printf "demo mode only supports sqlite or anydbm backends, not $1. Exiting."
+			    exit 1;;
+			nuke)
+			    nuke="$arg";;
+		    *) printf "Unknown argument $1.\n"
+		       printf "Usage: demo [template] [db]\n"
+		       printf "  template: one of "
+		       printf "classic devel jinja2 minimal responsive\n"
+		       printf "  db: one of: sqlite anydbm\n"
+		       printf "default: classic sqlite\n"
+		       printf "Exiting\n"
+		       exit 1
+		    esac
+		    shift
+		done
+
+		# run demo make sure to set bind address -B to 0.0.0.0
+		# otherwise we can never make it out of the docker container.
+		# use -p to force port to match the exported docker port.
+		if [ -f tracker/demo/config.ini -a -z "$nuke" ]; then
+		    if [ "$demoArgs" -ne 0 ]; then
+			printf "Error: backend and template arguments to demo "
+			printf "are invalid if a tracker\nis configured and "
+			printf "'nuke' is not specified.\nExiting.\n"
+			exit 1
+		    fi
+		    printf "Restarting existing tracker.\n"
+		    # Restart an existing demo tracker.
+		    exec roundup-demo \
+			 -B 0.0.0.0 \
+			 -p 8080 \
+			 tracker/demo
+                else
+		    # Create new or nuke/create existing tracker.
+		    # Set parameters required to create tracker.
+		    # Inherit the url port spec from the environment
+		    # variable PORT_8080 using default value or value 
+		    # specified on the docker run command line.
+		    printf "Creating new tracker.\n"
+		    exec roundup-demo \
+			 -B 0.0.0.0 \
+			 -p 8080 \
+			 -b $backend \
+			 --urlport $PORT_8080 \
+			 -t $template \
+			 tracker/demo \
+			 $nuke
+		fi
+		;;
+	    shell)
+		if [ "$might_be_interactive" = "false" ]; then
+		    printf \
+		       "Error: must use -it on docker command line to invoke shell\n"
+		    exit 3
+		fi
+		exec /bin/sh;;
+	    admin)
+	       shift
+	       exec roundup-admin "$@";;
+	    *)
+		# we just continue. Allow setting CMD to:
+		#    -i index_template issue=tracker
+		# for example.
+		continue
+	esac
+    fi
+
+    # we have a tracker=directory spec. Validate it and see if we need to
+    # install or initialize it.
 
     # something is specified or built wrong. Don't start.
     if [ ! -d "$directory" ]; then
-        printf "Unable to find directory %s. Exiting\n" "$directory"
+        printf "Unable to find directory %s for tracker %s. Exiting.\n" \
+	            "$directory" "$tracker"
 	exit 1
     fi
 
-    # user must define web in config.ini.
-    if ! grep '^\s*web\s\s*=\s\s*' "$directory/config.ini" > /dev/null; then
+    # verify that config.ini has been edited with a web spec.
+    # user must at minimum define web in config.ini.
+    if ! grep '^\s*web\s*=\s*' "$directory/config.ini" > /dev/null 2>&1
+    then
+	if [ -e "$directory/config.ini" ]; then
+	    printf "Please edit %s/config.ini and set the required
+parameters.\n" "$directory"
+	    printf "The web setting appears to be missing.\n"
+	    exit 3
+	fi
+
+        printf "Installing %s tracker in %s\n" "$tracker" "$directory"
         roundup-admin -i "$directory" install
         do_exit=1
     fi
 
     # we have a valid config.ini so init database if not done
-    if [ $do_exit == 0 -a ! -e "$directory/.init_done" ]; then
-        if roundup-admin -i "$directory" init; then
-	  cat > "$directory/.init_done" <<- EOD
-	  Don't delete this file. The docker startup needs it so it won't
-	  re-initialze the database destroying all the data.
-	EOD
-	else
-	    do_exit=1
+    # if we get errors, the db directory should be missing
+    # and we print an error.
+    if [ $do_exit == 0 -a ! -e "$directory/db" ]; then
+	printf "Initializing tracker %s\n" "$tracker"
+        if ! roundup-admin -i "$directory" init; then
+           # something went wrong.
+	   # verify it looks like a tracker directory
+	   # then remove the database directory
+	   test -e "$directory/TEMPLATE-INFO.txt" && \
+           rm -rf "$directory/db"
 	fi
+	do_exit=1
     fi
-done
+done   # for "$@"
 
 # if any config.ini needs editing don't start up.
 if [ $do_exit == 0 ]; then
-   # make roundup-server process 1 with exec
+   # make roundup-server process pid 1 with exec
    exec roundup-server -n 0.0.0.0 "$@"
 fi
 
