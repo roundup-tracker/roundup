@@ -1267,16 +1267,16 @@ Http header verification against the tracker's ``web``
 setting in the ``[tracker]`` section of config.ini for the
 following headers:
 
- 1. Analyze the ``Referer`` HTTP header to make sure it
-    includes the web setting.
- 2. Analyze the ``Origin`` HTTP header to make sure the
-    schema://host matches the web setting.
- 3. Analyze the ``X-Forwarded-Host`` header set by a proxy
-    running in front of roundup to make sure it agrees with
-    the host part of the web setting.
- 4. Analyze the ``Host`` header to make sure it agrees with
-    the host part of the web setting. This is not done if
-    ``X-Forwarded-Host`` is set.
+1. Analyze the ``Referer`` HTTP header to make sure it
+   includes the web setting.
+2. Analyze the ``Origin`` HTTP header to make sure the
+   schema://host matches the web setting.
+3. Analyze the ``X-Forwarded-Host`` header set by a proxy
+   running in front of roundup to make sure it agrees with
+   the host part of the web setting.
+4. Analyze the ``Host`` header to make sure it agrees with
+   the host part of the web setting. This is not done if
+   ``X-Forwarded-Host`` is set.
 
 By default roundup 1.6 does not require any specific header
 to be present. However at least one of the headers above
@@ -1580,7 +1580,7 @@ To add this to your own tracker, add the following code (prefixed with
 a +) after the entry box for the new keyword in html/keyword.item.html:
 
 .. code::
-  :class: big-code
+   :class: big-code
 
       <tr>
        <th i18n:translate="">Keyword</th>
