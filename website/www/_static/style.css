@@ -90,6 +90,7 @@ body
 
 /* -14em is size of table of contents/nav */
 body > .header { margin: 0 0 0 -14em;}
+body > header > div.mobile { display:none; }
 body > .header div.label { font-size: 2em; font-weight: bold; margin: 0.67em 0 0.67em 1em;}
 body > .footer { margin: 1em 0 1em -14em; clear:both;}
 body > .navigation 
@@ -311,6 +312,13 @@ div.admonition.caution p.admonition-title {
 dt { font-weight: bold; margin-block-start: 1em;}
 dt + dd { margin-block-start: 0.25em; }
 dd p.first { margin-block-start: 0; }
+dd > ul:first-child {
+    /* reduce indent with list inside dd. I want to reduce
+       margin-inline-start on dd but :has(> ul:first-child)
+       doesn't work in firefox yet, so use negative margin
+       on ul. */
+    margin-inline-start: -32px;
+}
 
 #skiplink { display: block;
                    margin-block-start: 1em;
@@ -388,17 +396,55 @@ div.highlight > pre {
     body > .navigation li > ul > li { padding-block: 1em;
     /* move links away from each other */ }
     #roundup-issue-tracker .note { float: none; /* download box */}
-    body > .footer { margin-inline-start: unset; }
+    body > header > div.label.mobile { /* constrain nav label div */
+	display: block;
+	margin-inline-start: 0.5em;
+	max-width: 48%;
+    }
+
+    /* activate jump link and hide default label at top of stacked sidebar */
+    body > header > div.mobile span.jumplabel {
+	display: block;
+	font-size: small;
+    }
+    body > header > div.non_mobile { display: none; }
+
+    body > .footer { margin-inline-start: 1em; }
 
     /* changes for content */
     /* stop paths and things from overflowing the viewport. */
     div.content { overflow-wrap: break-word; }
-    /* add spaces around items in TOC to make hitting the links easier */
+
+    /* add space between items in TOC to make hitting the links easier */
+    li[class^=toctree] { margin-block: 1em; }
+    li[class^=toctree] > ul { margin-top: 1em; }
+
     div.contents ul.simple li { padding-block: .5em; }
-    ul.simple li a { min-height: 48px;
-		     display: block;}
+
+    h1 + div.contents > ul:first-child {
+	/* reduce wasted whitespace to left in TOC */
+	padding-inline-start: 1em;
+    }
+    #subnav {
+	margin-block-end: 1em;
+	min-height: 48px;
+    }
+
+    /* use for table of links to increase space between
+    links on small devices */
+    table.linkspacing tr {height: 48px;}
 }
 
+@media only screen and (max-width:512px) {
+    /* prevent searchbox bleed into jumplink@top left. */
+    #searchbox { max-width: 48%; }
+    #searchbox > form {
+	align-items: flex-end;
+	display: inline-flex;
+	flex-direction: column;
+    }
+    #searchbox > form > input[type=submit] { margin-block: 0.75em; }
+}
 /* Contact page */
 div#contact table td {
   white-space: nowrap;
