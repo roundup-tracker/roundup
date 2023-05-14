@@ -224,11 +224,16 @@ Additional notes for each keyword:
   Make sure the name part doesn't include any url-unsafe characters like
   spaces. Stick to alphanumeric characters and you'll be ok.
 
-To generate a config.ini in the current directory (note it will
-overwrite an existing file) from the roundup-server command line use::
+To generate a config.ini in the current directory from the
+roundup-server command line use::
 
  roundup_server -p 8017  -u roundup --save-config  demo=/trackers/demo \
     sysadmin=/trackers/sysadmin
+
+Note it will save the old file to config.bak and create a new
+config.ini. The file is recreated from scratch ignoring the contents
+of the current config.ini. So you may need to merge the backup and
+config files.
 
 Configuring Compression
 =======================
