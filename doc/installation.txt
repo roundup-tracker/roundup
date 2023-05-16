@@ -2167,6 +2167,6 @@ please let us know!
 .. _Redis: https://redis.io
 .. _redis-py: https://pypi.org/project/redis/
 .. _requests: https://requests.readthedocs.io/en/latest/
-.. _Whoosh: https://whoosh.readthedocs.org/en/latest/
+.. _Whoosh: https://whoosh.readthedocs.io/en/latest/
 .. _Xapian: https://xapian.org/
 .. _zstd: https://pypi.org/project/zstd/
