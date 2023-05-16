@@ -114,7 +114,7 @@ main {
 
 /* limit width of items in main column to 65 characters. On
    wider screens can be 100+ chars: too wide */
-main p, main:is(H1, H2, H3, H4, H5, H6), {max-width: 65ch;}
+main p, main:is(H1, H2, H3, H4, H5, H6) {max-width: 65ch;}
 main table { width: 65ch; }
 
 /* style */
