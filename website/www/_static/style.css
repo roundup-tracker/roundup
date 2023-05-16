@@ -166,7 +166,7 @@ a.toc-backref { color: #000000; }
 .menu ul ul > li 
 {  
   margin: 0;
-  padding: 0;
+  padding: 0.5em;
   border: none;
   border-top: solid thin #dadada;
   background-color: inherit;

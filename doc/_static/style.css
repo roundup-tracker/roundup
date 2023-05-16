@@ -90,6 +90,7 @@ body
 
 /* -14em is size of table of contents/nav */
 body > .header { margin: 0 0 0 -14em;}
+body > header > div.mobile { display:none; }
 body > .header div.label { font-size: 2em; font-weight: bold; margin: 0.67em 0 0.67em 1em;}
 body > .footer { margin: 1em 0 1em -14em; clear:both;}
 body > .navigation 
@@ -165,7 +166,7 @@ a.toc-backref { color: #000000; }
 .menu ul ul > li 
 {  
   margin: 0;
-  padding: 0;
+  padding: 0.5em;
   border: none;
   border-top: solid thin #dadada;
   background-color: inherit;
@@ -311,6 +312,13 @@ div.admonition.caution p.admonition-title {
 dt { font-weight: bold; margin-block-start: 1em;}
 dt + dd { margin-block-start: 0.25em; }
 dd p.first { margin-block-start: 0; }
+dd > ul:first-child {
+    /* reduce indent with list inside dd. I want to reduce
+       margin-inline-start on dd but :has(> ul:first-child)
+       doesn't work in firefox yet, so use negative margin
+       on ul. */
+    margin-inline-start: -32px;
+}
 
 #skiplink { display: block;
                    margin-block-start: 1em;
