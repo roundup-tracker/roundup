@@ -15,6 +15,9 @@ classname
    or "_", and only have alphanumerics and "_" in the middle.
 db (or hyperdb)
    a collection of items
+definitional class
+   a class that exists to define a descrete set of values. For example
+   status or priority.
 designator
    a combined class + itemid reference to any item in the
    hyperdb. E.g. issue26. Note that form values can include
