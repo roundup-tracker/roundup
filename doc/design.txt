@@ -1331,7 +1331,7 @@ field     display a property like the plain displayer above, but in a
 menu      for a Link property, display a menu of the available choices
 ========= ==============================================================
 
-See the `customisation`_ documentation for the complete list.
+See the `reference`_ documentation for the complete list.
 
 
 Index Views
@@ -1753,5 +1753,5 @@ Changes to this document
 - Added "actor" property
 - 'classname' format specified in class Class.
 
-.. _customisation: customizing.html
+.. _reference: reference.html
 

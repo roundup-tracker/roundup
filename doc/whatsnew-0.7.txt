@@ -141,7 +141,7 @@ described in the `Defining new web actions`__ section of the customization
 documentation. You might also want to take a look at the `Using an external
 password validation source`__ example.
 
-__ customizing.html#defining-new-web-actions
+__ reference.html#defining-new-web-actions
 __ customizing.html#using-an-external-password-validation-source
 
 Actions may also return the content that should return to the user, which

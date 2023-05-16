@@ -778,7 +778,7 @@ Email Access and Register
   will result in those users being registered with the tracker.
 
 More information about how to customise your tracker's security settings
-may be found in the `customisation documentation`_.
+may be found in the `reference documentation`_.
 
 Configuring Authentication Header/Variable
 ------------------------------------------
@@ -1461,5 +1461,6 @@ them ',' separated so using '-dc' is almost always required.
 
 
 .. _`customisation documentation`: customizing.html
+.. _`reference documentation`: reference.html
 .. _`upgrading documentation`: upgrading.html
 .. _`installation documentation`: installation.html

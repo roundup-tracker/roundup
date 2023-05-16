@@ -1994,7 +1994,6 @@ Migrating from older versions
 
 See the `historical migration <upgrading-history.html>`_ document.
 
-.. _`customisation documentation`: customizing.html
 .. _`security documentation`: security-history.html
 .. _`administration guide`: admin_guide.html
 .. _`xmlrpc guide`: xmlrpc.html

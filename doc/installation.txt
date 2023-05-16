@@ -440,7 +440,7 @@ in the following steps.
       set "main :: admin_email" to your local admin address to get email
       on unusual occurances. If you get stuck,
       and get configuration file errors, then see the `tracker
-      configuration`_ section of the `customisation documentation`_.
+      configuration`_ section of the `reference documentation`_.
 
       If you just want to get set up to test things quickly (and follow
       the instructions in step 3 below), you can even just set the
@@ -449,7 +449,7 @@ in the following steps.
          web = http://localhost:8080/support/
 
       The URL *must* end in a '/', or your web interface *will not work*.
-      See `Customising Roundup`_ for details on configuration and schema
+      See the `Roundup reference`_ for details on configuration and schema
       changes. You may change any of the configuration after
       you've initialised the tracker - it's just better to have valid values
       for this stuff now.
@@ -1933,7 +1933,8 @@ Further Reading
 
 If you intend to use Roundup with anything other than the default
 templates, if you would like to hack on Roundup, or if you would
-like implementation details, you should read `Customising Roundup`_.
+like implementation details, you should read `Customising
+Roundup`_ and the `Roundup reference`_.
 
 
 Running Multiple Trackers
@@ -2124,8 +2125,10 @@ please let us know!
 
 .. _`user guide`: user_guide.html
 .. _`roundup specification`: spec.html
-.. _`tracker configuration`: customizing.html#tracker-configuration
+.. _`tracker configuration`: reference.html#tracker-configuration
 .. _`customisation documentation`: customizing.html
+.. _`Roundup reference`: reference.html
+.. _`reference documentation`: reference.html
 .. _`preventing spam`: customizing.html#preventing-spam
 .. _`Adding a new field to the classic schema`:
    customizing.html#adding-a-new-field-to-the-classic-schema
