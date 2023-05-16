@@ -942,7 +942,7 @@ There are two kinds of detectors:
 2. a `reactor` is triggered just after an item has been modified
 
 When the Roundup database is about to perform a ``create()``, ``set()``,
-``retire()``, or ``restore`` operation, it first calls any *auditors*
+``retire()``, or ``restore()`` operation, it first calls any *auditors*
 that have been registered for that operation on that class. Any auditor
 may raise a *Reject* exception to abort the operation.
 
