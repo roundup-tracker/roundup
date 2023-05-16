@@ -660,6 +660,45 @@ A tracker schema defines what data is stored in the tracker's database.
 Schemas are defined using Python code in the ``schema.py`` module of your
 tracker.
 
+What you can/can't do to the schema
+-----------------------------------
+
+Your schema may be changed at any time before or after the tracker has been
+initialised (or used). You may:
+
+**Add new properties to classes, or add whole new classes**
+  This is painless and easy to do - there are generally no repercussions
+  from adding new information to a tracker's schema.
+
+**Remove properties**
+  Removing properties is a little more tricky - you need to make sure that
+  the property is no longer used in the `web interface`_ *or* by the
+  detectors_.
+
+You must never:
+
+**Remove the user class**
+  This class is the only *required* class in Roundup.
+
+**Remove the "username", "address", "password" or "realname" user properties**
+  Various parts of Roundup require these properties. Don't remove them.
+
+**Change the type of a property**
+  Property types must *never* [1]_ be changed - the database simply
+  doesn't take this kind of action into account. Note that you can't
+  just remove a property and re-add it as a new type either. If you
+  wanted to make the assignedto property a Multilink, you'd need to
+  create a new property assignedto_list and remove the old assignedto
+  property.
+
+.. [1] If you shut down the tracker, `export the database`_, modify the
+       exported csv property data to be compatible with the new type,
+       change the property type in the schema, and finally import the
+       changed exported data, you can change the property type. It is
+       not trivial nor for the faint of heart. But it can be done.
+
+.. _export the database: admin_guide.html#using-roundup-admin
+
 The ``schema.py`` and ``initial_data.py`` modules
 -------------------------------------------------
 
@@ -711,42 +750,6 @@ specifying (default) labelling and ordering of classes.)::
     issue.setkey('title')
 
 .. index:: schema; allowed changes
-
-What you can't do to the schema
--------------------------------
-
-You must never:
-
-**Remove the user class**
-  This class is the only *required* class in Roundup.
-
-**Remove the "username", "address", "password" or "realname" user properties**
-  Various parts of Roundup require these properties. Don't remove them.
-
-**Change the type of a property**
-  Property types must *never* be changed - the database simply doesn't take
-  this kind of action into account. Note that you can't just remove a
-  property and re-add it as a new type either. If you wanted to make the
-  assignedto property a Multilink, you'd need to create a new property
-  assignedto_list and remove the old assignedto property.
-
-
-What you can do to the schema
------------------------------
-
-Your schema may be changed at any time before or after the tracker has been
-initialised (or used). You may:
-
-**Add new properties to classes, or add whole new classes**
-  This is painless and easy to do - there are generally no repercussions
-  from adding new information to a tracker's schema.
-
-**Remove properties**
-  Removing properties is a little more tricky - you need to make sure that
-  the property is no longer used in the `web interface`_ *or* by the
-  detectors_.
-
-
 
 Classes and Properties - creating a new information store
 ---------------------------------------------------------
@@ -1038,6 +1041,106 @@ All Classes automatically have a number of properties by default:
   Date the item was last modified.
 
 
+.. index:: double: schema; class methods
+
+Methods
+~~~~~~~
+
+All classes have the following methods.
+
+.. index:: triple: schema; class method; setkey
+
+setkey(property)
+::::::::::::::::
+
+.. index:: roundup-admin; setting assignedto on an issue
+
+Select a String property of the class to be the key property. The key
+property must be unique, and allows references to the items in the class
+by the content of the key property. That is, we can refer to users by
+their username: for example, let's say that there's an issue in Roundup,
+issue 23. There's also a user, richard, who happens to be user 2. To
+assign an issue to him, we could do either of::
+
+     roundup-admin set issue23 assignedto=2
+
+or::
+
+     roundup-admin set issue23 assignedto=richard
+
+Note, the same thing can be done in the web and e-mail interfaces. 
+
+.. index:: triple: schema; class method; setlabelprop
+
+setlabelprop(property)
+::::::::::::::::::::::
+
+Select a property of the class to be the label property. The label
+property is used whereever an item should be uniquely identified, e.g.,
+when displaying a link to an item. If setlabelprop is not specified for
+a class, the following values are tried for the label: 
+
+* the key of the class (see the `setkey(property)`_ section above)
+* the "name" property
+* the "title" property
+* the first property from the sorted property name list
+
+So in most cases you can get away without specifying setlabelprop
+explicitly.
+
+You should make sure that users have View access to this property or
+the id property for a class. If the property can not be viewed by a
+user, looping over items in the class (e.g. messages attached to an
+issue) will not work.
+
+.. index:: triple: schema; class method; setorderprop
+
+setorderprop(property)
+::::::::::::::::::::::
+
+Select a property of the class to be the order property. The order
+property is used whenever using a default sort order for the class,
+e.g., when grouping or sorting class A by a link to class B in the user
+interface, the order property of class B is used for sorting.  If
+setorderprop is not specified for a class, the following values are tried
+for the order property:
+
+* the property named "order"
+* the label property (see `setlabelprop(property)`_ above)
+
+So in most cases you can get away without specifying setorderprop
+explicitly.
+
+.. index:: triple: schema; class method; create
+
+create(information)
+:::::::::::::::::::
+
+Create an item in the database. This is generally used to create items
+in the "definitional" classes like "priority" and "status".
+
+IssueClass
+~~~~~~~~~~
+
+IssueClasses automatically include the "messages", "files", "nosy", and
+"superseder" properties.
+
+The messages and files properties list the links to the messages and
+files related to the issue. The nosy property is a list of links to
+users who wish to be informed of changes to the issue - they get "CC'ed"
+e-mails when messages are sent to or generated by the issue. The nosy
+reactor (in the ``'detectors'`` directory) handles this action. The
+superseder link indicates an issue which has superseded this one.
+
+They also have the dynamically generated "creation", "activity" and
+"creator" properties.
+
+The value of the "creation" property is the date when an item was
+created, and the value of the "activity" property is the date when any
+property on the item was last edited (equivalently, these are the dates
+on the first and last records in the item's journal). The "creator"
+property holds a link to the user that created the issue.
+
 .. index:: triple: schema; class property; content
    triple: schema; class property; type
 
@@ -1129,100 +1232,7 @@ filesystem outside of the Roundup mechanism.
    triple: schema; class property; nosy
    triple: schema; class property; superseder
 
-IssueClass
-~~~~~~~~~~
-
-IssueClasses automatically include the "messages", "files", "nosy", and
-"superseder" properties.
-
-The messages and files properties list the links to the messages and
-files related to the issue. The nosy property is a list of links to
-users who wish to be informed of changes to the issue - they get "CC'ed"
-e-mails when messages are sent to or generated by the issue. The nosy
-reactor (in the ``'detectors'`` directory) handles this action. The
-superseder link indicates an issue which has superseded this one.
-
-They also have the dynamically generated "creation", "activity" and
-"creator" properties.
-
-The value of the "creation" property is the date when an item was
-created, and the value of the "activity" property is the date when any
-property on the item was last edited (equivalently, these are the dates
-on the first and last records in the item's journal). The "creator"
-property holds a link to the user that created the issue.
-
-.. index: triple: schema; class method; setkey
-
-setkey(property)
-~~~~~~~~~~~~~~~~
-
-.. index:: roundup-admin; setting assignedto on an issue
-
-Select a String property of the class to be the key property. The key
-property must be unique, and allows references to the items in the class
-by the content of the key property. That is, we can refer to users by
-their username: for example, let's say that there's an issue in Roundup,
-issue 23. There's also a user, richard, who happens to be user 2. To
-assign an issue to him, we could do either of::
-
-     roundup-admin set issue23 assignedto=2
-
-or::
-
-     roundup-admin set issue23 assignedto=richard
-
-Note, the same thing can be done in the web and e-mail interfaces. 
-
-.. index: triple: schema; class method; setlabelprop
-
-setlabelprop(property)
-~~~~~~~~~~~~~~~~~~~~~~
-
-Select a property of the class to be the label property. The label
-property is used whereever an item should be uniquely identified, e.g.,
-when displaying a link to an item. If setlabelprop is not specified for
-a class, the following values are tried for the label: 
-
-* the key of the class (see the `setkey(property)`_ section above)
-* the "name" property
-* the "title" property
-* the first property from the sorted property name list
-
-So in most cases you can get away without specifying setlabelprop
-explicitly.
-
-You should make sure that users have View access to this property or
-the id property for a class. If the property can not be viewed by a
-user, looping over items in the class (e.g. messages attached to an
-issue) will not work.
-
-.. index: triple: schema; class method; setorderprop
-
-setorderprop(property)
-~~~~~~~~~~~~~~~~~~~~~~
-
-Select a property of the class to be the order property. The order
-property is used whenever using a default sort order for the class,
-e.g., when grouping or sorting class A by a link to class B in the user
-interface, the order property of class B is used for sorting.  If
-setorderprop is not specified for a class, the following values are tried
-for the order property:
-
-* the property named "order"
-* the label property (see `setlabelprop(property)`_ above)
-
-So in most cases you can get away without specifying setorderprop
-explicitly.
-
-.. index: triple: schema; class method; create
-
-create(information)
-~~~~~~~~~~~~~~~~~~~
-
-Create an item in the database. This is generally used to create items
-in the "definitional" classes like "priority" and "status".
-
-.. index: schema; item ordering
+.. index:: schema; item ordering
 
 A note about ordering
 ~~~~~~~~~~~~~~~~~~~~~
