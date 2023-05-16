@@ -2,9 +2,7 @@
     :description:
         How to customize and extend the Roundup Issue
         Tracker. Includes many cookbook and how-to
-        examples. Reference for the design and internals
-        needed to understand and extend the examples to meet
-        new needs.
+        examples.
 
 :tocdepth: 2
 
@@ -80,17 +78,17 @@ caches the schema).
 
 1. Modify the ``schema.py``::
 
-    issue = IssueClass(db, "issue", 
+     issue = IssueClass(db, "issue", 
                     assignedto=Link("user"), keyword=Multilink("keyword"),
                     priority=Link("priority"), status=Link("status"),
                     due_date=Date())
 
 2. Add an edit field to the ``issue.item.html`` template::
 
-    <tr> 
-     <th>Due Date</th> 
-     <td tal:content="structure context/due_date/field" /> 
-    </tr>
+     <tr> 
+      <th>Due Date</th> 
+      <td tal:content="structure context/due_date/field" /> 
+     </tr>
     
    If you want to show only the date part of due_date then do this instead::
    
@@ -2123,10 +2121,10 @@ The value "silent_change" in the button specification must match the
 string in the nosy reaction function.
 
 Changing How the Core Code Works
-================================
+--------------------------------
 
-Example: Changing Cache-Control headers
----------------------------------------
+Changing Cache-Control Headers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Client class in cgi/client.py has a lookup table that is used to
 set the Cache-Control headers for static files. The entries in this
@@ -2152,8 +2150,8 @@ path in the tracker's `config.ini`. In the example above:
 Note that a file name match overrides the mime type settings.
 
 
-Example: Implement password complexity checking
------------------------------------------------
+Implement Password Complexity Checking
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. index:: tracker; lib directory (example)
 
@@ -2190,8 +2188,8 @@ it replaces the setPassword method in the Password class. The new
 version validates that the password is sufficiently complex. Then it
 passes off the setting of password to the original method.
 
-Example: Enhance time intervals
--------------------------------
+Enhance Time Intervals Forms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To make the user interface easier to use, you may want to support
 other forms for intervals. For example you can support an interval
@@ -2237,8 +2235,8 @@ hyperdb.py with::
 any call to convert an interval from raw form now has two simpler
 (and more friendly) ways to specify common time intervals.
 
-Example: Modifying the mail gateway
------------------------------------
+Modifying the Mail Gateway
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One site receives email on a main gateway. The virtual alias delivery
 table on the postfix server is configured with::
@@ -2364,17 +2362,23 @@ of the more complex subsystems in Roundup, and modifying it is not
 trivial.
 
 Other Examples
---------------
+==============
 
 See the `rest interface documentation`_ for instructions on how to add
 new rest endpoints or `change the rate limiting method`_  using interfaces.py.
+
+The `reference document`_ also has examples:
+
+* `Extending the configuration file
+  <reference.html#extending-the-configuration-file>`_.
+* `Adding a new Permission <reference.html#adding-a-new-permission>`_
 
 Examples on the Wiki
 ====================
 
 Even more examples of customization have been contributed by
 users. They can be found on the `wiki
-<https://wiki.roundup-tracker.org>`_.
+<https://wiki.roundup-tracker.org/CustomisationExamples>`_.
 
 .. _`design documentation`: design.html
 .. _`developer's guide`: developers.html
