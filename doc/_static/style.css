@@ -108,12 +108,14 @@ body > .content
 body > .header > #searchbox { position: absolute; right: 1em; top: 1em;}
 body > .content > #subnav    { position: absolute; right: 1.5em; top: 6em;}
 
-/* limit width of main column to 65 characters. On wider screens can
-   be 100+ chars: too wide */
 main {
-  max-width: 65ch;
   line-height: calc(1.5 * 1em);
 }
+
+/* limit width of items in main column to 65 characters. On
+   wider screens can be 100+ chars: too wide */
+main p, main:is(H1, H2, H3, H4, H5, H6), {max-width: 65ch;}
+main table { width: 65ch; }
 
 /* style */
 
@@ -361,8 +363,8 @@ div.highlight > pre {
     /* Shadows */
     background-image:
        /* Shadow covers */
-       linear-gradient(to right, white, white),
-       linear-gradient(to right, white, white),
+       linear-gradient(to right, #f5f4d8, #f5f4d8),
+       linear-gradient(to right, #f5f4d8, #f5f4d8),
        /* Shadow */
        radial-gradient(farthest-side at 0px 50%,
 		       rgba(0, 0, 20, 0.5), rgba(255, 255, 255, 0)),
@@ -376,7 +378,7 @@ div.highlight > pre {
     background-position: left center, right center,
                          left center, right center;
     background-repeat: no-repeat;
-    background-color: white;
+    background-color: #f5f4d8;
     background-size: 20px 100%, 20px 100%, 16px 100%, 16px 100%;
     background-attachment: local, local, scroll, scroll;
 }
