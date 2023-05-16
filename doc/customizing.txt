@@ -16,7 +16,7 @@ Customising Roundup
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
 
 .. contents::
-   :depth: 2
+   :depth: 3
    :local:
 
 What You Can Do
@@ -45,11 +45,6 @@ includes adding or removing properties from classes.
 
 Examples
 ========
-
-.. contents::
-   :local:
-   :depth: 2
-
 
 Changing what's stored in the database
 --------------------------------------
