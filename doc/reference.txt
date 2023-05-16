@@ -2082,7 +2082,7 @@ interface. You'd probably have:
   it could be served as a static file (see `serving static content`_)
 - A sidebar frame that is templated. Let's call this page
   "home.navigation.html" in your tracker's "html" directory. To load that
-  page up, you use the URL:
+  page up, you use the URL::
 
     <tracker url>/home?@template=navigation
 
