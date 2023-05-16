@@ -6,7 +6,8 @@
 Docs
 ====
 
-.. note::
+.. admonition:: Welcome
+
    The documentation is slowly being reorganized using the `Diataxis
    framework`_. Help with the reorganization is welcome. If a page you
    used to see is missing, try checking the `Other Docs
