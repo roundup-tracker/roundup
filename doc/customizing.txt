@@ -15,6 +15,17 @@ Customising Roundup
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
 
+.. admonition:: Welcome
+
+  This document used to be much larger and include a lot of
+  reference material. That has been moved to the `reference document`_.
+
+  The documentation is slowly being reorganized using the `Diataxis
+  framework`_. Help with the reorganization is welcome.
+
+  .. _reference document: reference.html
+  .. _diataxis framework: https://diataxis.fr/
+
 .. contents::
    :depth: 3
    :local:
