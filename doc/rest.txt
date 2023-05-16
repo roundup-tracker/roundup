@@ -2057,11 +2057,12 @@ username/password authentication.
 Currently use of JWTs an experiment. If this appeals to you consider
 providing patches to existing code to:
 
-1. record all JWTs created by a user
-2. using the record to allow JWTs to be revoked and ignored by the
-   roundup core
-3. provide a UI page for managing/revoking JWTs
-4. provide a rest api for revoking JWTs
+1. create long lived refresh tokens
+2. record all refresh tokens created by a user
+3. using the record to allow refresh tokens to be revoked and
+   ignored by the roundup core
+4. provide a UI page for managing/revoking refresh tokens
+5. provide a rest api for revoking refresh tokens
 
 These end points can be used like::
 
