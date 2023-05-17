@@ -110,12 +110,8 @@ body > .content > #subnav    { position: absolute; right: 1.5em; top: 6em;}
 
 main {
   line-height: calc(1.5 * 1em);
+  max-width: 65ch;
 }
-
-/* limit width of items in main column to 65 characters. On
-   wider screens can be 100+ chars: too wide */
-main p, main:is(H1, H2, H3, H4, H5, H6) {max-width: 65ch;}
-main table { width: 65ch; }
 
 /* style */
 
