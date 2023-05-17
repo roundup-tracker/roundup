@@ -338,8 +338,8 @@ break functionality.
 
 There are two ways to add a CSP:
 
-  1. a fixed CSP added by a server
-  2. a dynamic CSP added by Roundup
+1. a fixed CSP added by a server
+2. a dynamic CSP added by Roundup
 
 Fixed CSP
 ---------
@@ -511,13 +511,13 @@ language described at:
 https://www.sqlite.org/fts5.html#full_text_query_syntax. This
 supports:
 
-  * plain word search (joined with and similar to other search methods)
-  * phrase search with terms enclosed in quotes (``"``)
-  * proximity search with varying distances using ``NEAR()``
-  * boolean operations by grouping with parentheses and using ``AND``
-    and ``OR``
-  * exclusion using ``NOT``
-  * prefix searching by prefixing the term with``^``
+* plain word search (joined with and similar to other search methods)
+* phrase search with terms enclosed in quotes (``"``)
+* proximity search with varying distances using ``NEAR()``
+* boolean operations by grouping with parentheses and using ``AND``
+  and ``OR``
+* exclusion using ``NOT``
+* prefix searching by prefixing the term with``^``
 
 All of the data that is indexed is in a single column, so when column
 specifiers are used they usually result in an error which is detected
@@ -624,13 +624,13 @@ querying.
 
 Also there are various `dictionaries`_ that allow you to:
 
-  * add stopwords
-  * override stemming for a term
-  * add synonyms (e.g. a search for "pg" can also match 'psql'
-    "postgresql")
-  * add terms that expand/contract the search space (Thesaurus
-    dictionary)
-  * additional transforms
+* add stopwords
+* override stemming for a term
+* add synonyms (e.g. a search for "pg" can also match 'psql'
+  "postgresql")
+* add terms that expand/contract the search space (Thesaurus
+  dictionary)
+* additional transforms
   
 .. _dictionaries: https://www.postgresql.org/docs/14/textsearch-dictionaries.html
 
@@ -1094,10 +1094,10 @@ Usage::
 
 The roundup mail gateway may be called in one of three ways:
 
- - without arguments. Then the env var ROUNDUP_INSTANCE will be tried.
- - with an instance home as the only argument,
- - with both an instance home and a mail spool file, or
- - with an instance home, a mail source type and its specification.
+- without arguments. Then the env var ROUNDUP_INSTANCE will be tried.
+- with an instance home as the only argument,
+- with both an instance home and a mail spool file, or
+- with an instance home, a mail source type and its specification.
 
 It also supports optional ``-S`` (or ``--set-value``) arguments that allows you
 to set fields for a class created by the roundup-mailgw. The format for
@@ -1219,10 +1219,10 @@ tracker.
 
 Examples above show how to use it to:
 
-   * install and initialize a new tracker
-   * export/import tracker data for migrating between backends
-   * creating a new user fom the command line
-   * list/find users in the tracker
+* install and initialize a new tracker
+* export/import tracker data for migrating between backends
+* creating a new user fom the command line
+* list/find users in the tracker
 
 The basic usage is::
 
