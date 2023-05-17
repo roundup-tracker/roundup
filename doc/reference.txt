@@ -1117,7 +1117,7 @@ create(information)
 :::::::::::::::::::
 
 Create an item in the database. This is generally used to create items
-in the "definitional" classes like "priority" and "status".
+in the :term:`definitional class` like "priority" and "status".
 
 IssueClass
 ~~~~~~~~~~
@@ -1515,13 +1515,13 @@ Database Content
 ================
 
 .. note::
-   If you modify the content of definitional classes, you will
+   If you modify the content of a :term:`definitional class`, you will
    need to edit the tracker `detectors`_ if they reference a value
    of a definitional class. (E.g. if a detector checks to see if an
-   issue is "open", and you change the "open" definition to be
-   "working".)
+   issue has a status of "open", and you change the "open" definition
+   to be "working", you need to change the check.)
 
-Customisation of the special "definitional" classes (eg. status,
+Customisation of the special definitional classes (eg. status,
 priority, resolution, ...) may be done either before or after the
 tracker is initialised. The actual method of doing so is completely
 different in each case though, so be careful to use the right one.
@@ -2020,9 +2020,9 @@ for specific object of issue class with id 1 will look like:
 .. _strip_zeros:
 
 Note that a leading string of 0's will be stripped from the id part of
-the object designator in the URL. E.G. ``/issue001`` is the same as
-``/issue1``.  Similarly for ``/file01`` etc. However you should
-generate URL's without the extra zeros.
+the object :term:`designator` in the URL. E.G. ``/issue001`` is the
+same as ``/issue1``.  Similarly for ``/file01`` etc. However you
+should generate URL's without the extra zeros.
 
 Determining web context
 -----------------------
