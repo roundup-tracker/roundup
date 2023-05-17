@@ -1516,12 +1516,13 @@ Database Content
 
 .. note::
    If you modify the content of a :term:`definitional class`, you will
-   need to edit the tracker `detectors`_ if they reference a value
-   of a definitional class. (E.g. if a detector checks to see if an
-   issue has a status of "open", and you change the "open" definition
-   to be "working", you need to change the check.)
+   need to edit the tracker `detectors`_ if they reference a value of
+   a definitional class. (E.g. if a detector checks to see if an issue
+   has a status of "open", and you change the "open" definition to be
+   "working", you need to change the check.)
 
-Customisation of the special definitional classes (eg. status,
+Customisation of the special :term:`definitional classes <definitional
+class>` (eg. status,
 priority, resolution, ...) may be done either before or after the
 tracker is initialised. The actual method of doing so is completely
 different in each case though, so be careful to use the right one.
