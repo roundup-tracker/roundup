@@ -1965,6 +1965,7 @@ The basic processing of a web request proceeds as follows:
 In some situations, exceptions occur:
 
 - HTTP Redirect  (generally raised by an action)
+    the URL to redirect to is the first argument of the exception.
 - SendFile       (generally raised by ``determine_context``)
     here we serve up a FileClass "content" property
 - SendStaticFile (generally raised by ``determine_context``)
