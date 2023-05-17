@@ -1934,6 +1934,10 @@ Desc: %(description)s
             return 0
         if command == 'templates':
             return self.do_templates(args[1:])
+            return 0
+        if command == 'genconfig':
+            return self.do_genconfig(args[1:])
+            return 0
 
         # figure what the command is
         try:

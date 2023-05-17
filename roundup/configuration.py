@@ -565,7 +565,7 @@ class OriginHeadersListOption(Option):
     """List of space seperated origin header values.
     """
 
-    class_description = "A list of space separated case sensitive origin headers 'scheme://host'."
+    class_description = "A list of space separated case sensitive\norigin headers 'scheme://host'."
 
     def set(self, _val):
         pathlist = self._value = []
@@ -1021,14 +1021,14 @@ SETTINGS = (
             "the EMAIL_FROM_TAG goes inside the \"Foo Bar\" quotes like so:\n"
             "\"Foo Bar EMAIL_FROM_TAG\" <issue_tracker@tracker.example>"),
         (Option, "new_web_user_roles", "User",
-            "Roles that a user gets when they register"
-            " with Web User Interface.\n"
-            "This is a comma-separated string of role names"
+            "Roles that a user gets when they register\n"
+            "with Web User Interface.\n"
+            "This is a comma-separated string of role names\n"
             " (e.g. 'Admin,User')."),
         (Option, "new_email_user_roles", "User",
-            "Roles that a user gets when they register"
-            " with Email Gateway.\n"
-            "This is a comma-separated string of role names"
+            "Roles that a user gets when they register\n"
+            "with Email Gateway.\n"
+            "This is a comma-separated string of role names\n"
             " (e.g. 'Admin,User')."),
         (Option, "obsolete_history_roles", "Admin",
             "On schema changes, properties or classes in the history may\n"
@@ -1039,24 +1039,26 @@ SETTINGS = (
             "admin role may see these history entries, you can make them\n"
             "visible to all users by adding, e.g., the 'User' role here."),
         (Option, "error_messages_to", "user",
-            'Send error message emails to the "dispatcher", "user", '
+            'Send error message emails to the "dispatcher", "user", \n'
             'or "both" (these are the three allowed values).\n'
-            'The dispatcher is configured using the DISPATCHER_EMAIL'
+            'The dispatcher is configured using the DISPATCHER_EMAIL\n'
             ' setting.'),
         (Option, "html_version", "html4",
             "HTML version to generate. The templates are html4 by default.\n"
-            "If you wish to make them xhtml, then you'll need to change this\n"
-            "var to 'xhtml' too so all auto-generated HTML is compliant.\n"
+            "If you wish to make them xhtml, then you'll need to change\n"
+            "this setting to 'xhtml' too so all auto-generated HTML\n"
+            "is compliant.\n"
             "Allowed values: html4, xhtml"),
         (TimezoneOption, "timezone", TimezoneOption.defaulttz,
-            "Default timezone offset,"
-            " applied when user's timezone is not set.",
+            "Default timezone offset,\n"
+            "applied when user's timezone is not set.",
             ["DEFAULT_TIMEZONE"]),
         (BooleanOption, "instant_registration", "no",
             "Register new users instantly, or require confirmation via\n"
             "email?"),
         (BooleanOption, "email_registration_confirmation", "yes",
-            "Offer registration confirmation by email or only through the web?"),
+            "Offer registration confirmation by email or only\n"
+            "through the web?"),
         (IndexerOption, "indexer", "",
             "Force Roundup to use a particular text indexer.\n"
             "If no indexer is supplied, the first available indexer\n"
@@ -1108,8 +1110,8 @@ SETTINGS = (
             "A descriptive name for your roundup instance."),
         (WebUrlOption, "web", NODEFAULT,
             "The web address that the tracker is viewable at.\n"
-            "This will be included in information"
-            " sent to users of the tracker.\n"
+            "This will be included in information\n"
+            "sent to users of the tracker.\n"
             "The URL MUST include the cgi-bin part or anything else\n"
             "that is required to get to the home page of the tracker.\n"
             "URL MUST start with http/https scheme and end with '/'"),
@@ -1216,24 +1218,26 @@ from a source other than roundup (e.g. link in
 email)."""),
         (BooleanOption, 'enable_xmlrpc', "yes",
             """Whether to enable the XMLRPC API in the roundup web
-interface. By default the XMLRPC endpoint is the string 'xmlrpc'
-after the roundup web url configured in the 'tracker' section.
-If this variable is set to 'no', the xmlrpc path has no special meaning
-and will yield an error message."""),
+interface. By default the XMLRPC endpoint is the string
+'xmlrpc' after the roundup web url configured in the
+'tracker' section. If this variable is set to 'no', the
+xmlrpc path has no special meaning and will yield an
+error message."""),
         (BooleanOption, 'translate_xmlrpc', 'no',
             """Whether to enable i18n for the xmlrpc endpoint. Enable it if
-you want to enable translation based on browsers lang (if enabled), trackers
-lang (if set) or environment."""),
+you want to enable translation based on browsers lang
+(if enabled), trackers lang (if set) or environment."""),
         (BooleanOption, 'enable_rest', "yes",
             """Whether to enable the REST API in the roundup web
-interface. By default the REST endpoint is the string 'rest' plus any
-additional REST-API parameters after the roundup web url configured in
-the tracker section. If this variable is set to 'no', the rest path has
-no special meaning and will yield an error message."""),
+interface. By default the REST endpoint is the string
+'rest' plus any additional REST-API parameters after the
+roundup web url configured in the tracker section. If this
+variable is set to 'no', the rest path has no special meaning
+and will yield an error message."""),
         (BooleanOption, 'translate_rest', 'no',
             """Whether to enable i18n for the rest endpoint. Enable it if
-you want to enable translation based on browsers lang (if enabled), trackers
-lang (if set) or environment."""),
+you want to enable translation based on browsers lang
+(if enabled), trackers lang (if set) or environment."""),
         (IntegerNumberGeqZeroOption, 'api_calls_per_interval', "0",
          "Limit API calls per api_interval_in_sec seconds to\n"
          "this number.\n"
@@ -1370,8 +1374,9 @@ always passes, so setting it less than 1 is not recommended."""),
             "in the user's browser rather than emailing them to the\n"
             "tracker admin."),
         (BooleanOption, "login_empty_passwords", "no",
-            "Setting this option to yes/true allows users with an empty/blank\n"
-            "password to login to the web/http interfaces."),
+            "Setting this option to yes/true allows users with\n"
+            "an empty/blank password to login to the\n"
+            "web/http interfaces."),
         (BooleanOption, "migrate_passwords", "yes",
             "Setting this option makes Roundup migrate passwords with\n"
             "an insecure password-scheme to a more secure scheme\n"
@@ -1436,11 +1441,14 @@ always passes, so setting it less than 1 is not recommended."""),
         (IntegerNumberGeqZeroOption, 'cache_size', '100',
             "Size of the node cache (in elements)"),
         (BooleanOption, "allow_create", "yes",
-            "Setting this option to 'no' protects the database against table creations."),
+            "Setting this option to 'no' protects the database against\n"
+            "table creations."),
         (BooleanOption, "allow_alter", "yes",
-            "Setting this option to 'no' protects the database against table alterations."),
+            "Setting this option to 'no' protects the database against\n"
+            "table alterations."),
         (BooleanOption, "allow_drop", "yes",
-            "Setting this option to 'no' protects the database against table drops."),
+            "Setting this option to 'no' protects the database against\n"
+            "table drops."),
         (NullableOption, 'template', '',
             "Name of the PostgreSQL template for database creation.\n"
             "For database creation the template used has to match\n"
@@ -1461,7 +1469,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "Set the database cursor for filter queries to serverside\n"
             "cursor, this avoids caching large amounts of data in the\n"
             "client. This option only applies for the postgresql backend."),
-    ), "Settings in this section (except for backend) are used"
+    ), "Settings in this section (except for backend) are used\n"
         " by RDBMS backends only."
     ),
     ("sessiondb", (
@@ -1538,14 +1546,14 @@ always passes, so setting it less than 1 is not recommended."""),
         (FilePathOption, "debug", "",
             "Setting this option makes Roundup write all outgoing email\n"
             "messages to this file *instead* of sending them.\n"
-            "This option has the same effect as environment variable"
-            " SENDMAILDEBUG.\nEnvironment variable takes precedence."),
+            "This option has the same effect as the environment variable\n"
+            "SENDMAILDEBUG.\nEnvironment variable takes precedence."),
         (BooleanOption, "add_authorinfo", "yes",
             "Add a line with author information at top of all messages\n"
             "sent by roundup"),
         (BooleanOption, "add_authoremail", "yes",
-            "Add the mail address of the author to the author information at\n"
-            "the top of all messages.\n"
+            "Add the mail address of the author to the author information\n"
+            "at the top of all messages.\n"
             "If this is false but add_authorinfo is true, only the name\n"
             "of the actor is added which protects the mail address of the\n"
             "actor from being exposed at mail archives, etc."),

@@ -74,6 +74,7 @@ exclude_patterns = ['docs/index.txt',
                     'docs/whatsnew-0.7.txt',
                     'docs/whatsnew-0.8.txt',
                     'robots.txt',
+                    'docs/tracker_config.txt',
                     '_tmp']
 
 # The reST default role (used for this markup: `text`) to use for all documents.

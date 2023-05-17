@@ -116,6 +116,8 @@ Example configuration settings are below. This is a partial
 list. Documentation on all the settings is included in the
 ``config.ini`` file.
  
+.. .comment out. file generation needs more work include:: tracker_config.txt
+
 .. index:: config.ini; sections main
 
 Section **main**
