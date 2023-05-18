@@ -96,6 +96,9 @@ Fixed:
   8-). Also supports shell and admin mode (John Rouillard)
 - Multiple fixes/updates for installation documentation.
   Including docker shell/admin/demo mdoes. (John Rouillard)
+- Invalid item identifiers passed to REST endpoint return a 404
+  rather than a 400 error. E.G. /rest/data/issue/issue4 (rather
+  than .../issue/4). (John Rouillard)
 
 Features:
 

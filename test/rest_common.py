@@ -1354,6 +1354,27 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict,expected)
 
+    
+    def testDispatchGet(self):
+        self.create_sampledata()
+
+        form = cgi.FieldStorage()
+        self.server.client.request.headers.get=self.get_header
+
+        for item in [ "55", "issue1", "1" ]:
+            print("test item: '%s'" % item)
+            results = self.server.dispatch("GET",
+                                           "/rest/data/issue/%s" % item,
+                                           form)
+            json_dict = json.loads(b2s(results))
+            try:
+                self.assertEqual(json_dict['error']['status'],  404)
+            except KeyError as e:
+                if e.args[0] == "error" and item == "1":
+                    pass
+                else:
+                    self.assertTrue(False)
+
     def testDispatchPost(self):
         """
         run POST through rest dispatch(). This also tests

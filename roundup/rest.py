@@ -1002,7 +1002,11 @@ class RestfulInstance(object):
                     'Permission to view %s%s.%s denied'
                     % (class_name, item_id, keyprop)
                 )
-            itemid = class_obj.lookup(v)
+            try:
+                itemid = class_obj.lookup(v)
+            except TypeError:
+                raise NotFound("Item '%s' not found" % v)
+
         if not self.db.security.hasPermission(
             'View', uid, class_name, itemid=itemid
         ):
