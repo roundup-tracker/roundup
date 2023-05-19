@@ -4,37 +4,47 @@
    and perfect fourth for larger screens.
    Allow override using --font-level-X.
 
-   https://set.studio/some-simple-ways-to-make-content-look-good/
+ https://utopia.fyi/type/calculator?c=320,16,1.25,1280,18,1.333,4,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12
 */
 
 :root {
+  --_font-level_-2: var(--font-level_-2,
+		       clamp(0.63em,
+			     0.64rem + -0.01vw,
+			     0.64em)
+		      );
+  --_font-level_-1: var(--font-level_-1,
+		       clamp(0.80rem,
+			     0.79rem + 0.07vw,
+			     0.84rem)
+		      );
   --_font-level-0: var(--font-level-0,
 		       clamp(1rem,
-			     0.96rem + 0.22vw,
+			     0.96rem + 0.21vw,
 			     1.13rem)
 		      );
   --_font-level-1: var(--font-level-1,
 		       clamp(
 			   1.25 * var(--_font-level-0),
-			   1.16rem + 0.43vw,
+			   1.17rem + 0.42vw,
 			   1.5rem)
 		      );
   --_font-level-2: var(--font-level-2,
 		       clamp(
 			   1.25 * var(--_font-level-1),
-			   1.41rem + 0.76vw,
+			   1.42rem + 0.73vw,
 			   2rem)
 		      );
   --_font-level-3: var(--font-level-3,
 		       clamp(
 			   1.25 * var(--_font-level-2),
-			   1.71rem + 1.24vw,
+			   1.72rem + 1.19vw,
 			   2.66rem)
 		      );
   --_font-level-4: var(--font-level-4,
 		       clamp(
 			   1.25 * var(--_font-level-3),
-			   2.05rem + 1.93vw,
+			   2.07rem + 1.85vw,
 			   3.55rem)
 		      );
 }
@@ -248,7 +258,7 @@ table:has(caption) {
 table caption { font-weight: bold; font-size: smaller; }
 
 table.footnote {
-  font-size: calc(1em - 1pt);
+  font-size: var(--_font-level_-1);
   position: relative
 }
 
