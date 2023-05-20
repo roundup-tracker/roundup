@@ -209,24 +209,37 @@ SQLite databases. If you want to keep using the data set the
 Update ``config.ini``'s ``password_pbkdf2_default_rounds`` (required)
 ---------------------------------------------------------------------
 
-Roundup hashes passwords using PBKDF2 with SHA1. PBKDF2 has a
-parameter that makes hashing a password more difficult to do.
-The original 10000 value was set years ago. It has not been
-updated for advancements in computing power.
+Roundup hashes passwords using PBKDF2 with SHA1. In this release, you
+can `upgrade to PBKDF2-SHA512 from current PBKDF2-SHA1`.  If you
+upgrade, you want to set the default rounds according to the
+PBKDF2-SHA512 upgrading directions. Note that this algorithm is
+expected to be the default in a future version of Roundup.
+
+If you don't want to upgrade, we recommend that you increase the
+default number of rounds from the original 10000. PBKDF2 has a
+parameter that makes hashing a password more difficult to do.  The
+original 10000 value was set years ago. It has not been updated for
+advancements in computing power.
 
 This release of Roundup changes the value to 2000000 (2
 million). This exceeds the current `recommended setting of
 1,300,000`_ for PBKDF2 when used with SHA1.
 
-If you were using the old 10000 value, it will be automatically
-upgraded to 2 million by using ``roundup-admin``'s
-``updateconfig``.  If you were not using the old 10000 default,
-you should update it manually.
+.. caution::
 
-After the change users will still be able to log in using the
-older 10000 round hashed passwords. If ``migrate_passwords`` is
-set to ``yes``, passwords will be automatically re-hashed using
-the new higher value when the user logs in.
+  If you were using the old 10000 value, **it will be automatically
+  upgraded** to 2 million by using ``roundup-admin``'s
+  ``updateconfig``.  If you were not using the old 10000 default, you
+  should update it manually.
+
+After the change users will still be able to log in using the older
+10000 round hashed passwords. If ``migrate_passwords`` is set to
+``yes``, passwords will be automatically re-hashed using the new
+higher value when the user logs in. If
+``password_pbkdf2_default_rounds`` is set to a lower value than was
+used to hash a password, the password will not be rehashed so the
+higher value will be kept. The lower value will be used only if the
+password is changed using the web or command line.
 
 Increasing the number of rounds will slow down re-hashing. That's the
 whole point.  Sadly it will also slow down logins.  Usually the hash
@@ -240,17 +253,17 @@ You can see how long it will take by using the new ``roundup-admin``
 ``perftest`` command. After you have finished migrating your database,
 run::
 
-   roundup-admin -i <tracker_home> perftest password rounds=10000
+  roundup-admin -i <tracker_home> perftest password scheme=PBKDF2 rounds=10000
 
 and then::
 
-   roundup-admin -i <tracker_home> perftest password rounds=2,000,000
+  roundup-admin -i <tracker_home> perftest password scheme=PBKDF2 rounds=2,000,000
 
 so see the difference. Output from this command looks like::
 
    Hash time: 0.203151849s scheme: PBKDF2 rounds: 10000
 
-If your testing reports a hash time in the 0.5 second range for 10000
+If your testing reports a hash time above 0.5 seconds for 10000
 rounds, there may be another issue. See if executing::
 
   python3 -c 'from hashlib import pbkdf2_hmac'
@@ -266,6 +279,61 @@ You should find out how to make the import succeed. You may need to
 install an OS vendor package or some other library.
 
 .. _recommended setting of 1,300,000: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
+
+Upgrade to PBKDF2-SHA512 from current PBKDF2-SHA1 (recommended)
+---------------------------------------------------------------
+
+We recommend that you upgrade to using PBKDF2-SHA512 for hashing your
+passwords. This is a more secure method than the old PBKDF2 (with
+SHA1). Because the algorithm is more secure, it uses a smaller value
+for ``password_pbkdf2_default_rounds``. Setting
+``password_pbkdf2_default_rounds`` to ``250000`` exceeds the current
+`recommended setting of 210,000`_ iterations for PBKDF2 when used with
+SHA512.
+
+You can see how long this takes to calculate on your hardware using
+``roundup-admin``'s perftest command. For example::
+
+  roundup-admin -i <tracker_home> perftest password scheme=PBKDF2S5 rounds=250,000
+
+produces::
+
+  Hash time: 0.161892945 seconds, scheme: PBKDF2S5, rounds: 250000
+
+Any increase in the number of rounds will cause the password to
+automatically be rehashed to the higher value the next time the user
+logs in via the web interface. Changing the number of rounds to a
+**lower** value will not trigger a rehash during login unless the
+scheme is also being changed. The lower number will be used only when
+the password is explicitly changed using the web interface or the
+command line (``roundup-admin`` for example).
+
+Change the default hashing scheme by adding the following lines to
+|the interfaces.py file|_ in your tracker home::
+
+  ## Use PBDKF2S5 (PBKDF2-SHA512) for passwords. Re-hash old PBDFK2
+  # Force password with scheme PBKDF2 (SHA1) to get re-hashed
+  Password.deprecated_schemes.insert(0, Password.known_schemes[0])
+  # choose PBKDF2S5 as the scheme to use for rehashing.
+  Password.default_scheme = Password.experimental_schemes[0]
+
+You may need to create the ``interfaces.py`` file if it doesn't exist.
+In the future, when the default hash is changed to PBKDF2S5, upgrade
+directions will include instructions to remove these lines and
+the file ``interfaces.py`` if it becomes empty.
+
+You can verify that PBKDF2S5 is used by default by running::
+
+  roundup-admin -i <tracker_home> perftest password rounds=250,000
+
+and verify that the scheme is PBKDF2S5. 
+
+.. _the interfaces.py file:
+   reference.html#interfaces-py-hooking-into-the-core-of-roundup
+
+.. |the interfaces.py file| replace:: the ``interfaces.py`` file
+
+.. _recommended setting of 210,000: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
 
 jQuery updated with updates to user.help.html (recommended)
 -----------------------------------------------------------

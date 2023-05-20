@@ -1498,6 +1498,7 @@ this you can:
 * monkey patch core code to add new functionality
 * modify the email gateway
 * add new rest endpoints
+* enable experimental or future features
 
 but with great power comes great responsibility.
 

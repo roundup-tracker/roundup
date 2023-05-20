@@ -1405,7 +1405,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
         from roundup.anypy.time_ import perf_counter
 
         props = {"rounds": self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
-                 "scheme": password.Password.known_schemes[0]}
+                 "scheme": password.Password.default_scheme}
 
         print_supported_schemes = lambda: print(
             "Supported schemes (default is first, case "
