@@ -365,6 +365,8 @@ You can use the command ``deactivate`` to return to the normal
 Python environment. However, for now continue with
 `configuring your first tracker`_.
    
+.. _downloaded and unpacked the source:
+
 Installing from downloaded source
 ---------------------------------
 
@@ -2116,12 +2118,13 @@ Problems? Testing your Python...
    for PostgreSQL you want to call the ``createuser`` command with the
    ``-d`` option to allow database creation.
 
-This can only be done if you downloaded and unpacked the source
-distrbution. It will not work if you used `pip install` as the test
-suite is not installed. Once you've unpacked roundup's source, if you
-have pytest installed, run ``python -m pytest test`` in the source
-directory and make sure there are no errors. If there are errors,
-please let us know!
+This can only be done if you `install the source`_ distribution
+(steps 1-3) or from a `mercurial checkout
+<../code.html#get-sources>`_. It will not work if you used `pip
+install` as the test suite is not installed. Once you've unpacked
+roundup's source, if you have pytest installed, run ``python -m
+pytest test`` in the Roundup source directory and make sure there
+are no errors. If there are errors, please let us know!
 
 .. _`user guide`: user_guide.html
 .. _`roundup specification`: spec.html
