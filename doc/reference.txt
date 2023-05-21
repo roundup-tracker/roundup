@@ -1551,44 +1551,56 @@ example that requires database content changes.
 Security / Access Controls
 ==========================
 
-A set of Permissions is built into the security module by default:
+A set of Permissions is built into the security module by default. For
+each Class defined in the tracker schema, the following permissions
+are defined:
 
 - Create (everything)
 - Edit (everything)
-- Search (everything) (used if View does not permit access)
+- Search (everything) - (used if View does not permit access)
+- Retire (everything)
+- Restore (everything)
 - View (everything)
-- Register (User class only)
 
-These are assigned to the "Admin" Role by default, and allow a user to do
-anything. Every Class you define in your `tracker schema`_ also gets an
-Create, Edit and View Permission of its own. The web and email interfaces
+All of these are assigned to the "Admin" Role by default for every
+class. They allow a user to do anything. The web and email interfaces
 also define:
 
-*Email Access*
+Email Access
   If defined, the user may use the email interface. Used by default to deny
   Anonymous users access to the email interface. When granted to the
   Anonymous user, they will be automatically registered by the email
   interface (see also the ``new_email_user_roles`` configuration option).
-*Web Access*
-  If defined, the user may use the web interface. All users are able to see
-  the login form, regardless of this setting (thus enabling logging in).
-*Web Roles*
+
+Web Access
+  If defined, the user may use the web interface. This is usually
+  assigned to the Anonymous role as well to allow authorized users to
+  access the form based login. If some other authorization mode (basic
+  auth, SSO, etc.) is used Web Access can be removed from the
+  Anonymous user.
+
+Web Roles
   Controls user access to editing the "roles" property of the "user" class.
   TODO: deprecate in favour of a property-based control.
-*Rest Access* and *Xmlrpc Access*
+
+Rest Access |br| Xmlrpc Access
   These control access to the Rest and Xmlrpc endpoints. The Admin and User
   roles have these by default in the classic tracker. See the
   `directions in the rest interface documentation`_ and the
   `xmlrpc interface documentation`_.
 
+Register
+  This is assigned to the anonymous user and allows automatic user
+  registration by email or web.
+
 These are hooked into the default Roles:
 
-- Admin (Create, Edit, Search, View and everything; Web Roles)
+- Admin (Create, Edit, Retire, Restore, Search, View for everything; Web Roles)
 - User (Web Access; Email Access)
 - Anonymous (Web Access)
 
-And finally, the "admin" user gets the "Admin" Role, and the "anonymous"
-user gets "Anonymous" assigned when the tracker is installed.
+Finally, the "admin" user gets the "Admin" Role, and the "anonymous"
+user gets the "Anonymous" Role assigned when the tracker is installed.
 
 For the "User" Role, the "classic" tracker defines:
 
@@ -3997,3 +4009,9 @@ rather than requiring a web server restart.
 .. _change the rate limiting method: rest.html#creating-custom-rate-limits
 .. _`directions in the rest interface documentation`: rest.html#enabling-the-rest-api
 .. _`xmlrpc interface documentation`: xmlrpc.html#through-roundup
+
+.. allow line breaks in term definitions.
+.. |br| raw:: html
+
+   <br/>
+
