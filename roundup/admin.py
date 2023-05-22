@@ -1632,6 +1632,11 @@ Erase it? Y/N: """) % locals())  # noqa: E122
         ''"""Usage: security [Role name]
 
              Display the Permissions available to one or all Roles.
+             Also validates that any properties defined in a
+             permission are valid.
+
+             Run this after changing your permissions to catch
+             typos.
         """
         if len(args) == 1:
             role = args[0]
