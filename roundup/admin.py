@@ -1693,7 +1693,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
         return 0
 
     def do_set(self, args):
-        ''"""Usage: set items property=value property=value ...
+        ''"""Usage: set items property=value [property=value ...]
         Set the given properties of one or more items(s).
 
         The items are specified as a class or as a comma-separated
