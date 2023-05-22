@@ -1869,10 +1869,9 @@ The ``addPermission`` method takes a few optional parameters:
      ctx['permission'] the name of the permission (e.g. View, Edit...).
 
 The second form is preferred as it makes it easier to implement more
-complex permission schemes. An example of the use of ``ctx`` can be
-found in the ``upgrading.txt`` or `upgrading.html`_ document.
-
-.. _`upgrading.html`: upgrading.html
+complex permission schemes. An `example in upgrading.html
+<upgrading.html#enhancement-to-check-command-for-permissions>`_
+shows the use of ``ctx``.
 
 Example Scenarios
 ~~~~~~~~~~~~~~~~~
