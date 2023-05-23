@@ -684,16 +684,24 @@ database for session data. By default it will use additional
 sqlite databases for storing the session and otk data.
 
 The following table shows which primary databases support
-different session database backends::
+different session database backends:
 
+.. table:: D - default if unconfigured,   X - compatible choice
+  :class: captionbelow
 
-  main\/ session>| anydbm | sqlite | redis | mysql | postgresql |
-  anydbm         |    D   |        |   X   |       |            |
-  sqlite         |    X   |    D   |   X   |       |            |
-  mysql          |        |        |       |   D   |            |
-  postgresql     |        |        |       |       |      D     |
-  --------------------------------------------------------------+
-        D - default if unconfigured,   X - compatible choice
+  +---------------+--------+--------+-------+-------+------------+
+  |               |                session db                    |
+  +---------------+--------+--------+-------+-------+------------+
+  |primary db     | anydbm | sqlite | redis | mysql | postgresql |
+  +===============+========+========+=======+=======+============+
+  |anydbm         |    D   |        |   X   |       |            |
+  +---------------+--------+--------+-------+-------+------------+
+  |sqlite         |    X   |    D   |   X   |       |            |
+  +---------------+--------+--------+-------+-------+------------+
+  |mysql          |        |        |       |   D   |            |
+  +---------------+--------+--------+-------+-------+------------+
+  |postgresql     |        |        |       |       |      D     |
+  +---------------+--------+--------+-------+-------+------------+
 
 The ``backend`` setting is in the tracker's ``config.ini``
 file under the ``sessiondb`` section.
