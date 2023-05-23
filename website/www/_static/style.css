@@ -123,6 +123,56 @@ main {
   max-width: 65ch;
 }
 
+/* full bleed for highlighted example code. This works for
+   highlighted code directly in each section. If the example
+   is inside a list, table etc, the list/table is constrained
+   to 65ch and we don't get a full bleed example.
+
+div.section *:not(div[class^=highlight-]):not(div[class^=highlight-] *):not(div.section) {
+  max-width: 65ch;
+}
+*/
+
+/* trying to full bleed highlighted code section using using
+grid layout. Doesn't work as each header level inserts a
+div.section, so the grid is applied to main > div > div >
+div.section and highlighted code isn't in a grid display
+environment anymore.  Subgrid would fix this but....
+
+ main > div > div {
+  display: grid;
+  grid-template-columns: 65ch 1fr;
+}
+
+main > div > div > * {
+    grid-column: 1/2;
+}
+
+div[class^=highlight] {
+  width: 100%;
+  grid-column: 1 / 3;
+}
+*/
+
+/* try full bleed without grid. Make everything except the
+   highlight container and its children 65ch in width.
+   However need to explicitly set a width for some reason on
+   the container and children. 100% or other relative width
+   doesn't work. Probably again because of div.section being
+   set to 65ch max width. Can use absolute size values, but
+   how to calculate them when I don't know where the left
+   margin is of the highlight div.
+
+main :not(div[class^=highlight-]):not(div[class^=highlight-] *) {
+  position: relative;
+  max-width: 65ch;
+}
+
+div[class^=highlight-], div[class^=highlight-] * { width:
+						   calc(100vw
+							- 15em); }
+*/
+
 /* style */
 
 :link { color: rgb(220,0,0); text-decoration: none;}
