@@ -252,7 +252,7 @@ on the fly, compression is enabled by default, to disable it set::
 in the tracker's ``config.ini``. You should disable compression if
 your proxy (e.g. nginx or apache) or wsgi server (uwsgi) is configured
 to compress responses on the fly. The python standard library includes
-gzip support. For brotli or zstd you will need to install packges. See
+gzip support. For brotli or zstd you will need to install packages. See
 the `installation documentation`_ for details.
 
 Some assets will not be compressed on the fly. Assets with mime types
