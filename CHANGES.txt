@@ -127,8 +127,9 @@ Features:
   details. (Ralf Schlatterbeck)
 - issue2551243: schema-dump.py enhanced with anti-CSRF headers. Flake8
   cleanup and python2 support. (John Rouillard)
-- issue2551253 - new password hash PBDKF2-SHA512 added. Not available
-  by default. See issue ticket for details.  (John Rouillard)
+- issue2551253 - new password hash PBDKF2-SHA512 added. Not
+  available by default. Follow directions in upgrading document
+  to use.  (John Rouillard)
 - roundup-admin migrate command reports the schema version.
 - issue2551262 - the mail gateway subject prefix now allows spaces
   before/after prefix. Also allow spaces between classname and id
