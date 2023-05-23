@@ -321,6 +321,10 @@ table.footnote::before {
   width: 25%;
 }
 
+table.captionbelow {
+  caption-side: bottom;
+}
+
 td {
   /* pull text away from borders */
   padding-inline: 0.5em;
