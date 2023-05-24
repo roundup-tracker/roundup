@@ -803,7 +803,6 @@ Command help:
         Generate a new tracker config file (ini style) with default
         values in <filename>.
         """
-        import pdb; pdb.set_trace()
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
 
