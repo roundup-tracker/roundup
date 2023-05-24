@@ -2126,6 +2126,12 @@ roundup's source, if you have pytest installed, run ``python -m
 pytest test`` in the Roundup source directory and make sure there
 are no errors. If there are errors, please let us know!
 
+Note that redis tests uses database 15 of the redis server running on
+localhost.The tests verify that the database is empty before the redis
+tests start.  If you use a password on your redis database it can be
+specified in the ``pytest_redis_pw`` environment variable when you run
+the test.
+
 .. _`user guide`: user_guide.html
 .. _`roundup specification`: spec.html
 .. _`tracker configuration`: reference.html#tracker-configuration
