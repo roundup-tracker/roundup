@@ -2070,12 +2070,8 @@ class Class(hyperdb.Class):
         for prop, propclass in self.getprops().items():
             if isinstance(propclass, hyperdb.String) and propclass.indexme:
                 # index them under (classname, nodeid, property)
-                try:
-                    value = str(self.get(nodeid, prop))
-                except IndexError:
-                    # node has been destroyed
-                    continue
-                self.db.indexer.add_text((self.classname, nodeid, prop), value)
+                self.db.indexer.add_text((self.classname, nodeid, prop),
+                                         str(self.get(nodeid, prop)))
 
     #
     # import / export support
