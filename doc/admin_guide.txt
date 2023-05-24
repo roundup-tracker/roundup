@@ -115,6 +115,10 @@ The basic configuration file is as follows (taken from the
   # Default: 
   group = 
 
+  # Maximum number of children to spawn using fork multiprocess mode.
+  # Default: 40
+  max_children = 40
+
   # don't fork (this overrides the pidfile mechanism)'
   # Allowed values: yes, no
   # Default: no

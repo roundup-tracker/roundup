@@ -144,6 +144,9 @@ Features:
   hash function using PBKDF2-SHA512 available. Will be default in
   future. Directions for upgrading security by using it now is
   included in upgrading.txt. (John Rouillard)
+- issue2551275 - Allow configuring max_children in roundup-server.
+  When using roundup-server in fork mode, allow raising number of
+  forked children above the default of 40.
 
 2022-07-13 2.2.0
 

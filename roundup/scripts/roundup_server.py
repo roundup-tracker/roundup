@@ -648,6 +648,9 @@ class ServerConfig(configuration.Config):
                 "In order to use this option, "
                 "the server must be run initially as root.\n"
                 "Availability: Unix."),
+            (configuration.IntegerNumberOption, "max_children", 40,
+                "Maximum number of children to spawn using fork "
+                "multiprocess mode."),
             (configuration.BooleanOption, "nodaemon", "no",
                 "don't fork (this overrides the pidfile mechanism)'"),
             (configuration.BooleanOption, "log_hostnames", "no",
@@ -703,6 +706,7 @@ class ServerConfig(configuration.Config):
         "pidfile": "d:",
         "nodaemon": "D",
         "log_hostnames": "N",
+        "max_children": "m:",
         "multiprocess": "t:",
         "template": "i:",
         "loghttpvialogger": 'L',
@@ -811,6 +815,7 @@ class ServerConfig(configuration.Config):
                                 base_server):
                 pass
             server_class = ForkingServer
+            server_class.max_children = self["MAX_CHILDREN"]
         elif self["MULTIPROCESS"] == "thread":
             class ThreadingServer(socketserver.ThreadingMixIn,
                                   base_server):
@@ -942,6 +947,7 @@ Options:
  -l <fname>    log to the file indicated by fname instead of stderr/stdout
  -N            log client machine names instead of IP addresses (much slower)
  -i <fname>    set tracker index template
+ -m <children> maximum number of children to spawn in fork multiprocess mode
  -s            enable SSL
  -L            http request logging uses python logging (roundup.http)
  -e <fname>    PEM file containing SSL key and certificate

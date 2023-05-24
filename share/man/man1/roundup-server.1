@@ -25,6 +25,10 @@ Control multi-process mode. \fBdebug\fP and \fBnone\fP are always
 available. If an invalid mode is specified the server starts in
 \fBnone\fP (also called single) mode. Default fork.
 .TP
+\fB-m\fP \fImax_children\fP
+Set the maximum number of child processes (servers). This value
+may need to be increased on a heavily loaded site.  Default 40.
+.TP
 \fB-l\fP \fIfile\fP
 Sets a filename to log to (instead of stdout). This is required if the -d
 option is used.
