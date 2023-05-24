@@ -449,6 +449,20 @@ will see no change. If you do have multi-linked messages
 this will hopefully result in better message->issue
 matching.
 
+Incremental/batch full test reindexing with roundup-admin (info)
+----------------------------------------------------------------
+
+The ``reindex`` command in ``roundup-admin`` can reindex
+a range of items. For example::
+
+  roundup-admin -i ... reindex issues:1-1000
+
+will reindex only the first 1000 issues. This is useful since
+reindexing can take a while and slow down the tracker. By running
+it in batches you can control when the reindex runs rather than having
+to wait for it to complete all the reindexing. See the man page or
+`administration guide`_ for details.
+
 .. index:: Upgrading; 2.1.0 to 2.2.0
 
 Migrating from 2.1.0 to 2.2.0
