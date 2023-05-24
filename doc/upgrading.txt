@@ -400,8 +400,8 @@ journal method to a rollback journal (``delete`` mode) by
 using step 2 and replacing ``wal`` with ``delete``. (Note:
 SQLite supports other journaling modes, but only ``wal`` and
 ``delete`` persist. Roundup doesn't set a journaling mode
-when it opens the database, so options such as ``truncate``
-are not used.)
+when it opens the database, so journaling mode options such
+as ``truncate`` are not useful.)
 
 For details on WAL mode see `<https://www.sqlite.org/wal.html>`_
 and `<https://www.sqlite.org/pragma.html#pragma_journal_mode>`_.
