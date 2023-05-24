@@ -1920,6 +1920,12 @@ Desc: %(description)s
         """
         self.do_genconfig(args, update=True)
 
+    def usageError_feedback(self, message, function):
+        print(_('Error: %s') % message)
+        print()
+        print(function.__doc__)
+        return 1
+
     def run_command(self, args):
         """Run a single command
         """
@@ -1936,12 +1942,6 @@ Desc: %(description)s
             self.do_help(['help'])
             self.help_commands()
             self.help_all()
-            return 0
-        if command == 'templates':
-            return self.do_templates(args[1:])
-            return 0
-        if command == 'genconfig':
-            return self.do_genconfig(args[1:])
             return 0
 
         # figure what the command is
@@ -1961,6 +1961,13 @@ Desc: %(description)s
             return 1
         command, function = functions[0]
 
+        if command in ['genconfig', 'templates']:
+            try:
+                ret = function(args[1:])
+                return ret
+            except UsageError as message:  # noqa F841
+              return self.usageError_feedback(message, function)
+
         # make sure we have a tracker_home
         while not self.tracker_home:
             if not self.force:
@@ -1973,14 +1980,12 @@ Desc: %(description)s
             try:
                 return self.do_initialise(self.tracker_home, args)
             except UsageError as message:  # noqa: F841
-                print(_('Error: %(message)s') % locals())
-                return 1
+              return self.usageError_feedback(message, function)
         elif command == 'install':
             try:
                 return self.do_install(self.tracker_home, args)
             except UsageError as message:  # noqa: F841
-                print(_('Error: %(message)s') % locals())
-                return 1
+              return self.usageError_feedback(message, function)
 
         # get the tracker
         try:
@@ -2020,10 +2025,7 @@ Desc: %(description)s
         try:
             ret = function(args[1:])
         except UsageError as message:  # noqa: F841
-            print(_('Error: %(message)s') % locals())
-            print()
-            print(function.__doc__)
-            ret = 1
+            ret = self.usageError_feedback(message, function)
         except Exception:
             import traceback
             traceback.print_exc()

@@ -255,6 +255,18 @@ class AdminTest(object):
         self.assertTrue(os.path.isfile(self.dirname + "/config.ini"))
         self.assertTrue(os.path.isfile(self.dirname + "/schema.py"))
 
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '/tmp/noSuchDirectory/nodir', 'install', 'classic', self.backend]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(ret)
+        print(out)
+        self.assertEqual(ret, 1)
+        self.assertIn('Error: Instance home parent directory '
+                      '"/tmp/noSuchDirectory" does not exist', out)
+
     def testInitWithConfig_ini(self):
         from roundup.configuration import CoreConfig
         self.admin=AdminTool()
