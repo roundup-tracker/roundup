@@ -146,7 +146,8 @@ Features:
   included in upgrading.txt. (John Rouillard)
 - issue2551275 - Allow configuring max_children in roundup-server.
   When using roundup-server in fork mode, allow raising number of
-  forked children above the default of 40.
+  forked children above the default of 40. (Original patch by Joseph
+  Myers, config settings and docs by John Rouillard.)
 
 2022-07-13 2.2.0
 
