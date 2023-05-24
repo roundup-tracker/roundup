@@ -3974,7 +3974,8 @@ class TestCase():
         self.dummy_client.main()
         # user will be 1 as there is no auth
         self.assertTrue('1', self.db.getuid())
-        self.assertEqual(out[0], b'Invalid Login - Invalid audience')
+        self.assertIn(out[0], [b'Invalid Login - Invalid audience',
+        b"Invalid Login - Audience doesn't match"])
 
     @skip_jwt
     def test_bad_roles_jwt(self):
