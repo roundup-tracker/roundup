@@ -1035,6 +1035,86 @@ class AdminTest(object):
         # -----
         AdminTool.my_input = orig_input
 
+    def testReindex(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        self.install_init()
+
+        # create an issue
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname, 'create', 'issue',
+                  'title="foo bar"', 'assignedto=admin' ]
+        ret = self.admin.main()
+
+        # reindex everything
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(len(out))
+        print(repr(out))
+        # make sure priority is being reindexed
+        self.assertIn('Reindex priority 40%', out)
+
+
+        # reindex whole class
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(len(out))
+        print(repr(out))
+        self.assertEqual(out,
+                         'Reindex issue  0%                                                          \rReindex issue 100%                                                         \rReindex issue done')
+        self.assertEqual(len(out), 170)
+
+        # reindex one item
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue1']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(len(out))
+        print(repr(out))
+        # no output when reindexing just one item
+        self.assertEqual(out, '')
+
+        # reindex range
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue:1-4']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(repr(out))
+        self.assertIn('no such item "issue3"', out)
+
+        # reindex bad class
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue1-4']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(repr(out))
+        self.assertIn('Error: no such class "issue1-4"', out)
+
+        # reindex bad item
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue14']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(repr(out))
+        self.assertIn('Error: no such item "issue14"', out)
+
     def disabletestHelpInitopts(self):
 
         ''' Note the tests will fail if you run this under pdb.

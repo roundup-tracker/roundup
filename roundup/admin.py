@@ -803,6 +803,7 @@ Command help:
         Generate a new tracker config file (ini style) with default
         values in <filename>.
         """
+        import pdb; pdb.set_trace()
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
 
@@ -1530,18 +1531,28 @@ Erase it? Y/N: """) % locals())  # noqa: E122
 
         self.settings[setting] = value
 
-    designator_re = re.compile('([A-Za-z]+)([0-9]+)')
+    designator_re = re.compile('([A-Za-z]+)([0-9]+)$')
+    designator_rng = re.compile('([A-Za-z]+):([0-9]+)-([0-9]+)$')
 
-    def do_reindex(self, args, desre=designator_re):
-        ''"""Usage: reindex [classname|designator]*
+    def do_reindex(self, args, desre=designator_re, desrng=designator_rng):
+        ''"""Usage: reindex [classname|classname:#-#|designator]*
         Re-generate a tracker's search indexes.
 
         This will re-generate the search indexes for a tracker.
         This will typically happen automatically.
+
+        You can incrementally reindex using an argument like:
+
+            reindex issue:23-1000
+
+        to reindex issue class items 23-1000. Missing items
+        are reported but do not stop indexing of the range.
         """
+        from roundup import support
         if args:
             for arg in args:
                 m = desre.match(arg)
+                r = desrng.match(arg)
                 if m:
                     cl = self.get_class(m.group(1))
                     try:
@@ -1549,9 +1560,21 @@ Erase it? Y/N: """) % locals())  # noqa: E122
                     except IndexError:
                         raise UsageError(_('no such item "%(designator)s"') % {
                             'designator': arg})
+                elif r:
+                    cl = self.get_class(r.group(1))
+                    for item in support.Progress(
+                            'Reindexing %s' % r.group(1),
+                            range(int(r.group(2)), int(r.group(3)))):
+                        try:
+                            cl.index(str(item))
+                        except IndexError:
+                            print(_('no such item "%(class)s%(id)s"') % {
+                            'class': r.group(1),
+                            'id': item})
+                            
                 else:
-                    cl = self.get_class(arg)
-                    self.db.reindex(arg)
+                    cl = self.get_class(arg)  # Bad class raises UsageError
+                    self.db.reindex(arg, show_progress=True)
         else:
             self.db.reindex(show_progress=True)
         return 0

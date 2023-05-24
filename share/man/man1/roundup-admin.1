@@ -220,8 +220,11 @@ will turn on verbose mode for roundup-admin.
 will show all settings and their current values. If verbose
 is enabled hidden settings and descriptions will be shown.
 .TP
-\fBreindex\fP \fI[classname|designator]*\fP
-This will re-generate the search indexes for a tracker.
+\fBreindex\fP \fI[classname|classname:#-#|designator]*\fP This will
+re-generate the search indexes for a tracker. You can specify a
+specific item (or items) (e.g. issue23), range(s) of items
+(e.g. issue:1-1000), class(es) (e.g. issue) or reindex all items in
+the database if no arguments are supplied.
 .TP
 \fBrestore\fP \fIdesignator[,designator]*\fP
 Restore the retired node specified by designator.

@@ -150,6 +150,11 @@ Features:
   Myers, config settings and docs by John Rouillard.)
 - roundup-admin genconfig does not need a tracker home to run. (John
   Rouillard)
+- issue2551190 - Allow roundup-admin reindex to work in
+  batches. Running roundup-admin -i ... reindex issue:1-1000 will
+  reindex the first 1000 issues while reporting any missing issues
+  in the range. Also completion progress is reported when indexing a
+  specific class.
 
 2022-07-13 2.2.0
 

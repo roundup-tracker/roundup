@@ -1242,13 +1242,13 @@ The basic usage is::
 
  Options:
   -i instance home  -- specify the issue tracker "home directory" to administer
-  -u                -- the user[:password] to use for commands
+  -u                -- the user[:password] to use for commands (default admin)
   -d                -- print full designators not just class id numbers
   -c                -- when outputting lists of data, comma-separate them.
-               Same as '-S ","'.
+                       Same as '-S ","'.
   -S <string>       -- when outputting lists of data, string-separate them
   -s                -- when outputting lists of data, space-separate them.
-               Same as '-S " "'.
+                       Same as '-S " "'.
   -V                -- be verbose when importing
   -v                -- report Roundup and Python versions (and quit)
 
@@ -1280,13 +1280,13 @@ The basic usage is::
   migrate
   pack period | date
   perftest [mode] [arguments]*
-  pragma setting=value
-  reindex [classname|designator]*
+  pragma setting=value | 'list'
+  reindex [classname|classname:#-#|designator]*
   restore designator[,designator]*
   retire designator[,designator]*
   rollback
   security [Role name]
-  set items property=value property=value ...
+  set items property=value [property=value ...]
   specification classname
   table classname [property[,property]*]
   templates [trace_search]
