@@ -34,7 +34,7 @@ jobs:
 
     # run the finalizer for coveralls even if one or more
     # matrix runs fail.
-    continue-on-error: true
+    # continue-on-error: true
 
     #runs-on: ubuntu-latest
     # use below if running on multiple OS's.
@@ -260,7 +260,7 @@ jobs:
       #         -f scripts/Docker/Dockerfile . 
 
 
-  # in parallel build codecov requires a finish step
+  # in parallel build coveralls requires a finish step
   finish:
     needs: test
     runs-on: ubuntu-latest
