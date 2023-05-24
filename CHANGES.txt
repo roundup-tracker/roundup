@@ -116,10 +116,10 @@ Features:
 - sqlite databases use WAL mode when *created* to improve read
   concurrency. Existing sqlite database still use rollback journal
   mode. See upgrading.txt for details. (John Rouillard)
-- issue2551233 - create new roundup-admin command "templates"
-  list all template names, location and descriptions. Should help
-  find where /usr/share/roundup/templates is buried during some
-  install mechanisms. (John Rouillard)
+- issue2551233 - create new roundup-admin command "templates" list all
+  template names, location and descriptions. Should help find where
+  /usr/share/roundup/templates is buried during some install
+  mechanisms. Does not need a tracker home to run. (John Rouillard)
 - Add OAuth authentication to the mailgw script. Now IMAPS can be used
   with OAuth as required by several large cloud providers. Move command
   line processing of the mailgw script to ``argparse``. Note that the
@@ -148,6 +148,8 @@ Features:
   When using roundup-server in fork mode, allow raising number of
   forked children above the default of 40. (Original patch by Joseph
   Myers, config settings and docs by John Rouillard.)
+- roundup-admin genconfig does not need a tracker home to run. (John
+  Rouillard)
 
 2022-07-13 2.2.0
 
