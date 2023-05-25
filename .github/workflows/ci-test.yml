@@ -190,7 +190,7 @@ jobs:
       - name: Install pytest and other packages needed for running tests
         run: pip install flake8 mock pytest pytest-cov requests
 
-      - name: Install build tools: setuptools
+      - name: Install build tools - setuptools
         run: pip install setuptools
 
       - name: Test build roundup and install locale so lang tests work.
