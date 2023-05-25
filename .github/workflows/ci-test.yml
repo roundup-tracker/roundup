@@ -100,11 +100,15 @@ jobs:
           allow-prereleases: true
           cache: 'pip'
 
+      - name: Install build tools - setuptools
+        run: pip install setuptools
+
       # Display the Python version being used
       - name: Display Python and key module versions
         run: |
           python -c "import sys; print('python version: ', sys.version)"
           python -c "import sqlite3; print('sqlite version: ', sqlite3.sqlite_version)"
+          python -c "import setuptools; print('setuptools version: ', setuptools.__version__);"
 
       # Install the databases
       - name: Install mysql/mariadb
@@ -189,9 +193,6 @@ jobs:
 
       - name: Install pytest and other packages needed for running tests
         run: pip install flake8 mock pytest pytest-cov requests
-
-      - name: Install build tools - setuptools
-        run: pip install setuptools
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
