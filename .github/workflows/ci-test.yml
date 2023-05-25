@@ -169,7 +169,11 @@ jobs:
           # older python and newest on newer.
           if [[ $PYTHON_VERSION == "2."* ]]; then pip install sphinx==1.8.5; fi
           if [[ $PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
-          XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
+          if [[ $PYTHON_VERSION == '3.12'* ]] ; then \
+              XAPIAN_VER=1.4.20; \
+          else
+              XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER; \
+          fi
           cd /tmp
           curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
           tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
