@@ -6,11 +6,9 @@
 
 import os, sys
 import os.path
-import glob
 
 try:
     from setuptools.command.install import install as _build_py
-    raise ImportError
 except ImportError:
     from distutils.command.build import build as _build_py  # try/except clause
     orig_build = _build_py
