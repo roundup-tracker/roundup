@@ -1310,12 +1310,13 @@ command line access to a tracker.
 
 In general you should forget that there is a -u parameter.
 
-All commands (except help) require a tracker specifier. This is just the
-path to the roundup tracker you're working with. A roundup tracker is
-where roundup keeps the database and configuration file that defines an
-issue tracker. It may be thought of as the issue tracker's "home
-directory". It may be specified in the environment variable
-``TRACKER_HOME`` or on the command line as "``-i tracker``".
+All commands (except help, genconfig, templates) require a tracker
+specifier. This is just the path to the roundup tracker you're working
+with. A roundup tracker is where roundup keeps the database and
+configuration file that defines an issue tracker. It may be thought of
+as the issue tracker's "home directory". It may be specified in the
+environment variable ``TRACKER_HOME`` or on the command line as "``-i
+tracker``".
 
 A designator is a classname and an itemid concatenated, eg. bug1,
 user10, ... Property values are represented as strings in command
