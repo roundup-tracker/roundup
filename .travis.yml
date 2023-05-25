@@ -1,6 +1,8 @@
 # check syntax using:
 # https://config.travis-ci.com/explore
 
+# have commit skip build by adding '[skip travis]' to commit message.
+
 os: linux
 
 language: python
