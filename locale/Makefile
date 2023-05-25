@@ -15,8 +15,7 @@ PACKAGES=$(shell find ../roundup ../share/roundup/templates -name '*.py' \
 SOURCES=$(PACKAGES:=/*.py)
 PO_FILES=$(wildcard *.po)
 MO_FILES=$(PO_FILES:.po=.mo)
-PYTHON_BUILD=../build/lib
-RUN_PYTHON=PYTHONPATH=$(PYTHON_BUILD) $(PYTHON) -O
+RUN_PYTHON=PYTHONPATH=.. $(PYTHON) -O
 
 all: dist
 
@@ -41,7 +40,6 @@ dist:
 	done
 
 template:
-	test -d $(PYTHON_BUILD) || (echo "Missing build directory $(PYTHON_BUILD). ln -s lib to build library"; exit 1)
 	${XPOT} -n -o $(TEMPLATE) $(SOURCES)
 
 	${RUN_PYTHON} ../roundup/cgi/TAL/talgettext.py -u $(TEMPLATE) \
@@ -50,7 +48,7 @@ template:
 	  ../share/roundup/templates/minimal/html/*.html \
 	  ../share/roundup/templates/responsive/html/*.html
 	VERSION="`sed -ne \"/__version__/s/.*'\(.*\)'.*/\1/p\" \
-	      ../build/lib/roundup/__init__.py`"; \
+	      ../roundup/__init__.py`"; \
 	${XGETTEXT} -j -w 80 -F \
 	  --package-name=Roundup \
 	  --package-version=$$VERSION \
