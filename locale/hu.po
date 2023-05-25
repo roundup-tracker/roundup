@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 2.3.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2023-03-03 17:28-0500\n"
+"POT-Creation-Date: 2023-05-24 20:34-0400\n"
 "PO-Revision-Date: 2013-10-31 12:19+0100\n"
 "Last-Translator: kilo aka Gabor Kmetyko <kg_kilo@freemail.hu>\n"
 "Language-Team: Hungarian\n"
@@ -28,27 +28,47 @@ msgstr "Nincs jogosultsága %(action)s műveletre a(z) %(classname)s osztályon.
 msgid "You may not retire the admin or anonymous user"
 msgstr "Az admin és anonymous felhasználókat nem lehet visszavonultatni"
 
+#: ../roundup/admin.py:117
+msgid "Have 'display designator' show protected fields: creator. NYI"
+msgstr ""
+
+#: ../roundup/admin.py:120
+msgid "Set indexer to use when running 'reindex' NYI"
+msgstr ""
+
+#: ../roundup/admin.py:123
+msgid "Force reopening of tracker when running each command."
+msgstr ""
+
+#: ../roundup/admin.py:125
+msgid "Show retired items in table, list etc. NYI"
+msgstr ""
+
+#: ../roundup/admin.py:126
+msgid "Enable verbose output: tracing, descriptions..."
+msgstr ""
+
 # ../roundup/admin.py:85 :981 :1030 :1052
-#: ../roundup/admin.py:112 ../roundup/admin.py:1295 ../roundup/admin.py:1350
-#: ../roundup/admin.py:1377 ../roundup/admin.py:112:1295 :1350:1377
+#: ../roundup/admin.py:138 ../roundup/admin.py:993 ../roundup/admin.py:1601
+#: ../roundup/admin.py:1633 ../roundup/admin.py:138:993 :1601:1633
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "nincs \"%(classname)s\" osztály"
 
 # ../roundup/admin.py:95 :99
-#: ../roundup/admin.py:124
+#: ../roundup/admin.py:150
 #, python-format
 msgid "argument \"%(arg)s\" not propname=value"
 msgstr "A(z) \"%(arg)s\" argumentum nem név=érték alakú"
 
-#: ../roundup/admin.py:137
+#: ../roundup/admin.py:163
 #, python-format
 msgid ""
 "Problem: %(message)s\n"
 "\n"
 msgstr "Probléma: %(message)s\n"
 
-#: ../roundup/admin.py:138
+#: ../roundup/admin.py:164
 #, fuzzy, python-format
 msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
@@ -100,12 +120,12 @@ msgstr ""
 " roundup-admin help <command>             -- parancs-specifikus segítség\n"
 " roundup-admin help all                   -- minden elérhető segítség\n"
 
-#: ../roundup/admin.py:165
+#: ../roundup/admin.py:191
 #, fuzzy
 msgid "Commands: "
 msgstr "Parancsok:"
 
-#: ../roundup/admin.py:172
+#: ../roundup/admin.py:198
 msgid ""
 "Commands may be abbreviated as long as the abbreviation\n"
 "matches only one command, e.g. l == li == lis == list."
@@ -113,7 +133,7 @@ msgstr ""
 "A parancsok rövidíthetők mindaddig, amíg csak egy parancsra illenek, pl. l "
 "== li == lis == list."
 
-#: ../roundup/admin.py:201
+#: ../roundup/admin.py:227
 msgid ""
 "\n"
 "All commands (except help) require a tracker specifier. This is just\n"
@@ -180,12 +200,254 @@ msgid ""
 "Command help:\n"
 msgstr ""
 
-#: ../roundup/admin.py:264
+#: ../roundup/admin.py:290
 #, python-format
 msgid "%s:"
 msgstr "%s:"
 
-#: ../roundup/admin.py:271
+# ../roundup/admin.py:340 :396
+#: ../roundup/admin.py:395 ../roundup/admin.py:1185
+#: ../roundup/admin.py:395:1185
+msgid "Templates:"
+msgstr "Sablonok:"
+
+# ../roundup/admin.py:343 :407
+#: ../roundup/admin.py:398 ../roundup/admin.py:1195
+#: ../roundup/admin.py:398:1195
+msgid "Back ends:"
+msgstr "Adatbázis hátterek:"
+
+#: ../roundup/admin.py:415
+msgid ""
+"Usage: commit\n"
+"        Commit changes made to the database during an interactive session.\n"
+"\n"
+"        The changes made during an interactive session are not\n"
+"        automatically written to the database - they must be committed\n"
+"        using this command.\n"
+"\n"
+"        One-off commands on the command-line are automatically committed if\n"
+"        they are successful.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:430
+msgid ""
+"Usage: create classname property=value ...\n"
+"        Create a new entry of a given class.\n"
+"\n"
+"        This creates a new entry of the given class using the property\n"
+"        name=value arguments provided on the command line after the \"create"
+"\"\n"
+"        command.\n"
+"        "
+msgstr ""
+
+# ../roundup/admin.py:369 :466 :527 :606 :656 :714 :735 :763 :834 :901 :972
+# :1020 :1042 :1069 :1136 :1207
+#: ../roundup/admin.py:438 ../roundup/admin.py:512 ../roundup/admin.py:545
+#: ../roundup/admin.py:663 ../roundup/admin.py:749 ../roundup/admin.py:807
+#: ../roundup/admin.py:852 ../roundup/admin.py:977 ../roundup/admin.py:1020
+#: ../roundup/admin.py:1158 ../roundup/admin.py:1285 ../roundup/admin.py:1371
+#: ../roundup/admin.py:1482 ../roundup/admin.py:1591 ../roundup/admin.py:1623
+#: ../roundup/admin.py:1738 ../roundup/admin.py:1792 ../roundup/admin.py:1837
+#: ../roundup/admin.py:438:512 :1020:1158:1285 :1371:1482 :1591:1623 :1738:1792
+#: :1837 :545:663 :749:807 :852:977
+msgid "Not enough arguments supplied"
+msgstr "Nincs megadva elég argumentum"
+
+#: ../roundup/admin.py:458
+#, python-format
+msgid "%(propname)s (Password): "
+msgstr "%(propname)s (Jelszó): "
+
+#: ../roundup/admin.py:461
+#, python-format
+msgid "   %(propname)s (Again): "
+msgstr "   %(propname)s (Ismét): "
+
+#: ../roundup/admin.py:465
+msgid "Sorry, try again..."
+msgstr "Sajnálom, próbálja újra..."
+
+#: ../roundup/admin.py:470
+#, python-format
+msgid "%(propname)s (%(proptype)s): "
+msgstr "%(propname)s (%(proptype)s): "
+
+#: ../roundup/admin.py:489
+#, python-format
+msgid "you must provide the \"%(propname)s\" property."
+msgstr "meg kell adni a(z) \"%(propname)s\" tulajdonságot."
+
+#: ../roundup/admin.py:501
+#, fuzzy
+msgid ""
+"Usage: display designator[,designator]*\n"
+"\n"
+"        Show the property values for the given node(s).\n"
+"\n"
+"        A designator is a classname and a nodeid concatenated,\n"
+"        eg. bug1, user10, ...\n"
+"\n"
+"        This lists the properties and their associated values\n"
+"        for the given node.\n"
+"        "
+msgstr ""
+"Használat: get property designator[,designator]*\n"
+"        Visszaadja egy vagy több jelölő tulajdonságát.\n"
+"\n"
+"        Visszaadja a jelölő által meghatározott\n"
+"        csomópont értékét.\n"
+"        "
+
+#: ../roundup/admin.py:528
+#, python-format
+msgid "%(key)s: %(value)s"
+msgstr "%(key)s: %(value)s"
+
+#. grab the directory to export to
+#: ../roundup/admin.py:531
+msgid ""
+"Usage: export [[-]class[,class]] export_dir\n"
+"        Export the database to colon-separated-value files.\n"
+"        To exclude the files (e.g. for the msg or file class),\n"
+"        use the exporttables command.\n"
+"\n"
+"        Optionally limit the export to just the named classes\n"
+"        or exclude the named classes, if the 1st argument starts with '-'.\n"
+"\n"
+"        This action exports the current data from the database into\n"
+"        colon-separated-value files that are placed in the nominated\n"
+"        destination directory.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:638
+msgid ""
+"Usage: exporttables [[-]class[,class]] export_dir\n"
+"        Export the database to colon-separated-value files, excluding the\n"
+"        files below $TRACKER_HOME/db/files/ (which can be archived "
+"separately).\n"
+"        To include the files, use the export command.\n"
+"\n"
+"        Optionally limit the export to just the named classes\n"
+"        or exclude the named classes, if the 1st argument starts with '-'.\n"
+"\n"
+"        This action exports the current data from the database into\n"
+"        colon-separated-value files that are placed in the nominated\n"
+"        destination directory.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:653
+msgid ""
+"Usage: filter classname propname=value ...\n"
+"        Find the nodes of the given class with a given property value.\n"
+"\n"
+"        Find the nodes of the given class with a given property value.\n"
+"        Multiple values can be specified by separating them with commas.\n"
+"        If property is a string, all values must match. I.E. it's an\n"
+"        'and' operation. If the property is a link/multilink any value\n"
+"        matches. I.E. an 'or' operation.\n"
+"        "
+msgstr ""
+
+# ../roundup/admin.py:701 :854 :866 :920
+#: ../roundup/admin.py:696
+#, fuzzy, python-format
+msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
+msgstr "%(classname)s-nek nincs \"%(propname)s\" tulajdonsága"
+
+# ../roundup/admin.py:701 :854 :866 :920
+#: ../roundup/admin.py:734 ../roundup/admin.py:795 ../roundup/admin.py:1305
+#: ../roundup/admin.py:1317 ../roundup/admin.py:1857
+#: ../roundup/admin.py:734:795 :1305:1317:1857
+#, python-format
+msgid "%(classname)s has no property \"%(propname)s\""
+msgstr "%(classname)s-nek nincs \"%(propname)s\" tulajdonsága"
+
+#: ../roundup/admin.py:741
+msgid ""
+"Usage: find classname propname=value ...\n"
+"        Find the nodes of the given class with a given link property value.\n"
+"\n"
+"        Find the nodes of the given class with a given link property value.\n"
+"        The value may be either the nodeid of the linked node, or its key\n"
+"        value.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:802
+#, fuzzy
+msgid ""
+"Usage: genconfig <filename>\n"
+"        Generate a new tracker config file (ini style) with default\n"
+"        values in <filename>.\n"
+"        "
+msgstr ""
+"Használat: genconfig <fájlnév>\n"
+"        Új hibakövető konfigurációs fájl (ini stílusú) generálása "
+"alapértelmezett értékekkel\n"
+"        a <fájlnév> fájlba.\n"
+"        "
+
+#: ../roundup/admin.py:820
+#, python-format
+msgid ""
+"Changing option\n"
+"   'password_pbkdf2_default_rounds'\n"
+"from old default of %(old_number)s to new default of %(new_number)s."
+msgstr ""
+
+#: ../roundup/admin.py:831
+#, python-format
+msgid ""
+"Update 'password_pbkdf2_default_rounds' to a number equal to or larger\n"
+"than %s."
+msgstr ""
+
+#: ../roundup/admin.py:842
+#, fuzzy
+msgid ""
+"Usage: get property designator[,designator]*\n"
+"        Get the given property of one or more designator(s).\n"
+"\n"
+"        A designator is a classname and a nodeid concatenated,\n"
+"        eg. bug1, user10, ...\n"
+"\n"
+"        Retrieves the property value of the nodes specified\n"
+"        by the designators.\n"
+"        "
+msgstr ""
+"Használat: get property designator[,designator]*\n"
+"        Visszaadja egy vagy több jelölő tulajdonságát.\n"
+"\n"
+"        Visszaadja a jelölő által meghatározott\n"
+"        csomópont értékét.\n"
+"        "
+
+# ../roundup/admin.py:560 :575
+#: ../roundup/admin.py:886 ../roundup/admin.py:904 ../roundup/admin.py:886:904
+#, python-format
+msgid "property %s is not of type Multilink or Link so -d flag does not apply."
+msgstr ""
+"A(z) %s tulajdonság nem Multilink vagy Link típusú, ezért a -d kapcsoló nem "
+"alkalmazható."
+
+# ../roundup/admin.py:583 :983 :1032 :1054
+#: ../roundup/admin.py:914 ../roundup/admin.py:995 ../roundup/admin.py:1635
+#: ../roundup/admin.py:914:995:1635
+#, python-format
+msgid "no such %(classname)s node \"%(nodeid)s\""
+msgstr "nincs \"%(nodeid)s\" %(classname)s csomópont"
+
+#: ../roundup/admin.py:917
+#, python-format
+msgid "no such %(classname)s property \"%(propname)s\""
+msgstr "nincs \"%(propname)s\" %(classname)s tulajdonság"
+
+#: ../roundup/admin.py:925
 msgid ""
 "Usage: help topic\n"
 "        Give help about topic.\n"
@@ -205,22 +467,103 @@ msgstr ""
 "        all       -- minden elérhető segítség\n"
 "        "
 
-#: ../roundup/admin.py:293
+#: ../roundup/admin.py:947
 #, python-format
 msgid "Sorry, no help for \"%(topic)s\""
 msgstr "Elnézést, \"%(topic)s\" témához nincs súgó"
 
-# ../roundup/admin.py:340 :396
-#: ../roundup/admin.py:408 ../roundup/admin.py:464 ../roundup/admin.py:408:464
-msgid "Templates:"
-msgstr "Sablonok:"
+#: ../roundup/admin.py:964
+msgid ""
+"Usage: history designator [skipquiet]\n"
+"        Show the history entries of a designator.\n"
+"\n"
+"        A designator is a classname and a nodeid concatenated,\n"
+"        eg. bug1, user10, ...\n"
+"\n"
+"        Lists the journal entries viewable by the user for the\n"
+"        node identified by the designator. If skipquiet is the\n"
+"        second argument, journal entries for quiet properties\n"
+"        are not shown.\n"
+"        "
+msgstr ""
 
-# ../roundup/admin.py:343 :407
-#: ../roundup/admin.py:411 ../roundup/admin.py:474 ../roundup/admin.py:411:474
-msgid "Back ends:"
-msgstr "Adatbázis hátterek:"
+#: ../roundup/admin.py:1000
+msgid ""
+"Usage: import import_dir\n"
+"        Import a database from the directory containing CSV files,\n"
+"        two per class to import.\n"
+"\n"
+"        The files used in the import are:\n"
+"\n"
+"        <class>.csv\n"
+"          This must define the same properties as the class (including\n"
+"          having a \"header\" line with those property names.)\n"
+"        <class>-journals.csv\n"
+"          This defines the journals for the items being imported.\n"
+"\n"
+"        The imported nodes will have the same nodeid as defined in the\n"
+"        import file, thus replacing any existing content.\n"
+"\n"
+"        The new nodes are added to the existing database - if you want to\n"
+"        create a new database using the imported data, then create a new\n"
+"        database (or, tediously, retire all the old data.)\n"
+"        "
+msgstr ""
 
-#: ../roundup/admin.py:414
+#: ../roundup/admin.py:1079
+msgid ""
+"Usage: importtables export_dir\n"
+"\n"
+"        This imports the database tables exported using exporttables.\n"
+"        "
+msgstr ""
+
+#. password
+#: ../roundup/admin.py:1086
+msgid ""
+"Usage: initialise [adminpw]\n"
+"        Initialise a new Roundup tracker.\n"
+"\n"
+"        The administrator details will be set at this step.\n"
+"\n"
+"        Execute the tracker's initialisation function dbinit.init()\n"
+"        "
+msgstr ""
+"Használat: initialise [adminpw]\n"
+"        Inicializál egy új Roundup hibakövetőt.\n"
+"\n"
+"        Az adminisztrátori részletek ebben a lépésben lesznek beállítva.\n"
+"\n"
+"        Végrehajtja az adatbázist inicializáló dbinit.init() rutint\n"
+"        "
+
+#: ../roundup/admin.py:1100
+msgid "Admin Password: "
+msgstr "Adminisztrátori jelszó: "
+
+#: ../roundup/admin.py:1101
+msgid "       Confirm: "
+msgstr "       Megerősítés "
+
+#: ../roundup/admin.py:1105
+msgid "Instance home does not exist"
+msgstr "A példány könyvtára nem létezik"
+
+#: ../roundup/admin.py:1109
+msgid "Instance has not been installed"
+msgstr "A példány nem lett installálva"
+
+#: ../roundup/admin.py:1115
+msgid ""
+"WARNING: The database is already initialised!\n"
+"If you re-initialise it, you will lose all the data!\n"
+"Erase it? Y/N: "
+msgstr ""
+"FIGYELEM: Az adatbázis már inicializált!\n"
+"Újrainicializálás esetén minden adat elvész!\n"
+"Törli? Y/N: "
+
+#: ../roundup/admin.py:1135
 msgid ""
 "Usage: install [template [backend [key=val[,key=val]]]]\n"
 "        Install a new Roundup tracker.\n"
@@ -246,25 +589,12 @@ msgid ""
 "        "
 msgstr ""
 
-# ../roundup/admin.py:369 :466 :527 :606 :656 :714 :735 :763 :834 :901 :972
-# :1020 :1042 :1069 :1136 :1207
-#: ../roundup/admin.py:437 ../roundup/admin.py:568 ../roundup/admin.py:671
-#: ../roundup/admin.py:764 ../roundup/admin.py:822 ../roundup/admin.py:908
-#: ../roundup/admin.py:967 ../roundup/admin.py:994 ../roundup/admin.py:1021
-#: ../roundup/admin.py:1098 ../roundup/admin.py:1193 ../roundup/admin.py:1279
-#: ../roundup/admin.py:1340 ../roundup/admin.py:1367 ../roundup/admin.py:1403
-#: ../roundup/admin.py:1531 ../roundup/admin.py:1615
-#: ../roundup/admin.py:437:568 :1021:1098:1193 :1279:1340 :1367:1403 :1531:1615
-#: :671:764 :822:908 :967:994
-msgid "Not enough arguments supplied"
-msgstr "Nincs megadva elég argumentum"
-
-#: ../roundup/admin.py:443
+#: ../roundup/admin.py:1164
 #, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr "Példány könyvtár szülője (\"%(parent)s\") nem létezik"
 
-#: ../roundup/admin.py:452
+#: ../roundup/admin.py:1173
 #, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
@@ -276,22 +606,22 @@ msgstr ""
 "Ha újra installálod, minden adat elveszik!\n"
 "Töröljem? Y/N: "
 
-#: ../roundup/admin.py:465
+#: ../roundup/admin.py:1186
 #, fuzzy
 msgid "Select template"
 msgstr "Sablon választása [classic]: "
 
-#: ../roundup/admin.py:475
+#: ../roundup/admin.py:1196
 #, fuzzy
 msgid "Select backend"
 msgstr "Adatbázis háttér választása [anydbm]: "
 
-#: ../roundup/admin.py:486
+#: ../roundup/admin.py:1207
 #, python-format
 msgid "Error in configuration settings: \"%s\""
 msgstr "Hiba a konfigurációs beállításokban: \"%s\""
 
-#: ../roundup/admin.py:517
+#: ../roundup/admin.py:1238
 #, python-format
 msgid ""
 "\n"
@@ -304,11 +634,11 @@ msgstr ""
 " Most kell szerkesztened a konfigurációs fájlt:\n"
 "   %(config_file)s"
 
-#: ../roundup/admin.py:527
+#: ../roundup/admin.py:1248
 msgid " ... at a minimum, you must set following options:"
 msgstr " ... legalább a következő opciókat kell beállítani:"
 
-#: ../roundup/admin.py:532
+#: ../roundup/admin.py:1253
 #, python-format
 msgid ""
 "\n"
@@ -325,138 +655,318 @@ msgid ""
 "---------------------------------------------------------------------------\n"
 msgstr ""
 
-#: ../roundup/admin.py:563
-#, fuzzy
+#: ../roundup/admin.py:1270
 msgid ""
-"Usage: genconfig <filename>\n"
-"        Generate a new tracker config file (ini style) with default\n"
-"        values in <filename>.\n"
+"Usage: list classname [property]\n"
+"        List the instances of a class.\n"
+"\n"
+"        Lists all instances of the given class. If the property is not\n"
+"        specified, the  \"label\" property is used. The label property is\n"
+"        tried in order: the key, \"name\", \"title\" and then the first\n"
+"        property, alphabetically.\n"
+"\n"
+"        With -c, -S or -s print a list of item id's if no property\n"
+"        specified.  If property specified, print list of that property\n"
+"        for every class instance.\n"
 "        "
 msgstr ""
-"Használat: genconfig <fájlnév>\n"
-"        Új hibakövető konfigurációs fájl (ini stílusú) generálása "
-"alapértelmezett értékekkel\n"
-"        a <fájlnév> fájlba.\n"
-"        "
 
-#: ../roundup/admin.py:581
+#: ../roundup/admin.py:1283
+msgid "Too many arguments supplied"
+msgstr "Túl sok argumentum került megadásra"
+
+#: ../roundup/admin.py:1319
 #, python-format
+msgid "%(nodeid)4s: %(value)s"
+msgstr "%(nodeid)4s: %(value)s"
+
+#: ../roundup/admin.py:1323
 msgid ""
-"Changing option\n"
-"   'password_pbkdf2_default_rounds'\n"
-"from old default of %(old_number)s to new default of %(new_number)s."
+"Usage: migrate\n"
+"\n"
+"        Update a tracker's database to be compatible with the Roundup\n"
+"        codebase.\n"
+"\n"
+"        You should run the \"migrate\" command for your tracker once\n"
+"        you've installed the latest codebase.\n"
+"\n"
+"        Do this before you use the web, command-line or mail interface\n"
+"        and before any users access the tracker.\n"
+"\n"
+"        This command will respond with either \"Tracker updated\" (if\n"
+"        you've not previously run it on an RDBMS backend) or \"No\n"
+"        migration action required\" (if you have run it, or have used\n"
+"        another interface to the tracker, or possibly because you are\n"
+"        using anydbm).\n"
+"\n"
+"        It's safe to run this even if it's not required, so just get\n"
+"        into the habit.\n"
+"        "
 msgstr ""
 
-#: ../roundup/admin.py:593
+#: ../roundup/admin.py:1344
 #, python-format
-msgid ""
-"Update 'password_pbkdf2_default_rounds' to a number equal to or larger\n"
-"than %s."
+msgid "Tracker updated to schema version %s."
 msgstr ""
 
-#: ../roundup/admin.py:604
-#, fuzzy
+#: ../roundup/admin.py:1348
+#, python-format
+msgid "No migration action required. At schema version %s."
+msgstr ""
+
+#: ../roundup/admin.py:1353
 msgid ""
-"Usage: updateconfig <filename>\n"
-"        Generate an updated tracker config file (ini style) in\n"
-"        <filename>. Use current settings from existing roundup\n"
-"        tracker in tracker home.\n"
+"Usage: pack period | date\n"
+"\n"
+"        Remove journal entries older than a period of time specified or\n"
+"        before a certain date.\n"
+"\n"
+"        A period is specified using the suffixes \"y\", \"m\", and \"d\". "
+"The\n"
+"        suffix \"w\" (for \"week\") means 7 days.\n"
+"\n"
+"              \"3y\" means three years\n"
+"              \"2y 1m\" means two years and one month\n"
+"              \"1m 25d\" means one month and 25 days\n"
+"              \"2w 3d\" means two weeks and three days\n"
+"\n"
+"        Date format is \"YYYY-MM-DD\" eg:\n"
+"            2001-01-01\n"
+"\n"
 "        "
 msgstr ""
-"Használat: genconfig <fájlnév>\n"
-"        Új hibakövető konfigurációs fájl (ini stílusú) generálása "
-"alapértelmezett értékekkel\n"
-"        a <fájlnév> fájlba.\n"
-"        "
 
-#. password
-#: ../roundup/admin.py:612
+#: ../roundup/admin.py:1381
+msgid "Invalid format"
+msgstr "Hibás formátum"
+
+#: ../roundup/admin.py:1392
 msgid ""
-"Usage: initialise [adminpw]\n"
-"        Initialise a new Roundup tracker.\n"
+"Usage: perftest [mode] [arguments]*\n"
 "\n"
-"        The administrator details will be set at this step.\n"
+"        Time operations in Roundup. Supported arguments:\n"
 "\n"
-"        Execute the tracker's initialisation function dbinit.init()\n"
+"            [password] [rounds=<integer>] [scheme=<scheme>]\n"
+"\n"
+"        'password' is the default mode.  The tracker's config.ini\n"
+"        setting for 'password_pbkdf2_default_rounds' is the default\n"
+"        value for 'rounds'. On the command line, 'rounds' can include\n"
+"        thousands separator of ',' or '.'.  'scheme' is the default\n"
+"        coded into Roundup. List supported schemes by using 'scheme='.\n"
+"\n"
 "        "
 msgstr ""
-"Használat: initialise [adminpw]\n"
-"        Inicializál egy új Roundup hibakövetőt.\n"
-"\n"
-"        Az adminisztrátori részletek ebben a lépésben lesznek beállítva.\n"
-"\n"
-"        Végrehajtja az adatbázist inicializáló dbinit.init() rutint\n"
-"        "
 
-#: ../roundup/admin.py:626
-msgid "Admin Password: "
-msgstr "Adminisztrátori jelszó: "
-
-#: ../roundup/admin.py:627
-msgid "       Confirm: "
-msgstr "       Megerősítés "
-
-#: ../roundup/admin.py:631
-msgid "Instance home does not exist"
-msgstr "A példány könyvtára nem létezik"
-
-#: ../roundup/admin.py:635
-msgid "Instance has not been installed"
-msgstr "A példány nem lett installálva"
-
-#: ../roundup/admin.py:641
-msgid ""
-"WARNING: The database is already initialised!\n"
-"If you re-initialise it, you will lose all the data!\n"
-"Erase it? Y/N: "
+#: ../roundup/admin.py:1425
+msgid "Invalid 'rounds'. Must be larger than 999."
 msgstr ""
-"FIGYELEM: Az adatbázis már inicializált!\n"
-"Újrainicializálás esetén minden adat elvész!\n"
-"Törli? Y/N: "
 
-#: ../roundup/admin.py:661
-#, fuzzy
+#: ../roundup/admin.py:1429
+#, python-format
+msgid "Invalid 'rounds'. It must be an integer not: %s"
+msgstr ""
+
+#: ../roundup/admin.py:1456
+msgid "scheme does not support rounds."
+msgstr ""
+
+#: ../roundup/admin.py:1459
+#, python-format
+msgid "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, rounds: %(rounds)s"
+msgstr ""
+
+#: ../roundup/admin.py:1465
 msgid ""
-"Usage: get property designator[,designator]*\n"
-"        Get the given property of one or more designator(s).\n"
+"Usage: pragma setting=value | 'list'\n"
+"        Set internal admin settings to a value. E.G.\n"
+"\n"
+"            pragma verbose=True\n"
+"            pragma verbose=yes\n"
+"            pragma verbose=on\n"
+"            pragma verbose=1\n"
+"\n"
+"         will turn on verbose mode for roundup-admin.\n"
+"\n"
+"            pragma list\n"
+"\n"
+"         will show all settings and their current values. If verbose\n"
+"         is enabled hidden settings and descriptions will be shown.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1489
+#, python-format
+msgid "Argument must be setting=value, was given: %s."
+msgstr ""
+
+#: ../roundup/admin.py:1492
+msgid "Current settings and values (NYI - not yet implemented):"
+msgstr ""
+
+#: ../roundup/admin.py:1505
+#, fuzzy, python-format
+msgid "Unknown setting %s."
+msgstr "Ismeretlen felhasználónév"
+
+#: ../roundup/admin.py:1514
+#, python-format
+msgid "Incorrect value for boolean setting %(setting)s: %(value)s."
+msgstr ""
+
+#: ../roundup/admin.py:1521
+#, python-format
+msgid "Incorrect value for integer setting %(setting)s: %(value)s."
+msgstr ""
+
+#: ../roundup/admin.py:1527
+#, python-format
+msgid "Internal error: pragma can not handle values of type: %s"
+msgstr ""
+
+#: ../roundup/admin.py:1537
+msgid ""
+"Usage: reindex [classname|classname:#-#|designator]*\n"
+"        Re-generate a tracker's search indexes.\n"
+"\n"
+"        This will re-generate the search indexes for a tracker.\n"
+"        This will typically happen automatically.\n"
+"\n"
+"        You can incrementally reindex using an argument like:\n"
+"\n"
+"            reindex issue:23-1000\n"
+"\n"
+"        to reindex issue class items 23-1000. Missing items\n"
+"        are reported but do not stop indexing of the range.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1560
+#, python-format
+msgid "no such item \"%(designator)s\""
+msgstr "nincs ilyen elem: \"%(designator)s\""
+
+#: ../roundup/admin.py:1570
+#, fuzzy, python-format
+msgid "no such item \"%(class)s%(id)s\""
+msgstr "nincs ilyen elem: \"%(designator)s\""
+
+#: ../roundup/admin.py:1582
+msgid ""
+"Usage: restore designator[,designator]*\n"
+"        Restore the retired node specified by designator.\n"
 "\n"
 "        A designator is a classname and a nodeid concatenated,\n"
 "        eg. bug1, user10, ...\n"
 "\n"
-"        Retrieves the property value of the nodes specified\n"
-"        by the designators.\n"
+"        The given nodes will become available for users again.\n"
 "        "
 msgstr ""
-"Használat: get property designator[,designator]*\n"
-"        Visszaadja egy vagy több jelölő tulajdonságát.\n"
-"\n"
-"        Visszaadja a jelölő által meghatározott\n"
-"        csomópont értékét.\n"
-"        "
-
-# ../roundup/admin.py:560 :575
-#: ../roundup/admin.py:705 ../roundup/admin.py:723 ../roundup/admin.py:705:723
-#, python-format
-msgid "property %s is not of type Multilink or Link so -d flag does not apply."
-msgstr ""
-"A(z) %s tulajdonság nem Multilink vagy Link típusú, ezért a -d kapcsoló nem "
-"alkalmazható."
 
 # ../roundup/admin.py:583 :983 :1032 :1054
-#: ../roundup/admin.py:733 ../roundup/admin.py:1297 ../roundup/admin.py:1352
-#: ../roundup/admin.py:733:1297:1352
-#, python-format
-msgid "no such %(classname)s node \"%(nodeid)s\""
+#: ../roundup/admin.py:1607
+#, fuzzy
+msgid "no such %(classname)s node \" % (nodeid)s\""
 msgstr "nincs \"%(nodeid)s\" %(classname)s csomópont"
 
-#: ../roundup/admin.py:736
-#, python-format
-msgid "no such %(classname)s property \"%(propname)s\""
-msgstr "nincs \"%(propname)s\" %(classname)s tulajdonság"
-
-#: ../roundup/admin.py:744
+#: ../roundup/admin.py:1613
 msgid ""
-"Usage: set items property=value property=value ...\n"
+"Usage: retire designator[,designator]*\n"
+"        Retire the node specified by designator.\n"
+"\n"
+"        A designator is a classname and a nodeid concatenated,\n"
+"        eg. bug1, user10, ...\n"
+"\n"
+"        This action indicates that a particular node is not to be retrieved\n"
+"        by the list or find commands, and its key value may be re-used.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1641
+msgid ""
+"Usage: rollback\n"
+"        Undo all changes that are pending commit to the database.\n"
+"\n"
+"        The changes made during an interactive session are not\n"
+"        automatically written to the database - they must be committed\n"
+"        manually. This command undoes all those changes, so a commit\n"
+"        immediately after would make no changes to the database.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1654
+msgid ""
+"Usage: security [Role name]\n"
+"\n"
+"             Display the Permissions available to one or all Roles.\n"
+"             Also validates that any properties defined in a\n"
+"             permission are valid.\n"
+"\n"
+"             Run this after changing your permissions to catch\n"
+"             typos.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1668
+#, fuzzy, python-format
+msgid "No such Role \"%(role)s\"\n"
+msgstr "Nincs ilyen szerepkör: \"%(role)s\""
+
+#: ../roundup/admin.py:1674
+#, fuzzy, python-format
+msgid "New Web users get the Roles \"%(role)s\"\n"
+msgstr "Új web felhasználók ezeket a szerepköröket kapják: \"%(role)s\""
+
+#: ../roundup/admin.py:1677
+#, fuzzy, python-format
+msgid "New Web users get the Role \"%(role)s\"\n"
+msgstr "Új web felhasználók ezt a szerepkört kapják \"%(role)s\""
+
+#: ../roundup/admin.py:1681
+#, fuzzy, python-format
+msgid "New Email users get the Roles \"%(role)s\"\n"
+msgstr "Új e-mail felhasználók ezeket a szerepköröket kapják: \"%(role)s\""
+
+#: ../roundup/admin.py:1683
+#, fuzzy, python-format
+msgid "New Email users get the Role \"%(role)s\"\n"
+msgstr "Új e-mail felhasználók ezt a szerepkört kapják: \"%(role)s\""
+
+#: ../roundup/admin.py:1686
+#, fuzzy, python-format
+msgid "Role \"%(name)s\":\n"
+msgstr "\"%(name)s\" szerepkör:"
+
+#: ../roundup/admin.py:1692
+#, fuzzy
+msgid " %(description)s (%(name)s for \"%(klass)s\""
+msgstr " %(description)s (%(name)s)"
+
+#: ../roundup/admin.py:1692
+#, fuzzy, python-format
+msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
+msgstr " %(description)s (%(name)s)"
+
+#: ../roundup/admin.py:1705
+#, python-format
+msgid ""
+"\n"
+"  **Invalid properties for %(class)s: %(props)s\n"
+"\n"
+msgstr ""
+
+#: ../roundup/admin.py:1711
+#, fuzzy, python-format
+msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
+msgstr " %(description)s (%(name)s)"
+
+#: ../roundup/admin.py:1714
+#, fuzzy, python-format
+msgid " %(description)s (%(name)s)\n"
+msgstr " %(description)s (%(name)s)"
+
+#: ../roundup/admin.py:1718
+msgid ""
+"Usage: set items property=value [property=value ...]\n"
 "        Set the given properties of one or more items(s).\n"
 "\n"
 "        The items are specified as a class or as a comma-separated\n"
@@ -475,45 +985,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:812
-msgid ""
-"Usage: filter classname propname=value ...\n"
-"        Find the nodes of the given class with a given property value.\n"
-"\n"
-"        Find the nodes of the given class with a given property value.\n"
-"        Multiple values can be specified by separating them with commas.\n"
-"        If property is a string, all values must match. I.E. it's an\n"
-"        'and' operation. If the property is a link/multilink any value\n"
-"        matches. I.E. an 'or' operation.\n"
-"        "
-msgstr ""
-
-# ../roundup/admin.py:701 :854 :866 :920
-#: ../roundup/admin.py:855
-#, fuzzy, python-format
-msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
-msgstr "%(classname)s-nek nincs \"%(propname)s\" tulajdonsága"
-
-# ../roundup/admin.py:701 :854 :866 :920
-#: ../roundup/admin.py:893 ../roundup/admin.py:954 ../roundup/admin.py:1118
-#: ../roundup/admin.py:1130 ../roundup/admin.py:1213
-#: ../roundup/admin.py:893:954 :1118:1130:1213
-#, python-format
-msgid "%(classname)s has no property \"%(propname)s\""
-msgstr "%(classname)s-nek nincs \"%(propname)s\" tulajdonsága"
-
-#: ../roundup/admin.py:900
-msgid ""
-"Usage: find classname propname=value ...\n"
-"        Find the nodes of the given class with a given link property value.\n"
-"\n"
-"        Find the nodes of the given class with a given link property value.\n"
-"        The value may be either the nodeid of the linked node, or its key\n"
-"        value.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:961
+#: ../roundup/admin.py:1786
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -527,114 +999,17 @@ msgstr ""
 "        Listázza az adott osztály tulajdonságait.\n"
 "        "
 
-#: ../roundup/admin.py:977
+#: ../roundup/admin.py:1802
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s (key property)\n"
 msgstr "%(key)s: %(value)s (kulcs tulajdonság)"
 
-#: ../roundup/admin.py:980
+#: ../roundup/admin.py:1805
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s\n"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:983
-#, fuzzy
-msgid ""
-"Usage: display designator[,designator]*\n"
-"\n"
-"        Show the property values for the given node(s).\n"
-"\n"
-"        A designator is a classname and a nodeid concatenated,\n"
-"        eg. bug1, user10, ...\n"
-"\n"
-"        This lists the properties and their associated values\n"
-"        for the given node.\n"
-"        "
-msgstr ""
-"Használat: get property designator[,designator]*\n"
-"        Visszaadja egy vagy több jelölő tulajdonságát.\n"
-"\n"
-"        Visszaadja a jelölő által meghatározott\n"
-"        csomópont értékét.\n"
-"        "
-
-#: ../roundup/admin.py:1010
-#, python-format
-msgid "%(key)s: %(value)s"
-msgstr "%(key)s: %(value)s"
-
-#: ../roundup/admin.py:1013
-msgid ""
-"Usage: create classname property=value ...\n"
-"        Create a new entry of a given class.\n"
-"\n"
-"        This creates a new entry of the given class using the property\n"
-"        name=value arguments provided on the command line after the \"create"
-"\"\n"
-"        command.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1041
-#, python-format
-msgid "%(propname)s (Password): "
-msgstr "%(propname)s (Jelszó): "
-
-#: ../roundup/admin.py:1044
-#, python-format
-msgid "   %(propname)s (Again): "
-msgstr "   %(propname)s (Ismét): "
-
-#: ../roundup/admin.py:1048
-msgid "Sorry, try again..."
-msgstr "Sajnálom, próbálja újra..."
-
-#: ../roundup/admin.py:1052
-#, python-format
-msgid "%(propname)s (%(proptype)s): "
-msgstr "%(propname)s (%(proptype)s): "
-
-#: ../roundup/admin.py:1071
-#, python-format
-msgid "you must provide the \"%(propname)s\" property."
-msgstr "meg kell adni a(z) \"%(propname)s\" tulajdonságot."
-
-#: ../roundup/admin.py:1083
-msgid ""
-"Usage: list classname [property]\n"
-"        List the instances of a class.\n"
-"\n"
-"        Lists all instances of the given class. If the property is not\n"
-"        specified, the  \"label\" property is used. The label property is\n"
-"        tried in order: the key, \"name\", \"title\" and then the first\n"
-"        property, alphabetically.\n"
-"\n"
-"        With -c, -S or -s print a list of item id's if no property\n"
-"        specified.  If property specified, print list of that property\n"
-"        for every class instance.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1096
-msgid "Too many arguments supplied"
-msgstr "Túl sok argumentum került megadásra"
-
-#: ../roundup/admin.py:1132
-#, python-format
-msgid "%(nodeid)4s: %(value)s"
-msgstr "%(nodeid)4s: %(value)s"
-
-#: ../roundup/admin.py:1136
-msgid ""
-"Usage: templates [trace_search]\n"
-"        List templates and their installed directories.\n"
-"\n"
-"        With trace_search also list all directories that are\n"
-"        searched for templates.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1164
+#: ../roundup/admin.py:1808
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -666,364 +1041,73 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1208
+#: ../roundup/admin.py:1852
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "\"%(spec)s\" nem név:hossz formátumú"
 
-#: ../roundup/admin.py:1230
+#: ../roundup/admin.py:1874
 #, python-format
 msgid "\"%(spec)s\" does not have an integer width: \"%(width)s\""
 msgstr ""
 
-#: ../roundup/admin.py:1266
+#: ../roundup/admin.py:1910
 msgid ""
-"Usage: history designator [skipquiet]\n"
-"        Show the history entries of a designator.\n"
+"Usage: templates [trace_search]\n"
+"        List templates and their installed directories.\n"
 "\n"
-"        A designator is a classname and a nodeid concatenated,\n"
-"        eg. bug1, user10, ...\n"
-"\n"
-"        Lists the journal entries viewable by the user for the\n"
-"        node identified by the designator. If skipquiet is the\n"
-"        second argument, journal entries for quiet properties\n"
-"        are not shown.\n"
+"        With trace_search also list all directories that are\n"
+"        searched for templates.\n"
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1302
-msgid ""
-"Usage: commit\n"
-"        Commit changes made to the database during an interactive session.\n"
-"\n"
-"        The changes made during an interactive session are not\n"
-"        automatically written to the database - they must be committed\n"
-"        using this command.\n"
-"\n"
-"        One-off commands on the command-line are automatically committed if\n"
-"        they are successful.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1317
-msgid ""
-"Usage: rollback\n"
-"        Undo all changes that are pending commit to the database.\n"
-"\n"
-"        The changes made during an interactive session are not\n"
-"        automatically written to the database - they must be committed\n"
-"        manually. This command undoes all those changes, so a commit\n"
-"        immediately after would make no changes to the database.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1330
-msgid ""
-"Usage: retire designator[,designator]*\n"
-"        Retire the node specified by designator.\n"
-"\n"
-"        A designator is a classname and a nodeid concatenated,\n"
-"        eg. bug1, user10, ...\n"
-"\n"
-"        This action indicates that a particular node is not to be retrieved\n"
-"        by the list or find commands, and its key value may be re-used.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1358
-msgid ""
-"Usage: restore designator[,designator]*\n"
-"        Restore the retired node specified by designator.\n"
-"\n"
-"        A designator is a classname and a nodeid concatenated,\n"
-"        eg. bug1, user10, ...\n"
-"\n"
-"        The given nodes will become available for users again.\n"
-"        "
-msgstr ""
-
-# ../roundup/admin.py:583 :983 :1032 :1054
-#: ../roundup/admin.py:1383
-#, fuzzy
-msgid "no such %(classname)s node \" % (nodeid)s\""
-msgstr "nincs \"%(nodeid)s\" %(classname)s csomópont"
-
-#. grab the directory to export to
-#: ../roundup/admin.py:1389
-msgid ""
-"Usage: export [[-]class[,class]] export_dir\n"
-"        Export the database to colon-separated-value files.\n"
-"        To exclude the files (e.g. for the msg or file class),\n"
-"        use the exporttables command.\n"
-"\n"
-"        Optionally limit the export to just the named classes\n"
-"        or exclude the named classes, if the 1st argument starts with '-'.\n"
-"\n"
-"        This action exports the current data from the database into\n"
-"        colon-separated-value files that are placed in the nominated\n"
-"        destination directory.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1496
-msgid ""
-"Usage: exporttables [[-]class[,class]] export_dir\n"
-"        Export the database to colon-separated-value files, excluding the\n"
-"        files below $TRACKER_HOME/db/files/ (which can be archived "
-"separately).\n"
-"        To include the files, use the export command.\n"
-"\n"
-"        Optionally limit the export to just the named classes\n"
-"        or exclude the named classes, if the 1st argument starts with '-'.\n"
-"\n"
-"        This action exports the current data from the database into\n"
-"        colon-separated-value files that are placed in the nominated\n"
-"        destination directory.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1511
-msgid ""
-"Usage: import import_dir\n"
-"        Import a database from the directory containing CSV files,\n"
-"        two per class to import.\n"
-"\n"
-"        The files used in the import are:\n"
-"\n"
-"        <class>.csv\n"
-"          This must define the same properties as the class (including\n"
-"          having a \"header\" line with those property names.)\n"
-"        <class>-journals.csv\n"
-"          This defines the journals for the items being imported.\n"
-"\n"
-"        The imported nodes will have the same nodeid as defined in the\n"
-"        import file, thus replacing any existing content.\n"
-"\n"
-"        The new nodes are added to the existing database - if you want to\n"
-"        create a new database using the imported data, then create a new\n"
-"        database (or, tediously, retire all the old data.)\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1590
-msgid ""
-"Usage: importtables export_dir\n"
-"\n"
-"        This imports the database tables exported using exporttables.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1597
-msgid ""
-"Usage: pack period | date\n"
-"\n"
-"        Remove journal entries older than a period of time specified or\n"
-"        before a certain date.\n"
-"\n"
-"        A period is specified using the suffixes \"y\", \"m\", and \"d\". "
-"The\n"
-"        suffix \"w\" (for \"week\") means 7 days.\n"
-"\n"
-"              \"3y\" means three years\n"
-"              \"2y 1m\" means two years and one month\n"
-"              \"1m 25d\" means one month and 25 days\n"
-"              \"2w 3d\" means two weeks and three days\n"
-"\n"
-"        Date format is \"YYYY-MM-DD\" eg:\n"
-"            2001-01-01\n"
-"\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1625
-msgid "Invalid format"
-msgstr "Hibás formátum"
-
-#: ../roundup/admin.py:1638
-msgid ""
-"Usage: reindex [classname|designator]*\n"
-"        Re-generate a tracker's search indexes.\n"
-"\n"
-"        This will re-generate the search indexes for a tracker.\n"
-"        This will typically happen automatically.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1652
-#, python-format
-msgid "no such item \"%(designator)s\""
-msgstr "nincs ilyen elem: \"%(designator)s\""
-
-#: ../roundup/admin.py:1662
+#: ../roundup/admin.py:1938
 #, fuzzy
 msgid ""
-"Usage: security [Role name]\n"
-"\n"
-"             Display the Permissions available to one or all Roles.\n"
+"Usage: updateconfig <filename>\n"
+"        Generate an updated tracker config file (ini style) in\n"
+"        <filename>. Use current settings from existing roundup\n"
+"        tracker in tracker home.\n"
 "        "
 msgstr ""
-"Használat: security [szerepkör]\n"
-"        Megjeleníti a megadott vagy az összes szerepkör jogosultságait.\n"
+"Használat: genconfig <fájlnév>\n"
+"        Új hibakövető konfigurációs fájl (ini stílusú) generálása "
+"alapértelmezett értékekkel\n"
+"        a <fájlnév> fájlba.\n"
 "        "
 
-#: ../roundup/admin.py:1671
-#, fuzzy, python-format
-msgid "No such Role \"%(role)s\"\n"
-msgstr "Nincs ilyen szerepkör: \"%(role)s\""
-
-#: ../roundup/admin.py:1677
-#, fuzzy, python-format
-msgid "New Web users get the Roles \"%(role)s\"\n"
-msgstr "Új web felhasználók ezeket a szerepköröket kapják: \"%(role)s\""
-
-#: ../roundup/admin.py:1680
-#, fuzzy, python-format
-msgid "New Web users get the Role \"%(role)s\"\n"
-msgstr "Új web felhasználók ezt a szerepkört kapják \"%(role)s\""
-
-#: ../roundup/admin.py:1684
-#, fuzzy, python-format
-msgid "New Email users get the Roles \"%(role)s\"\n"
-msgstr "Új e-mail felhasználók ezeket a szerepköröket kapják: \"%(role)s\""
-
-#: ../roundup/admin.py:1686
-#, fuzzy, python-format
-msgid "New Email users get the Role \"%(role)s\"\n"
-msgstr "Új e-mail felhasználók ezt a szerepkört kapják: \"%(role)s\""
-
-#: ../roundup/admin.py:1689
-#, fuzzy, python-format
-msgid "Role \"%(name)s\":\n"
-msgstr "\"%(name)s\" szerepkör:"
-
-#: ../roundup/admin.py:1695
-#, fuzzy
-msgid " %(description)s (%(name)s for \"%(klass)s\""
-msgstr " %(description)s (%(name)s)"
-
-#: ../roundup/admin.py:1695
-#, fuzzy, python-format
-msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
-msgstr " %(description)s (%(name)s)"
-
-#: ../roundup/admin.py:1708
+# ../roundup/cgi/actions.py:596 :607 :778 :797
+#: ../roundup/admin.py:1946 ../roundup/cgi/actions.py:886
+#: ../roundup/cgi/actions.py:897 ../roundup/cgi/actions.py:1099
+#: ../roundup/cgi/actions.py:1113 ../roundup/cgi/actions.py:886:897 :1099:1113
 #, python-format
-msgid ""
-"\n"
-"  **Invalid properties for %(class)s: %(props)s\n"
-"\n"
-msgstr ""
+msgid "Error: %s"
+msgstr "Hiba: %s"
 
-#: ../roundup/admin.py:1714
-#, fuzzy, python-format
-msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
-msgstr " %(description)s (%(name)s)"
-
-#: ../roundup/admin.py:1717
-#, fuzzy, python-format
-msgid " %(description)s (%(name)s)\n"
-msgstr " %(description)s (%(name)s)"
-
-#: ../roundup/admin.py:1721
-msgid ""
-"Usage: migrate\n"
-"\n"
-"        Update a tracker's database to be compatible with the Roundup\n"
-"        codebase.\n"
-"\n"
-"        You should run the \"migrate\" command for your tracker once\n"
-"        you've installed the latest codebase.\n"
-"\n"
-"        Do this before you use the web, command-line or mail interface\n"
-"        and before any users access the tracker.\n"
-"\n"
-"        This command will respond with either \"Tracker updated\" (if\n"
-"        you've not previously run it on an RDBMS backend) or \"No\n"
-"        migration action required\" (if you have run it, or have used\n"
-"        another interface to the tracker, or possibly because you are\n"
-"        using anydbm).\n"
-"\n"
-"        It's safe to run this even if it's not required, so just get\n"
-"        into the habit.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1742
-#, python-format
-msgid "Tracker updated to schema version %s."
-msgstr ""
-
-#: ../roundup/admin.py:1746
-#, python-format
-msgid "No migration action required. At schema version %s."
-msgstr ""
-
-#: ../roundup/admin.py:1751
-msgid ""
-"Usage: perftest [mode] [arguments]*\n"
-"\n"
-"        Time operations in Roundup. Supported arguments:\n"
-"\n"
-"            [password] [rounds=<integer>] [scheme=<scheme>]\n"
-"\n"
-"        'password' is the default mode.  The tracker's config.ini\n"
-"        setting for 'password_pbkdf2_default_rounds' is the default\n"
-"        value for 'rounds'. On the command line, 'rounds' can include\n"
-"        thousands separator of ',' or '.'.  'scheme' is the default\n"
-"        coded into Roundup. List supported schemes by using 'scheme='.\n"
-"\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1785
-msgid "Invalid 'rounds'. Must be larger than 999."
-msgstr ""
-
-#: ../roundup/admin.py:1789
-#, python-format
-msgid "Invalid 'rounds'. It must be an integer not: %s"
-msgstr ""
-
-#: ../roundup/admin.py:1816
-msgid "scheme does not support rounds."
-msgstr ""
-
-#: ../roundup/admin.py:1819
-#, python-format
-msgid "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, rounds: %(rounds)s"
-msgstr ""
-
-#: ../roundup/admin.py:1847
+#: ../roundup/admin.py:1974
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr ""
 "\"%(command)s\": ismeretlen parancs (\"help commands\" parancsok "
 "listázásához)"
 
-#: ../roundup/admin.py:1853
+#: ../roundup/admin.py:1980
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr ""
 "Több parancs is illeszkedik a megadott \"%(command)s\" parancsra: %(list)s"
 
-#: ../roundup/admin.py:1862
+#: ../roundup/admin.py:1996
 msgid "Enter tracker home: "
 msgstr "Adja meg a hibakövető könyvtárát: "
 
-# ../roundup/admin.py:1335 :1341 :1361
-#: ../roundup/admin.py:1871 ../roundup/admin.py:1877 ../roundup/admin.py:1914
-#: ../roundup/admin.py:1871:1877:1914
-#, python-format
-msgid "Error: %(message)s"
-msgstr "Hiba: %(message)s"
-
-#: ../roundup/admin.py:1887 ../roundup/admin.py:1891
-#: ../roundup/admin.py:1887:1891
+#: ../roundup/admin.py:2023 ../roundup/admin.py:2027
+#: ../roundup/admin.py:2023:2027
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Hiba: Hibakövető megnyitása sikertelen: %(message)s"
 
-#: ../roundup/admin.py:1927
+#: ../roundup/admin.py:2060
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1032,15 +1116,15 @@ msgstr ""
 "A Roundup %s fogadókész.\n"
 "Segítségért gépeljen \"help\"-et."
 
-#: ../roundup/admin.py:1932
+#: ../roundup/admin.py:2065
 msgid "Note: command history and editing not available"
 msgstr "Megjegyzés: a parancsok története és szerkesztése nem elérhető"
 
-#: ../roundup/admin.py:1938
+#: ../roundup/admin.py:2071
 msgid "exit..."
 msgstr "kilépés..."
 
-#: ../roundup/admin.py:1951
+#: ../roundup/admin.py:2084
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Vannak nem mentett változtatások. Elmenti őket (y/N)? "
 
@@ -1078,7 +1162,7 @@ msgstr ""
 #: ../roundup/backends/back_anydbm.py:1422
 #: ../roundup/backends/back_anydbm.py:1440
 #: ../roundup/backends/back_anydbm.py:1487
-#: ../roundup/backends/back_anydbm.py:2117
+#: ../roundup/backends/back_anydbm.py:2113
 #: ../roundup/backends/back_anydbm.py:871:884
 #: ../roundup/backends/rdbms_common.py:1708
 #: ../roundup/backends/rdbms_common.py:1955
@@ -1087,7 +1171,7 @@ msgstr ""
 #: ../roundup/backends/rdbms_common.py:2267
 #: ../roundup/backends/rdbms_common.py:3219
 #: ../roundup/backends/rdbms_common.py:1708:1955 :1158:1193 :1422:1440:1487
-#: :2117 :2194:2214 :2267:3219
+#: :2113 :2194:2214 :2267:3219
 msgid "Database open read-only"
 msgstr ""
 
@@ -1337,14 +1421,6 @@ msgstr ""
 msgid "Edit Error: %s"
 msgstr "Szerkesztési hiba: %s"
 
-# ../roundup/cgi/actions.py:596 :607 :778 :797
-#: ../roundup/cgi/actions.py:886 ../roundup/cgi/actions.py:897
-#: ../roundup/cgi/actions.py:1099 ../roundup/cgi/actions.py:1113
-#: ../roundup/cgi/actions.py:886:897 :1099:1113
-#, python-format
-msgid "Error: %s"
-msgstr "Hiba: %s"
-
 #: ../roundup/cgi/actions.py:931
 msgid ""
 "Invalid One Time Key!\n"
@@ -1593,8 +1669,8 @@ msgstr ""
 "A hibakövető karbantartói értesítést kaptak a problémáról.</p>\n"
 "</body></html>"
 
-#: ../roundup/cgi/client.py:670 ../roundup/cgi/client.py:1570
-#: ../roundup/cgi/client.py:670:1570
+#: ../roundup/cgi/client.py:670 ../roundup/cgi/client.py:1567
+#: ../roundup/cgi/client.py:670:1567
 msgid "Required Header Missing"
 msgstr ""
 
@@ -1603,140 +1679,140 @@ msgstr ""
 msgid "Client is not allowed to use Rest Interface."
 msgstr "Anonim felhasználók nem használhatják a webes felületet"
 
-#: ../roundup/cgi/client.py:921
+#: ../roundup/cgi/client.py:918
 msgid "Form Error: "
 msgstr "Űrlap hiba: "
 
-#: ../roundup/cgi/client.py:1011
+#: ../roundup/cgi/client.py:1008
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Ismeretlen karakterkészlet: %r"
 
-#: ../roundup/cgi/client.py:1264 ../roundup/cgi/client.py:2250
-#: ../roundup/cgi/client.py:1264:2250
+#: ../roundup/cgi/client.py:1261 ../roundup/cgi/client.py:2247
+#: ../roundup/cgi/client.py:1261:2247
 msgid "broken form: multiple @action values submitted"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1279
+#: ../roundup/cgi/client.py:1276
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr "Anonim felhasználók nem használhatják a webes felületet"
 
-#: ../roundup/cgi/client.py:1430
+#: ../roundup/cgi/client.py:1427
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1434
+#: ../roundup/cgi/client.py:1431
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1463
+#: ../roundup/cgi/client.py:1460
 #, python-format
 msgid "csrf header %(header)s required but missing for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1467
+#: ../roundup/cgi/client.py:1464
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1475
+#: ../roundup/cgi/client.py:1472
 #, python-format
 msgid "csrf Referer header check failed for user%(userid)s. Value=%(referer)s"
 msgstr ""
 
 # ../roundup/cgi/actions.py:930 :934
-#: ../roundup/cgi/client.py:1480
+#: ../roundup/cgi/client.py:1477
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
 msgstr "Hibás bejelentkezés"
 
-#: ../roundup/cgi/client.py:1495
+#: ../roundup/cgi/client.py:1492
 #, python-format
 msgid "csrf Origin header check failed for user%(userid)s. Value=%(origin)s"
 msgstr ""
 
 # ../roundup/cgi/actions.py:930 :934
-#: ../roundup/cgi/client.py:1500
+#: ../roundup/cgi/client.py:1497
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Hibás bejelentkezés"
 
-#: ../roundup/cgi/client.py:1514
+#: ../roundup/cgi/client.py:1511
 #, python-format
 msgid ""
 "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1520
+#: ../roundup/cgi/client.py:1517
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1539
+#: ../roundup/cgi/client.py:1536
 #, python-format
 msgid "csrf HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1544
+#: ../roundup/cgi/client.py:1541
 #, python-format
 msgid "Invalid HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1552
+#: ../roundup/cgi/client.py:1549
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1553
+#: ../roundup/cgi/client.py:1550
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1567
+#: ../roundup/cgi/client.py:1564
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1608
+#: ../roundup/cgi/client.py:1605
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1610 ../roundup/cgi/client.py:1637
-#: ../roundup/cgi/client.py:1654 ../roundup/cgi/client.py:1610:1637:1654
+#: ../roundup/cgi/client.py:1607 ../roundup/cgi/client.py:1634
+#: ../roundup/cgi/client.py:1651 ../roundup/cgi/client.py:1607:1634:1651
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1614
+#: ../roundup/cgi/client.py:1611
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1626
+#: ../roundup/cgi/client.py:1623
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
 "session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1644
+#: ../roundup/cgi/client.py:1641
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %(curr_sess)s != stored session "
 "%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1838
+#: ../roundup/cgi/client.py:1835
 msgid "You are not allowed to view this file."
 msgstr "Nem nézheti meg ezt a fájlt."
 
-#: ../roundup/cgi/client.py:2127
+#: ../roundup/cgi/client.py:2124
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sEltelt idő: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2131
+#: ../roundup/cgi/client.py:2128
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -1745,7 +1821,7 @@ msgstr ""
 "%(starttag)sCache találatok: %(cache_hits)d, tévedés %(cache_misses)d. "
 "Elemek betöltése: %(get_items)f mp. Szűrés: %(filtering)f mp.%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2669
+#: ../roundup/cgi/client.py:2666
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -1949,16 +2025,16 @@ msgstr "Kísérlet %(attr)s keresésére egy hiányzó értéken"
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- nincs kiválasztás -</option>"
 
-#: ../roundup/cgi/timestamp.py:19
+#: ../roundup/cgi/timestamp.py:23
 msgid "Form is corrupted."
 msgstr ""
 
-#: ../roundup/cgi/timestamp.py:28
+#: ../roundup/cgi/timestamp.py:32
 #, python-format
 msgid "Form is corrupted, missing: %s."
 msgstr ""
 
-#: ../roundup/cgi/timestamp.py:30
+#: ../roundup/cgi/timestamp.py:34
 msgid "Responding to form too quickly."
 msgstr ""
 
@@ -2113,55 +2189,55 @@ msgstr "%s"
 msgid "in %s"
 msgstr "%s-ban"
 
-#: ../roundup/hyperdb.py:119
+#: ../roundup/hyperdb.py:120
 #, fuzzy, python-format
 msgid "property %(property)s: %(errormsg)s"
 msgstr "Hiba: %s: %s"
 
-#: ../roundup/hyperdb.py:148
+#: ../roundup/hyperdb.py:149
 #, python-format
 msgid "property %(property)s: %(value)r is an invalid date (%(errormsg)s)"
 msgstr ""
 
-#: ../roundup/hyperdb.py:171
+#: ../roundup/hyperdb.py:172
 #, python-format
 msgid ""
 "property %(property)s: %(value)r is an invalid date interval (%(errormsg)s)"
 msgstr ""
 
-#: ../roundup/hyperdb.py:428
+#: ../roundup/hyperdb.py:429
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a number"
 msgstr "\"%(propname)s\" tulajdonság: \"%(value)s\" jelenleg nincs a listában"
 
-#: ../roundup/hyperdb.py:442
+#: ../roundup/hyperdb.py:443
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not an integer"
 msgstr "\"%(propname)s\" tulajdonság: \"%(value)s\" jelenleg nincs a listában"
 
-#: ../roundup/hyperdb.py:464
+#: ../roundup/hyperdb.py:465
 #, python-format
 msgid "\"%s\" not a node designator"
 msgstr ""
 
 # ../roundup/hyperdb.py:949:957
-#: ../roundup/hyperdb.py:1493 ../roundup/hyperdb.py:1501
-#: ../roundup/hyperdb.py:1493:1501
+#: ../roundup/hyperdb.py:1494 ../roundup/hyperdb.py:1502
+#: ../roundup/hyperdb.py:1494:1502
 #, python-format
 msgid "Not a property name: %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1978
+#: ../roundup/hyperdb.py:1979
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a %(classname)s."
 msgstr "\"%(propname)s\" tulajdonság: \"%(value)s\" jelenleg nincs a listában"
 
-#: ../roundup/hyperdb.py:1984
+#: ../roundup/hyperdb.py:1985
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:2019
+#: ../roundup/hyperdb.py:2020
 #, python-format
 msgid "%(property)r is not a property of %(classname)s"
 msgstr ""
@@ -2458,116 +2534,116 @@ msgid "Method %(m)s not allowed. Allowed: %(a)s"
 msgstr ""
 
 # ../roundup/cgi/actions.py:930 :934
-#: ../roundup/rest.py:1097
+#: ../roundup/rest.py:1101
 #, fuzzy, python-format
 msgid "Invalid attribute %s"
 msgstr "Hibás bejelentkezés"
 
-#: ../roundup/rest.py:2090
+#: ../roundup/rest.py:2094
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/rest.py:2125
+#: ../roundup/rest.py:2129
 #, python-format
 msgid ""
 "Unable to parse Accept Header. %(error)s. Acceptable types: "
 "%(acceptable_types)s"
 msgstr ""
 
-#: ../roundup/rest.py:2305
+#: ../roundup/rest.py:2309
 #, python-format
 msgid ""
 "Unrecognized api version: %s. See /rest without specifying api version for "
 "supported versions."
 msgstr ""
 
-#: ../roundup/roundupdb.py:139
+#: ../roundup/roundupdb.py:140
 #, python-format
 msgid "Username '%s' already exists."
 msgstr ""
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "files"
 msgstr "fájlok"
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "messages"
 msgstr "üzenetek"
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "nosy"
 msgstr "kíváncsi"
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "superseder"
 msgstr "helyettes"
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "title"
 msgstr "cím"
 
-#: ../roundup/roundupdb.py:224
+#: ../roundup/roundupdb.py:225
 msgid "assignedto"
 msgstr "kiosztva"
 
-#: ../roundup/roundupdb.py:224
+#: ../roundup/roundupdb.py:225
 #, fuzzy
 msgid "keyword"
 msgstr "Téma"
 
-#: ../roundup/roundupdb.py:224
+#: ../roundup/roundupdb.py:225
 msgid "priority"
 msgstr "prioritás"
 
-#: ../roundup/roundupdb.py:224
+#: ../roundup/roundupdb.py:225
 msgid "status"
 msgstr "állapot"
 
-#: ../roundup/roundupdb.py:227
+#: ../roundup/roundupdb.py:228
 msgid "activity"
 msgstr "művelet"
 
 #. following properties are common for all hyperdb classes
 #. they are listed here to keep things in one place
-#: ../roundup/roundupdb.py:227
+#: ../roundup/roundupdb.py:228
 msgid "actor"
 msgstr "végezte"
 
-#: ../roundup/roundupdb.py:227
+#: ../roundup/roundupdb.py:228
 msgid "creation"
 msgstr "létrehozás"
 
-#: ../roundup/roundupdb.py:227
+#: ../roundup/roundupdb.py:228
 msgid "creator"
 msgstr "létrehozó"
 
-#: ../roundup/roundupdb.py:425
+#: ../roundup/roundupdb.py:426
 #, python-format
 msgid "No key for \"%(adr)s\" in keyring"
 msgstr ""
 
-#: ../roundup/roundupdb.py:503
+#: ../roundup/roundupdb.py:504
 #, python-format
 msgid "New submission from %(authname)s%(authaddr)s:"
 msgstr "Új beadvány %(authname)s%(authaddr)s részéről:"
 
-#: ../roundup/roundupdb.py:506
+#: ../roundup/roundupdb.py:507
 #, python-format
 msgid "%(authname)s%(authaddr)s added the comment:"
 msgstr "%(authname)s%(authaddr)s ezt a megjegyzést írta:"
 
-#: ../roundup/roundupdb.py:509
+#: ../roundup/roundupdb.py:510
 #, fuzzy, python-format
 msgid "Change by %(authname)s%(authaddr)s:"
 msgstr "Új beadvány %(authname)s%(authaddr)s részéről:"
 
-#: ../roundup/roundupdb.py:528
+#: ../roundup/roundupdb.py:529
 #, python-format
 msgid "File '%(filename)s' not attached - you can download it from %(link)s."
 msgstr ""
 
-#: ../roundup/roundupdb.py:903
+#: ../roundup/roundupdb.py:904
 #, python-format
 msgid ""
 "\n"
@@ -2577,12 +2653,12 @@ msgid ""
 "%(old)s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_demo.py:49
+#: ../roundup/scripts/roundup_demo.py:156
 #, python-format
 msgid "Enter directory path to create demo tracker [%s]: "
 msgstr "Adja meg az elérési utat a bemutató tracker [%s] létrehozásához: "
 
-#: ../roundup/scripts/roundup_demo.py:54
+#: ../roundup/scripts/roundup_demo.py:162
 #, python-format
 msgid ""
 "Enter tracker template to use (one of (%(template_list)s)) "
@@ -2676,23 +2752,23 @@ msgstr "Felhasználóváltás nem sikerült - nincs pwd modul"
 msgid "User %(user)s doesn't exist"
 msgstr "A(z) %(user)s felhasználó nem létezik"
 
-#: ../roundup/scripts/roundup_server.py:805
+#: ../roundup/scripts/roundup_server.py:809
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr "\"%s\" többszálú mód nem érhető el, áttérés egyszálú módra"
 
-#: ../roundup/scripts/roundup_server.py:832
+#: ../roundup/scripts/roundup_server.py:837
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Nem sikerült a(z) %s portra csatlakozni, a port már használatban van."
 
-#: ../roundup/scripts/roundup_server.py:836
+#: ../roundup/scripts/roundup_server.py:841
 #, fuzzy, python-format
 msgid ""
 "Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
 msgstr "Nem sikerült a(z) %s portra csatlakozni, a port már használatban van."
 
-#: ../roundup/scripts/roundup_server.py:915
+#: ../roundup/scripts/roundup_server.py:920
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -2702,7 +2778,7 @@ msgid ""
 "               specifics."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:922
+#: ../roundup/scripts/roundup_server.py:927
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -2711,7 +2787,7 @@ msgid ""
 "               specified if -d is used."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:929
+#: ../roundup/scripts/roundup_server.py:934
 #, python-format
 msgid ""
 "\n"
@@ -2732,6 +2808,8 @@ msgid ""
 " -N            log client machine names instead of IP addresses (much "
 "slower)\n"
 " -i <fname>    set tracker index template\n"
+" -m <children> maximum number of children to spawn in fork multiprocess "
+"mode\n"
 " -s            enable SSL\n"
 " -L            http request logging uses python logging (roundup.http)\n"
 " -e <fname>    PEM file containing SSL key and certificate\n"
@@ -2778,21 +2856,21 @@ msgid ""
 "   any url-unsafe characters like spaces, as these confuse IE.\n"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:1105
+#: ../roundup/scripts/roundup_server.py:1111
 msgid "Instances must be name=home"
 msgstr "A példányoknak név=home formában kell lenniük"
 
-#: ../roundup/scripts/roundup_server.py:1119
+#: ../roundup/scripts/roundup_server.py:1125
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Beállítások elmentve ide: %s"
 
-#: ../roundup/scripts/roundup_server.py:1137
+#: ../roundup/scripts/roundup_server.py:1143
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Elnézést, ezen az operációs rendszeren a szerver nem indítható démonként"
 
-#: ../roundup/scripts/roundup_server.py:1157
+#: ../roundup/scripts/roundup_server.py:1163
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Roundup server elindítva a(z) %(HOST)s:%(PORT)s gépen"
@@ -5254,6 +5332,21 @@ msgstr "Ügy mutatása:"
 #, fuzzy
 msgid "Password"
 msgstr "Bejelentkezési jelszó"
+
+#, fuzzy
+#~ msgid ""
+#~ "Usage: security [Role name]\n"
+#~ "\n"
+#~ "             Display the Permissions available to one or all Roles.\n"
+#~ "        "
+#~ msgstr ""
+#~ "Használat: security [szerepkör]\n"
+#~ "        Megjeleníti a megadott vagy az összes szerepkör jogosultságait.\n"
+#~ "        "
+
+# ../roundup/admin.py:1335 :1341 :1361
+#~ msgid "Error: %(message)s"
+#~ msgstr "Hiba: %(message)s"
 
 #, fuzzy
 #~ msgid "Tracker updated"

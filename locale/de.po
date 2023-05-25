@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 2.3.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2023-03-03 17:28-0500\n"
+"POT-Creation-Date: 2023-05-24 20:34-0400\n"
 "PO-Revision-Date: 2016-04-11 09:13+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
@@ -30,19 +30,39 @@ msgstr ""
 msgid "You may not retire the admin or anonymous user"
 msgstr "Sie können den Administrator oder den Gast-Benutzer nicht löschen"
 
-#: ../roundup/admin.py:112 ../roundup/admin.py:1295 ../roundup/admin.py:1350
-#: ../roundup/admin.py:1377 ../roundup/admin.py:112:1295 :1350:1377
+#: ../roundup/admin.py:117
+msgid "Have 'display designator' show protected fields: creator. NYI"
+msgstr ""
+
+#: ../roundup/admin.py:120
+msgid "Set indexer to use when running 'reindex' NYI"
+msgstr ""
+
+#: ../roundup/admin.py:123
+msgid "Force reopening of tracker when running each command."
+msgstr ""
+
+#: ../roundup/admin.py:125
+msgid "Show retired items in table, list etc. NYI"
+msgstr ""
+
+#: ../roundup/admin.py:126
+msgid "Enable verbose output: tracing, descriptions..."
+msgstr ""
+
+#: ../roundup/admin.py:138 ../roundup/admin.py:993 ../roundup/admin.py:1601
+#: ../roundup/admin.py:1633 ../roundup/admin.py:138:993 :1601:1633
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "Die Klasse \"%(classname)s\" existiert nicht"
 
 # ../roundup/admin.py:93 :97
-#: ../roundup/admin.py:124
+#: ../roundup/admin.py:150
 #, python-format
 msgid "argument \"%(arg)s\" not propname=value"
 msgstr "Der Parameter \"%(arg)s\" entspricht nicht dem Format Eigenschaft=Wert"
 
-#: ../roundup/admin.py:137
+#: ../roundup/admin.py:163
 #, python-format
 msgid ""
 "Problem: %(message)s\n"
@@ -51,7 +71,7 @@ msgstr ""
 "Problem: %(message)s\n"
 "\n"
 
-#: ../roundup/admin.py:138
+#: ../roundup/admin.py:164
 #, fuzzy, python-format
 msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
@@ -100,12 +120,12 @@ msgstr ""
 " roundup-admin help <Befehl>              -- Hilfe zu einem Befehl anzeigen\n"
 " roundup-admin help all                   -- sämtliche Hilfen anzeigen\n"
 
-#: ../roundup/admin.py:165
+#: ../roundup/admin.py:191
 #, fuzzy
 msgid "Commands: "
 msgstr "Befehle:"
 
-#: ../roundup/admin.py:172
+#: ../roundup/admin.py:198
 msgid ""
 "Commands may be abbreviated as long as the abbreviation\n"
 "matches only one command, e.g. l == li == lis == list."
@@ -113,7 +133,7 @@ msgstr ""
 "Befehle können abgekürzt werden, solange sie eindeutig bleiben, \n"
 "z.B. l == li == lis == list."
 
-#: ../roundup/admin.py:201
+#: ../roundup/admin.py:227
 #, fuzzy
 msgid ""
 "\n"
@@ -240,12 +260,315 @@ msgstr ""
 "\n"
 "Befehlshilfe:\n"
 
-#: ../roundup/admin.py:264
+#: ../roundup/admin.py:290
 #, python-format
 msgid "%s:"
 msgstr "%s:"
 
-#: ../roundup/admin.py:271
+# ../roundup/admin.py:336 :382
+#: ../roundup/admin.py:395 ../roundup/admin.py:1185
+#: ../roundup/admin.py:395:1185
+msgid "Templates:"
+msgstr "Vorlagen:"
+
+# ../roundup/admin.py:339 :393
+#: ../roundup/admin.py:398 ../roundup/admin.py:1195
+#: ../roundup/admin.py:398:1195
+msgid "Back ends:"
+msgstr "Datenbanken:"
+
+#: ../roundup/admin.py:415
+msgid ""
+"Usage: commit\n"
+"        Commit changes made to the database during an interactive session.\n"
+"\n"
+"        The changes made during an interactive session are not\n"
+"        automatically written to the database - they must be committed\n"
+"        using this command.\n"
+"\n"
+"        One-off commands on the command-line are automatically committed if\n"
+"        they are successful.\n"
+"        "
+msgstr ""
+"Verwendung: commit\n"
+"        Speichern der Datenbank-Änderungen.\n"
+"\n"
+"        Falls die Datenbank Transaktionen unterstützt, werden Änderungen\n"
+"        während einer Bearbeitungs-Session erst nach einem \"commit\" an "
+"die\n"
+"        Datenbank übermittelt.\n"
+"\n"
+"        Einzelbefehle über die Kommandozeile werden sofort in die Datenbank\n"
+"        geschrieben.\n"
+"        "
+
+#: ../roundup/admin.py:430
+msgid ""
+"Usage: create classname property=value ...\n"
+"        Create a new entry of a given class.\n"
+"\n"
+"        This creates a new entry of the given class using the property\n"
+"        name=value arguments provided on the command line after the \"create"
+"\"\n"
+"        command.\n"
+"        "
+msgstr ""
+"Verwendung: create Klassenname Eigenschaft=Wert ...\n"
+"        Erstellt einen neuen Eintrag der angegebenen Klasse.\n"
+"\n"
+"        Ein neuer Eintrag der Klasse wird erstellt, und die Eigenschaften\n"
+"        werden mit den Werten initialisiert\n"
+"        "
+
+# ../roundup/admin.py:358 :483 :562 :612 :682 :703 :731 :802 :869 :940 :988
+# :1010 :1037 :1098 :1156
+#: ../roundup/admin.py:438 ../roundup/admin.py:512 ../roundup/admin.py:545
+#: ../roundup/admin.py:663 ../roundup/admin.py:749 ../roundup/admin.py:807
+#: ../roundup/admin.py:852 ../roundup/admin.py:977 ../roundup/admin.py:1020
+#: ../roundup/admin.py:1158 ../roundup/admin.py:1285 ../roundup/admin.py:1371
+#: ../roundup/admin.py:1482 ../roundup/admin.py:1591 ../roundup/admin.py:1623
+#: ../roundup/admin.py:1738 ../roundup/admin.py:1792 ../roundup/admin.py:1837
+#: ../roundup/admin.py:438:512 :1020:1158:1285 :1371:1482 :1591:1623 :1738:1792
+#: :1837 :545:663 :749:807 :852:977
+msgid "Not enough arguments supplied"
+msgstr "Zu wenig Parameter übergeben"
+
+#: ../roundup/admin.py:458
+#, python-format
+msgid "%(propname)s (Password): "
+msgstr "%(propname)s (Passwort):"
+
+#: ../roundup/admin.py:461
+#, python-format
+msgid "   %(propname)s (Again): "
+msgstr "   %(propname)s (Wiederholen):"
+
+#: ../roundup/admin.py:465
+msgid "Sorry, try again..."
+msgstr "Bitte erneut versuchen..."
+
+#: ../roundup/admin.py:470
+#, python-format
+msgid "%(propname)s (%(proptype)s): "
+msgstr "%(propname)s (%(proptype)s): "
+
+#: ../roundup/admin.py:489
+#, python-format
+msgid "you must provide the \"%(propname)s\" property."
+msgstr "Sie müssen einen Wert für \"%(propname)s\" angeben."
+
+#: ../roundup/admin.py:501
+#, fuzzy
+msgid ""
+"Usage: display designator[,designator]*\n"
+"\n"
+"        Show the property values for the given node(s).\n"
+"\n"
+"        A designator is a classname and a nodeid concatenated,\n"
+"        eg. bug1, user10, ...\n"
+"\n"
+"        This lists the properties and their associated values\n"
+"        for the given node.\n"
+"        "
+msgstr ""
+"Verwendung: display Bezeichner[,Bezeichner]*\n"
+"        Zeigt alle Eigenschaften eines oder mehrerer Eintrage an.\n"
+"\n"
+"        Der Befehl zeigt die Eigenschaften und ihre Werte des\n"
+"        gewählten Eintrags an.\n"
+"        "
+
+#: ../roundup/admin.py:528
+#, python-format
+msgid "%(key)s: %(value)s"
+msgstr "%(key)s: %(value)s"
+
+#. grab the directory to export to
+#: ../roundup/admin.py:531
+msgid ""
+"Usage: export [[-]class[,class]] export_dir\n"
+"        Export the database to colon-separated-value files.\n"
+"        To exclude the files (e.g. for the msg or file class),\n"
+"        use the exporttables command.\n"
+"\n"
+"        Optionally limit the export to just the named classes\n"
+"        or exclude the named classes, if the 1st argument starts with '-'.\n"
+"\n"
+"        This action exports the current data from the database into\n"
+"        colon-separated-value files that are placed in the nominated\n"
+"        destination directory.\n"
+"        "
+msgstr ""
+"Verwendung: export [Klasse[,Klasse]] Exportverzeichnis\n"
+"        Exportiert die Datenbank in ein Verzeichnis mit CSV-Dateien.\n"
+"        Um die im Dateisystem abgelegten Daten fortzulassen (z. B.\n"
+"        die Klassen msg und file), verwenden Sie \"exporttables\".\n"
+"\n"
+"        Wenn Sie Klassennamen übergeben, wird der Export auf diese "
+"beschränkt\n"
+"        bzw. (wenn der ersten Klasse ein '-' vorgestellt wird) diese "
+"fortgelassen.\n"
+"\n"
+"        Die Daten werden als kommagetrennte Dateien in das angegebene\n"
+"        Exportverzeichnis geschrieben.\n"
+"        "
+
+#: ../roundup/admin.py:638
+msgid ""
+"Usage: exporttables [[-]class[,class]] export_dir\n"
+"        Export the database to colon-separated-value files, excluding the\n"
+"        files below $TRACKER_HOME/db/files/ (which can be archived "
+"separately).\n"
+"        To include the files, use the export command.\n"
+"\n"
+"        Optionally limit the export to just the named classes\n"
+"        or exclude the named classes, if the 1st argument starts with '-'.\n"
+"\n"
+"        This action exports the current data from the database into\n"
+"        colon-separated-value files that are placed in the nominated\n"
+"        destination directory.\n"
+"        "
+msgstr ""
+"Verwendung: exporttables [Klasse[,Klasse]] Exportverzeichnis\n"
+"        Exportiert die Datenbank in ein Verzeichnis mit CSV-Dateien,\n"
+"        unter Fortlassung der im Dateisystem unter $TRACKER_HOME/db/files\n"
+"        abgelegten Daten; um diese mitzuexportieren, verwenden Sie \"export"
+"\".\n"
+"\n"
+"        Wenn Sie Klassennamen übergeben, wird der Export auf diese "
+"beschränkt\n"
+"        bzw. (wenn der ersten Klasse ein '-' vorgestellt wird) diese "
+"fortgelassen.\n"
+"\n"
+"        Die Daten werden als kommagetrennte Dateien in das angegebene\n"
+"        Exportverzeichnis geschrieben.\n"
+"        "
+
+#: ../roundup/admin.py:653
+#, fuzzy
+msgid ""
+"Usage: filter classname propname=value ...\n"
+"        Find the nodes of the given class with a given property value.\n"
+"\n"
+"        Find the nodes of the given class with a given property value.\n"
+"        Multiple values can be specified by separating them with commas.\n"
+"        If property is a string, all values must match. I.E. it's an\n"
+"        'and' operation. If the property is a link/multilink any value\n"
+"        matches. I.E. an 'or' operation.\n"
+"        "
+msgstr ""
+"Verwendung: find Klassenname Eigenschaft=Wert ...\n"
+"        Findet Einträge, welche die angegebene Verlinkung aufweisen.\n"
+"\n"
+"        Findet sämtliche Einträge einer Klasse, bei welchen die Link-\n"
+"        Eigenschaft den angegebenen Wert enthält. Der Wert kann entweder\n"
+"        als ID oder als Bezeichner (\"msg23\") spezifiziert werden.\n"
+"        "
+
+# ../roundup/admin.py:631 :669 :822 :834 :888
+#: ../roundup/admin.py:696
+#, fuzzy, python-format
+msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
+msgstr "Die Klasse \"%(classname)s\" hat keine Eigenschaft \"%(propname)s\""
+
+# ../roundup/admin.py:631 :669 :822 :834 :888
+#: ../roundup/admin.py:734 ../roundup/admin.py:795 ../roundup/admin.py:1305
+#: ../roundup/admin.py:1317 ../roundup/admin.py:1857
+#: ../roundup/admin.py:734:795 :1305:1317:1857
+#, python-format
+msgid "%(classname)s has no property \"%(propname)s\""
+msgstr "Die Klasse \"%(classname)s\" hat keine Eigenschaft \"%(propname)s\""
+
+#: ../roundup/admin.py:741
+msgid ""
+"Usage: find classname propname=value ...\n"
+"        Find the nodes of the given class with a given link property value.\n"
+"\n"
+"        Find the nodes of the given class with a given link property value.\n"
+"        The value may be either the nodeid of the linked node, or its key\n"
+"        value.\n"
+"        "
+msgstr ""
+"Verwendung: find Klassenname Eigenschaft=Wert ...\n"
+"        Findet Einträge, welche die angegebene Verlinkung aufweisen.\n"
+"\n"
+"        Findet sämtliche Einträge einer Klasse, bei welchen die Link-\n"
+"        Eigenschaft den angegebenen Wert enthält. Der Wert kann entweder\n"
+"        als ID oder als Bezeichner (\"msg23\") spezifiziert werden.\n"
+"        "
+
+#: ../roundup/admin.py:802
+#, fuzzy
+msgid ""
+"Usage: genconfig <filename>\n"
+"        Generate a new tracker config file (ini style) with default\n"
+"        values in <filename>.\n"
+"        "
+msgstr ""
+"Verwendung: genconfig <filename>\n"
+"        Schreibt eine neue Tracker-Konfiguration (im \".ini\"-Format) mit \n"
+"        Standardwerten in die Datei <filename>.\n"
+"        "
+
+#: ../roundup/admin.py:820
+#, python-format
+msgid ""
+"Changing option\n"
+"   'password_pbkdf2_default_rounds'\n"
+"from old default of %(old_number)s to new default of %(new_number)s."
+msgstr ""
+
+#: ../roundup/admin.py:831
+#, python-format
+msgid ""
+"Update 'password_pbkdf2_default_rounds' to a number equal to or larger\n"
+"than %s."
+msgstr ""
+
+#: ../roundup/admin.py:842
+#, fuzzy
+msgid ""
+"Usage: get property designator[,designator]*\n"
+"        Get the given property of one or more designator(s).\n"
+"\n"
+"        A designator is a classname and a nodeid concatenated,\n"
+"        eg. bug1, user10, ...\n"
+"\n"
+"        Retrieves the property value of the nodes specified\n"
+"        by the designators.\n"
+"        "
+msgstr ""
+"Verwendung: get Eigenschaft Bezeichner[,Bezeichner]*\n"
+"        Gibt die Eigenschaft eines oder mehrerer Einträge zurück.\n"
+"\n"
+"        Diese Funktion zeigt Ihnen die Werte einer bestimmten\n"
+"        Eigenschaft der gewünschten Einträge an.\n"
+"        "
+
+# ../roundup/admin.py:516 :531
+#: ../roundup/admin.py:886 ../roundup/admin.py:904 ../roundup/admin.py:886:904
+#, python-format
+msgid "property %s is not of type Multilink or Link so -d flag does not apply."
+msgstr ""
+"Die Eigenschaft %s ist kein Multilink oder Link; die Option -d wird deshalb "
+"hier nicht ausgewertet."
+
+# ../roundup/admin.py:539 :951 :1000 :1022
+#: ../roundup/admin.py:914 ../roundup/admin.py:995 ../roundup/admin.py:1635
+#: ../roundup/admin.py:914:995:1635
+#, python-format
+msgid "no such %(classname)s node \"%(nodeid)s\""
+msgstr ""
+"Es existiert kein Eintrag der Klasse %(classname)s mit der ID \"%(nodeid)s\""
+
+#: ../roundup/admin.py:917
+#, python-format
+msgid "no such %(classname)s property \"%(propname)s\""
+msgstr ""
+"Die Eigenschaft \"%(propname)s\" ist für die Klasse \"%(classname)s\" nicht "
+"definiert"
+
+#: ../roundup/admin.py:925
 msgid ""
 "Usage: help topic\n"
 "        Give help about topic.\n"
@@ -265,22 +588,124 @@ msgstr ""
 "        all       -- sämtlichen Hilfetext anzeigen\n"
 "        "
 
-#: ../roundup/admin.py:293
+#: ../roundup/admin.py:947
 #, python-format
 msgid "Sorry, no help for \"%(topic)s\""
 msgstr "Zum Thema \"%(topic)s\" existiert leider kein Hilfetext"
 
-# ../roundup/admin.py:336 :382
-#: ../roundup/admin.py:408 ../roundup/admin.py:464 ../roundup/admin.py:408:464
-msgid "Templates:"
-msgstr "Vorlagen:"
+#: ../roundup/admin.py:964
+msgid ""
+"Usage: history designator [skipquiet]\n"
+"        Show the history entries of a designator.\n"
+"\n"
+"        A designator is a classname and a nodeid concatenated,\n"
+"        eg. bug1, user10, ...\n"
+"\n"
+"        Lists the journal entries viewable by the user for the\n"
+"        node identified by the designator. If skipquiet is the\n"
+"        second argument, journal entries for quiet properties\n"
+"        are not shown.\n"
+"        "
+msgstr ""
 
-# ../roundup/admin.py:339 :393
-#: ../roundup/admin.py:411 ../roundup/admin.py:474 ../roundup/admin.py:411:474
-msgid "Back ends:"
-msgstr "Datenbanken:"
+#: ../roundup/admin.py:1000
+msgid ""
+"Usage: import import_dir\n"
+"        Import a database from the directory containing CSV files,\n"
+"        two per class to import.\n"
+"\n"
+"        The files used in the import are:\n"
+"\n"
+"        <class>.csv\n"
+"          This must define the same properties as the class (including\n"
+"          having a \"header\" line with those property names.)\n"
+"        <class>-journals.csv\n"
+"          This defines the journals for the items being imported.\n"
+"\n"
+"        The imported nodes will have the same nodeid as defined in the\n"
+"        import file, thus replacing any existing content.\n"
+"\n"
+"        The new nodes are added to the existing database - if you want to\n"
+"        create a new database using the imported data, then create a new\n"
+"        database (or, tediously, retire all the old data.)\n"
+"        "
+msgstr ""
+"Verwendung: import Importverzeichnis\n"
+"        Importiert Datensätze aus einem Verzeichnis mit CSV-Dateien\n"
+"\n"
+"        Folgende Dateien werden beim Import verwendet:\n"
+"\n"
+"        <Klasse>.csv\n"
+"          In dieser Datei sind die Daten zu den Einträgen einer Klasse.\n"
+"          Für sämtliche Eigenschaften der Klasse muss eine Spalte \n"
+"          exisitieren. In der ersten Zeile stehen die Eigenschaftsnamen.\n"
+"        <Klasse>-journals.csv\n"
+"          In dieser Datei wird der Bearbeitungs-Verlauf der Einträge\n"
+"          beschrieben.\n"
+"\n"
+"        Importierte Einträge übernehmen die IDs, welche in den Dateien\n"
+"        definiert sind. Existierende Einträge mit denselben IDs werden\n"
+"        überschrieben.\n"
+"        Die Einträge werden in die existierende Datenbank geschrieben.\n"
+"        Falls eine neue, leere Datenbank verwendet werden soll, so müssen\n"
+"        Sie diese zuerst erstellen (oder sämtliche bestehenden Inhalte \n"
+"        verbergen).\n"
+"        "
 
-#: ../roundup/admin.py:414
+#: ../roundup/admin.py:1079
+msgid ""
+"Usage: importtables export_dir\n"
+"\n"
+"        This imports the database tables exported using exporttables.\n"
+"        "
+msgstr ""
+
+#. password
+#: ../roundup/admin.py:1086
+msgid ""
+"Usage: initialise [adminpw]\n"
+"        Initialise a new Roundup tracker.\n"
+"\n"
+"        The administrator details will be set at this step.\n"
+"\n"
+"        Execute the tracker's initialisation function dbinit.init()\n"
+"        "
+msgstr ""
+"Verwendung: initialise [Admin-Passwort]\n"
+"        Initialisieren eines neuen Roundup-Trackers.\n"
+"\n"
+"        Der Administrator-Benutzer wird eingerichtet.\n"
+"\n"
+"        Die Funktion dbinit.init() wird aufgerufen\n"
+"        "
+
+#: ../roundup/admin.py:1100
+msgid "Admin Password: "
+msgstr "Administratorpasswort: "
+
+#: ../roundup/admin.py:1101
+msgid "       Confirm: "
+msgstr "  Wiederholen: "
+
+#: ../roundup/admin.py:1105
+msgid "Instance home does not exist"
+msgstr "Tracker-Verzeichnis existiert nicht"
+
+#: ../roundup/admin.py:1109
+msgid "Instance has not been installed"
+msgstr "Tracker-Instanz wurde nicht installiert"
+
+#: ../roundup/admin.py:1115
+msgid ""
+"WARNING: The database is already initialised!\n"
+"If you re-initialise it, you will lose all the data!\n"
+"Erase it? Y/N: "
+msgstr ""
+"WARNUNG: Die Datenbank ist schon initialisiert!\n"
+"Eine erneute Initialisierung löscht sämtliche Daten!\n"
+"Wirklich löschen? Y/N: "
+
+#: ../roundup/admin.py:1135
 msgid ""
 "Usage: install [template [backend [key=val[,key=val]]]]\n"
 "        Install a new Roundup tracker.\n"
@@ -333,25 +758,12 @@ msgstr ""
 "        Siehe auch unter dem Hilfethema \"initopts\".\n"
 "        "
 
-# ../roundup/admin.py:358 :483 :562 :612 :682 :703 :731 :802 :869 :940 :988
-# :1010 :1037 :1098 :1156
-#: ../roundup/admin.py:437 ../roundup/admin.py:568 ../roundup/admin.py:671
-#: ../roundup/admin.py:764 ../roundup/admin.py:822 ../roundup/admin.py:908
-#: ../roundup/admin.py:967 ../roundup/admin.py:994 ../roundup/admin.py:1021
-#: ../roundup/admin.py:1098 ../roundup/admin.py:1193 ../roundup/admin.py:1279
-#: ../roundup/admin.py:1340 ../roundup/admin.py:1367 ../roundup/admin.py:1403
-#: ../roundup/admin.py:1531 ../roundup/admin.py:1615
-#: ../roundup/admin.py:437:568 :1021:1098:1193 :1279:1340 :1367:1403 :1531:1615
-#: :671:764 :822:908 :967:994
-msgid "Not enough arguments supplied"
-msgstr "Zu wenig Parameter übergeben"
-
-#: ../roundup/admin.py:443
+#: ../roundup/admin.py:1164
 #, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr "Das angegebene Tracker-Verzeichnis \"%(parent)s\" existiert nicht"
 
-#: ../roundup/admin.py:452
+#: ../roundup/admin.py:1173
 #, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
@@ -362,22 +774,22 @@ msgstr ""
 "installiert zu sein! Eine erneute Installation löscht sämtliche Daten!\n"
 "Wirklich löschen? Y/N: "
 
-#: ../roundup/admin.py:465
+#: ../roundup/admin.py:1186
 #, fuzzy
 msgid "Select template"
 msgstr "Vorlagensatz auswählen [classic]:"
 
-#: ../roundup/admin.py:475
+#: ../roundup/admin.py:1196
 #, fuzzy
 msgid "Select backend"
 msgstr "Datenbank auswählen [anydbm]"
 
-#: ../roundup/admin.py:486
+#: ../roundup/admin.py:1207
 #, python-format
 msgid "Error in configuration settings: \"%s\""
 msgstr "Fehler in der Konfiguration: \"%s\""
 
-#: ../roundup/admin.py:517
+#: ../roundup/admin.py:1238
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -389,11 +801,11 @@ msgstr ""
 " Sie sollten nun die Konfigurationsdatei des Trackers bearbeiten:\n"
 "   %(config_file)s"
 
-#: ../roundup/admin.py:527
+#: ../roundup/admin.py:1248
 msgid " ... at a minimum, you must set following options:"
 msgstr " ... passen sie zumindest folgende Optionen an:"
 
-#: ../roundup/admin.py:532
+#: ../roundup/admin.py:1253
 #, python-format
 msgid ""
 "\n"
@@ -419,140 +831,402 @@ msgstr ""
 " Anschließend MÜSSEN Sie \"roundup-admin initialise\" ausführen.\n"
 "---------------------------------------------------------------------------\n"
 
-#: ../roundup/admin.py:563
-#, fuzzy
+#: ../roundup/admin.py:1270
 msgid ""
-"Usage: genconfig <filename>\n"
-"        Generate a new tracker config file (ini style) with default\n"
-"        values in <filename>.\n"
+"Usage: list classname [property]\n"
+"        List the instances of a class.\n"
+"\n"
+"        Lists all instances of the given class. If the property is not\n"
+"        specified, the  \"label\" property is used. The label property is\n"
+"        tried in order: the key, \"name\", \"title\" and then the first\n"
+"        property, alphabetically.\n"
+"\n"
+"        With -c, -S or -s print a list of item id's if no property\n"
+"        specified.  If property specified, print list of that property\n"
+"        for every class instance.\n"
 "        "
 msgstr ""
-"Verwendung: genconfig <filename>\n"
-"        Schreibt eine neue Tracker-Konfiguration (im \".ini\"-Format) mit \n"
-"        Standardwerten in die Datei <filename>.\n"
+"Usage: list Klassenname [Eigenschaft]\n"
+"        Listet sämtliche Einträge einer Klasse auf.\n"
+"\n"
+"        Es werden sämtliche Einträge der Klasse ausgegeben. Wird keine\n"
+"        Eigenschaft angegeben, so wird ein Bezeichner aus der folgenden\n"
+"        Liste generiert, mit absteigender Priorität:\n"
+"        Schlüsselfeld, ein Feld namens \"name\" oder \"title\". Falls\n"
+"        auch diese Felder nicht existieren, wird das \n"
+"        erste Feld alphabetisch sortiert angezeigt.\n"
+"\n"
+"        Mit den Optionen -c, -S or -s wird eine Liste von IDs ausgegeben,\n"
+"        falls keine Eigenschaft angegeben wird. Sonst werden die Werte\n"
+"        dieser Eigenschaften sämtlicher Instanzen dieser Klasse "
+"aufgelistet.\n"
 "        "
 
-#: ../roundup/admin.py:581
+#: ../roundup/admin.py:1283
+msgid "Too many arguments supplied"
+msgstr "Sie haben zuviele Argumente übergeben"
+
+#: ../roundup/admin.py:1319
 #, python-format
-msgid ""
-"Changing option\n"
-"   'password_pbkdf2_default_rounds'\n"
-"from old default of %(old_number)s to new default of %(new_number)s."
-msgstr ""
+msgid "%(nodeid)4s: %(value)s"
+msgstr "%(nodeid)4s: %(value)s"
 
-#: ../roundup/admin.py:593
+#: ../roundup/admin.py:1323
+#, fuzzy
+msgid ""
+"Usage: migrate\n"
+"\n"
+"        Update a tracker's database to be compatible with the Roundup\n"
+"        codebase.\n"
+"\n"
+"        You should run the \"migrate\" command for your tracker once\n"
+"        you've installed the latest codebase.\n"
+"\n"
+"        Do this before you use the web, command-line or mail interface\n"
+"        and before any users access the tracker.\n"
+"\n"
+"        This command will respond with either \"Tracker updated\" (if\n"
+"        you've not previously run it on an RDBMS backend) or \"No\n"
+"        migration action required\" (if you have run it, or have used\n"
+"        another interface to the tracker, or possibly because you are\n"
+"        using anydbm).\n"
+"\n"
+"        It's safe to run this even if it's not required, so just get\n"
+"        into the habit.\n"
+"        "
+msgstr ""
+"Verwendung: migrate\n"
+"        Aktualisiert die Datenbank eines Trackers, um sie mit dem aktuellen\n"
+"        Roundup-Code kompatibel zu machen\n"
+"\n"
+"        Sie sollten \"migrate\" einmalig ausführen, wenn Sie auf die "
+"neueste        Roundup-Version aktualisiert haben.\n"
+"\n"
+"        Tun Sie das, bevor Sie per Web (Internet-Browser), Kommandozeile\n"
+"        oder Mail auf den Tracker zugreifen.\n"
+"\n"
+"        Das Kommando wird anschließend \"Tracker aktualisiert\" antworten\n"
+"        (sofern Sie es nicht schon vorher ausgeführt haben) oder\n"
+"        \"Keine Migration notwendig\" (wenn Sie es schon ausgeführt hatten,\n"
+"        oder ein anderes Datenbank-Backend verwendet haben, oder\n"
+"        vielleicht weil Sie anydbm verwenden.\n"
+"\n"
+"        Es kann nicht schaden, dieses Kommando auszuführen, selbst wenn\n"
+"        es nicht nötig ist; also gewöhnen Sie es sich einfach an.\n"
+"        "
+
+#: ../roundup/admin.py:1344
 #, python-format
-msgid ""
-"Update 'password_pbkdf2_default_rounds' to a number equal to or larger\n"
-"than %s."
+msgid "Tracker updated to schema version %s."
 msgstr ""
 
-#: ../roundup/admin.py:604
+#: ../roundup/admin.py:1348
+#, fuzzy, python-format
+msgid "No migration action required. At schema version %s."
+msgstr "Keine Migration notwendig"
+
+#: ../roundup/admin.py:1353
+msgid ""
+"Usage: pack period | date\n"
+"\n"
+"        Remove journal entries older than a period of time specified or\n"
+"        before a certain date.\n"
+"\n"
+"        A period is specified using the suffixes \"y\", \"m\", and \"d\". "
+"The\n"
+"        suffix \"w\" (for \"week\") means 7 days.\n"
+"\n"
+"              \"3y\" means three years\n"
+"              \"2y 1m\" means two years and one month\n"
+"              \"1m 25d\" means one month and 25 days\n"
+"              \"2w 3d\" means two weeks and three days\n"
+"\n"
+"        Date format is \"YYYY-MM-DD\" eg:\n"
+"            2001-01-01\n"
+"\n"
+"        "
+msgstr ""
+"Verwendung: pack Periode | Datum\n"
+"        Entfernt den Bearbeitungsverlauf ab einem gewissen Datum.\n"
+"\n"
+"        Das Datum kann als rückläufige Periode spezifiziert werden:\n"
+"           \"y\", \"m\", and \"d\".         wobei \"w\" (Woche) für 7 Tage "
+"steht.\n"
+"\n"
+"        Beispiele:\n"
+"              \"3y\" steht für 3 Jahre\n"
+"              \"2y 1m\" steht für 2 Jahre und ein Monat\n"
+"              \"1m 25d\" steht für 1 Monat und 25 Tage\n"
+"              \"2w 3d\" steht für 2 Wochen und 3 Tage\n"
+"\n"
+"        Das Datumsformat lautet \"JJJJ-MM-TT\", z.B:\n"
+"            2001-06-27\n"
+"\n"
+"        "
+
+#: ../roundup/admin.py:1381
+msgid "Invalid format"
+msgstr "Ungültiges Format"
+
+#: ../roundup/admin.py:1392
+msgid ""
+"Usage: perftest [mode] [arguments]*\n"
+"\n"
+"        Time operations in Roundup. Supported arguments:\n"
+"\n"
+"            [password] [rounds=<integer>] [scheme=<scheme>]\n"
+"\n"
+"        'password' is the default mode.  The tracker's config.ini\n"
+"        setting for 'password_pbkdf2_default_rounds' is the default\n"
+"        value for 'rounds'. On the command line, 'rounds' can include\n"
+"        thousands separator of ',' or '.'.  'scheme' is the default\n"
+"        coded into Roundup. List supported schemes by using 'scheme='.\n"
+"\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1425
+msgid "Invalid 'rounds'. Must be larger than 999."
+msgstr ""
+
+#: ../roundup/admin.py:1429
+#, python-format
+msgid "Invalid 'rounds'. It must be an integer not: %s"
+msgstr ""
+
+#: ../roundup/admin.py:1456
+msgid "scheme does not support rounds."
+msgstr ""
+
+#: ../roundup/admin.py:1459
+#, python-format
+msgid "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, rounds: %(rounds)s"
+msgstr ""
+
+#: ../roundup/admin.py:1465
+msgid ""
+"Usage: pragma setting=value | 'list'\n"
+"        Set internal admin settings to a value. E.G.\n"
+"\n"
+"            pragma verbose=True\n"
+"            pragma verbose=yes\n"
+"            pragma verbose=on\n"
+"            pragma verbose=1\n"
+"\n"
+"         will turn on verbose mode for roundup-admin.\n"
+"\n"
+"            pragma list\n"
+"\n"
+"         will show all settings and their current values. If verbose\n"
+"         is enabled hidden settings and descriptions will be shown.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1489
+#, python-format
+msgid "Argument must be setting=value, was given: %s."
+msgstr ""
+
+#: ../roundup/admin.py:1492
+msgid "Current settings and values (NYI - not yet implemented):"
+msgstr ""
+
+#: ../roundup/admin.py:1505
+#, fuzzy, python-format
+msgid "Unknown setting %s."
+msgstr "Benutzername unbekannt"
+
+#: ../roundup/admin.py:1514
+#, python-format
+msgid "Incorrect value for boolean setting %(setting)s: %(value)s."
+msgstr ""
+
+#: ../roundup/admin.py:1521
+#, python-format
+msgid "Incorrect value for integer setting %(setting)s: %(value)s."
+msgstr ""
+
+#: ../roundup/admin.py:1527
+#, python-format
+msgid "Internal error: pragma can not handle values of type: %s"
+msgstr ""
+
+#: ../roundup/admin.py:1537
 #, fuzzy
 msgid ""
-"Usage: updateconfig <filename>\n"
-"        Generate an updated tracker config file (ini style) in\n"
-"        <filename>. Use current settings from existing roundup\n"
-"        tracker in tracker home.\n"
+"Usage: reindex [classname|classname:#-#|designator]*\n"
+"        Re-generate a tracker's search indexes.\n"
+"\n"
+"        This will re-generate the search indexes for a tracker.\n"
+"        This will typically happen automatically.\n"
+"\n"
+"        You can incrementally reindex using an argument like:\n"
+"\n"
+"            reindex issue:23-1000\n"
+"\n"
+"        to reindex issue class items 23-1000. Missing items\n"
+"        are reported but do not stop indexing of the range.\n"
 "        "
 msgstr ""
-"Verwendung: genconfig <filename>\n"
-"        Schreibt eine neue Tracker-Konfiguration (im \".ini\"-Format) mit \n"
-"        Standardwerten in die Datei <filename>.\n"
+"Verwendung: reindex [Klasse|Bezeichner]*\n"
+"        Der Volltext-Index eines Trackers wird neu erstellt.\n"
+"\n"
+"        Der Volltext-Index wird neu generiert. Dies geschieht \n"
+"        normalerweise automatisch.\n"
 "        "
 
-#. password
-#: ../roundup/admin.py:612
-msgid ""
-"Usage: initialise [adminpw]\n"
-"        Initialise a new Roundup tracker.\n"
-"\n"
-"        The administrator details will be set at this step.\n"
-"\n"
-"        Execute the tracker's initialisation function dbinit.init()\n"
-"        "
-msgstr ""
-"Verwendung: initialise [Admin-Passwort]\n"
-"        Initialisieren eines neuen Roundup-Trackers.\n"
-"\n"
-"        Der Administrator-Benutzer wird eingerichtet.\n"
-"\n"
-"        Die Funktion dbinit.init() wird aufgerufen\n"
-"        "
+#: ../roundup/admin.py:1560
+#, python-format
+msgid "no such item \"%(designator)s\""
+msgstr "Der Eintrag \"%(designator)s\" existiert nicht"
 
-#: ../roundup/admin.py:626
-msgid "Admin Password: "
-msgstr "Administratorpasswort: "
+#: ../roundup/admin.py:1570
+#, fuzzy, python-format
+msgid "no such item \"%(class)s%(id)s\""
+msgstr "Der Eintrag \"%(designator)s\" existiert nicht"
 
-#: ../roundup/admin.py:627
-msgid "       Confirm: "
-msgstr "  Wiederholen: "
-
-#: ../roundup/admin.py:631
-msgid "Instance home does not exist"
-msgstr "Tracker-Verzeichnis existiert nicht"
-
-#: ../roundup/admin.py:635
-msgid "Instance has not been installed"
-msgstr "Tracker-Instanz wurde nicht installiert"
-
-#: ../roundup/admin.py:641
-msgid ""
-"WARNING: The database is already initialised!\n"
-"If you re-initialise it, you will lose all the data!\n"
-"Erase it? Y/N: "
-msgstr ""
-"WARNUNG: Die Datenbank ist schon initialisiert!\n"
-"Eine erneute Initialisierung löscht sämtliche Daten!\n"
-"Wirklich löschen? Y/N: "
-
-#: ../roundup/admin.py:661
+#: ../roundup/admin.py:1582
 #, fuzzy
 msgid ""
-"Usage: get property designator[,designator]*\n"
-"        Get the given property of one or more designator(s).\n"
+"Usage: restore designator[,designator]*\n"
+"        Restore the retired node specified by designator.\n"
 "\n"
 "        A designator is a classname and a nodeid concatenated,\n"
 "        eg. bug1, user10, ...\n"
 "\n"
-"        Retrieves the property value of the nodes specified\n"
-"        by the designators.\n"
+"        The given nodes will become available for users again.\n"
 "        "
 msgstr ""
-"Verwendung: get Eigenschaft Bezeichner[,Bezeichner]*\n"
-"        Gibt die Eigenschaft eines oder mehrerer Einträge zurück.\n"
+"Verwendung: restore Bezeichner[,Bezeichner]*\n"
+"        Ein oder mehrere verborgene Einträge werden wiederhergestellt.\n"
 "\n"
-"        Diese Funktion zeigt Ihnen die Werte einer bestimmten\n"
-"        Eigenschaft der gewünschten Einträge an.\n"
+"        Ein verborgener Eintrag wird wiederhergestellt und ist danach\n"
+"        für die Benutzer wieder sichtbar.\n"
 "        "
-
-# ../roundup/admin.py:516 :531
-#: ../roundup/admin.py:705 ../roundup/admin.py:723 ../roundup/admin.py:705:723
-#, python-format
-msgid "property %s is not of type Multilink or Link so -d flag does not apply."
-msgstr ""
-"Die Eigenschaft %s ist kein Multilink oder Link; die Option -d wird deshalb "
-"hier nicht ausgewertet."
 
 # ../roundup/admin.py:539 :951 :1000 :1022
-#: ../roundup/admin.py:733 ../roundup/admin.py:1297 ../roundup/admin.py:1352
-#: ../roundup/admin.py:733:1297:1352
-#, python-format
-msgid "no such %(classname)s node \"%(nodeid)s\""
+#: ../roundup/admin.py:1607
+#, fuzzy
+msgid "no such %(classname)s node \" % (nodeid)s\""
 msgstr ""
 "Es existiert kein Eintrag der Klasse %(classname)s mit der ID \"%(nodeid)s\""
 
-#: ../roundup/admin.py:736
-#, python-format
-msgid "no such %(classname)s property \"%(propname)s\""
-msgstr ""
-"Die Eigenschaft \"%(propname)s\" ist für die Klasse \"%(classname)s\" nicht "
-"definiert"
-
-#: ../roundup/admin.py:744
+#: ../roundup/admin.py:1613
 #, fuzzy
 msgid ""
-"Usage: set items property=value property=value ...\n"
+"Usage: retire designator[,designator]*\n"
+"        Retire the node specified by designator.\n"
+"\n"
+"        A designator is a classname and a nodeid concatenated,\n"
+"        eg. bug1, user10, ...\n"
+"\n"
+"        This action indicates that a particular node is not to be retrieved\n"
+"        by the list or find commands, and its key value may be re-used.\n"
+"        "
+msgstr ""
+"Verwendung: retire Bezeichner[,Bezeichner]*\n"
+"        Verbirgt einen oder mehrere Einträge.\n"
+"\n"
+"        Das Verbergen eines Eintrags bewirkt, dass dieser bei einer Suche\n"
+"        nicht mehr angezeigt wird. Der Schlüssel des verborgenen Eintrags\n"
+"        kann zudem wiederverwendet werden.\n"
+"        "
+
+#: ../roundup/admin.py:1641
+msgid ""
+"Usage: rollback\n"
+"        Undo all changes that are pending commit to the database.\n"
+"\n"
+"        The changes made during an interactive session are not\n"
+"        automatically written to the database - they must be committed\n"
+"        manually. This command undoes all those changes, so a commit\n"
+"        immediately after would make no changes to the database.\n"
+"        "
+msgstr ""
+"Verwendung: rollback\n"
+"        Sämtliche nicht gespeicherte Änderungen werden verworfen.\n"
+"\n"
+"        Falls die Datenbank Transaktionen unterstützt, werden dadurch\n"
+"        sämtliche noch nicht gespeicherte Änderungen (siehe \"commit\")\n"
+"        verworfen.\n"
+"        "
+
+#: ../roundup/admin.py:1654
+msgid ""
+"Usage: security [Role name]\n"
+"\n"
+"             Display the Permissions available to one or all Roles.\n"
+"             Also validates that any properties defined in a\n"
+"             permission are valid.\n"
+"\n"
+"             Run this after changing your permissions to catch\n"
+"             typos.\n"
+"        "
+msgstr ""
+
+#: ../roundup/admin.py:1668
+#, fuzzy, python-format
+msgid "No such Role \"%(role)s\"\n"
+msgstr "Die Rolle \"%(role)s\" existiert nicht "
+
+#: ../roundup/admin.py:1674
+#, fuzzy, python-format
+msgid "New Web users get the Roles \"%(role)s\"\n"
+msgstr "Neue Web-Benutzer erhalten die Rollen \"%(role)s\""
+
+#: ../roundup/admin.py:1677
+#, fuzzy, python-format
+msgid "New Web users get the Role \"%(role)s\"\n"
+msgstr "Neue Web-Benutzer erhalten die Rolle \"%(role)s\""
+
+#: ../roundup/admin.py:1681
+#, fuzzy, python-format
+msgid "New Email users get the Roles \"%(role)s\"\n"
+msgstr "Neue E-Mail-Benutzer erhalten die Rollen \"%(role)s\""
+
+#: ../roundup/admin.py:1683
+#, fuzzy, python-format
+msgid "New Email users get the Role \"%(role)s\"\n"
+msgstr "Neue E-Mail-Benutzer erhalten die Rolle \"%(role)s\""
+
+#: ../roundup/admin.py:1686
+#, fuzzy, python-format
+msgid "Role \"%(name)s\":\n"
+msgstr "Rolle \"%(name)s\":"
+
+#: ../roundup/admin.py:1692
+#, fuzzy
+msgid " %(description)s (%(name)s for \"%(klass)s\""
+msgstr "%(description)s (%(name)s einzig für \"%(klass)s\")"
+
+#: ../roundup/admin.py:1692
+#, fuzzy, python-format
+msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
+msgstr ""
+" %(description)s (%(name)s für \"%(klass)s\": ausschließlich %(properties)s)"
+
+#: ../roundup/admin.py:1705
+#, python-format
+msgid ""
+"\n"
+"  **Invalid properties for %(class)s: %(props)s\n"
+"\n"
+msgstr ""
+
+#: ../roundup/admin.py:1711
+#, fuzzy, python-format
+msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
+msgstr "%(description)s (%(name)s einzig für \"%(klass)s\")"
+
+#: ../roundup/admin.py:1714
+#, fuzzy, python-format
+msgid " %(description)s (%(name)s)\n"
+msgstr " %(description)s (%(name)s)"
+
+#: ../roundup/admin.py:1718
+#, fuzzy
+msgid ""
+"Usage: set items property=value [property=value ...]\n"
 "        Set the given properties of one or more items(s).\n"
 "\n"
 "        The items are specified as a class or as a comma-separated\n"
@@ -586,60 +1260,7 @@ msgstr ""
 "(\"1,2,3\").\n"
 "        "
 
-#: ../roundup/admin.py:812
-#, fuzzy
-msgid ""
-"Usage: filter classname propname=value ...\n"
-"        Find the nodes of the given class with a given property value.\n"
-"\n"
-"        Find the nodes of the given class with a given property value.\n"
-"        Multiple values can be specified by separating them with commas.\n"
-"        If property is a string, all values must match. I.E. it's an\n"
-"        'and' operation. If the property is a link/multilink any value\n"
-"        matches. I.E. an 'or' operation.\n"
-"        "
-msgstr ""
-"Verwendung: find Klassenname Eigenschaft=Wert ...\n"
-"        Findet Einträge, welche die angegebene Verlinkung aufweisen.\n"
-"\n"
-"        Findet sämtliche Einträge einer Klasse, bei welchen die Link-\n"
-"        Eigenschaft den angegebenen Wert enthält. Der Wert kann entweder\n"
-"        als ID oder als Bezeichner (\"msg23\") spezifiziert werden.\n"
-"        "
-
-# ../roundup/admin.py:631 :669 :822 :834 :888
-#: ../roundup/admin.py:855
-#, fuzzy, python-format
-msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
-msgstr "Die Klasse \"%(classname)s\" hat keine Eigenschaft \"%(propname)s\""
-
-# ../roundup/admin.py:631 :669 :822 :834 :888
-#: ../roundup/admin.py:893 ../roundup/admin.py:954 ../roundup/admin.py:1118
-#: ../roundup/admin.py:1130 ../roundup/admin.py:1213
-#: ../roundup/admin.py:893:954 :1118:1130:1213
-#, python-format
-msgid "%(classname)s has no property \"%(propname)s\""
-msgstr "Die Klasse \"%(classname)s\" hat keine Eigenschaft \"%(propname)s\""
-
-#: ../roundup/admin.py:900
-msgid ""
-"Usage: find classname propname=value ...\n"
-"        Find the nodes of the given class with a given link property value.\n"
-"\n"
-"        Find the nodes of the given class with a given link property value.\n"
-"        The value may be either the nodeid of the linked node, or its key\n"
-"        value.\n"
-"        "
-msgstr ""
-"Verwendung: find Klassenname Eigenschaft=Wert ...\n"
-"        Findet Einträge, welche die angegebene Verlinkung aufweisen.\n"
-"\n"
-"        Findet sämtliche Einträge einer Klasse, bei welchen die Link-\n"
-"        Eigenschaft den angegebenen Wert enthält. Der Wert kann entweder\n"
-"        als ID oder als Bezeichner (\"msg23\") spezifiziert werden.\n"
-"        "
-
-#: ../roundup/admin.py:961
+#: ../roundup/admin.py:1786
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -653,135 +1274,17 @@ msgstr ""
 "        Zeigt sämtliche Eigenschaften der Klasse auf.\n"
 "        "
 
-#: ../roundup/admin.py:977
+#: ../roundup/admin.py:1802
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s (key property)\n"
 msgstr "%(key)s: %(value)s (Schlüsseleigenschaft)"
 
-#: ../roundup/admin.py:980
+#: ../roundup/admin.py:1805
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s\n"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:983
-#, fuzzy
-msgid ""
-"Usage: display designator[,designator]*\n"
-"\n"
-"        Show the property values for the given node(s).\n"
-"\n"
-"        A designator is a classname and a nodeid concatenated,\n"
-"        eg. bug1, user10, ...\n"
-"\n"
-"        This lists the properties and their associated values\n"
-"        for the given node.\n"
-"        "
-msgstr ""
-"Verwendung: display Bezeichner[,Bezeichner]*\n"
-"        Zeigt alle Eigenschaften eines oder mehrerer Eintrage an.\n"
-"\n"
-"        Der Befehl zeigt die Eigenschaften und ihre Werte des\n"
-"        gewählten Eintrags an.\n"
-"        "
-
-#: ../roundup/admin.py:1010
-#, python-format
-msgid "%(key)s: %(value)s"
-msgstr "%(key)s: %(value)s"
-
-#: ../roundup/admin.py:1013
-msgid ""
-"Usage: create classname property=value ...\n"
-"        Create a new entry of a given class.\n"
-"\n"
-"        This creates a new entry of the given class using the property\n"
-"        name=value arguments provided on the command line after the \"create"
-"\"\n"
-"        command.\n"
-"        "
-msgstr ""
-"Verwendung: create Klassenname Eigenschaft=Wert ...\n"
-"        Erstellt einen neuen Eintrag der angegebenen Klasse.\n"
-"\n"
-"        Ein neuer Eintrag der Klasse wird erstellt, und die Eigenschaften\n"
-"        werden mit den Werten initialisiert\n"
-"        "
-
-#: ../roundup/admin.py:1041
-#, python-format
-msgid "%(propname)s (Password): "
-msgstr "%(propname)s (Passwort):"
-
-#: ../roundup/admin.py:1044
-#, python-format
-msgid "   %(propname)s (Again): "
-msgstr "   %(propname)s (Wiederholen):"
-
-#: ../roundup/admin.py:1048
-msgid "Sorry, try again..."
-msgstr "Bitte erneut versuchen..."
-
-#: ../roundup/admin.py:1052
-#, python-format
-msgid "%(propname)s (%(proptype)s): "
-msgstr "%(propname)s (%(proptype)s): "
-
-#: ../roundup/admin.py:1071
-#, python-format
-msgid "you must provide the \"%(propname)s\" property."
-msgstr "Sie müssen einen Wert für \"%(propname)s\" angeben."
-
-#: ../roundup/admin.py:1083
-msgid ""
-"Usage: list classname [property]\n"
-"        List the instances of a class.\n"
-"\n"
-"        Lists all instances of the given class. If the property is not\n"
-"        specified, the  \"label\" property is used. The label property is\n"
-"        tried in order: the key, \"name\", \"title\" and then the first\n"
-"        property, alphabetically.\n"
-"\n"
-"        With -c, -S or -s print a list of item id's if no property\n"
-"        specified.  If property specified, print list of that property\n"
-"        for every class instance.\n"
-"        "
-msgstr ""
-"Usage: list Klassenname [Eigenschaft]\n"
-"        Listet sämtliche Einträge einer Klasse auf.\n"
-"\n"
-"        Es werden sämtliche Einträge der Klasse ausgegeben. Wird keine\n"
-"        Eigenschaft angegeben, so wird ein Bezeichner aus der folgenden\n"
-"        Liste generiert, mit absteigender Priorität:\n"
-"        Schlüsselfeld, ein Feld namens \"name\" oder \"title\". Falls\n"
-"        auch diese Felder nicht existieren, wird das \n"
-"        erste Feld alphabetisch sortiert angezeigt.\n"
-"\n"
-"        Mit den Optionen -c, -S or -s wird eine Liste von IDs ausgegeben,\n"
-"        falls keine Eigenschaft angegeben wird. Sonst werden die Werte\n"
-"        dieser Eigenschaften sämtlicher Instanzen dieser Klasse "
-"aufgelistet.\n"
-"        "
-
-#: ../roundup/admin.py:1096
-msgid "Too many arguments supplied"
-msgstr "Sie haben zuviele Argumente übergeben"
-
-#: ../roundup/admin.py:1132
-#, python-format
-msgid "%(nodeid)4s: %(value)s"
-msgstr "%(nodeid)4s: %(value)s"
-
-#: ../roundup/admin.py:1136
-msgid ""
-"Usage: templates [trace_search]\n"
-"        List templates and their installed directories.\n"
-"\n"
-"        With trace_search also list all directories that are\n"
-"        searched for templates.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1164
+#: ../roundup/admin.py:1808
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -844,487 +1347,69 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1208
+#: ../roundup/admin.py:1852
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "\"%(spec)s\" entspricht nicht dem Format Eigenschaft:Breite"
 
-#: ../roundup/admin.py:1230
+#: ../roundup/admin.py:1874
 #, python-format
 msgid "\"%(spec)s\" does not have an integer width: \"%(width)s\""
 msgstr ""
 
-#: ../roundup/admin.py:1266
+#: ../roundup/admin.py:1910
 msgid ""
-"Usage: history designator [skipquiet]\n"
-"        Show the history entries of a designator.\n"
+"Usage: templates [trace_search]\n"
+"        List templates and their installed directories.\n"
 "\n"
-"        A designator is a classname and a nodeid concatenated,\n"
-"        eg. bug1, user10, ...\n"
-"\n"
-"        Lists the journal entries viewable by the user for the\n"
-"        node identified by the designator. If skipquiet is the\n"
-"        second argument, journal entries for quiet properties\n"
-"        are not shown.\n"
+"        With trace_search also list all directories that are\n"
+"        searched for templates.\n"
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1302
-msgid ""
-"Usage: commit\n"
-"        Commit changes made to the database during an interactive session.\n"
-"\n"
-"        The changes made during an interactive session are not\n"
-"        automatically written to the database - they must be committed\n"
-"        using this command.\n"
-"\n"
-"        One-off commands on the command-line are automatically committed if\n"
-"        they are successful.\n"
-"        "
-msgstr ""
-"Verwendung: commit\n"
-"        Speichern der Datenbank-Änderungen.\n"
-"\n"
-"        Falls die Datenbank Transaktionen unterstützt, werden Änderungen\n"
-"        während einer Bearbeitungs-Session erst nach einem \"commit\" an "
-"die\n"
-"        Datenbank übermittelt.\n"
-"\n"
-"        Einzelbefehle über die Kommandozeile werden sofort in die Datenbank\n"
-"        geschrieben.\n"
-"        "
-
-#: ../roundup/admin.py:1317
-msgid ""
-"Usage: rollback\n"
-"        Undo all changes that are pending commit to the database.\n"
-"\n"
-"        The changes made during an interactive session are not\n"
-"        automatically written to the database - they must be committed\n"
-"        manually. This command undoes all those changes, so a commit\n"
-"        immediately after would make no changes to the database.\n"
-"        "
-msgstr ""
-"Verwendung: rollback\n"
-"        Sämtliche nicht gespeicherte Änderungen werden verworfen.\n"
-"\n"
-"        Falls die Datenbank Transaktionen unterstützt, werden dadurch\n"
-"        sämtliche noch nicht gespeicherte Änderungen (siehe \"commit\")\n"
-"        verworfen.\n"
-"        "
-
-#: ../roundup/admin.py:1330
+#: ../roundup/admin.py:1938
 #, fuzzy
 msgid ""
-"Usage: retire designator[,designator]*\n"
-"        Retire the node specified by designator.\n"
-"\n"
-"        A designator is a classname and a nodeid concatenated,\n"
-"        eg. bug1, user10, ...\n"
-"\n"
-"        This action indicates that a particular node is not to be retrieved\n"
-"        by the list or find commands, and its key value may be re-used.\n"
+"Usage: updateconfig <filename>\n"
+"        Generate an updated tracker config file (ini style) in\n"
+"        <filename>. Use current settings from existing roundup\n"
+"        tracker in tracker home.\n"
 "        "
 msgstr ""
-"Verwendung: retire Bezeichner[,Bezeichner]*\n"
-"        Verbirgt einen oder mehrere Einträge.\n"
-"\n"
-"        Das Verbergen eines Eintrags bewirkt, dass dieser bei einer Suche\n"
-"        nicht mehr angezeigt wird. Der Schlüssel des verborgenen Eintrags\n"
-"        kann zudem wiederverwendet werden.\n"
+"Verwendung: genconfig <filename>\n"
+"        Schreibt eine neue Tracker-Konfiguration (im \".ini\"-Format) mit \n"
+"        Standardwerten in die Datei <filename>.\n"
 "        "
 
-#: ../roundup/admin.py:1358
-#, fuzzy
-msgid ""
-"Usage: restore designator[,designator]*\n"
-"        Restore the retired node specified by designator.\n"
-"\n"
-"        A designator is a classname and a nodeid concatenated,\n"
-"        eg. bug1, user10, ...\n"
-"\n"
-"        The given nodes will become available for users again.\n"
-"        "
-msgstr ""
-"Verwendung: restore Bezeichner[,Bezeichner]*\n"
-"        Ein oder mehrere verborgene Einträge werden wiederhergestellt.\n"
-"\n"
-"        Ein verborgener Eintrag wird wiederhergestellt und ist danach\n"
-"        für die Benutzer wieder sichtbar.\n"
-"        "
-
-# ../roundup/admin.py:539 :951 :1000 :1022
-#: ../roundup/admin.py:1383
-#, fuzzy
-msgid "no such %(classname)s node \" % (nodeid)s\""
-msgstr ""
-"Es existiert kein Eintrag der Klasse %(classname)s mit der ID \"%(nodeid)s\""
-
-#. grab the directory to export to
-#: ../roundup/admin.py:1389
-msgid ""
-"Usage: export [[-]class[,class]] export_dir\n"
-"        Export the database to colon-separated-value files.\n"
-"        To exclude the files (e.g. for the msg or file class),\n"
-"        use the exporttables command.\n"
-"\n"
-"        Optionally limit the export to just the named classes\n"
-"        or exclude the named classes, if the 1st argument starts with '-'.\n"
-"\n"
-"        This action exports the current data from the database into\n"
-"        colon-separated-value files that are placed in the nominated\n"
-"        destination directory.\n"
-"        "
-msgstr ""
-"Verwendung: export [Klasse[,Klasse]] Exportverzeichnis\n"
-"        Exportiert die Datenbank in ein Verzeichnis mit CSV-Dateien.\n"
-"        Um die im Dateisystem abgelegten Daten fortzulassen (z. B.\n"
-"        die Klassen msg und file), verwenden Sie \"exporttables\".\n"
-"\n"
-"        Wenn Sie Klassennamen übergeben, wird der Export auf diese "
-"beschränkt\n"
-"        bzw. (wenn der ersten Klasse ein '-' vorgestellt wird) diese "
-"fortgelassen.\n"
-"\n"
-"        Die Daten werden als kommagetrennte Dateien in das angegebene\n"
-"        Exportverzeichnis geschrieben.\n"
-"        "
-
-#: ../roundup/admin.py:1496
-msgid ""
-"Usage: exporttables [[-]class[,class]] export_dir\n"
-"        Export the database to colon-separated-value files, excluding the\n"
-"        files below $TRACKER_HOME/db/files/ (which can be archived "
-"separately).\n"
-"        To include the files, use the export command.\n"
-"\n"
-"        Optionally limit the export to just the named classes\n"
-"        or exclude the named classes, if the 1st argument starts with '-'.\n"
-"\n"
-"        This action exports the current data from the database into\n"
-"        colon-separated-value files that are placed in the nominated\n"
-"        destination directory.\n"
-"        "
-msgstr ""
-"Verwendung: exporttables [Klasse[,Klasse]] Exportverzeichnis\n"
-"        Exportiert die Datenbank in ein Verzeichnis mit CSV-Dateien,\n"
-"        unter Fortlassung der im Dateisystem unter $TRACKER_HOME/db/files\n"
-"        abgelegten Daten; um diese mitzuexportieren, verwenden Sie \"export"
-"\".\n"
-"\n"
-"        Wenn Sie Klassennamen übergeben, wird der Export auf diese "
-"beschränkt\n"
-"        bzw. (wenn der ersten Klasse ein '-' vorgestellt wird) diese "
-"fortgelassen.\n"
-"\n"
-"        Die Daten werden als kommagetrennte Dateien in das angegebene\n"
-"        Exportverzeichnis geschrieben.\n"
-"        "
-
-#: ../roundup/admin.py:1511
-msgid ""
-"Usage: import import_dir\n"
-"        Import a database from the directory containing CSV files,\n"
-"        two per class to import.\n"
-"\n"
-"        The files used in the import are:\n"
-"\n"
-"        <class>.csv\n"
-"          This must define the same properties as the class (including\n"
-"          having a \"header\" line with those property names.)\n"
-"        <class>-journals.csv\n"
-"          This defines the journals for the items being imported.\n"
-"\n"
-"        The imported nodes will have the same nodeid as defined in the\n"
-"        import file, thus replacing any existing content.\n"
-"\n"
-"        The new nodes are added to the existing database - if you want to\n"
-"        create a new database using the imported data, then create a new\n"
-"        database (or, tediously, retire all the old data.)\n"
-"        "
-msgstr ""
-"Verwendung: import Importverzeichnis\n"
-"        Importiert Datensätze aus einem Verzeichnis mit CSV-Dateien\n"
-"\n"
-"        Folgende Dateien werden beim Import verwendet:\n"
-"\n"
-"        <Klasse>.csv\n"
-"          In dieser Datei sind die Daten zu den Einträgen einer Klasse.\n"
-"          Für sämtliche Eigenschaften der Klasse muss eine Spalte \n"
-"          exisitieren. In der ersten Zeile stehen die Eigenschaftsnamen.\n"
-"        <Klasse>-journals.csv\n"
-"          In dieser Datei wird der Bearbeitungs-Verlauf der Einträge\n"
-"          beschrieben.\n"
-"\n"
-"        Importierte Einträge übernehmen die IDs, welche in den Dateien\n"
-"        definiert sind. Existierende Einträge mit denselben IDs werden\n"
-"        überschrieben.\n"
-"        Die Einträge werden in die existierende Datenbank geschrieben.\n"
-"        Falls eine neue, leere Datenbank verwendet werden soll, so müssen\n"
-"        Sie diese zuerst erstellen (oder sämtliche bestehenden Inhalte \n"
-"        verbergen).\n"
-"        "
-
-#: ../roundup/admin.py:1590
-msgid ""
-"Usage: importtables export_dir\n"
-"\n"
-"        This imports the database tables exported using exporttables.\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1597
-msgid ""
-"Usage: pack period | date\n"
-"\n"
-"        Remove journal entries older than a period of time specified or\n"
-"        before a certain date.\n"
-"\n"
-"        A period is specified using the suffixes \"y\", \"m\", and \"d\". "
-"The\n"
-"        suffix \"w\" (for \"week\") means 7 days.\n"
-"\n"
-"              \"3y\" means three years\n"
-"              \"2y 1m\" means two years and one month\n"
-"              \"1m 25d\" means one month and 25 days\n"
-"              \"2w 3d\" means two weeks and three days\n"
-"\n"
-"        Date format is \"YYYY-MM-DD\" eg:\n"
-"            2001-01-01\n"
-"\n"
-"        "
-msgstr ""
-"Verwendung: pack Periode | Datum\n"
-"        Entfernt den Bearbeitungsverlauf ab einem gewissen Datum.\n"
-"\n"
-"        Das Datum kann als rückläufige Periode spezifiziert werden:\n"
-"           \"y\", \"m\", and \"d\".         wobei \"w\" (Woche) für 7 Tage "
-"steht.\n"
-"\n"
-"        Beispiele:\n"
-"              \"3y\" steht für 3 Jahre\n"
-"              \"2y 1m\" steht für 2 Jahre und ein Monat\n"
-"              \"1m 25d\" steht für 1 Monat und 25 Tage\n"
-"              \"2w 3d\" steht für 2 Wochen und 3 Tage\n"
-"\n"
-"        Das Datumsformat lautet \"JJJJ-MM-TT\", z.B:\n"
-"            2001-06-27\n"
-"\n"
-"        "
-
-#: ../roundup/admin.py:1625
-msgid "Invalid format"
-msgstr "Ungültiges Format"
-
-#: ../roundup/admin.py:1638
-msgid ""
-"Usage: reindex [classname|designator]*\n"
-"        Re-generate a tracker's search indexes.\n"
-"\n"
-"        This will re-generate the search indexes for a tracker.\n"
-"        This will typically happen automatically.\n"
-"        "
-msgstr ""
-"Verwendung: reindex [Klasse|Bezeichner]*\n"
-"        Der Volltext-Index eines Trackers wird neu erstellt.\n"
-"\n"
-"        Der Volltext-Index wird neu generiert. Dies geschieht \n"
-"        normalerweise automatisch.\n"
-"        "
-
-#: ../roundup/admin.py:1652
+# ../roundup/cgi/actions.py:546 :556
+#: ../roundup/admin.py:1946 ../roundup/cgi/actions.py:886
+#: ../roundup/cgi/actions.py:897 ../roundup/cgi/actions.py:1099
+#: ../roundup/cgi/actions.py:1113 ../roundup/cgi/actions.py:886:897 :1099:1113
 #, python-format
-msgid "no such item \"%(designator)s\""
-msgstr "Der Eintrag \"%(designator)s\" existiert nicht"
+msgid "Error: %s"
+msgstr "Fehler: %s"
 
-#: ../roundup/admin.py:1662
-#, fuzzy
-msgid ""
-"Usage: security [Role name]\n"
-"\n"
-"             Display the Permissions available to one or all Roles.\n"
-"        "
-msgstr ""
-"Verwendung: security [Rollenname]\n"
-"        Zeigt die Berechtigungen einer oder aller Rollen an.\n"
-"        "
-
-#: ../roundup/admin.py:1671
-#, fuzzy, python-format
-msgid "No such Role \"%(role)s\"\n"
-msgstr "Die Rolle \"%(role)s\" existiert nicht "
-
-#: ../roundup/admin.py:1677
-#, fuzzy, python-format
-msgid "New Web users get the Roles \"%(role)s\"\n"
-msgstr "Neue Web-Benutzer erhalten die Rollen \"%(role)s\""
-
-#: ../roundup/admin.py:1680
-#, fuzzy, python-format
-msgid "New Web users get the Role \"%(role)s\"\n"
-msgstr "Neue Web-Benutzer erhalten die Rolle \"%(role)s\""
-
-#: ../roundup/admin.py:1684
-#, fuzzy, python-format
-msgid "New Email users get the Roles \"%(role)s\"\n"
-msgstr "Neue E-Mail-Benutzer erhalten die Rollen \"%(role)s\""
-
-#: ../roundup/admin.py:1686
-#, fuzzy, python-format
-msgid "New Email users get the Role \"%(role)s\"\n"
-msgstr "Neue E-Mail-Benutzer erhalten die Rolle \"%(role)s\""
-
-#: ../roundup/admin.py:1689
-#, fuzzy, python-format
-msgid "Role \"%(name)s\":\n"
-msgstr "Rolle \"%(name)s\":"
-
-#: ../roundup/admin.py:1695
-#, fuzzy
-msgid " %(description)s (%(name)s for \"%(klass)s\""
-msgstr "%(description)s (%(name)s einzig für \"%(klass)s\")"
-
-#: ../roundup/admin.py:1695
-#, fuzzy, python-format
-msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
-msgstr ""
-" %(description)s (%(name)s für \"%(klass)s\": ausschließlich %(properties)s)"
-
-#: ../roundup/admin.py:1708
-#, python-format
-msgid ""
-"\n"
-"  **Invalid properties for %(class)s: %(props)s\n"
-"\n"
-msgstr ""
-
-#: ../roundup/admin.py:1714
-#, fuzzy, python-format
-msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
-msgstr "%(description)s (%(name)s einzig für \"%(klass)s\")"
-
-#: ../roundup/admin.py:1717
-#, fuzzy, python-format
-msgid " %(description)s (%(name)s)\n"
-msgstr " %(description)s (%(name)s)"
-
-#: ../roundup/admin.py:1721
-#, fuzzy
-msgid ""
-"Usage: migrate\n"
-"\n"
-"        Update a tracker's database to be compatible with the Roundup\n"
-"        codebase.\n"
-"\n"
-"        You should run the \"migrate\" command for your tracker once\n"
-"        you've installed the latest codebase.\n"
-"\n"
-"        Do this before you use the web, command-line or mail interface\n"
-"        and before any users access the tracker.\n"
-"\n"
-"        This command will respond with either \"Tracker updated\" (if\n"
-"        you've not previously run it on an RDBMS backend) or \"No\n"
-"        migration action required\" (if you have run it, or have used\n"
-"        another interface to the tracker, or possibly because you are\n"
-"        using anydbm).\n"
-"\n"
-"        It's safe to run this even if it's not required, so just get\n"
-"        into the habit.\n"
-"        "
-msgstr ""
-"Verwendung: migrate\n"
-"        Aktualisiert die Datenbank eines Trackers, um sie mit dem aktuellen\n"
-"        Roundup-Code kompatibel zu machen\n"
-"\n"
-"        Sie sollten \"migrate\" einmalig ausführen, wenn Sie auf die "
-"neueste        Roundup-Version aktualisiert haben.\n"
-"\n"
-"        Tun Sie das, bevor Sie per Web (Internet-Browser), Kommandozeile\n"
-"        oder Mail auf den Tracker zugreifen.\n"
-"\n"
-"        Das Kommando wird anschließend \"Tracker aktualisiert\" antworten\n"
-"        (sofern Sie es nicht schon vorher ausgeführt haben) oder\n"
-"        \"Keine Migration notwendig\" (wenn Sie es schon ausgeführt hatten,\n"
-"        oder ein anderes Datenbank-Backend verwendet haben, oder\n"
-"        vielleicht weil Sie anydbm verwenden.\n"
-"\n"
-"        Es kann nicht schaden, dieses Kommando auszuführen, selbst wenn\n"
-"        es nicht nötig ist; also gewöhnen Sie es sich einfach an.\n"
-"        "
-
-#: ../roundup/admin.py:1742
-#, python-format
-msgid "Tracker updated to schema version %s."
-msgstr ""
-
-#: ../roundup/admin.py:1746
-#, fuzzy, python-format
-msgid "No migration action required. At schema version %s."
-msgstr "Keine Migration notwendig"
-
-#: ../roundup/admin.py:1751
-msgid ""
-"Usage: perftest [mode] [arguments]*\n"
-"\n"
-"        Time operations in Roundup. Supported arguments:\n"
-"\n"
-"            [password] [rounds=<integer>] [scheme=<scheme>]\n"
-"\n"
-"        'password' is the default mode.  The tracker's config.ini\n"
-"        setting for 'password_pbkdf2_default_rounds' is the default\n"
-"        value for 'rounds'. On the command line, 'rounds' can include\n"
-"        thousands separator of ',' or '.'.  'scheme' is the default\n"
-"        coded into Roundup. List supported schemes by using 'scheme='.\n"
-"\n"
-"        "
-msgstr ""
-
-#: ../roundup/admin.py:1785
-msgid "Invalid 'rounds'. Must be larger than 999."
-msgstr ""
-
-#: ../roundup/admin.py:1789
-#, python-format
-msgid "Invalid 'rounds'. It must be an integer not: %s"
-msgstr ""
-
-#: ../roundup/admin.py:1816
-msgid "scheme does not support rounds."
-msgstr ""
-
-#: ../roundup/admin.py:1819
-#, python-format
-msgid "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, rounds: %(rounds)s"
-msgstr ""
-
-#: ../roundup/admin.py:1847
+#: ../roundup/admin.py:1974
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr "Der Befehl \"%(command)s\" existiert nicht (siehe \"help commands\")"
 
-#: ../roundup/admin.py:1853
+#: ../roundup/admin.py:1980
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "Zur Abkürzung \"%(command)s\" passen mehrere Befehle: %(list)s"
 
-#: ../roundup/admin.py:1862
+#: ../roundup/admin.py:1996
 msgid "Enter tracker home: "
 msgstr "Tracker-Verzeichnis: "
 
-# ../roundup/admin.py:1263 :1269 :1289
-#: ../roundup/admin.py:1871 ../roundup/admin.py:1877 ../roundup/admin.py:1914
-#: ../roundup/admin.py:1871:1877:1914
-#, python-format
-msgid "Error: %(message)s"
-msgstr "Fehler: %(message)s"
-
-#: ../roundup/admin.py:1887 ../roundup/admin.py:1891
-#: ../roundup/admin.py:1887:1891
+#: ../roundup/admin.py:2023 ../roundup/admin.py:2027
+#: ../roundup/admin.py:2023:2027
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Fehler: Die Tracker-Instanz konnte nicht geöffnet werden: %(message)s"
 
-#: ../roundup/admin.py:1927
+#: ../roundup/admin.py:2060
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1333,15 +1418,15 @@ msgstr ""
 "Roundup %s ist bereit.\n"
 "Schreiben Sie \"help\", um zur Hilfe zu gelangen."
 
-#: ../roundup/admin.py:1932
+#: ../roundup/admin.py:2065
 msgid "Note: command history and editing not available"
 msgstr "Bemerkung: Befehlsverlauf/-bearbeitung möglicherweise nicht verfügbar"
 
-#: ../roundup/admin.py:1938
+#: ../roundup/admin.py:2071
 msgid "exit..."
 msgstr "beenden..."
 
-#: ../roundup/admin.py:1951
+#: ../roundup/admin.py:2084
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Es gibt noch ungespeicherte Änderungen. Änderungen speichern (y/N)?"
 
@@ -1379,7 +1464,7 @@ msgstr ""
 #: ../roundup/backends/back_anydbm.py:1422
 #: ../roundup/backends/back_anydbm.py:1440
 #: ../roundup/backends/back_anydbm.py:1487
-#: ../roundup/backends/back_anydbm.py:2117
+#: ../roundup/backends/back_anydbm.py:2113
 #: ../roundup/backends/back_anydbm.py:871:884
 #: ../roundup/backends/rdbms_common.py:1708
 #: ../roundup/backends/rdbms_common.py:1955
@@ -1388,7 +1473,7 @@ msgstr ""
 #: ../roundup/backends/rdbms_common.py:2267
 #: ../roundup/backends/rdbms_common.py:3219
 #: ../roundup/backends/rdbms_common.py:1708:1955 :1158:1193 :1422:1440:1487
-#: :2117 :2194:2214 :2267:3219
+#: :2113 :2194:2214 :2267:3219
 msgid "Database open read-only"
 msgstr "Datenbank nur zum Lesen geöffnet"
 
@@ -1641,14 +1726,6 @@ msgstr ""
 #, python-format
 msgid "Edit Error: %s"
 msgstr "Fehler bei der Bearbeitung: %s"
-
-# ../roundup/cgi/actions.py:546 :556
-#: ../roundup/cgi/actions.py:886 ../roundup/cgi/actions.py:897
-#: ../roundup/cgi/actions.py:1099 ../roundup/cgi/actions.py:1113
-#: ../roundup/cgi/actions.py:886:897 :1099:1113
-#, python-format
-msgid "Error: %s"
-msgstr "Fehler: %s"
 
 #: ../roundup/cgi/actions.py:931
 msgid ""
@@ -1908,8 +1985,8 @@ msgstr ""
 "Admistratoren wurden benachrichtigt.</p>\n"
 "</body></html>"
 
-#: ../roundup/cgi/client.py:670 ../roundup/cgi/client.py:1570
-#: ../roundup/cgi/client.py:670:1570
+#: ../roundup/cgi/client.py:670 ../roundup/cgi/client.py:1567
+#: ../roundup/cgi/client.py:670:1567
 msgid "Required Header Missing"
 msgstr ""
 
@@ -1918,138 +1995,138 @@ msgstr ""
 msgid "Client is not allowed to use Rest Interface."
 msgstr "Gast-Benutzer sind nicht berechtigt, das Web-Interface zu benutzen."
 
-#: ../roundup/cgi/client.py:921
+#: ../roundup/cgi/client.py:918
 msgid "Form Error: "
 msgstr "Formular-Fehler: "
 
-#: ../roundup/cgi/client.py:1011
+#: ../roundup/cgi/client.py:1008
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Zeichensatz nicht erkannt: %r"
 
-#: ../roundup/cgi/client.py:1264 ../roundup/cgi/client.py:2250
-#: ../roundup/cgi/client.py:1264:2250
+#: ../roundup/cgi/client.py:1261 ../roundup/cgi/client.py:2247
+#: ../roundup/cgi/client.py:1261:2247
 msgid "broken form: multiple @action values submitted"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1279
+#: ../roundup/cgi/client.py:1276
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr "Gast-Benutzer sind nicht berechtigt, das Web-Interface zu benutzen."
 
-#: ../roundup/cgi/client.py:1430
+#: ../roundup/cgi/client.py:1427
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1434
+#: ../roundup/cgi/client.py:1431
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1463
+#: ../roundup/cgi/client.py:1460
 #, python-format
 msgid "csrf header %(header)s required but missing for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1467
+#: ../roundup/cgi/client.py:1464
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1475
+#: ../roundup/cgi/client.py:1472
 #, python-format
 msgid "csrf Referer header check failed for user%(userid)s. Value=%(referer)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1480
+#: ../roundup/cgi/client.py:1477
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
 msgstr "Ungültiger Benutzername"
 
-#: ../roundup/cgi/client.py:1495
+#: ../roundup/cgi/client.py:1492
 #, python-format
 msgid "csrf Origin header check failed for user%(userid)s. Value=%(origin)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1500
+#: ../roundup/cgi/client.py:1497
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Ungültiger Benutzername"
 
-#: ../roundup/cgi/client.py:1514
+#: ../roundup/cgi/client.py:1511
 #, python-format
 msgid ""
 "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1520
+#: ../roundup/cgi/client.py:1517
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1539
+#: ../roundup/cgi/client.py:1536
 #, python-format
 msgid "csrf HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1544
+#: ../roundup/cgi/client.py:1541
 #, fuzzy, python-format
 msgid "Invalid HOST %s"
 msgstr "Ungültige Anforderung"
 
-#: ../roundup/cgi/client.py:1552
+#: ../roundup/cgi/client.py:1549
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1553
+#: ../roundup/cgi/client.py:1550
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1567
+#: ../roundup/cgi/client.py:1564
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1608
+#: ../roundup/cgi/client.py:1605
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1610 ../roundup/cgi/client.py:1637
-#: ../roundup/cgi/client.py:1654 ../roundup/cgi/client.py:1610:1637:1654
+#: ../roundup/cgi/client.py:1607 ../roundup/cgi/client.py:1634
+#: ../roundup/cgi/client.py:1651 ../roundup/cgi/client.py:1607:1634:1651
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1614
+#: ../roundup/cgi/client.py:1611
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1626
+#: ../roundup/cgi/client.py:1623
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
 "session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1644
+#: ../roundup/cgi/client.py:1641
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %(curr_sess)s != stored session "
 "%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1838
+#: ../roundup/cgi/client.py:1835
 msgid "You are not allowed to view this file."
 msgstr "Sie sind nicht berechtigt, diese Seite anzuzeigen."
 
-#: ../roundup/cgi/client.py:2127
+#: ../roundup/cgi/client.py:2124
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sBenötigte Zeit: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2131
+#: ../roundup/cgi/client.py:2128
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -2058,7 +2135,7 @@ msgstr ""
 "%(starttag)sCache benutzt: %(cache_hits)d, verfehlt: %(cache_misses)d. "
 "Einträge laden: %(get_items)fs; filtern: %(filtering)fs.%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2669
+#: ../roundup/cgi/client.py:2666
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -2262,16 +2339,16 @@ msgstr ""
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- nichts ausgewählt -</option>"
 
-#: ../roundup/cgi/timestamp.py:19
+#: ../roundup/cgi/timestamp.py:23
 msgid "Form is corrupted."
 msgstr ""
 
-#: ../roundup/cgi/timestamp.py:28
+#: ../roundup/cgi/timestamp.py:32
 #, python-format
 msgid "Form is corrupted, missing: %s."
 msgstr ""
 
-#: ../roundup/cgi/timestamp.py:30
+#: ../roundup/cgi/timestamp.py:34
 msgid "Responding to form too quickly."
 msgstr ""
 
@@ -2427,54 +2504,54 @@ msgstr "vor %s"
 msgid "in %s"
 msgstr "in %s"
 
-#: ../roundup/hyperdb.py:119
+#: ../roundup/hyperdb.py:120
 #, fuzzy, python-format
 msgid "property %(property)s: %(errormsg)s"
 msgstr "Eigenschaft %s: %s"
 
-#: ../roundup/hyperdb.py:148
+#: ../roundup/hyperdb.py:149
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is an invalid date (%(errormsg)s)"
 msgstr "Eigenschaft %s: %r ist kein gültiges Datum (%s)"
 
-#: ../roundup/hyperdb.py:171
+#: ../roundup/hyperdb.py:172
 #, fuzzy, python-format
 msgid ""
 "property %(property)s: %(value)r is an invalid date interval (%(errormsg)s)"
 msgstr "Eigenschaft %s: %r ist kein gültiges Datumsintervall (%s)"
 
-#: ../roundup/hyperdb.py:428
+#: ../roundup/hyperdb.py:429
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a number"
 msgstr "Eigenschaft %s: %r ist keine Zahl"
 
-#: ../roundup/hyperdb.py:442
+#: ../roundup/hyperdb.py:443
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not an integer"
 msgstr "Eigenschaft %s: %r ist keine Zahl"
 
-#: ../roundup/hyperdb.py:464
+#: ../roundup/hyperdb.py:465
 #, python-format
 msgid "\"%s\" not a node designator"
 msgstr "\"%s\" ist kein gültiger Bezeichner"
 
-#: ../roundup/hyperdb.py:1493 ../roundup/hyperdb.py:1501
-#: ../roundup/hyperdb.py:1493:1501
+#: ../roundup/hyperdb.py:1494 ../roundup/hyperdb.py:1502
+#: ../roundup/hyperdb.py:1494:1502
 #, python-format
 msgid "Not a property name: %s"
 msgstr "Keine Eigenschaft: %s"
 
-#: ../roundup/hyperdb.py:1978
+#: ../roundup/hyperdb.py:1979
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a %(classname)s."
 msgstr "Der Wert \"%(value)s\" ist nicht in der Liste für \"%(propname)s\""
 
-#: ../roundup/hyperdb.py:1984
+#: ../roundup/hyperdb.py:1985
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr "Sie können für die Eigenschaft %s  nur IDs eingeben"
 
-#: ../roundup/hyperdb.py:2019
+#: ../roundup/hyperdb.py:2020
 #, fuzzy, python-format
 msgid "%(property)r is not a property of %(classname)s"
 msgstr "%r ist keine Eigenschaft von %s"
@@ -2806,117 +2883,117 @@ msgstr "entspricht nicht der Form [arg=wert,wert,...;arg=wert,wert,...]"
 msgid "Method %(m)s not allowed. Allowed: %(a)s"
 msgstr ""
 
-#: ../roundup/rest.py:1097
+#: ../roundup/rest.py:1101
 #, fuzzy, python-format
 msgid "Invalid attribute %s"
 msgstr "Ungültiger Benutzername"
 
-#: ../roundup/rest.py:2090
+#: ../roundup/rest.py:2094
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/rest.py:2125
+#: ../roundup/rest.py:2129
 #, python-format
 msgid ""
 "Unable to parse Accept Header. %(error)s. Acceptable types: "
 "%(acceptable_types)s"
 msgstr ""
 
-#: ../roundup/rest.py:2305
+#: ../roundup/rest.py:2309
 #, python-format
 msgid ""
 "Unrecognized api version: %s. See /rest without specifying api version for "
 "supported versions."
 msgstr ""
 
-#: ../roundup/roundupdb.py:139
+#: ../roundup/roundupdb.py:140
 #, python-format
 msgid "Username '%s' already exists."
 msgstr ""
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "files"
 msgstr "Dateien"
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "messages"
 msgstr "Kommentare"
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "nosy"
 msgstr "Interessenten"
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "superseder"
 msgstr "ersetzt durch"
 
-#: ../roundup/roundupdb.py:223
+#: ../roundup/roundupdb.py:224
 msgid "title"
 msgstr "Titel"
 
-#: ../roundup/roundupdb.py:224
+#: ../roundup/roundupdb.py:225
 msgid "assignedto"
 msgstr "zugewiesen"
 
-#: ../roundup/roundupdb.py:224
+#: ../roundup/roundupdb.py:225
 msgid "keyword"
 msgstr "Schlagwort"
 
-#: ../roundup/roundupdb.py:224
+#: ../roundup/roundupdb.py:225
 msgid "priority"
 msgstr "Priorität"
 
-#: ../roundup/roundupdb.py:224
+#: ../roundup/roundupdb.py:225
 msgid "status"
 msgstr "Status"
 
-#: ../roundup/roundupdb.py:227
+#: ../roundup/roundupdb.py:228
 msgid "activity"
 msgstr "Aktivität"
 
 #. following properties are common for all hyperdb classes
 #. they are listed here to keep things in one place
-#: ../roundup/roundupdb.py:227
+#: ../roundup/roundupdb.py:228
 msgid "actor"
 msgstr "Akteur"
 
-#: ../roundup/roundupdb.py:227
+#: ../roundup/roundupdb.py:228
 msgid "creation"
 msgstr "Erstellungsdatum"
 
-#: ../roundup/roundupdb.py:227
+#: ../roundup/roundupdb.py:228
 msgid "creator"
 msgstr "Ersteller"
 
-#: ../roundup/roundupdb.py:425
+#: ../roundup/roundupdb.py:426
 #, python-format
 msgid "No key for \"%(adr)s\" in keyring"
 msgstr ""
 
-#: ../roundup/roundupdb.py:503
+#: ../roundup/roundupdb.py:504
 #, python-format
 msgid "New submission from %(authname)s%(authaddr)s:"
 msgstr "Neue Nachricht von %(authname)s%(authaddr)s:"
 
-#: ../roundup/roundupdb.py:506
+#: ../roundup/roundupdb.py:507
 #, python-format
 msgid "%(authname)s%(authaddr)s added the comment:"
 msgstr "%(authname)s%(authaddr)s merkte an:"
 
-#: ../roundup/roundupdb.py:509
+#: ../roundup/roundupdb.py:510
 #, python-format
 msgid "Change by %(authname)s%(authaddr)s:"
 msgstr "Änderung von %(authname)s%(authaddr)s:"
 
-#: ../roundup/roundupdb.py:528
+#: ../roundup/roundupdb.py:529
 #, python-format
 msgid "File '%(filename)s' not attached - you can download it from %(link)s."
 msgstr ""
 "Die Datei '%(filename)s' ist nicht beigefügt - Sie können Sie unter\n"
 "%(link)s herunterladen."
 
-#: ../roundup/roundupdb.py:903
+#: ../roundup/roundupdb.py:904
 #, python-format
 msgid ""
 "\n"
@@ -2931,12 +3008,12 @@ msgstr ""
 "Vorher:\n"
 "%(old)s"
 
-#: ../roundup/scripts/roundup_demo.py:49
+#: ../roundup/scripts/roundup_demo.py:156
 #, python-format
 msgid "Enter directory path to create demo tracker [%s]: "
 msgstr "Verzeichnis für Tracker-Demo eingeben [%s]: "
 
-#: ../roundup/scripts/roundup_demo.py:54
+#: ../roundup/scripts/roundup_demo.py:162
 #, python-format
 msgid ""
 "Enter tracker template to use (one of (%(template_list)s)) "
@@ -3033,24 +3110,24 @@ msgstr "Der Benutzer kann nicht gewechselt werden - das Modul pwd fehlt"
 msgid "User %(user)s doesn't exist"
 msgstr "Der Benutzer %(user)s existiert nicht"
 
-#: ../roundup/scripts/roundup_server.py:805
+#: ../roundup/scripts/roundup_server.py:809
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr ""
 "Der Multiprozessmodus \"%s\" ist nicht verfügbar, Einprozessmodus aktiviert"
 
-#: ../roundup/scripts/roundup_server.py:832
+#: ../roundup/scripts/roundup_server.py:837
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Start des Servers auf Port %s schlug fehl. Port bereits verwendet."
 
-#: ../roundup/scripts/roundup_server.py:836
+#: ../roundup/scripts/roundup_server.py:841
 #, fuzzy, python-format
 msgid ""
 "Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
 msgstr "Start des Servers auf Port %s schlug fehl. Port bereits verwendet."
 
-#: ../roundup/scripts/roundup_server.py:915
+#: ../roundup/scripts/roundup_server.py:920
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -3066,7 +3143,7 @@ msgstr ""
 "               Zudem müssen Sie die Logfile-Option aktivieren.\n"
 "               \"roundup-server -c help\" zeigt eine weitere Hilfe zum Thema."
 
-#: ../roundup/scripts/roundup_server.py:922
+#: ../roundup/scripts/roundup_server.py:927
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -3080,7 +3157,7 @@ msgstr ""
 "               die Prozess-ID in die Datei PIDDatei.\n"
 "               Die Option -l muss dann auch angegeben werden."
 
-#: ../roundup/scripts/roundup_server.py:929
+#: ../roundup/scripts/roundup_server.py:934
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -3101,6 +3178,8 @@ msgid ""
 " -N            log client machine names instead of IP addresses (much "
 "slower)\n"
 " -i <fname>    set tracker index template\n"
+" -m <children> maximum number of children to spawn in fork multiprocess "
+"mode\n"
 " -s            enable SSL\n"
 " -L            http request logging uses python logging (roundup.http)\n"
 " -e <fname>    PEM file containing SSL key and certificate\n"
@@ -3200,21 +3279,21 @@ msgstr ""
 "   URLs Probleme bereiten könnten. Am besten verwenden Sie nur Buchstaben, \n"
 "   Zahlen und \"-_\".\n"
 
-#: ../roundup/scripts/roundup_server.py:1105
+#: ../roundup/scripts/roundup_server.py:1111
 msgid "Instances must be name=home"
 msgstr "Instanzen müssen als Tracker-Name=Tracker-Verzeichnis angegeben werden"
 
-#: ../roundup/scripts/roundup_server.py:1119
+#: ../roundup/scripts/roundup_server.py:1125
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Konfiguration in der Datei %s gespeichert"
 
-#: ../roundup/scripts/roundup_server.py:1137
+#: ../roundup/scripts/roundup_server.py:1143
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Auf diesem Betriebssystem kann der Server nicht als Hintergrundprozess laufen"
 
-#: ../roundup/scripts/roundup_server.py:1157
+#: ../roundup/scripts/roundup_server.py:1163
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Der Roundup-Server wurde unter %(HOST)s:%(PORT)s gestartet"
@@ -5699,6 +5778,21 @@ msgstr "Aufgabe anzeigen"
 #, fuzzy
 msgid "Password"
 msgstr "Passwort"
+
+#, fuzzy
+#~ msgid ""
+#~ "Usage: security [Role name]\n"
+#~ "\n"
+#~ "             Display the Permissions available to one or all Roles.\n"
+#~ "        "
+#~ msgstr ""
+#~ "Verwendung: security [Rollenname]\n"
+#~ "        Zeigt die Berechtigungen einer oder aller Rollen an.\n"
+#~ "        "
+
+# ../roundup/admin.py:1263 :1269 :1289
+#~ msgid "Error: %(message)s"
+#~ msgstr "Fehler: %(message)s"
 
 #~ msgid "Tracker updated"
 #~ msgstr "Tracker aktualisiert"
