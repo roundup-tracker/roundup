@@ -28,7 +28,7 @@ import warnings
 from base64 import b64encode, b64decode
 from hashlib import md5, sha1, sha512
 
-import roundup.anypy.random_ as random_
+from roundup.anypy import random_
 
 from roundup.anypy.strings import us2s, b2s, s2b
 from roundup.exceptions import RoundupException
