@@ -27,7 +27,6 @@ suggest that you install into a python virtual environment.
 .. _PostgreSQL: https://www.postgresql.org/
 
 
-
 Running the PostgreSQL unit tests
 =================================
 
@@ -36,7 +35,23 @@ the postgresql database on the local machine and create and drop
 databases. See the config values in 'test/db_test_base.py' 
 about which database connection, name and user will be used.
 
+At this time the following command will setup the user::
 
+  sudo -u postgres psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
+
+Note ``rounduptest`` is a well known account, so you should
+remove/disable the account after testing and set up a suitable
+production account. You need to remove any database owned by
+``rounduptest`` first. So something like this should work::
+
+
+  sudo -u postgres psql -c "DROP DATABASE rounduptest;" -U postgres
+  sudo -u postgres psql -c "DROP ROLE rounduptest;" -U postgres
+
+If the ``rounduptest`` database is left in a broken state
+(e.g. because of a crash during testing) dropping the database and
+restarting the tests should fix it.
+   
 Credit
 ======
 

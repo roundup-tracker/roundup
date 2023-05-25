@@ -70,6 +70,9 @@ this:
 The MySQL database should not contain any tables. Tests will not 
 drop the database with existing data.
 
+Note that ``rounduptest`` is a well known account. You should delete
+it and the ``rounduptest`` database and create a new user/database for
+production use.
 
 Showing MySQL who's boss
 ========================
