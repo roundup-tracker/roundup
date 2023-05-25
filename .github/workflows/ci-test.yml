@@ -33,8 +33,8 @@ jobs:
     name: CI build test
 
     # run the finalizer for coveralls even if one or more
-    # matrix runs fail.
-    # continue-on-error: true
+    # experimental matrix runs fail.
+    # continue-on-error: ${{ matrix.experimental }}
 
     #runs-on: ubuntu-latest
     # use below if running on multiple OS's.
@@ -185,7 +185,7 @@ jobs:
           # Change distutils.sysconfig... to just sysconfig and SO
           # to EXT_SUFFIX to get valid value.
           if [[ $PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-          case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
+          case "$PYTHON_VERSION" in nightly|3.12*) echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Install pytest and other packages needed for running tests
         run: pip install flake8 mock pytest pytest-cov requests
