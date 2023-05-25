@@ -7,7 +7,6 @@ from __future__ import print_function
 from roundup import msgfmt
 try:
     from setuptool.command.install import install as base
-    raise ImportError
 except ImportError:
     from distutils.command.build import build as base
 import os
