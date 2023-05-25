@@ -31,7 +31,7 @@ its item class. To identify a particular issue or user, we combine the
 class with the number to create a unique label, so that user 1 (who,
 incidentally, is *always* the "admin" user) is referred to as "user1".
 Issue number 315 is referred to as "issue315". We call that label the
-item's *designator*.
+item's :term:`designator`.
 
 Items in the database are never deleted, they're just "retired". You
 can still refer to them by ID - hence removing an item won't break
@@ -411,7 +411,7 @@ propname     selects the values the item properties given by propname must
              etc)
 ============ =============================================================
 
-You may manually write URLS that contain these arguments, like so
+You may manually write URLs that contain these arguments, like so
 (whitespace has been added for clarity)::
 
     /issue?status=unread,in-progress,resolved&
@@ -445,9 +445,17 @@ Access Controls
 
 User access is controlled through Permissions. These are are grouped
 into Roles, and users have a comma-separated list of Roles assigned to
-them.
+them. Roles can allow you to access:
 
-Permissions divide access controls up into answering questions like:
+- an entire class of items (e.g. issues)
+- only certain fields of a class (e.g. you can see the username but
+  not the phone number of other users)
+- fields or classes based on your  relationship to an item (e.g.
+  you can see the phone number of your user entry since you are the
+  owner of your user entry)
+
+Other permissions divide access controls up into answering questions
+like:
 
 - may the user edit issues ("Edit", "issue")
 - is the user allowed to use the web interface ("Web Access")
@@ -459,7 +467,6 @@ the customisation documentation. Examples of new access controls are:
 - only managers may sign off issues as complete
 - don't give users who register through e-mail web access
 - let some users edit the details of all users
-
 
 E-Mail Gateway
 ==============
@@ -505,7 +512,7 @@ brackets and after the class item name. So ``[issue2]`` and
 Any "re:" or "fwd:" prefixes are stripped off the subject line before
 we start looking for real information.
 
-If an item designator (class name and id number, for example
+If an item :term:`designator` (class name and id number, for example
 ``issue123``) is found there, a new "msg" item is added to the
 "messages" property for that item, and any new "file" items are added to
 the "files" property for the item.
