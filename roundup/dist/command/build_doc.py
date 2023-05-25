@@ -51,6 +51,7 @@ class build_doc(_build_py):
             return
 
         doc_dir = os.path.join('share', 'doc', 'roundup', 'html')
-        temp_dir = os.path.join(self.build_temp, 'doc')
+        import pdb; pdb.set_trace()
+        temp_dir = os.path.join(self.build_base, 'temp.doc')
         cmd = sphinx + ['-d', temp_dir, 'doc', doc_dir]
         spawn(cmd)
