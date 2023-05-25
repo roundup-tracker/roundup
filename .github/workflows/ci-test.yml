@@ -130,7 +130,7 @@ jobs:
 
       - name: Install postgres
         run: |
-          sudo apt-get install postgresql
+          sudo apt-get update && sudo apt-get install postgresql
           # Disable fsync for speed, don't care about data durability
           #   when testing
           sudo sed -i -e '$a\fsync = off' /etc/postgresql/*/*/postgresql.conf
