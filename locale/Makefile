@@ -23,23 +23,56 @@ help:
 	@echo "$(MAKE)           - build MO files.  Run this before sdist"
 	@echo "$(MAKE) dist      - same as above"
 	@echo "$(MAKE) template  - update message template from sources"
+	@echo "$(MAKE) merge     - merge template into *.po files"
 	@echo "$(MAKE) diff      - see template differences in vi"
 	@echo "$(MAKE) potest    - check .po files for errors"
 	@echo "$(MAKE) pytest    - create locale files to run pytest"
 	@echo "$(MAKE) locale.po - update message file from template"
 	@echo "$(MAKE) locale.mo - compile individual message file"
 	@echo "$(MAKE) help      - this text"
+	@echo ""
+	@echo "Running make dist is the same as: make template merge dist"
 
 # This will rebuild all MO files without updating their corresponding PO
 # files first.  Run before creating Roundup distribution (hence the name).
 # PO files should be updated by their translators only, automatic update
 # adds unwanted fuzzy labels.
-dist:
-	for file in $(PO_FILES); do \
-	  ${MSGFMT} -o `basename $$file .po`.mo $$file; \
+dist: $(MO_FILES)
+
+template: roundup.pot
+
+pytest local_install: dist
+	for file in $(MO_FILES); do \
+	   lang=`basename $$file .mo`; \
+	   mkdir -p locale/$$lang/LC_MESSAGES; \
+	   cp $$file locale/$$lang/LC_MESSAGES/roundup.mo; \
 	done
 
-template:
+# helps to check template file before check in
+diff:
+	hg cat roundup.pot | diff -u -I '^\#: \.\./roundup.*$$' \
+	                             -I '^#:\s*:[0-9]*.*$$' \
+                                     - roundup.pot || exit 0
+merge: $(PO_FILES)
+
+potest:
+	 sh -c 'for file in $(PO_FILES); do \
+	   ${MSGFMT} -cv --statistics $$file; \
+	done' 2>&1 | sort -k 2,2n
+
+%.po: $(TEMPLATE)
+	@echo "Rebuild $@"
+	@${MSGMERGE} -U --suffix=.bak $@ $<
+	@# update Project-Id-Version to match roundup.pot
+	@VER="`sed -ne \"/__version__/s/.*'\(.*\)'.*/\1/p\" \
+	      ../roundup/__init__.py`"; \
+	sed -i -e \
+          "s/^\(\"Project-Id-Version: Roundup\).*/\1 $${VER}\\\\n\"/" $@
+
+%.mo: %.po
+	${MSGFMT} -o $@ $<
+
+roundup.pot: $(SOURCES) $(TEMPLATES)
 	${XPOT} -n -o $(TEMPLATE) $(SOURCES) 2>&1 | sed -e "/: Unexpected in Python source: #64 \`@'/d"
 
 	${RUN_PYTHON} ../roundup/cgi/TAL/talgettext.py -u $(TEMPLATE) \
@@ -56,32 +89,3 @@ template:
 	  --copyright-holder="See Roundup README.txt" \
 	  -o $(TEMPLATE) $(SOURCES)
 
-pytest local_install: dist
-	for file in $(MO_FILES); do \
-	   lang=`basename $$file .mo`; \
-	   mkdir -p locale/$$lang/LC_MESSAGES; \
-	   cp $$file locale/$$lang/LC_MESSAGES/roundup.mo; \
-	done
-
-# helps to check template file before check in
-diff:
-	hg cat roundup.pot | diff -u -I '^\#: \.\./roundup.*$$' \
-	                             -I '^#:\s*:[0-9]*.*$$' \
-                                     - roundup.pot || exit 0
-potest:
-	 sh -c 'for file in $(PO_FILES); do \
-	  ${MSGFMT} -cv --statistics $$file; \
-	done' 2>&1 | sort -k 2,2n
-
-%.po: $(TEMPLATE)
-	${MSGMERGE} -U --suffix=.bak $@ $<
-	# update Project-Id-Version to match roundup.pot
-	VER="`sed -ne \"/__version__/s/.*'\(.*\)'.*/\1/p\" \
-	      ../roundup/__init__.py`"; \
-	sed -i.bak -e \
-          "s/^\(\"Project-Id-Version: Roundup\).*/\1 $${VER}\\\\n\"/" $@
-
-%.mo: %.po
-	${MSGFMT} --statistics -o $@ $<
-
-roundup.pot: template
