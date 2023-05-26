@@ -40,7 +40,7 @@ dist:
 	done
 
 template:
-	${XPOT} -n -o $(TEMPLATE) $(SOURCES)
+	${XPOT} -n -o $(TEMPLATE) $(SOURCES) 2>&1 | sed -e "/: Unexpected in Python source: #64 \`@'/d"
 
 	${RUN_PYTHON} ../roundup/cgi/TAL/talgettext.py -u $(TEMPLATE) \
 	  ../share/roundup/templates/classic/html/*.html \
