@@ -75,6 +75,11 @@ potest:
 
 %.po: $(TEMPLATE)
 	${MSGMERGE} -U --suffix=.bak $@ $<
+	# update Project-Id-Version to match roundup.pot
+	VER="`sed -ne \"/__version__/s/.*'\(.*\)'.*/\1/p\" \
+	      ../roundup/__init__.py`"; \
+	sed -i.bak -e \
+          "s/^\(\"Project-Id-Version: Roundup\).*/\1 $${VER}\\\\n\"/" $@
 
 %.mo: %.po
 	${MSGFMT} --statistics -o $@ $<
