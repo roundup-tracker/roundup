@@ -14,9 +14,13 @@ Roundup release checklist:
     in the locale directory. Run:
 
        cd locale
-       make template
-       make *.po
+       make merge
        cd ..
+
+    'make merge' will remake template if the source and html files are
+    out of date. 'make template' will regenerate roundup.pot. Touch
+    any .py file in the roundup/ directory to force 'make template'
+    to run.
 
 2.  Run unit tests! They should pass successfully. Install pytest
     using pip2/pip3 for python2 and python3. Then invoke pytest
