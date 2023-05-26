@@ -41,7 +41,10 @@ dist: $(MO_FILES)
 
 template: roundup.pot
 
-pytest local_install: dist
+pytest local_install:
+	for file in $(PO_FILES); do \
+           ${MSGFMT} -o `basename $$file .po`.mo $$file; \
+	done
 	for file in $(MO_FILES); do \
 	   lang=`basename $$file .mo`; \
 	   mkdir -p locale/$$lang/LC_MESSAGES; \
