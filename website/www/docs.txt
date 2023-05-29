@@ -21,17 +21,17 @@ documentation.
 .. toctree::
    :maxdepth: 2
 
-   docs/features
-   docs/installation
-   docs/upgrading
-   docs/security
-   docs/FAQ
-   docs/user_guide
-   docs/customizing
-   docs/rest
-   docs/xmlrpc
-   docs/reference
-   docs/glossary
+   Features <docs/features>
+   Installation <docs/installation>
+   Upgrading to Newer Versions <docs/upgrading>
+   Security Issues <docs/security>
+   FAQ <docs/FAQ>
+   User's Guide <docs/user_guide>
+   Customising <docs/customizing>
+   Rest API <docs/rest>
+   XML-RPC API <docs/xmlrpc>
+   Reference <docs/reference>
+   Glossary <docs/glossary>
    docs/admin_guide
    docs/license
    docs/acknowledgements
