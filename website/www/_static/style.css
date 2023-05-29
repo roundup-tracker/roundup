@@ -507,6 +507,12 @@ ul.multicol > * {
     /* use for table of links to increase space between
     links on small devices */
     table.linkspacing tr {height: 48px;}
+
+    ul.multicol a {
+	display: inline-block;
+	min-height: 48px;
+    }
+
 }
 
 @media only screen and (max-width:512px) {
