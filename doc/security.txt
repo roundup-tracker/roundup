@@ -2,16 +2,16 @@
     :description:
         Documentation on how to report security issues with
         Roundup. Also index to security related portions in other
-        Roundup documentation.
+        Roundup documentation. How to verify distribution using gpg.
 
 .. index::
    single: Reporting Security Issues
    single: Security Issues, Reporting
 
 
-======================================
-Reporting Security Issues with Roundup
-======================================
+=======================
+Roundup Security Issues
+=======================
 
 Security issues with Roundup should be reported by email to:
 
@@ -19,9 +19,100 @@ Security issues with Roundup should be reported by email to:
 
    rsc@runtux.com (Ralf Schlatterbeck)
 
-Also you can find rouilj on irc in channel #roundup at irc.oftc.net (see
-Contact_ for more directions and web interface).
-
-Use these mechanisms to establish initial contact.
+If these fail, you can find rouilj on irc in channel #roundup at
+irc.oftc.net (see Contact_ for more directions and web
+interface). Methods listed at Contact_ are all public, so they should
+be used to contact somebody with the Roundup project for establishing
+a proper method of reporting the security issue.
 
 .. _Contact: https://www.roundup-tracker.org/contact.html
+
+Verify Source Tarball
+---------------------
+
+.. index::
+   single: Distribution, verify with gpg
+   single: Signature, verify
+
+If you download the source tarball using ``python3 -m pip download
+roundup`` or from https://pypi.org/project/roundup/#files you can
+verify the file using gpg.
+
+This is the information on the public PGP/GPG key used to sign Roundup
+distributions.  It is used to sign the 1.6.0, 2.2.0, and newer
+releases. (Note that the @ sign in email addresses have been replaced
+with the word "at" to reduce spam directed at the mailing list.)::
+
+  Key info: Roundup Team (signing key for roundup releases)
+      <roundup-devel at lists.sourceforge.net>
+  Expires: 2028-07-17
+  Key fingerprint = 411E 354B 5D1A F261 25D6  2122 1F2D D0CB 756A 76D8
+
+Releases 1.6.1, 2.0.0 and 2.1.0 were accidentally signed with this key
+[1]_::
+
+  Key info: John Rouillard (Roundup Release Key)
+      <rouilj+roundup at ieee.org>
+  Expires: 2023-07-09
+  Key fingerprint =  A1E6 364E 9429 E9D8 2B3B 2373 DB05 ADC4 2330 5876
+
+.. [1] Use gpg to import this key from the keyserver pgp.mit.edu
+       if you need to verify one of these releases. Use the gpg
+       pgp.mit.edu keyserver example replacing the key fingerprint
+       with the one starting A1E6.
+
+You can import a key from pgp.mit.edu using::
+
+   gpg --keyserver pgp.mit.edu --receive-keys 411E354B5D1AF26125D621221F2DD0CB756A76D8
+
+where the fingerprint (without spaces) is used to identify which key
+to receive. You can also extract and import the file
+``tools/roundup.public.pgp.key`` from the download source tarball
+using::
+
+  tar -xzvf roundup-2.2.0.tar.gz -O \
+     roundup-2.2.0/tools/roundup.public.pgp.key > pub.key
+
+  gpg --import pub.key
+
+Once you have loaded the public key, you need a detached signature for
+your release. PyPI used to support uploading gpg detached
+signatures. However that is no longer supported and downloading
+existing signatures may not work in the future.
+
+As a result, the signatures for all Roundup final releases starting
+with 1.6.0 have been moved and are linked below:
+
+* `2.2.0 <../signatures/roundup-2.2.0.tar.gz.asc>`_
+* `2.1.0 <../signatures/roundup-2.1.0.tar.gz.asc>`_
+* `2.0.0 <../signatures/roundup-2.0.0.tar.gz.asc>`_
+* `1.6.1 <../signatures/roundup-1.6.1.tar.gz.asc>`_
+* `1.6.0 <../signatures/roundup-1.6.0.tar.gz.asc>`_
+
+To use it, download the correct versioned link and verify it with
+(note 1.5.7 is a dummy version, use the correct version number)::
+
+  gpg --verify roundup-1.5.7.tar.gz.asc roundup-1.5.7.tar.gz
+
+You should see::
+
+  gpg: Signature made Wed 13 Jul 2022 12:24:14 AM EDT
+  gpg:                using RSA key 411E354B5D1AF26125D621221F2DD0CB756A76D8
+  gpg: Good signature from "Roundup Team (signing key for roundup releases) <roundup-devel at lists.sourceforge.net>" [unknown]
+  gpg: WARNING: This key is not certified with a trusted signature!
+  gpg:          There is no indication that the signature belongs to the owner.
+  Primary key fingerprint: 411E 354B 5D1A F261 25D6  2122 1F2D D0CB 756A 76D8
+
+which verifies the tarball integrity. The WARNING is expected and the
+date corresponds to the newest renewal of the Roundup key. As long as
+you see the output starting with "Good signature from" followed by the
+Key Info for your key, everything is OK.
+
+If something is wrong you will see:
+
+  gpg: Signature made Wed 13 Jul 2022 12:24:14 AM EDT
+  gpg:                using RSA key 411E354B5D1AF26125D621221F2DD0CB756A76D8
+  gpg: BAD signature from "Roundup Team (signing key for roundup releases) <roundup-devel at lists.sourceforge.net>"
+
+*do not use* the tarball if the signature is BAD. Email the
+roundup-devel mailing list if you have this happen to you.

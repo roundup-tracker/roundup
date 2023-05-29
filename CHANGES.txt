@@ -16,6 +16,7 @@ python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 
 Fixed:
 
+- Updated directions for verifying Roundup distribution using pgp.
 - Dockerfile healthcheck fixed so it works when trackers are
   specified on command line. Also cleanup of unneeded
   packages. (John Rouillard)

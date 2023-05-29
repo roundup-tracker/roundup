@@ -29,6 +29,7 @@ html: docs
 	sed -i -e '/<meta/s/og\\:/og:/' \
              -e '/<meta/s/name="og:/property="og:/' html/index.html
 	cp robots.txt html/robots.txt
+	mkdir html/signatures && cp signatures/*.asc html/signatures
 
 linkcheck:
 	mkdir -p $(TMP)/linkcheck $(TMP)/doctrees
