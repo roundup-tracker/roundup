@@ -443,6 +443,18 @@ div.highlight > pre {
     background-attachment: local, local, scroll, scroll;
 }
 
+/* https://moderncss.dev/totally-custom-list-styles/ make a list
+   use multiple columns */
+ul.multicol {
+   display: grid;
+  /* adjust the `min` value to your context */
+  grid-template-columns: repeat(auto-fill, minmax(25ch, 1fr));
+  grid-gap: 0 1rem; /* no row gap */
+}
+ul.multicol > * {
+  margin-block-start: 0; /* remove spacing added by * + * here */
+}
+
 /* website only */
 /* assume desktop reader for local html files, also no contact
    page for local doc files */

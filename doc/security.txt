@@ -61,7 +61,11 @@ Releases 1.6.1, 2.0.0 and 2.1.0 were accidentally signed with this key
        pgp.mit.edu keyserver example replacing the key fingerprint
        with the one starting A1E6.
 
-You can import a key from pgp.mit.edu using::
+Importing the Public Key
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This only has to be added to your keyring once. You can import a key
+from pgp.mit.edu using::
 
    gpg --keyserver pgp.mit.edu --receive-keys 411E354B5D1AF26125D621221F2DD0CB756A76D8
 
@@ -76,12 +80,22 @@ using::
   gpg --import pub.key
 
 Once you have loaded the public key, you need a detached signature for
-your release. PyPI used to support uploading gpg detached
+your release.
+
+
+Download and Verify with Detached Signature
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This needs to be done once for each release you wish to verify.
+
+The Python Package Index (PyPI) used to support uploading gpg detached
 signatures. However that is no longer supported and downloading
 existing signatures may not work in the future.
 
 As a result, the signatures for all Roundup final releases starting
 with 1.6.0 have been moved and are linked below:
+
+.. rst-class:: multicol
 
 * `2.2.0 <../signatures/roundup-2.2.0.tar.gz.asc>`_
 * `2.1.0 <../signatures/roundup-2.1.0.tar.gz.asc>`_
@@ -89,8 +103,9 @@ with 1.6.0 have been moved and are linked below:
 * `1.6.1 <../signatures/roundup-1.6.1.tar.gz.asc>`_
 * `1.6.0 <../signatures/roundup-1.6.0.tar.gz.asc>`_
 
-To use it, download the correct versioned link and verify it with
-(note 1.5.7 is a dummy version, use the correct version number)::
+To use the signature, download the correct versioned link and verify
+it with (note 1.5.7 is a dummy version, use the correct version
+number)::
 
   gpg --verify roundup-1.5.7.tar.gz.asc roundup-1.5.7.tar.gz
 
