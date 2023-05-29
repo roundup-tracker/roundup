@@ -160,7 +160,8 @@ Roundup release checklist:
 
     So we publish the signature as part of the website. Move the file
     to the website/www/signatures directory. Commit the .asc signature
-    file to mercurial.
+    file to mercurial. Add a new list item at the start of the
+    signature list in doc/security.txt (look for the word multicol).
 
     Use twine to upload the distribution tarball. E.G.
 
