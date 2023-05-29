@@ -36,7 +36,7 @@ from roundup import date, hyperdb, init, password, token_r
 from roundup import __version__ as roundup_version
 import roundup.instance
 from roundup.configuration import (CoreConfig, NoConfigError, OptionUnsetError,
-                                   ParsingOptionError, UserConfig)
+                                   OptionValueError, ParsingOptionError, UserConfig)
 from roundup.i18n import _, get_translation
 from roundup.exceptions import UsageError
 from roundup.anypy.my_input import my_input
@@ -1107,6 +1107,8 @@ Command help:
             tracker = roundup.instance.open(tracker_home)
         except roundup.instance.TrackerError:
             raise UsageError(_('Instance has not been installed') % locals())
+        except OptionValueError as e:
+            raise UsageError(e)
 
         # is there already a database?
         if tracker.exists():
