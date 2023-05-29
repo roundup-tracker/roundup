@@ -13,6 +13,11 @@
 Roundup Security Issues
 =======================
 
+This page documents how to report security issues and verify the
+signatures for Roundup releases.
+
+Reporting Security Issues
+-------------------------
 Security issues with Roundup should be reported by email to:
 
    rouilj@users.sourceforge.net  (John Rouillard)
