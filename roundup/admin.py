@@ -2036,7 +2036,7 @@ Desc: %(description)s
         # only open the database once!
         if not self.db:
             self.db = tracker.open(self.name)
-            # dont use tracker.config["TRACKER_LANGUAGE"] here as the
+            # don't use tracker.config["TRACKER_LANGUAGE"] here as the
             # cli operator likely wants to have i18n as set in the
             # environment.
             # This is needed to fetch the locale's of the tracker's home dir.
