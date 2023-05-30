@@ -454,3 +454,8 @@ ul.multicol {
 ul.multicol > * {
   margin-block-start: 0; /* remove spacing added by * + * here */
 }
+
+div.file_insert { /* use to insert COPYING into license.txt */
+    background: #f3f1cc;
+    padding-inline: 0.5em;
+}

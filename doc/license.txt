@@ -4,4 +4,12 @@ License
 Roundup is Free Software under the following license (from the file
 COPYING.txt in the software distribution):
 
+.. raw:: html
+
+   <div class="file_insert">
+
 .. include:: ../COPYING.txt
+
+.. raw:: html
+
+   </div>
