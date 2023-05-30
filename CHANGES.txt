@@ -103,6 +103,8 @@ Fixed:
 
 Features:
 
+- Add warning about limited Python 2 support lifetime to install and
+  upgrading docs. (John Rouillard)
 - Dockerfile build allows adding additional python packages via
   pip, setting UID tracker is run under. (John Rouillard)
 - issue2551140 - Added redis as a session and otk database for use

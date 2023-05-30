@@ -172,7 +172,7 @@ can remove the tracker using ``rm -f`` on the ``demo`` directory.
 Prerequisites
 =============
 
-Roundup requires Python 2.7 or 3.6 or newer with a functioning anydbm
+Roundup requires Python 2.7 [3]_ or 3.6 or newer with a functioning anydbm
 or sqlite module. The version installed by most vendors should work if
 it meets the version requirements. If necessary, you can download the
 latest version from https://www.python.org/. It is highly recommended
@@ -287,6 +287,12 @@ requests
 
 .. _Using Redis for Session Databases:
    admin_guide.html#using-redis-for-session-databases
+
+.. [3] Do not use Python 2 for new installs. The continuous
+       integration and other services used for developing Roundup
+       are dropping support for Python 2. Also optional packages
+       are dropping Python 2 support. As a result Python 2 may
+       not be supported for many more release cycles.
 
 Installing Roundup
 ==================
@@ -478,7 +484,7 @@ in the following steps.
    interface. To set that up, we need to `configure a web interface`_ and
    optionally `configure an email interface`_. If you want to try your
    new tracker out, assuming the ``web`` setting in the
-   ``[tracker]`` [3]_  section of config.ini is set to
+   ``[tracker]`` [4]_  section of config.ini is set to
    ``'http://localhost:8080/support/'``, run::
 
      roundup-server support=/opt/roundup/trackers/support
@@ -497,7 +503,7 @@ in the following steps.
    to run the server at port 1080 and bind to all ip addresses on your system.
    Then direct your web browser to ``http://your_host_name:1080/support/``.
 
-.. [3] The rest of the documentation uses the abbreviated form "tracker ::
+.. [4] The rest of the documentation uses the abbreviated form "tracker ::
        web" for specifying a section and setting.
 
 Choosing Your Template

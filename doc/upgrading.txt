@@ -68,6 +68,14 @@ upgrade all your trackers at once.
    changes in the `historical migration <upgrading-history.html>`_
    document.
 
+.. admonition:: Python 2 Support
+
+  If you are running Roundup under Python 2, you should make plans to
+  switch to Python 3. The continuous Integration (CI) and other services
+  used for developing Roundup are dropping support for Python 2. Also
+  optional packages are dropping Python 2 support. As a result Python 2
+  may not be supported for many more release cycles.
+
 Contents:
 
 .. contents::
