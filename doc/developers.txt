@@ -527,7 +527,7 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _CodeCov: https://app.codecov.io/gh/roundup-tracker/roundup
 .. _copy of the mercurial repository on GitHub:
     https://github.com/roundup-tracker/roundup
-.. _command equivalence table: https://www.mercurial-scm.org/wiki/GitConcepts#Command_equivalence_table
+.. _command equivalence table: https://wiki.mercurial-scm.org/GitConcepts#Command_equivalence_table
 .. _Coveralls: https://coveralls.io/github/roundup-tracker/roundup
 .. _cygwin: https://www.cygwin.com/
 .. _emacs: https://www.gnu.org/software/emacs/

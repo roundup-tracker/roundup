@@ -74,50 +74,55 @@ command-line, web, REST, XML-RPC and e-mail interfaces.  It is based
 on the winning design from Ka-Ping Yee in the Software Carpentry
 "Track" design competition.
 
-The current stable version of Roundup is 2.2.0. It is a bug fix
-and feature release for the 2.1.0 release 
+The current stable version of Roundup is 2.3.0b1. It is a bug fix
+and feature release for the 2.2.0 release 
 
 Release Highlights
 ==================
 
-Some improvements from the 2.1.0 release are:
+Some improvements from the 2.2.0 release are:
 
-* Roundup supports dynamic and static compression of http
-  responses. This improves performance when a front end web
-  server isn't serving compressed assets.
+* Dockerfile demo mode implemented.
 
-* REST interface: supports CORS allowing Roundup to be
-  used by third party web sites. Origins allowed to use
-  REST can be specified. OpenAPI (Swagger) docs can be
-  added. Error handling/reporting improved.
+* SQLite backends can use WAL mode to reduce blocking between readers
+  and writers.
 
-* Dockerfile support. Docker-compose for a mysql based
-  tracker.
+* Redis can be used for session database with SQLite and dbm
+  backends. Provides a major performance improvement.
 
-* New full text search methods. SQLite FTS and PostgreSQL
-  full text search are supported. These allow search
-  expressions in addition to simple word based searches.
+* roundup-mailgw can use OAUTH authentication to SMTP
+  server. (roundup-mailgw command line options changed as a result.)
 
-* Secret values in config.ini can be stored in external
-  files. This allows config.ini to be stored in a VCS
-  without exposing secrets.
+* Postgres full text index can now be enabled.
 
-* Translation object added to internal database handle. This
-  allows auditors and extensions to provide efficient
-  translations.
+* Modifications to in-reply-to threading when there are multiple
+  matches.
 
-* MySQL database creation uses COLLATE utf8_general_ci
+* Many updates to documentation to make it scannable, useful and
+  work on mobile.
 
-* Wsgi startup improvements (must be enabled by setting
-  feature flag).
+* Admin documentation includes a section on setting up Content
+  Security Policy (CSP)
 
-* Fix crash when importing legacy Roundup tracker with long
-  integers.
+* REST now allows rate limiting headers to be accessed by client
+  javascript.
 
-* Fix issues with Roundup unable to find supporting files
-  when installed via pip.
+* Default number of rounds for PBKDF2 updated to 2M to account for
+  improvements in password crackers and CPU power.
 
-More info on the 57 changes can be found in the `change note`_.
+* Support PBKDF2 with SHA512 for password storage
+
+* Deprecate SSHA password hash function.
+
+* roundup-admin reindex can be done in batches to managle load
+  incurred by reindexing.
+
+* roundup-admin can list avaailable templates and their installed
+  locations.
+
+* Crash fixes in detector handling, configuration handling, 
+
+More info on the 51 changes can be found in the `change note`_.
 
 Roundup Use Cases
 =================
