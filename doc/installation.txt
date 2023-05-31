@@ -1641,9 +1641,9 @@ However running cron in a container is problematic (running
 busybox crond as root vs. non-root, requiring setgrp privs
 etc). Patches for implementing email support are welcome.
 
-If you want to use a MySQL backend, the `docker-compose.yml` file will
-deploy a Roundup container and a MySQL container backend for use with
-Roundup.
+If you want to use a MySQL backend, see `Docker-compose 
+Deployment`_ to deploy a Roundup container and a MySQL container
+backend for use with Roundup.
 
 We recommend you follow the `OSWAP Docker Security practices`_ for your
 production Roundup instance.
@@ -1654,24 +1654,65 @@ production Roundup instance.
 Building a Docker Container
 ---------------------------
 
-To build a docker container using the code in the current directory,
-run this build command from the top of the source tree::
+You can build a docker container in one of 4 modes defined by the
+``source`` build-arg.
+
+``--build-arg="source=local"``
+  the default if no source is defined. Build using the version in
+  the source tree by running ``setup.py install``.
+
+``--build-arg="source=pypi"``
+  build the newest production release version deployed to pypi.
+  If you want to build using a pre-release, you can append 
+  `pip version specifiers
+  <https://peps.python.org/pep-0440/#version-specifiers>`_ to
+  `pypi` without embedding any spaces. For example::
+
+     # install 2.2.0 if available or 2.2.0b1 or 2.2.0b2 etc.
+     --build-arg="source=pypi~=2.2.0b1"
+
+     # install only a 2.2.0 beta
+     --build-arg="source=pypi~=2.2.0b1,!=2.2.0"
+
+  Note that versions of Roundup before 2.2 may not run correctly
+  in a Docker container.
+
+``--build-arg="source=pip_local"``
+  Build using the version in the source tree by running ``pip
+  install``. This places some files (e.g. man pages, templates) in
+  different directories from the `local` install but is preferred
+  by some Python users.
+
+``--build-arg="source=pip_sdist"``
+  This is meant for maintainer/developer use. It installs using
+  pip from a source distribution (sdist) tarball built by
+  following the RELEASE.txt. It is meant for testing
+  releases. Normal users/admins should not use it.
+
+Build a docker container using the code in the current directory,
+with this build command from the top of the source tree::
 
      docker build -t roundup-app -f scripts/Docker/Dockerfile .
 
-You can also build a container using the newest Roundup release on
-PyPI, by running::
+Build a container using the newest production (non pre-release)
+Roundup release on PyPI, by running::
 
      docker build -t roundup-app --build-arg="source=pypi" \
           -f scripts/Docker/Dockerfile .
 
-The docker declares a single volume mounted at
-``/usr/src/app/tracker`` inside the container. You will mount your
-tracker home directory at this location. The ``/usr/src/app`` path can
-be changed by using ``--build-arg="appdir=/new/path"``.
+Change the ``build-arg`` for building in other modes.
 
-You can also add additional modules to the docker container by using
-`--build-arg="pip_mod=requests setproctitle"`.
+The Dockerfile declares a single volume mounted at
+``/usr/src/app/tracker`` inside the container. You will mount
+your tracker home directory at this location. The
+``/usr/src/app`` path can be changed by adding::
+
+  --build-arg="appdir=/new/path"
+
+You can also add additional modules to the docker container by
+using::
+
+  --build-arg="pip_mod=requests setproctitle"
 
 Because of deficiencies in the docker program (see:
 https://github.com/moby/moby/issues/29110#issuecomment-1100676306),
@@ -1683,7 +1724,8 @@ suggested ``--build-arg`` to the ``docker build`` command line.
 .. _UID at image build time:
 
 By default the container runs Roundup using UID 1000. By setting
-`--build-arg="roundup_uid=2000"` you can change the UID.
+``--build-arg="roundup_uid=2000"`` you can change the UID and
+GID.
 
 Configuring Roundup in the Container
 ------------------------------------
@@ -1885,9 +1927,10 @@ Tags for Dockerhub Docker Images
 --------------------------------
 
 The docker images available from
-https://hub.docker.com/r/rounduptracker/roundup
-are tagged with: version-build, version, and ``latest`` tags.
-For example, the tags when 2.3.0 is released will be:
+https://hub.docker.com/r/rounduptracker/roundup are tagged with:
+version-build, version, and ``latest`` tags.  Only production
+releases (not pre-releases) are tagged this way. For example, the
+tags when 2.3.0 is released will be:
 
 ``rounduptracker/roundup:latest``
    is a moving tag that tracks the latest build
@@ -1910,11 +1953,12 @@ For example, the tags when 2.3.0 is released will be:
 
 In addition to the release tags, there may be one or more
 development tags available. All tags will start with `devel`. For
-example: ``rounduptracker/roundup:devel``.
+example: ``rounduptracker/roundup:2.3.0b1-devel``,
+``rounduptracker/roundup:devel``
 
-You should not assume that any ``devel`` tag is static. They ae
+You should not assume that any ``devel`` tag is static. They are
 mainly for use by Roundup developer/maintainer for testing. There
-may be alternate tags starting with ``devel-`` to indicate builds
+may be alternate tags ending with ``-devel`` to indicate builds
 from specific Mercurial versions/hashes. Also the tag may be
 overwritten to change the underlying Python libraries or
 images. Unless you like the bleeding edge, these should not be

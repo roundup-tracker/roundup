@@ -34,13 +34,24 @@ for tracker_spec in "$@"; do
 	# if it's a request to start in demo/shell mode:
 	case "$tracker" in
 	    demo)
+		version=$(roundup-admin -v | grep 2.2.0)
+		if [ -n "$version" ]; then
+		    printf "\nRoundup version: %s does not support docker demo mode\n" "$version"
+		    printf "Try building with a version newer than 2.2.0.\n"
+		    printf "For example:\n"
+		    printf " docker build --build-arg=\"source=pypi~=2.3.0a1\" ...\n"
+		    exit 3
+		fi
+
 		if [ -z "$PORT_8080" ]; then
-		    PORT_8080=8917
-		    printf "If docker reports a bind error, you can set the\n"
-		    printf "Docker environment variable PORT_8080 to fix it.\n"
-		    printf "Please add -e PORT_8080=port_number. The\n"
-		    printf "port_number must match the first value to -p \n"
-		    printf "which must be an unused port on your server.\n"
+		  PORT_8080=8917
+		  printf "  If docker reports a bind error, you can set the\n"
+		  printf "  Docker environment variable PORT_8080 to\n"
+		  printf "  fix it.\n\n"
+		  printf "  Add -e PORT_8080=port_number to the docker run\n"
+		  printf "  command. The port_number must match the first\n"
+		  printf "  value to -p which must be an unused port\n"
+		  printf "  on your server.\n\n"
 		fi
 		template=classic
 	        backend=sqlite

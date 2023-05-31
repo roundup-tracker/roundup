@@ -10,13 +10,16 @@
 
 
 # Global vars for all build stages
+ARG VERBOSE=
 
 # application directory
 ARG appdir=/usr/src/app
 
 # support roundup install from 'local' directory,
-# 'local_pip' local directory using pip to install or
-# latest release from 'pypi'
+# 'pypi' to install latest final or version specified release
+#   from PyPI,
+# 'pip_local' local directory using pip to install, or
+# 'pip_sdist' to install dist/newest_version-tarball
 ARG source=local
 
 # Python version as a.b Used for installation directory and
@@ -68,7 +71,10 @@ COPY scripts/Docker/sphinxdeps.txt .
 ENV PIP_ROOT_USER_ACTION=ignore
 
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
-RUN set -xv && CWD=$PWD && \
+ARG VERBOSE
+
+RUN [ -z "${VERBOSE}" ] || set -xv; \
+    CWD=$PWD && \
     upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
 	list --outdated | awk 'NR > 2 {print $1}'); \
     if [ -n "$upgrades" ]; then \
@@ -106,25 +112,43 @@ COPY frontends install/frontends/
 COPY locale install/locale/
 COPY roundup install/roundup/
 COPY share install/share/
+# dist is optional so include README.txt so we don't get an error
+COPY README.txt dist/* install/dist/
 
 # verify source has one of two valid values then
 # install in python3 standard directories from local copy
 # or install in python3 standard directories from pypi using pip
 # import from global/command line
 ARG source
-RUN set -xv && if [ "$source" = "local" ] ||  \
-                  [ "$source" = "pypi"  ] || \
-                  [ "$source" = "local_pip"   ]; then :; \
-           else echo "invalid value for source: $source"; \
-                echo "must be local or pypi"; exit 1; fi; \
-    if [ "$source" = "local" ]; then cd install && ./setup.py install; fi; \
-    if [ "$source" = "local_pip" ]; then cd install && \
-               pip -V && \
-               pip install --no-cache-dir . ; \
-    fi; \
-    if [ "$source" = "pypi" ]; then pip install --no-cache-dir roundup; \
-       cp -ril /usr/local/lib/"python${pythonversion}"/site-packages/usr/local/share/* \
-	   /usr/local/share; fi
+
+RUN [ -z "${VERBOSE}" ] || set -xv; \
+    case "$source" in \
+        "local") \
+            cd install && ./setup.py install;; \
+        "pypi"*) \
+            version_spec=$( printf "%s" "$source" | \
+				sed -ne 's/^pypi\([~=!<>].*\)/\1/p'); \
+            pip install --no-cache-dir roundup${version_spec}; \
+            cp -ril /usr/local/lib/"python${pythonversion}"/site-packages/usr/local/share/* \
+               /usr/local/share;; \
+        "pip_local") \
+	    cd install && \
+		pip -V && \
+		pip install --no-cache-dir . ;; \
+	"pip_sdist") \
+	    dist=$(ls install/dist | sed -ne '/roundup-[0-9].*\.tar\.gz$/p' | tail -n 1); \
+	    if [ -z "$dist" ] ; then \
+		printf "Unable to find a source distribution file in dist\n"; \
+		printf "Exiting\n"; \
+		exit 1; \
+            fi; \
+            printf "Building with distribution: %s\n" "$dist"; \
+            pip install --no-cache-dir install/dist/$dist;; \
+        *) \
+            echo "invalid value for source: $source"; \
+	    echo "must be local, pypi, pip_local or pip_sdist"; \
+            exit 1;; \
+    esac
 
 # Allow user to add more modules during build
 ARG pip_mod
