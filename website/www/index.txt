@@ -74,7 +74,7 @@ command-line, web, REST, XML-RPC and e-mail interfaces.  It is based
 on the winning design from Ka-Ping Yee in the Software Carpentry
 "Track" design competition.
 
-The current stable version of Roundup is 2.3.0b1. It is a bug fix
+The current stable version of Roundup is 2.3.0b2. It is a bug fix
 and feature release for the 2.2.0 release 
 
 Release Highlights

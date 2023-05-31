@@ -1,4 +1,4 @@
-I'm proud to release version 2.2.0 of the Roundup issue
+I'm proud to release version 2.3.0b2 of the Roundup issue
 tracker.  This release is a bugfix and minor feature
 release, so make sure to read `docs/upgrading.txt
 <https://www.roundup-tracker.org/docs/upgrading.html>`_ to
@@ -22,47 +22,50 @@ then unpack and test/install the tarball. Also::
 
 (preferably in a virtual environment) can be used.
 
-Among the notable improvements from the 2.1.0 release are:
+Among the notable improvements from the 2.2.0 release are:
 
-- Dynamic and static compression of http responses. This
-  improves performance when a front end web server isn't
-  serving compressed assets.
-  
-- REST interface supports CORS allowing Roundup to be used
-  by third party web sites. Can specify origins allowed to
-  use the REST interface. OpenAPI (SWagger) docs can be
-  added. Error handling/reporting improved.
+* Dockerfile demo mode implemented.
 
-- Dockerfile to build a containerized Roundup instance.  A
-  docker-compose configuration to deploy a a mysql based
-  tracker is also supplied.
+* SQLite backends can use WAL mode to reduce blocking between readers
+  and writers.
 
-- New full text search methods. SQLite FTS and PostgreSQL
-  full text search are supported. These allow search
-  expressions in addition to simple word based searches.
+* Redis can be used for session database with SQLite and dbm
+  backends. Provides a major performance improvement.
 
-- Secret values in config.ini can be stored in external
-  files. This allows config.ini to be stored in a VCS
-  without exposing secrets.
+* roundup-mailgw can use OAUTH authentication to SMTP
+  server. (roundup-mailgw command line options changed as a result.)
 
-- Translation object added to internal database handle. This
-  allows auditors and extensions to provide efficient
-  translations.
+* Postgres full text index can now be enabled.
 
-- MySQL database creation uses COLLATE utf8_general_ci
+* Modifications to in-reply-to threading when there are multiple
+  matches.
 
-- Wsgi startup improvements (must be enabled by setting
-  feature flag).
+* Many updates to documentation to make it scannable, useful and
+  work on mobile.
 
-- Fix crash when importing legacy Roundup tracker with long
-  integers.
+* Admin documentation includes a section on setting up Content
+  Security Policy (CSP)
 
-- Fix issues with Roundup unable to find supporting files
-  when installed via pip. Removed additional references to
-  distfiles module.
+* REST now allows rate limiting headers to be accessed by client
+  javascript.
+
+* Default number of rounds for PBKDF2 updated to 2M to account for
+  improvements in password crackers and CPU power.
+
+* Support PBKDF2 with SHA512 for password storage
+
+* Deprecate SSHA password hash function.
+
+* roundup-admin reindex can be done in batches to managle load
+  incurred by reindexing.
+
+* roundup-admin can list avaailable templates and their installed
+  locations.
+
+* Crash fixes in detector handling, configuration handling, 
 
 The file CHANGES.txt has a detailed list of feature additions and
-bug fixes (57) for each release. The most recent changes from
+bug fixes (51) for each release. The most recent changes from
 there are at the end of this announcement. Also see the
 information in doc/upgrading.txt.
 
@@ -141,177 +144,151 @@ and supports four database back-ends (anydbm, sqlite, mysql and postgresql).
 Recent Changes
 ==============
 
-From 2.1.0 to 2.2.0.
+From 2.2.0 to 2.3.0b2
 
 Fixed:
 ------
 
-- issue2551161 - Fix ResourceWarnings when running with -W default.
-  Cleaned up leaking file descriptors from zopetal pre-compile, python
-  module compile and loading localization file. (John Rouillard) 
-- When using roundup-server with native SSL, only accept TLS v1.2.
-  Previously it used to accept only TLS v1.1. 1.1 is deprecated by
-  chrome. I don't expect this to be a major problem since a front
-  end server (apache, Nginx...) is usually customer facing and
-  terminates SSL.  (John Rouillard)
-- Fix hang when valid user without authorization for REST tries to use
-  the rest interface.  (John Rouillard)
-- Remove Content-Type and make sure no content is returned by OPTIONS
-  request in REST interface. (John Rouillard)
-- In write_html set the Content-Length when response is not
-  encoded/compressed. (John Rouillard)
-- In REST interface do not raise UsageError for invalid api version.
-  Return json error with proper message. Fixes crash. (John Rouillard)
-- In REST interface, allow extensions on URI less than 6 characters in
-  length. All other paths with a . in then will be passed through
-  without change. This allows items like a JWT to be passed as a path
-  element. (John Rouillard)
-- issue2550995 - KeyError classic during roundup-admin install. Add
-  paths to search for locale and template files.
-- issue2551167 - pip install in containerized environments puts
-  template and locale files under site-packages where roundup can't find
-  them. Change code to find them under site-packages.
-- REST replace hard coded list of child endpoints for /rest/ with list
-  pulled from registered endpoints. So newly added endpoints are
-  shown. (John Rouillard)
-- issue2551107 - Handle representation of long int in history params
-  for python3. Causes SyntaxError crash when showing history due to
-  long int e.g. 2345L. This is not a problem for roundup trackers
-  created using 1.2.0 or newer. The fix may have predated the 1.2.0
-  release but where the fix actually landed (representing id as a
-  string and not as an int) is unknown.
-- issue2551175 - Make ETag content-encoding aware. HTTP ETag headers
-  now include a suffix indicating the content-encoding used to send
-  the data per rfc7232. Properly validate any form of ETag suffixed or
-  non-suffixed for If-Match.
-- issue2551178 - fix Traceback in Apache WSGI - during file upload
-- issue2551179 - make roundup-demo initialize templates using
-  config_ini.ini overrides. Needed for jinja to set template lang etc.
-  Recognize minimal template when presented with a full
-  path. (John Kristensen (jerrykan) and John Rouillard)
-- handle configparser.InterpolationSyntaxError raised if value
-  has a single %. Seems to afect python 3 only. Reported by
-  nomicon on IRC. (John Rouillard)
-- add random delay to session database retry code between 0 and .125
-  seconds. This seems to help reduce stalled connections when a
-  number of connections are made at the same time. Log remaining
-  retries once 5 of them have been used. (John Rouillard)
-- issue2551169 - setup.py enters endless loop on gentoo linux python2
-  installation. Fixed.
-- issue2551185 - must set PYTHONPATH=... python2 setup.py install
-  --prefix=/tmp/r2. Force insert --old-and-unmangable to get it
-  to use a classic installer and not an easy install. This only
-  affects python2.
-- issue2551186 - Python versions >= 3.3 no longer use socket.sslerror.
-  Andrew (kragacles) patched uses of socket.sslerror in mailgy.py.
-  Patch adapted to allow trapping sslerror under both python2 and 3.
+- Updated directions for verifying Roundup distribution using pgp.
+- Dockerfile healthcheck fixed so it works when trackers are
+  specified on command line. Also cleanup of unneeded
+  packages. (John Rouillard)
+- issue2551224 - Replace dbm db for sessions and otks when using
+  sqlite. New databases are created for session data (db-session)
+  and one time key data (db-otk). The data is ephemeral so no
+  need to migrate. (John Rouillard)
+- issue2551223 - Timestamps are truncated in mysql and postgresql
+  for session and otk database tables. Modify db schema to use a
+  numeric type that preserves more significant figures. See
+  upgrading.txt for required steps. (John Rouillard)
+- added more testing of BasicDatabase to support use of SQLite
+  for that purpose. Had to fix memory, rdbms and dbm edge cases
+  due to new tests. (John Rouillard)
+- issue2551138 - roundup-server with ssl under python2 throws
+  traceback on socket close. Not sure how this got fixed,
+  but after fixing issue2551137 it was not an issue anymore.
+- issue2551137 - roundup-server won't run with ssl under python3
+  Fixed by using SocketIO and manually adding buffering io and
+  catching SSL.ZeroReturnError indicating SSL has been shut down.
+- add caching header for text/javascript in addition to depricated
+  application/javascript. (John Rouillard)
+- Enable postgres-fts: fix indexer-common::get_indexer so it returns a
+  postgresql-fts Test code paths in get_indexer. (John Rouillard)
+- Fix Postgres native-fts, implement a two phase initialization of the
+  indexer. The native-fts one gets assigned after the database
+  connection is open. (John Rouillard)
+- fix crash if postgresql native-fts backend is asked to index content
+  with null bytes. (John Rouillard)
+- issue2551232 - modify in-reply-to threading when multiple matches
+  Change how in-reply-to threading works in the mailgw. If there is
+  more than one issue with a matching parent message, fall back to
+  subject matching. See upgrading.txt for details. (John Rouillard)
+- issue2551195 - port scripts from optparse to argparse (Ralf Schlatterbeck)
+- issue2551246 - mitigation, document how -u doesn't work for
+  roundup-admin. (John Rouillard)
+- Document better that files in the template or static_files
+  directories accessed via @@file are available to any user with the
+  url. (John Rouillard)
+- Fix final exception handler in roundup-server to send proper
+  Content-Length header to the client. (John Rouillard)
+- Fix traceback if Origin header is missing. (John Rouillard)
+- issue2551250: Fix sorting of detectors even if there are two with the
+  same name and priority (can happen if they are created in two
+  different files).
+- Fix Traceback when a numeric order attribute is empty (Ralf
+  Schlatterbeck)
+- Update some template schema files to assign Register permissions for the
+  Anonymous user. Replaces the old Create permission. (John Rouillard)
+- Allow '*' and explicit origins in allowed_api_origins. Only return 
+  'Access-Control-Allow-Credentials' when not matching '*'. Fixes
+  security issue with rest when using '*'.  (John Rouillard)
+- issue2551263: In REST response expose rate limiting, sunset, allow
+  HTTP headers to calling javascript.  (John Rouillard)
+- issue2551257: When downloading an attached (user supplied file),
+  make sure that an 'X-Content-Type-Options: nosniff' header is sent.
   (John Rouillard)
-- issue2551142 - postgresql reworked to use savepoint/"rollback to"
-  rather than commit()/rollback(). Using savepoint should be faster.
-- issue2551196 - Unset labelprop of a Multilink can lead to Python
-  error when using context/history. (reported and initial patch: Nagy
-  Gabor, John Rouillard)
-- Fix roundup-server to pass If-Range http header so Ranges work
-  better. (John Rouillard)
-- issue2551183 - Replace references to distutils in
-  roundup/dist/command (John Rouillard)
-- Fix hang if Range request was not able to be satified or a HEAD
-  request was done.
-- Mark strings involved with password reset and registration for
-  translation. (reported: Thomas Arendsen Hein, John Rouillard)
-- issue2551159 - cl.filter fails if filterspec is None (also
-  group and sort). Passing a sort, group or filterprop param
-  set to None to any filter() call should not cause a
-  traceback. It will pretend as though no filter, sort or
-  group was specified. (John Rouillard)
-- issue2551205 - Add support for specifying valid origins
-  for api: xmlrpc/rest. Allows CORS to work with roundup
-  backend. (John Rouillard)
-- new option added to config.ini: login_empty_passwords set to
-  no by default. Setting this to yes allows a user with an
-  empty password to login.
-- issue2551207 - Fix sorting by order attribute if order attributes can
-  be None. Add a test.
-- issue2551203 fix CORS requests by providing proper headers and allowing
-  unauthenticted CORS preflight requests. (Marcus Priesch and John
-  Rouillard)
-- issue2551206 - removed some windows installer references that were missed.
-- document use of jinja2 templating as optional in config.ini
-  file. Report if available or not. (John Rouillard)
-- make setup.py install the Zope and wsgi.py frontends under
-  share/frontends. This matches the install of the cgi-bin/roundup.cgi
-  frontend. (John Rouillard)
-- prevent submit button from showing up when using _generic.item.html
-  if the user doesn't have edit permissions. (John Rouillard)
-- issue2551216 - create new mysql databases using COLLATE
-  utf8_general_ci to prevent crashes in test suite. (John Rouillard)
+- issue2551252 - default number of rounds for PKDF2 password increased
+  to 2,000,000.  (John Rouillard)
+- issue2551251 - migrate/re-encrypt PBKDF2 password if stored
+  password used a smaller number of rounds than set in
+  password_pbkdf2_default_rounds.  (John Rouillard)
+- upgrade from jquery-3.5.1 to jquery-3.6.3. Update user.help.html
+  to new version.  (John Rouillard)
+- Dockerfile scanned with hadolint. Fixed multiple issues. (John Rouillard)
+- fix crash due to invalid initialization/reset of configuration.py
+  option_validators. Crashed roundup-admin on second command if an
+  option_validator was added by a detector or extension. (John Rouillard)
+- Dockerfile uses dumb-init to properly wait for child/zombie
+  processes. Defense against child process starting from detector
+  and becoming a zombie when its roundup-server instance exits.
+  (John Rouillard)
+- Move installed frontend/Zope back to frontend/ZRoundup
+  directory. This better identifies the directory when copied into
+  the Zope framework. It also matches existing
+  documentation. (John Rouilard)
+- Multiple fixes/updates for installation documentation.
+  Including docker shell/admin/demo mdoes. (John Rouillard)
+- Invalid item identifiers passed to REST endpoint return a 404
+  rather than a 400 error. E.G. /rest/data/issue/issue4 (rather
+  than .../issue/4). (John Rouillard)
 
 Features:
 ---------
 
-- issue2551147 - Enable compression of http responses in roundup.
-  Allow roundup to return gzip, (br or zstd with added modules)
-  Content-Encoded replies. Compression could be done in upstream
-  proxies/wsgi server but this allows it to occur natively. (John
+- Add warning about limited Python 2 support lifetime to install and
+  upgrading docs. (John Rouillard)
+- Dockerfile supports demo mode for instant gratification
+  8-). Also supports shell and admin mode (John Rouillard)
+- Dockerfile build allows adding additional python packages via
+  pip, setting UID tracker is run under. (John Rouillard)
+- issue2551140 - Added redis as a session and otk database for use
+  with anydbm and sqlite primary databases. (John Rouillard)
+- issue2550559 - Pretty printing / formatting for Number types.
+  Added pretty(format='%0.3f') method to NumberHTMLProperty to
+  print numeric values. If value is None, return empty string
+  otherwise str() of value. (John Rouillard)
+- sqlite native-fts backend now uses the stopwords list in config.ini
+  to filter words from queries. (Stopwords are still indexed so that
+  phrase/proximity searches still work.) (John Rouillard)
+- sqlite databases use WAL mode when *created* to improve read
+  concurrency. Existing sqlite database still use rollback journal
+  mode. See upgrading.txt for details. (John Rouillard)
+- issue2551233 - create new roundup-admin command "templates" list all
+  template names, location and descriptions. Should help find where
+  /usr/share/roundup/templates is buried during some install
+  mechanisms. Does not need a tracker home to run. (John Rouillard)
+- Add OAuth authentication to the mailgw script. Now IMAPS can be used
+  with OAuth as required by several large cloud providers. Move command
+  line processing of the mailgw script to ``argparse``. Note that the
+  command line options of the mailgw have changed, see upgrading.txt for
+  details. (Ralf Schlatterbeck)
+- issue2551243: schema-dump.py enhanced with anti-CSRF headers. Flake8
+  cleanup and python2 support. (John Rouillard)
+- issue2551253 - new password hash PBDKF2-SHA512 added. Not
+  available by default. Follow directions in upgrading document
+  to use.  (John Rouillard)
+- roundup-admin migrate command reports the schema version.
+- issue2551262 - the mail gateway subject prefix now allows spaces
+  before/after prefix. Also allow spaces between classname and id
+  number in prefix designator. So "[ issue 23   ] subject" is parsed
+  like "[issue23] subject". (John Rouillard)
+- [doc]: add section on implementing CSP for Roundup to admin
+  doc. (John Rouillard)
+- issue2551265 - deprecate SSHA password hash method. Users using SSHA
+  passwords will have their passwords transprently upgraded to PBKDF2
+  derived hash on next login. (John Rouillard)
+- issue2551253 - Modify password PBKDF2 method to use SHA512. New
+  hash function using PBKDF2-SHA512 available. Will be default in
+  future. Directions for upgrading security by using it now is
+  included in upgrading.txt. (John Rouillard)
+- issue2551275 - Allow configuring max_children in roundup-server.
+  When using roundup-server in fork mode, allow raising number of
+  forked children above the default of 40. (Original patch by Joseph
+  Myers, config settings and docs by John Rouillard.)
+- roundup-admin genconfig does not need a tracker home to run. (John
   Rouillard)
-- Change tracker templates adding required to login forms. Invokes
-  browser error reporting if user forgets to fill in a field.
-  (John Rouillard)
-- issue1596345 - filtering user list (need
-  user.search.hml). Incorporate user search features from
-  issues.roundup-tracker.org into classic template. Devel and
-  responsive templates already have this feature.
-- issue2550917 - Add a: "Welcome user, you have logged in" ok_message
-  on login. (Ashley Burke)
-- enable HTTP/1.1 for roundup-server. This enables keep-alive for
-  faster response/loading. Also eliminates stalls when the front end web
-  server uses http 1.1 but the roundup-server uses 1.0. New option
-  "-V HTTP/1.0" can turn it off. (John Rouillard)
-- issue2551163 - add scripts/Docker/Dockerfile to provide basic support for
-  containerization. See installation.txt for details. (John Rouillard)
-- issue2551163 - add scripts/Docker/docker-compose.yml to get a
-  mysql/roundup deployment. (Norbert Schlemmer, modified by John
-  Rouilard)
-- REST add openapi_doc decorator to add openapi_doc to
-  endpoints. Decorate a couple of examples. (John Rouillard)
-- REST when incorrect method is used, report allowed methods in error
-  message as well as in an Allow header. (John Rouillard)
-- REST change response to invalid attribute specified in path.  Return
-  400 code not 405 code for this case and improve error. (John
-  Rouillard)
-- REST correct values for some Access-Control-Allow-Methods and
-  Access-Control-Allow-Headers headers. (John Rouillard)
-- issue2550991 - define default cache control settings for javascript
-  and css assets. (John Rouillard)
-- issue2551181 - fragments can be appended to designators. So
-  issue23#msg24 could jump to the element with id msg24 in issue 23.
-  Before this patch you would have two links issue23 and msg24
-  separated by # (John Rouillard).
-- added small utility script to dump dbm based tracker databases
-  (e.g. db/sessions). (John Rouillard)
-- issue2551182 - Enhance configuration module to allow loading values
-  from an external file. Secrets (passwords, secrets) can specify
-  file using file:// or file:///. The first line of the file is used
-  as the secret. This allows committing config.ini to a VCS. (John
-  Rouillard)
-- Added xapian indexer to Docker container. (John Rouillard)
-- Add support for indexer type native-fts to use FTS5 for sqlite
-  databases. (John Rouillard)
-- Add support for indexer type native-fts to use PostreSQL's full text
-  search. (John Rouillard)
-- Add better error display to the user. Needed to expose errors in fts5
-  search syntax to the user while also displaying the template page
-  structure. (John Rouillard)
-- issue2551189 - increase size of words in full text index.
-  Many terms (like exception names or symbolic constants) are larger
-  than 25. Also German words are long. Since there is little chance of
-  fixing German to shorten their words, change indexer maxlength to 50.
-  (Thomas Arendsen Hein provided patch; patch reworked John Rouillard)
-- issue2551184 - add an i18n object to the roundupdb. This makes it
-  possible to translate error messages in detectors (or actions). The
-  i18n object is now also correctly set for the mail interface:
-  previously the 'language' setting in the [mailgw] section seems to
-  have been ignored. Thanks to Marcus Priesch for the patch.
-- issue2551212 - speed up wsgi interface by caching the tracker
-  instance. Hidden behind a feature flag. See upgrading.txt for
-  details. (Marcus Priesch with feature flag by John Rouillard)
+- issue2551190 - Allow roundup-admin reindex to work in
+  batches. Running roundup-admin -i ... reindex issue:1-1000 will
+  reindex the first 1000 issues while reporting any missing issues
+  in the range. Also completion progress is reported when indexing a
+  specific class.

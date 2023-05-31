@@ -6,7 +6,7 @@
 # kilo aka Gabor Kmetyko <kg_kilo@freemail.hu>, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: Roundup 2.3.0b1\n"
+"Project-Id-Version: Roundup 2.3.0b2\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
 "POT-Creation-Date: 2023-05-29 20:29-0400\n"
 "PO-Revision-Date: 2013-10-31 12:19+0100\n"
