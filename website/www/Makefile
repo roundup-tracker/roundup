@@ -37,3 +37,6 @@ linkcheck:
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in .build/linkcheck/output.txt."
+
+sourceforge_dev_sync:
+	rsync -av html/. web.sourceforge.net:/home/project-web/roundup/htdocs/dev_docs/.
