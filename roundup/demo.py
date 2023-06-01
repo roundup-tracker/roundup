@@ -143,7 +143,7 @@ def run_demo(home, bind_addr=None, bind_port=None):
        external mapping requested by docker to be used in external url's.
     """
 
-    print("Demo Tracker Home:", home)
+    print("\nDemo Tracker Home:", home)
 
     cfg = configuration.CoreConfig(home)
     url = cfg["TRACKER_WEB"]
@@ -161,8 +161,8 @@ def run_demo(home, bind_addr=None, bind_port=None):
 
     bind_addr = bind_addr or hostname
     port = int(bind_port or port)
-    success_message = '''Server running - connect to:
-    %(url)s
+    success_message = '''Server running - connect to:\n
+    %(url)s\n
 1. Log in as "demo"/"demo" or "admin"/"admin".
 2. Hit Control-C to stop the server.
 3. Re-start the server by running "%(script)s" again.
