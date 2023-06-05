@@ -162,7 +162,7 @@ before_script:
 script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
-  - python -c "import sys; print('python version: ', sys.version)"
+  - python -c "import sys; print('python version ', sys.version)"
   - if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
     python -m pytest -r a
       --durations=20
