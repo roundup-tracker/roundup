@@ -1376,6 +1376,8 @@ user. This is an area for further development so that
 roundup-admin could be used with sudo to provide secure
 command line access to a tracker.
 
+.. _initpw:
+
 When you initialise a new tracker instance you are prompted for the
 admin password. If you want to initialise a tracker non-interactively
 you can put the initialise command and password on the command
