@@ -175,7 +175,7 @@ script:
       -v --maxfail=5 test/ --cov=roundup;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
-      python -m pytest -v -r a --maxfail=5 test/ --cov=roundup;
+    python -m pytest -v -r a --maxfail=5 test/ --cov=roundup;
     fi
   - ./setup.py build_doc
 
