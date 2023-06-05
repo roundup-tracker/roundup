@@ -1044,6 +1044,8 @@ SETTINGS = (
             'The dispatcher is configured using the DISPATCHER_EMAIL\n'
             ' setting.'),
         (Option, "html_version", "html4",
+            "This setting should be left at the default value of html4.\n"
+            "Support is ending for xhtml mode.\n"
             "HTML version to generate. The templates are html4 by default.\n"
             "If you wish to make them xhtml, then you'll need to change\n"
             "this setting to 'xhtml' too so all auto-generated HTML\n"

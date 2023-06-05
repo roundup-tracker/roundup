@@ -76,6 +76,15 @@ upgrade all your trackers at once.
   optional packages are dropping Python 2 support. As a result Python 2
   may not be supported for many more release cycles.
 
+.. admonition:: XHTML Support Deprecation Notice
+
+  If you are running a tracker where the ``html_version`` setting in
+  ``config.ini`` is ``xhtml``, you should plan to change your
+  templates to use html (HTML5). If you are affected by this, please
+  send email to the roundup-users mailing list (roundup-users at
+  lists.sourceforge.net). Version 2.3.0 is expected to be the last
+  version to support XHTML.
+
 Contents:
 
 .. contents::
