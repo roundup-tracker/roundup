@@ -116,6 +116,11 @@ You can either:
 * use a published container from hub.docker.com with
   ``rounduptracker/roundup:latest``
 
+and start demo mode with::
+
+    docker run --rm -p 127.0.0.1:8917:8080 --name roundup_demo -v \
+       $PWD:/usr/src/app/tracker rounduptracker/roundup:latest demo
+
 or
 
 * Use steps 1-3 to `install the source`_ then
@@ -127,13 +132,10 @@ or
   (see `Docker Support`_ and `Building a Docker Container`_ for more
   details)
 
-Start demo mode with [2]_::
+and start demo mode with::
 
     docker run --rm -p 127.0.0.1:8917:8080 --name roundup_demo -v \
-       $PWD:/usr/src/app/tracker rounduptracker/roundup:latest demo
-
-.. [2] Replace ``rounduptracker/roundup:latest`` with
-       ``roundup-app:latest`` if you built your own docker image.
+       $PWD:/usr/src/app/tracker roundup-app:latest demo
 
 This will create a ``demo`` subdirectory which is your tracker's
 home. It will also print the URL for exploring your new tracker.
@@ -262,7 +264,7 @@ zstd, brotli
   algorithms, you can install one or more of zstd_ or brotli_.
   Roundup's responses can always be compressed with gzip from the
   Python standard library. Also nginx and various wsgi server can
-  compress the response from roundup as they transmit/proxy it to the
+  compress the response from Roundup as they transmit/proxy it to the
   client.
 
 redis
@@ -476,9 +478,9 @@ in the following steps.
       will be dropped and re-created.
 
       Once this is done, the tracker has been created. See the note in
-      the user_guide on how to initialise a tracker without being
-      prompted for the password or exposing the password on the command
-      line.
+      the `administration guide`_ on how to :ref:`initialise a
+      tracker without being prompted for the password <initpw>` or
+      exposing the password on the command line.
 
 2. At this point, your tracker is set up, but doesn't have a nice user
    interface. To set that up, we need to `configure a web interface`_ and
