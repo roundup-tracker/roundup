@@ -2431,9 +2431,9 @@ returning.
 Default templates
 -----------------
 
-The default templates are html4 compliant. If you wish to change them to be
-xhtml compliant, you'll need to change the ``html_version`` configuration
-variable in ``config.ini`` to ``'xhtml'`` instead of ``'html4'``.
+The default templates are html4 compliant. Support for xhtml is due to
+be phased out so leave the ``html_version`` configuration
+variable in ``config.ini`` as ``'html'`` instead of ``'xhtml'``.
 
 Most customisation of the web view can be done by modifying the
 templates in the tracker ``'html'`` directory. There are several types
