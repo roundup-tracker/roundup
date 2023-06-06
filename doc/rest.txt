@@ -1423,8 +1423,8 @@ payload. When modifying a property via ``PUT`` or ``PATCH`` or
 Tunneling Methods via POST
 ==========================
 
-If you are working through a proxy and unable to use http method like
-PUT, PATCH or DELETE you can use POST to perform the action. To tunnel
+If you are working through a proxy and unable to use http methods like
+PUT, PATCH, or DELETE, you can use POST to perform the action. To tunnel
 an action through POST, send the ``X-HTTP-METHOD-OVERRIDE`` header
 with a value of DELETE or other capitalized HTTP verb. The body of the
 POST should be what you would send if you were using the method
