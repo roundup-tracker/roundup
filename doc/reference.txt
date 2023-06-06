@@ -170,6 +170,8 @@ Section **main**
   Allowed values: ``dispatcher``, ``user``, or ``both``
 
  html_version -- ``html4``
+  This setting should be left at the default value of html4.
+  Support is ending for xhtml mode.
   HTML version to generate. The templates are ``html4`` by default.
   If you wish to make them xhtml, then you'll need to change this
   var to ``xhtml`` too so all auto-generated HTML is compliant.
