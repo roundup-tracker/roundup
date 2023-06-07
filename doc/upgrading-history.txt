@@ -523,6 +523,13 @@ following database indexes on the database by hand::
  CREATE INDEX words_by_id ON __words (_textid);
  CREATE UNIQUE INDEX __textids_by_props ON __textids (_class, _itemid, _prop);
 
+You can find out which database backend you are using by looking at
+the ``db/backend_name`` file in the tracker's home directory. The
+username, password, and database name can all be found in the
+``config.ini`` file if you are using ``mysql`` or ``postgresql``. You
+can run the SQL commands using the native client interface: ``psql``
+(postgres), ``mysql`` (MySQL), or ``sqlite3`` (SQLite).
+
 .. index:: upgrading; 1.2.x to 1.3.0
 
 Migrating from 1.2.x to 1.3.0
