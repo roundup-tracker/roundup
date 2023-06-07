@@ -1274,6 +1274,48 @@ functionality.
 .. _detectors:
 .. _Auditors and reactors:
 
+
+Schema Integrity
+----------------
+
+There is a table in all SQL based schemas called ``schema``. It
+contains a representation of the current schema and the current
+Roundup schema version. Roundup will exit the version is not supported
+by the release. E.G. Roundup 2.1.0 will not work with a database
+created by 2.3.0 as db version 8 used by 2.3.0 is not supported by
+2.1.0.
+
+The current schema representation is automatically updated whenever a
+change is made to the schema via ``schema.py``. The schema version is
+upgraded when running ``roundup-admin migrate`` although it can be
+upgraded automatically in some cases by run a Roundup process (mailgw,
+web interface). This information is kept in one large blob in the
+table. To view this in a more understandable format, you can use the
+commands below (requires the jq command):
+
+Postgres
+  .. code::
+
+    psql -tq -d 'roundup_db'  -U roundup_user -c \
+       'select schema from schema;' | \
+       python3 -c 'import json, sys; d = eval(sys.stdin.read()); \
+       print(json.dumps(d, indent=2));' | jq . | less
+
+replace ``roundup_db``, ``roundup_user`` with the values from
+``config.ini`` and use a ``~/.pgpass`` file or type the database
+password when prompted.
+
+SQLite
+  .. code::
+
+    sqlite3 demo/db/db 'select schema from schema;' | \
+      python3 -c 'import json, sys; d = eval(sys.stdin.read()); \
+      print(json.dumps(d, indent=2));' | jq . | less
+
+Something similar for MySQL can be generated as well.
+Replacing ``jq .`` with ``jq .version`` will display the schema
+version.
+
 Detectors - adding behaviour to your tracker
 ============================================
 
