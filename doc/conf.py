@@ -23,7 +23,7 @@ import os
 
 
 # Read Roundup version by importing it from parent directory,
-# this ensures that 'unkown version' is inserted even if
+# this ensures that 'unknown version' is inserted even if
 # `roundup` is importable from other location in sys.path
 SYSSAVE = sys.path
 DOCROOT = os.path.abspath(os.path.dirname(__file__))
