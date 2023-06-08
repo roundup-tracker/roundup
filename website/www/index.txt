@@ -74,8 +74,18 @@ command-line, web, REST, XML-RPC and e-mail interfaces.  It is based
 on the winning design from Ka-Ping Yee in the Software Carpentry
 "Track" design competition.
 
-The current stable version of Roundup is 2.3.0b2. It is a bug fix
-and feature release for the 2.2.0 release 
+The current stable version of Roundup is 2.3.0b2. It is a bug fix and
+feature release for the 2.2.0 release.
+
+It runs with Python 2.7.12+ or 3.6+.
+
+.. admonition:: Python 2 Support
+
+   Although the original plan was to support Python 2 until 2025,
+   CI resources for testing with Python 2 are being phased out by a
+   number of CI services. Python 3 should be used to deploy new
+   trackers and older trackers should be `upgraded to use Python 3
+   <docs/upgrading.html#python-3-support-info>`_.
 
 Release Highlights
 ==================
