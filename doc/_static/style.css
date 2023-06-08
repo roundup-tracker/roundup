@@ -440,6 +440,7 @@ div.highlight > pre {
     background-color: #f5f4d8;
     background-size: 20px 100%, 20px 100%, 16px 100%, 16px 100%;
     background-attachment: local, local, scroll, scroll;
+    padding: 0.5em;
 }
 
 /* https://moderncss.dev/totally-custom-list-styles/ make a list
