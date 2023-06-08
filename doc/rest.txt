@@ -16,7 +16,7 @@ REST API for Roundup
    :depth: 3
 
 Introduction
-------------
+============
 
 After the last 1.6.0 Release, a REST-API developed in 2015 during a
 Google Summer of Code (GSOC) by Chau Nguyen, supervised by Ezio
@@ -26,7 +26,7 @@ functions for a single page web application, e.g. etag support,
 pagination, field embedding among others.
 
 Enabling the REST API
----------------------
+=====================
 
 The REST API can be disabled in the ``[web]`` section of ``config.ini``
 via the variable ``enable_rest`` which is ``yes`` by default.
@@ -66,7 +66,7 @@ explicitly set.)
 .. _upgrading directions: upgrading.html
 
 Preventing CSRF Attacks
-=======================
+-----------------------
 
 Clients should set the header X-REQUESTED-WITH to any value and the
 tracker's config.ini should have ``csrf_enforce_header_x-requested-with
@@ -78,7 +78,7 @@ the origin using the ``allowed_api_origins`` setting in
 ``config.ini``.
 
 Rate Limiting the API
-=====================
+---------------------
 
 This is a work in progress. This version of roundup includes Rate
 Limiting for the API (which is different from rate limiting login
@@ -114,7 +114,7 @@ possible for it to miscount allowing more than burst count. Errors of
 up to 10% have been seen on slower hardware.
 
 Client API
-----------
+==========
 
 The top-level REST url ``/rest/`` will display the current version of
 the REST API (Version 1 as of this writing) and some links to relevant
@@ -122,7 +122,7 @@ endpoints of the API. In the following the ``/rest`` prefix is omitted
 from relative REST-API links for brevity.
 
 Headers
-=======
+-------
 
 If rate limiting is enabled there are 3 "standard" headers:
 
@@ -153,7 +153,7 @@ If the client has requested a deprecated API endpoint, the header:
    the sunset link type.
 
 Hyperdb Stats
-=============
+-------------
 
 Adding ``@stats=true`` as a GET query parameter or POST data item will
 augment the response with an ``@stats`` dictionary. Any value other
@@ -180,7 +180,7 @@ understanding of the code is recommended if you are going to use this
 info.
 
 Versioning
-==========
+----------
 
 Currently there is only one version of the API. Versions are simple
 integers. The current version is ``1``. Version selection is
@@ -199,7 +199,7 @@ The server default is reported by querying the ``/rest/`` endpoint as
 described above.
 
 Input Formats
-=============
+-------------
 
 For a GET or OPTIONS request, the Content-Type header should
 not be sent.
@@ -209,7 +209,7 @@ Otherwise Content-Type is allowed to be ``application/json`` or
 code 415.
 
 CORS preflight requests
-^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~
 
 CORS preflight requests are done using the OPTIONS method. They
 require that REST be enabled. These requests do not make any changes
@@ -263,7 +263,7 @@ cause a problem. If it is an issue, you can see
 and craft a rate limiter that ignores anonymous OPTIONS requests.
 
 Response Formats
-================
+----------------
 
 The default response format is json.
 
@@ -300,7 +300,7 @@ the accept header are available or if the accept header is invalid.
 
 
 General Guidelines
-==================
+------------------
 
 Performing a ``GET`` on an item or property of an item will return an
 ETag header or an @etag property. This needs to be submitted with
@@ -405,21 +405,21 @@ properties). Example::
 
 
 Special Endpoints
-=================
+-----------------
 
 There are a few special endpoints that provide some additional data.
 Tracker administrators can add new endpoints. See
 "Programming the REST API"_ below.
 
 /summary
-^^^^^^^^
+~~~~~~~~
 
 A Summary page can be reached via ``/summary`` via the ``GET`` method.
 This is currently hard-coded for the standard tracker schema shipped
 with roundup and will display a summary of open issues.
 
 /data
-^^^^^
+~~~~~
 
 This is the primary entry point for data from the tracker.
 
@@ -439,7 +439,7 @@ dictionary with the entry ``data`` referring to the returned data.
 Details are in the sections below.
 
 /data/\ *class* Collection
-==========================
+--------------------------
 
 When performing the ``GET`` method on a class (e.g. ``/data/issue``),
 the ``data`` object includes the number of items available in
@@ -474,7 +474,7 @@ decorations in the response. See the section on pagination below for
 details.
 
 Searching
-^^^^^^^^^
+~~~~~~~~~
 
 Searching is done by adding roundup field names and values as query
 parameters. Using: https://.../rest/data/issue you can search using:
@@ -549,7 +549,7 @@ body of a msg) is a work in progress.
 .. _URL Encoding: https://en.wikipedia.org/wiki/Percent-encoding
 
 Transitive Searching
-~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^
 
 In addition to searching an issue by its properties, you can search
 for issues where linked items have a certain property. For example
@@ -572,7 +572,7 @@ it. However they may be able to use searches to discover the value of
 the field even if they can't view it.
 
 Sorting
-^^^^^^^
+~~~~~~~
 
 Collection endpoints support sorting. This is controlled by specifying a
 ``@sort`` parameter with a list of properties of the searched class.
@@ -586,7 +586,7 @@ and then by id of an issue::
 
 
 Pagination
-^^^^^^^^^^
+~~~~~~~~~~
 
 Collection endpoints support pagination. This is controlled by query
 parameters ``@page_size`` and ``@page_index`` (Note the use of the
@@ -645,7 +645,7 @@ clients must be prepared to handle the incomplete response and request
 the next URL to retrieve all of the entries.
 
 Field embedding and verbose output
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In collections, you can specify what fields should be embedded in the
 returned data. There are some shortcuts provided using the
@@ -738,7 +738,7 @@ See the `Searches and selection`_ section for the use cases supported
 by these features.
 
 Getting Message and Files Content
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can retreive a message with a url like
 ``https://.../demo/rest/data/msg/11``. This returns something like::
@@ -850,7 +850,7 @@ You can use the `binary_content property`_ described below to
 retrieve an encoded copy of the data.
 
 Other query params
-^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~
 
 This table lists other supported parameters:
 
@@ -869,7 +869,7 @@ This table lists other supported parameters:
       this time.
 
 Using the POST method
-^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~
 
 Only class links support the ``POST`` method for creation of new items
 of a class, e.g., a new issue via the ``/data/issue`` link. The post
@@ -992,7 +992,7 @@ mechanism.
         response was lost.
 
 Other Supported Methods for Collections
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Supports the ``OPTIONS`` method for determining which methods are
 allowed on a given endpoint.
@@ -1000,7 +1000,7 @@ allowed on a given endpoint.
 Does not support PUT, DELETE or PATCH.
 
 /data/\ *class*/\ *id* item
-===========================
+---------------------------
 
 When performing the ``GET`` method on an item
 (e.g. ``/data/issue/42``), a ``link`` attribute contains the link to
@@ -1083,7 +1083,7 @@ An example of returned values::
   }
 
 Retrieve item using key value
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If the class has a key attribute, e.g. the 'status' class in the
 classic tracker, it can be used to retrieve the item.
@@ -1103,7 +1103,7 @@ The long-form (with ``=``) is different from a query-parameter like
 that have ``closed`` as a substring.
 
 Dealing with Messages and Files
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Using the requests library you can upload a file using::
 
@@ -1147,7 +1147,7 @@ return something like::
  
 
 Other Supported Methods for Items
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The method ``PUT`` is allowed on individual items, e.g.
 ``/data/issue/42`` On success it returns the same parameters as the
@@ -1302,7 +1302,7 @@ payload. When modifying a property via ``PUT`` or ``PATCH`` or
 ``If-Match`` header.
 
 /data/\ *class*/\ *id*/\ *property* field
-=========================================
+-----------------------------------------
 
 A ``GET`` method on a property (e.g. ``/data/issue/42/title``) returns the
 link, an ``@etag``, the type of the property (e.g. "<type str>") the id
@@ -1325,7 +1325,7 @@ All endpoints support an ``OPTIONS`` method for determining which
 methods are allowed on a given endpoint.
 
 Message and File Content
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Messages and files have content properties. If the data is utf-8
 compatible (e.g. an email message) you can retrieve it with
@@ -1369,7 +1369,7 @@ The data is a json encoded hexidecimal representation of the data.
 
 
 Other Supported Methods for fields
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The method ``PUT`` is allowed on a property e.g.,
 ``/data/issue/42/title``. On success it returns the same parameters as
@@ -1421,7 +1421,7 @@ payload. When modifying a property via ``PUT`` or ``PATCH`` or
 ``If-Match`` header.
 
 Tunneling Methods via POST
-==========================
+--------------------------
 
 If you are working through a proxy and unable to use http methods like
 PUT, PATCH, or DELETE, you can use POST to perform the action. To tunnel
@@ -1431,10 +1431,10 @@ POST should be what you would send if you were using the method
 without tunneling.
 
 Examples and Use Cases
-----------------------
+======================
 
 sample python client
-====================
+--------------------
 
 The client uses the python ``requests`` library for easier interaction
 with a REST API supporting JSON encoding::
@@ -1516,7 +1516,7 @@ and restore::
 
 
 Searches and selection
-======================
+----------------------
 
 One difficult interface issue is selection of items from a long list.
 Using multi-item selects requires loading a lot of data (e.g. consider
@@ -1611,14 +1611,14 @@ fields can be used for subsearch and sorting.
 
 
 Programming the REST API
-------------------------
+========================
 
 You can extend the rest api for a tracker. This describes how to add
 new rest end points. At some point it will also describe the rest.py
 structure and implementation.
 
 Adding new rest endpoints
-=========================
+-------------------------
 
 Add or edit the file `interfaces.py`_ at the root of the tracker
 directory.
@@ -1692,7 +1692,7 @@ Adding other endpoints (e.g. to allow an OPTIONS query against
 ``/data/issue/@schema``) is left as an exercise for the reader.
 
 Redefine/move rest endpoints
-============================
+----------------------------
 
 In addition to adding new endpoints, you can redefine existing
 endpoints. Adding this as described above::
@@ -1734,7 +1734,7 @@ normally at /rest/data/<class>.
 
 
 Controlling Access to Backend Data
-==================================
+----------------------------------
 
 Roundup's schema is the primary access control mechanism. Roles and
 Permissions provide the ability to carefully control what data can be
@@ -1846,7 +1846,7 @@ the url passes the ``roles=User`` filter option which is silently
 ignored.
 
 Changing Access Roles with JSON Web Tokens
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------------
 
 As discussed above Roundup's schema is the access control mechanism.
 However you may want to integrate a third party system with roundup.
@@ -2110,7 +2110,7 @@ for ideas or add your own.
 .. _thoughts on JWT credentials: https://issues.roundup-tracker.org/issue2551064
 
 Final steps
-^^^^^^^^^^^
+~~~~~~~~~~~
 
 See the `upgrading directions`_ on how to use the ``updateconfig``
 command to generate an updated copy of config.ini using
@@ -2133,7 +2133,7 @@ subscribing and for archives of the lists.
 
 
 Creating Custom Rate Limits
-===========================
+---------------------------
 
 You can replace the default rate limiter that is configured using
 the tracker's ``config.ini``. You can return different rate
@@ -2177,7 +2177,7 @@ and period that are specific to a user.  If either is set to 0,
 the defaults from ``config.ini`` file are used.
 
 Test Examples
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 
 Rate limit tests::
 
