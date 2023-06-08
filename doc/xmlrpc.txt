@@ -14,7 +14,8 @@ XML-RPC access to Roundup
    :local:
 
 Introduction
-------------
+============
+
 Version 1.4 of Roundup includes an XML-RPC frontend for remote access. The
 XML-RPC interface allows a limited subset of commands similar to those found in
 local `roundup-admin` tool.
@@ -27,8 +28,8 @@ For demo tracker the URL would be:
 
     http://localhost:8917/demo/xmlrpc
 
-Enabling XML-RPC server 
------------------------
+Enabling XML-RPC
+================
 There are two ways to run the XML-RPC interface:
 
   through roundup itself
@@ -36,8 +37,9 @@ There are two ways to run the XML-RPC interface:
   stand alone roundup-xmlrpc-server
 
 
-through roundup
+Through Roundup
 ---------------
+
 The XML-RPC service is available from the roundup HTTP server under
 /xmlrpc.
 
@@ -53,9 +55,10 @@ schema.py to add::
 This is usually included near where other permissions like "Web Access"
 or "Email Access" are assigned.
 
-stand alone roundup-xmlrpc-server
----------------------------------
-Using roundup to access the xmlrpc interface is preferred. Roundup
+Standalone roundup-xmlrpc-server
+--------------------------------
+
+Using Roundup to access the xmlrpc interface is preferred. Roundup
 provides better control over who can use the interface.
 
 The Roundup XML-RPC standalone server must be started before remote
@@ -69,21 +72,24 @@ must be specified.
 The default port is ``8000``. An alternative port can be specified with the
 ``--port`` switch.
 
-security consideration
-----------------------
+Security Consideration
+======================
+
 Both the standalone and embedded roundup XML endpoints used the
 default python XML parser. This parser is know to have security
 issues. For details see: https://pypi.org/project/defusedxml/.
 You may wish to use the rest interface which doesn't have the same
 issues. Patches with tests to roundup to use defusedxml are welcome.
 
-Note that the current ``roundup-xmlrpc-server`` implementation does
-not support SSL. This means that usernames and passwords will be
-passed in cleartext unless the server is being proxied behind another
-server (such as Apache or lighttpd) that provide SSL.
+.. caution::
+
+   The current ``roundup-xmlrpc-server`` implementation does not support
+   SSL. This means that usernames and passwords will be passed in
+   cleartext unless the server is being proxied behind another server
+   (such as Apache or lighttpd) that provide SSL.
 
 Client API
-----------
+==========
 The server currently implements seven methods/commands. Each method
 requires that the user provide a username and password in the HTTP
 authorization header in order to authenticate the request against the
@@ -137,7 +143,7 @@ filter  arguments: *classname, list or None, attributes*
         :ref:`query-tracker`.
 ======= ====================================================================
 
-sample python client
+Sample Python Client
 ====================
 
 This client will work if you turn off the x-requested-with header and
@@ -171,7 +177,7 @@ the only CSRF header check you require is the HTTP host header::
         >>> roundup_server.lookup('user','admin')
         '1'
 
-advanced python client adding anti-csrf headers
+Advanced Python Client Adding anti-csrf Headers
 ===============================================
 
 The one below adds Referer and X-Requested-With headers so it can pass
