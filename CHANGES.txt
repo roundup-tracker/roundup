@@ -70,7 +70,7 @@ Fixed:
   'Access-Control-Allow-Credentials' when not matching '*'. Fixes
   security issue with rest when using '*'.  (John Rouillard)
 - issue2551263: In REST response expose rate limiting, sunset, allow
-  HTTP headers to calling javascript.  (John Rouillard)
+  HTTP headers to calling JavaScript.  (John Rouillard)
 - issue2551257: When downloading an attached (user supplied file),
   make sure that an 'X-Content-Type-Options: nosniff' header is sent.
   (John Rouillard)
