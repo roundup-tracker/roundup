@@ -1,5 +1,10 @@
 # merged in python-package.yml workflow
 
+# reference docs:
+# https://blog.deepjyoti30.dev/tests-github-python
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# https://github.com/pypa/twine/blob/main/.github/workflows/main.yml
+
 name: roundup-ci
 
 on: 
@@ -28,42 +33,48 @@ jobs:
     name: CI build test
 
     # run the finalizer for coveralls even if one or more
-    # matrix runs fail.
-    continue-on-error: true
+    # experimental matrix runs fail.
+    # continue-on-error: ${{ matrix.experimental }}
 
     #runs-on: ubuntu-latest
     # use below if running on multiple OS's.
     runs-on: ${{ matrix.os }}
+
+    if: "!contains(github.event.head_commit.message, 'no-github-ci')"
 
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
         # Run in all these versions of Python
-        python-version: [ "2.7", "3.10", "3.9", "3.8", "3.6", "3.11-dev" ]
+        python-version:
+          - "2.7"
+          - "3.10"
+          # - "3.9"
+          - "3.8"
+          # - "3.7"
+          - "3.11"
 
         # use for multiple os or ubuntu versions
         #os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest, ubuntu-22.04]
+        # ubuntu latest 22.04 12/2022
+        os: [ubuntu-latest, ubuntu-20.04]
 
         # if the ones above fail. fail the build
         experimental: [false]
 
         include:
-           # example: if 3.12 fails the jobs still succeeds
-        #   - python-version: 3.12
-        #     experimental: [true]
-           # version 2.7 not available on unbuntu-22.04 github
-        #    - python-version: 2.7
-        #      os: ubuntu-22.04
-        #      experimental: true
-            - python-version: 3.11-dev
+            # example: if 3.12 fails the jobs still succeeds
+            - python-version: 3.12
               os: ubuntu-22.04
               experimental: [true]
+            # 3.6 not available on new 22.04 runners, so run on 20.04 ubuntu
+            - python-version: 3.6
+              os: ubuntu-20.04
 
         exclude:
-            # skip all python versions on 22.04 except explicitly included
-            - os: ubuntu-22.04
+            # skip all python versions on 20.04 except explicitly included
+            - os: ubuntu-20.04
 
     env:
       # get colorized pytest output even without a controlling tty
@@ -79,20 +90,25 @@ jobs:
         # if: {{ false }}
           # continue running if step fails
         # continue-on-error: true
-        uses: actions/checkout@v3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
 
       # Setup version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
           cache: 'pip'
+
+      - name: Install build tools - setuptools
+        run: pip install setuptools
 
       # Display the Python version being used
       - name: Display Python and key module versions
         run: |
           python -c "import sys; print('python version: ', sys.version)"
-          python -c "import sqlite3; print('sqlite3 version, sqlite version: ', sqlite3.version, sqlite3.sqlite_version)"
+          python -c "import sqlite3; print('sqlite version: ', sqlite3.sqlite_version)"
+          python -c "import setuptools; print('setuptools version: ', setuptools.__version__);"
 
       # Install the databases
       - name: Install mysql/mariadb
@@ -114,7 +130,7 @@ jobs:
 
       - name: Install postgres
         run: |
-          sudo apt-get install postgresql
+          sudo apt-get update && sudo apt-get install postgresql
           # Disable fsync for speed, don't care about data durability
           #   when testing
           sudo sed -i -e '$a\fsync = off' /etc/postgresql/*/*/postgresql.conf
@@ -157,7 +173,11 @@ jobs:
           # older python and newest on newer.
           if [[ $PYTHON_VERSION == "2."* ]]; then pip install sphinx==1.8.5; fi
           if [[ $PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
-          XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
+          if [[ $PYTHON_VERSION == '3.12'* ]] ; then \
+              XAPIAN_VER=1.4.22; \
+          else
+              XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER; \
+          fi
           cd /tmp
           curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
           tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
@@ -169,10 +189,10 @@ jobs:
           # Change distutils.sysconfig... to just sysconfig and SO
           # to EXT_SUFFIX to get valid value.
           if [[ $PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-          case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
+          case "$PYTHON_VERSION" in nightly|3.12*) echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Install pytest and other packages needed for running tests
-        run: pip install codecov flake8 mock pytest pytest-cov requests
+        run: pip install flake8 mock pytest pytest-cov requests
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
@@ -194,6 +214,7 @@ jobs:
         run: |
           if [[ "$PYTHON_VERSION" != "2."* ]]; then 
             pytest -r a \
+              --durations=20 \
               -W default \
               -W "ignore:SelectableGroups:DeprecationWarning" \
               -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" \
@@ -207,12 +228,12 @@ jobs:
             fi
           else
             # python2 case
-            pytest -v -r a test/ --cov=roundup
+            pytest -v -r a --durations=20 test/ --cov=roundup
           fi
 
       - name: Upload coverage to Codecov
         # see: https://github.com/codecov/codecov-action#usage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
         with:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -220,7 +241,7 @@ jobs:
       - name: Upload coverage to Coveralls
         # python 2.7 and 3.6 versions of coverage can't produce lcov files.
         if: matrix.python-version != '2.7' && matrix.python-version != '3.6'
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@f350da2c033043742f89e8c0b7b5145a1616da6d # master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage.lcov
@@ -247,13 +268,16 @@ jobs:
       #         -f scripts/Docker/Dockerfile . 
 
 
-  # in parallel build codecov requires a finish step
+  # in parallel build coveralls requires a finish step
   finish:
     needs: test
     runs-on: ubuntu-latest
+
+    if: "!contains(github.event.head_commit.message, 'no-github-ci')"
+    
     steps:
       - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@f350da2c033043742f89e8c0b7b5145a1616da6d # master
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true

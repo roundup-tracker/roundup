@@ -62,7 +62,7 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
 
     initial_data = os.path.join(prefix, 'initial_data.py')
     vars = dict(db=db, admin_email='admin@test.com',
-                adminpw=password.Password('sekrit'))
+                adminpw=password.Password('sekrit', config=db.config))
     fd = open(initial_data)
     exec(compile(fd.read(), initial_data, 'exec'), vars)
     fd.close()
@@ -110,7 +110,8 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
     '''
     if create:
         db.user.create(username="fred", roles='User',
-                       password=password.Password('sekrit'),
+                       password=password.Password('sekrit',
+                                                  config=db.config),
                        address='fred@example.com')
 
     db.security.addPermissionToRole('User', 'Email Access')

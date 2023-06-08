@@ -19,17 +19,19 @@
 """
 __docformat__ = 'restructuredtext'
 
+import os
 import re
 import string
+import sys
 import warnings
 
 from base64 import b64encode, b64decode
-from hashlib import md5, sha1
+from hashlib import md5, sha1, sha512
 
-import roundup.anypy.random_ as random_
+from roundup.anypy import random_
 
 from roundup.anypy.strings import us2s, b2s, s2b
-
+from roundup.exceptions import RoundupException
 
 try:
     with warnings.catch_warnings():
@@ -40,6 +42,10 @@ except ImportError:
 
 _bempty = b""
 _bjoin = _bempty.join
+
+
+class ConfigNotSet(RoundupException):
+    pass
 
 
 def bchr(c):
@@ -86,6 +92,9 @@ try:
 
     def _pbkdf2(password, salt, rounds, keylen):
         return pbkdf2_hmac('sha1', password, salt, rounds, keylen)
+
+    def _pbkdf2_sha512(password, salt, rounds, keylen):
+        return pbkdf2_hmac('sha512', password, salt, rounds, keylen)
 except ImportError:
     # no hashlib.pbkdf2_hmac - make our own pbkdf2 function
     from struct import pack
@@ -96,10 +105,17 @@ except ImportError:
         return _bjoin(bchr(bord(l) ^ bord(r))
                       for l, r in zip(left, right))  # noqa: E741
 
-    def _pbkdf2(password, salt, rounds, keylen):
-        digest_size = 20  # sha1 generates 20-byte blocks
+    def _pbkdf2(password, salt, rounds, keylen, sha=sha1):
+        if sha not in [sha1, sha512]:
+            raise ValueError(
+                "Invalid sha value passed to _pbkdf2: %s" % sha)
+        if sha == sha512:
+            digest_size = 64  # sha512 generates 64-byte blocks.
+        else:
+            digest_size = 20  # sha1 generates 20-byte blocks
+
         total_blocks = int((keylen+digest_size-1)/digest_size)
-        hmac_template = HMAC(password, None, sha1)
+        hmac_template = HMAC(password, None, sha)
         out = _bempty
         for i in range(1, total_blocks+1):
             hmac = hmac_template.copy()
@@ -114,6 +130,9 @@ except ImportError:
             out += block
         return out[:keylen]
 
+    def _pbkdf2_sha512(password, salt, rounds, keylen):
+        return _pbkdf2(password, salt, rounds, keylen, sha=sha512)
+
 
 def ssha(password, salt):
     ''' Make ssha digest from password and salt.
@@ -124,6 +143,36 @@ def ssha(password, salt):
     shaval.update(salt)
     ssha_digest = b2s(b64encode(shaval.digest() + salt).strip())
     return ssha_digest
+
+
+def pbkdf2_sha512(password, salt, rounds, keylen):
+    """PBKDF2-HMAC-SHA512 password-based key derivation
+
+    :arg password: passphrase to use to generate key (if unicode,
+     converted to utf-8)
+    :arg salt: salt bytes to use when generating key
+    :param rounds: number of rounds to use to generate key
+    :arg keylen: number of bytes to generate
+
+    If hashlib supports pbkdf2, uses it's implementation as backend.
+
+    Unlike pbkdf2, this uses sha512 not sha1 as it's hash.
+
+    :returns:
+        raw bytes of generated key
+    """
+    password = s2b(us2s(password))
+    if keylen > 64:
+        # This statement may be old. - not seeing issues in testing
+        # with keylen > 40.
+        #
+        # NOTE: pbkdf2 allows up to (2**31-1)*20 bytes,
+        # but m2crypto has issues on some platforms above 40,
+        # and such sizes aren't needed for a password hash anyways...
+        raise ValueError("key length too large")
+    if rounds < 1:
+        raise ValueError("rounds must be positive number")
+    return _pbkdf2_sha512(password, salt, rounds, keylen)
 
 
 def pbkdf2(password, salt, rounds, keylen):
@@ -181,7 +230,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
     """
     if plaintext is None:
         plaintext = ""
-    if scheme == "PBKDF2":
+    if scheme in ["PBKDF2", "PBKDF2S5"]:  # all PBKDF schemes
         if other:
             rounds, salt, raw_salt, digest = pbkdf2_unpack(other)
         else:
@@ -189,11 +238,53 @@ def encodePassword(plaintext, scheme, other=None, config=None):
             salt = h64encode(raw_salt)
             if config:
                 rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+
+                # if we are testing
+                if ("pytest" in sys.modules and
+                    "PYTEST_CURRENT_TEST" in os.environ):
+                    if ("PYTEST_USE_CONFIG" in os.environ):
+                        rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+                    else:
+                        # Use 1000 rounds unless the test signals it
+                        # wants the config number by setting
+                        # PYTEST_USE_CONFIG. Using the production
+                        # rounds value of 2,000,000 (for sha1) makes
+                        # testing increase from 12 minutes to 1 hour in CI.
+                        rounds = 1000
             else:
-                rounds = 10000
+                if ("pytest" in sys.modules and
+                    "PYTEST_CURRENT_TEST" in os.environ):
+                    # Set rounds to 1000 if no config is passed and
+                    # we are running within a pytest test.
+                    rounds = 1000
+                else:
+                    import logging
+                    # Log and abort.  Initialize rounds and log (which
+                    # will probably be ignored) with traceback in case
+                    # ConfigNotSet exception is removed in the
+                    # future.
+                    rounds = 2000000
+                    logger = logging.getLogger('roundup')
+                    if sys.version_info[0] > 2:
+                        logger.critical(
+                            "encodePassword called without config.",
+                            stack_info=True)
+                    else:
+                        import inspect, traceback   # noqa: E401
+                        where = inspect.currentframe()
+                        trace = traceback.format_stack(where)
+                        logger.critical(
+                            "encodePassword called without config. %s",
+                            trace[:-1]
+                        )
+                    raise ConfigNotSet("encodePassword called without config.")
+
         if rounds < 1000:
             raise PasswordValueError("invalid PBKDF2 hash (rounds too low)")
-        raw_digest = pbkdf2(plaintext, raw_salt, rounds, 20)
+        if scheme == "PBKDF2S5":
+            raw_digest = pbkdf2_sha512(plaintext, raw_salt, rounds, 64)
+        else:
+            raw_digest = pbkdf2(plaintext, raw_salt, rounds, 20)
         return "%d$%s$%s" % (rounds, salt, h64encode(raw_digest))
     elif scheme == 'SSHA':
         if other:
@@ -303,10 +394,11 @@ class Password(JournalPassword):
     >>> 'not sekrit' != p
     1
     """
-    # TODO: code to migrate from old password schemes.
 
-    deprecated_schemes = ["SHA", "MD5", "crypt", "plaintext"]
-    known_schemes = ["PBKDF2", "SSHA"] + deprecated_schemes
+    deprecated_schemes = ["SSHA", "SHA", "MD5", "crypt", "plaintext"]
+    experimental_schemes = ["PBKDF2S5"]
+    known_schemes = ["PBKDF2"] + experimental_schemes + \
+                deprecated_schemes
 
     def __init__(self, plaintext=None, scheme=None, encrypted=None,
                  strict=False, config=None):
@@ -325,7 +417,7 @@ class Password(JournalPassword):
     def __repr__(self):
         return self.__str__()
 
-    def needs_migration(self):
+    def needs_migration(self, config):
         """ Password has insecure scheme or other insecure parameters
             and needs migration to new password scheme
         """
@@ -334,6 +426,17 @@ class Password(JournalPassword):
         rounds, salt, raw_salt, digest = pbkdf2_unpack(self.password)
         if rounds < 1000:
             return True
+        if (self.scheme == "PBKDF2"):
+            new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+            if ("pytest" in sys.modules and
+                "PYTEST_CURRENT_TEST" in os.environ):
+                if ("PYTEST_USE_CONFIG" in os.environ):
+                    new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+                else:
+                    # for testing
+                    new_rounds = 1000
+            if rounds < int(new_rounds):
+                return True
         return False
 
     def unpack(self, encrypted, scheme=None, strict=False, config=None):
@@ -367,13 +470,13 @@ class Password(JournalPassword):
         return '{%s}%s' % (self.scheme, self.password)
 
 
-def test_missing_crypt():
+def test_missing_crypt(config=None):
     p = encodePassword('sekrit', 'crypt')      # noqa: F841   - test only
 
 
-def test():
+def test(config=None):
     # SHA
-    p = Password('sekrit')
+    p = Password('sekrit', config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
@@ -382,7 +485,7 @@ def test():
     assert 'not sekrit' != p
 
     # MD5
-    p = Password('sekrit', 'MD5')
+    p = Password('sekrit', 'MD5',  config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
@@ -392,7 +495,7 @@ def test():
 
     # crypt
     if crypt:  # not available on Windows
-        p = Password('sekrit', 'crypt')
+        p = Password('sekrit', 'crypt',  config=config)
         assert Password(encrypted=str(p)) == 'sekrit'
         assert 'sekrit' == Password(encrypted=str(p))
         assert p == 'sekrit'
@@ -401,7 +504,7 @@ def test():
         assert 'not sekrit' != p
 
     # SSHA
-    p = Password('sekrit', 'SSHA')
+    p = Password('sekrit', 'SSHA',  config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
@@ -416,10 +519,20 @@ def test():
 
     # PBKDF2 - hash function
     h = "5000$7BvbBq.EZzz/O0HuwX3iP.nAG3s$g3oPnFFaga2BJaX5PoPRljl4XIE"
-    assert encodePassword("sekrit", "PBKDF2", h) == h
+    assert encodePassword("sekrit", "PBKDF2", h, config=config) == h
 
     # PBKDF2 - high level integration
-    p = Password('sekrit', 'PBKDF2')
+    p = Password('sekrit', 'PBKDF2', config=config)
+    assert Password(encrypted=str(p)) == 'sekrit'
+    assert 'sekrit' == Password(encrypted=str(p))
+    assert p == 'sekrit'
+    assert p != 'not sekrit'
+    assert 'sekrit' == p
+    assert 'not sekrit' != p
+
+    # PBKDF2S5 - high level integration
+    p = Password('sekrit', 'PBKDF2S5', config=config)
+    print(p)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
@@ -429,7 +542,30 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
-    test_missing_crypt()
+    # invoking this with:
+    #  PYTHONPATH=. python2 roundup/password.py
+    # or with python3, results in sys.path starting with:
+    #   ['/path/to/./roundup',
+    #    '/path/to/.',
+    #    '/usr/lib/python2.7',
+    # which makes import roundup.anypy.html fail in python2
+    # when importing
+    #    from cgi import escape as html_escape
+    # because cgi is not /usr/lib/python2.7/cgi but
+    # roundup/cgi. Modify the path to remove the bogus trailing /roundup
+
+    sys.path[0] = sys.path[0][:sys.path[0].rindex('/')]
+
+    # we continue with our regularly scheduled tests
+    from roundup.configuration import CoreConfig
+    test(CoreConfig())
+    crypt = None
+    exception = None
+    try:
+        test_missing_crypt(CoreConfig())
+    except PasswordValueError as e:
+        exception = e
+    assert exception is not None
+    assert exception.__str__() == "Unsupported encryption scheme 'crypt'"
 
 # vim: set filetype=python sts=4 sw=4 et si :

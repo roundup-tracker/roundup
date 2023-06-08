@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {%- if 'name="description"' not in metatags %}
       <meta name="description"
@@ -21,7 +21,6 @@
     {%- endfor %}
     {%- else %}
     <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
-
     {%- endif %}
     {%- if builder != 'htmlhelp' %}
     <script type="text/javascript">
@@ -73,7 +72,10 @@
   </head>
   <body>
     <div id="skiplink"><a href="#main">Skip to main content</a></div>
-    <div class="header"><h1>Roundup</h1>
+    <header class="header">
+      <div class="label non_mobile">Roundup</div>
+      <div class="label mobile"><a href="#main">Roundup
+	  <span class="jumplabel">jump to {{ title|e }}</span></a></div>
       {%- if pagename != "search" %}
         <div id="searchbox" style="display: none">
           <form class="search" action="{{ pathto('search') }}" method="get">
@@ -85,16 +87,16 @@
           </form>
         </div>
       {%- endif %}
-    </div>
+    </header>
     <div class="navigation">
-      <nav>
+      <nav aria-label="primary navigation">
       <div class="menu">
        {{ toctree() }}
       </div>
       </nav>
     </div>
     <div class="content">
-	<div id="subnav">
+	<nav id="subnav" aria-label="sub navigation">
         {%- if prev %}
            <a title="{{ prev.title|striptags }}" href="{{ prev.link|e }}">
 	     Prev</a>
@@ -105,13 +107,13 @@
 	{%- endif %}
         <a title="{{ _('Index') }}" href="{{ pathto('genindex') }}">
 	  Index</a>
-	</div>
+	</nav>
 	<main id="main" tabindex="-1">
        {% block body %} {% endblock %}
 	</main>
     </div>
 {%- block footer %}
-    <div class="footer">
+    <footer class="footer">
       <div>
       {%- if show_source and has_source and sourcename %}
         <span class="source">[<a href="{{ pathto('_sources/' + sourcename, true)|e }}" rel="nofollow">{{ _('page source') }}</a>]</span>
@@ -128,7 +130,7 @@
       {%- endif %}
       <span>Hosted by <a href="https://sourceforge.net"><img src="https://sflogo.sourceforge.net/sflogo.php?group_id=31577&amp;type=1" width="88" height="31" alt="SourceForge.net Logo" /></a></span>
       </div>
-    </div>
+    </footer>
 {%- endblock %}
     <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
     <script>

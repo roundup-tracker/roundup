@@ -18,7 +18,9 @@ to read when viewing (using redis-cli).
 """
 __docformat__ = 'restructuredtext'
 
-import marshal, redis, time
+import marshal
+import redis
+import time
 
 from roundup.anypy.html import html_escape as escape
 
@@ -177,22 +179,31 @@ class BasicDatabase(SessionCommon):
                 try:
                     # assume this works or raises an WatchError
                     # exception indicating I need to retry.
-                    # Since this is not a transaction, an error
+                    # Since this is not a real transaction, an error
                     # in one step doesn't roll back other changes.
                     # so I again ignore the return codes as it is not
                     # clear that I can do the rollback myself.
                     # Format and other errors (e.g. expireat('d', 'd'))
-                    # raise exceptions tht bubble up and result in mail
+                    # raise exceptions that bubble up and result in mail
                     # to admin.
                     transaction.execute()
                     break
-                except redis.Exceptions.WatchError:
+                except redis.exceptions.WatchError:
                     self.log_info(
                         _('Key %(key)s changed in %(name)s db' %
                           {"key": escape(infoid), "name": self.name})
                     )
             else:
-                raise Exception(_("Redis set failed afer 3 retries"))
+                try:
+                    username = values['user']
+                except KeyError:
+                    username = "Not Set"
+
+                raise Exception(
+                    _("Redis set failed after %(retries)d retries for "
+                      "user %(user)s with key %(key)s") % {
+                          "key": escape(infoid), "retries": _retry,
+                          "user": username})
 
     def list(self):
         return list(self.redis.keys(self.makekey('*')))
@@ -214,18 +225,17 @@ class BasicDatabase(SessionCommon):
         return time.time() + (key_lifetime or self.default_lifetime)
 
     def updateTimestamp(self, sessid):
-        ''' Other backends update only if timestamp would change by more
-            than 60 seconds. To do this in redis requires:
-               get data _timestamp
-                 calculate if update needed
-               if needed,
-               set new timestamp
-            why bother. Just set and forget.
+        ''' Even Redis can be overwhelmed by multiple updates, so
+            only update if old session key is > 60 seconds old.
         '''
-        # no need to do timestamp calculations
-        lifetime = self.lifetime()
-        # note set also updates the expireat on the key in redis
-        self.set(sessid, __timestamp=lifetime)
+        sess = self.get(sessid, '__timestamp', None)
+        now = time.time()
+        # unlike other session backends, __timestamp is not set to now
+        # but now + lifetime.
+        if sess is None or now > sess + 60 - self.default_lifetime:
+            lifetime = self.lifetime()
+            # note set also updates the expireat on the key in redis
+            self.set(sessid, __timestamp=lifetime)
 
     def clean(self):
         ''' redis handles key expiration, so nothing to do here.

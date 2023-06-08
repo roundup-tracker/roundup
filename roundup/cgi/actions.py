@@ -5,7 +5,7 @@ import re
 import sys
 from datetime import timedelta
 
-from roundup import hyperdb, token, date, password
+from roundup import hyperdb, token_r, date, password
 from roundup.actions import Action as BaseAction
 from roundup.anypy import urllib_
 from roundup.anypy.html import html_escape
@@ -427,7 +427,7 @@ class SearchAction(Action):
                 if isinstance(prop, hyperdb.String):
                     v = self.form[key].value
                     # If this ever has unbalanced quotes, hilarity will ensue
-                    tokens = token.token_split(v)
+                    tokens = token_r.token_split(v)
                     if len(tokens) != 1 or tokens[0] != v:
                         self.form.value.remove(self.form[key])
                         # replace the single value with the split list
@@ -1159,8 +1159,11 @@ class RegisterAction(RegoCommon, EditCommon, Timestamped):
         tracker_name = self.db.config.TRACKER_NAME
         tracker_email = self.db.config.TRACKER_EMAIL
         if self.db.config['EMAIL_REGISTRATION_CONFIRMATION']:
-            subject = _('Complete your registration to %s -- key %s') % (
-                tracker_name, otk)
+            subject = _(
+                'Complete your registration to %(tracker_name)s -- key %(key)s') % {
+                    'tracker_name': tracker_name,
+                    'key': otk}
+
             body = _("""To complete your registration of the user "%(name)s" with
 %(tracker)s, please do one of the following:
 
@@ -1370,6 +1373,7 @@ class LoginAction(Action):
     def verifyLogin(self, username, password):
         # make sure the user exists
         try:
+            # Note: lookup only searches non-retired items.
             self.client.userid = self.db.user.lookup(username)
         except KeyError:
             # Perform password check against anonymous user.
@@ -1396,7 +1400,8 @@ class LoginAction(Action):
         db = self.db
         stored = db.user.get(userid, 'password')
         if givenpw == stored:
-            if db.config.WEB_MIGRATE_PASSWORDS and stored.needs_migration():
+            if (db.config.WEB_MIGRATE_PASSWORDS and
+                stored.needs_migration(config=db.config)):
                 newpw = password.Password(givenpw, config=db.config)
                 db.user.set(userid, password=newpw)
                 db.commit()

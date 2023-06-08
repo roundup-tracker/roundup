@@ -6,11 +6,9 @@
 
 import os, sys
 import os.path
-import glob
 
 try:
     from setuptools.command.install import install as _build_py
-    raise ImportError
 except ImportError:
     from distutils.command.build import build as _build_py  # try/except clause
     orig_build = _build_py
@@ -53,6 +51,6 @@ class build_doc(_build_py):
             return
 
         doc_dir = os.path.join('share', 'doc', 'roundup', 'html')
-        temp_dir = os.path.join(self.build_temp, 'doc')
+        temp_dir = os.path.join(self.build_base, 'temp.doc')
         cmd = sphinx + ['-d', temp_dir, 'doc', doc_dir]
         spawn(cmd)

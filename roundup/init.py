@@ -20,7 +20,9 @@
 from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import os, errno, email.parser
+import email.parser
+import errno
+import os
 
 
 from roundup import install_util

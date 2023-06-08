@@ -79,3 +79,11 @@ Docker/roundup-start - Startup script for roundup in docker.
 
 Docker/docker-compose.yml - Manage two docker containers for roundup
       and mysql.
+
+----
+
+oauth-get-token.py
+  Retrieve necessary credentials from MS cloud for OAuth authentication
+  with IMAP. This has an extensive help text so you want to call this
+  script with --help first.
+

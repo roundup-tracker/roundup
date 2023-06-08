@@ -184,4 +184,4 @@ Web server
   The builtin web server may now perform HTTP Basic Authentication by
   itself.
 
-.. _`customization documentation`: customizing.html
+.. _`customization documentation`: reference.html

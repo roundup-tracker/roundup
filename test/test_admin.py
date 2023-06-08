@@ -5,11 +5,11 @@
 #
 
 from __future__ import print_function
+import fileinput
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 
 from roundup.admin import AdminTool
 
-from . import db_test_base
 from .test_mysql import skip_mysql
 from .test_postgresql import skip_postgresql
 
@@ -45,6 +45,28 @@ def normalize_file(filename, skiplines = [ None ]):
                 if skip not in i:
                     f.write(i)
         f.truncate()
+
+def replace_in_file(filename, original, replacement):
+    """replace text in a file. All occurances of original
+       will be replaced by replacement"""
+
+    for line in fileinput.input(filename, inplace = 1): 
+        print(line.replace(original, replacement))
+
+    fileinput.close()
+
+def find_in_file(filename, regexp):
+    """search for regexp in file.
+       If not found return false. If found return match.
+    """
+    with open(filename) as f:
+        contents = f.read()
+
+    m = re.search(regexp, contents, re.MULTILINE)
+
+    if not m: return False
+
+    return m.group(0)
 
 class AdminTest(object):
 
@@ -95,13 +117,50 @@ class AdminTest(object):
         self.assertEqual(ret, 0)
 
 
+    def testBasicInteractive(self):
+        # first command is an error that should be handled
+        inputs = iter(["'quit", "quit"])
+
+        orig_input = AdminTool.my_input
+
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'ready for input.\nType "help" for help.'
+        self.assertEqual(expected, out[-1*len(expected):])
+
+        inputs = iter(["list user", "quit"])
+
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'help.\n   1: admin\n   2: anonymous'
+        self.assertEqual(expected, out[-1*len(expected):])
+
+
+        AdminTool.my_input = orig_input
+
     def testGet(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -188,7 +247,6 @@ class AdminTest(object):
         self.assertEqual(len(err), 0)
 
     def testInit(self):
-        import sys
         self.admin=AdminTool()
         sys.argv=['main', '-i', self.dirname, 'install', 'classic', self.backend]
         ret = self.admin.main()
@@ -197,8 +255,19 @@ class AdminTest(object):
         self.assertTrue(os.path.isfile(self.dirname + "/config.ini"))
         self.assertTrue(os.path.isfile(self.dirname + "/schema.py"))
 
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', '/tmp/noSuchDirectory/nodir', 'install', 'classic', self.backend]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(ret)
+        print(out)
+        self.assertEqual(ret, 1)
+        self.assertIn('Error: Instance home parent directory '
+                      '"/tmp/noSuchDirectory" does not exist', out)
+
     def testInitWithConfig_ini(self):
-        import sys
         from roundup.configuration import CoreConfig
         self.admin=AdminTool()
         sys.argv=['main', '-i', self.dirname, 'install', 'classic', self.backend]
@@ -234,8 +303,6 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.admin=AdminTool()
         self.install_init()
 
@@ -305,7 +372,7 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys, filecmp
+        import filecmp
 
         self.admin=AdminTool()
         self.install_init()
@@ -364,14 +431,106 @@ class AdminTest(object):
         self.assertTrue(filecmp.cmp(self.dirname + "/config.ini",
                                     self.dirname + "/foo2.ini"))
 
+    def testUpdateconfigPbkdf2(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        import filecmp
+
+        self.admin=AdminTool()
+        self.install_init()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'updateconfig',
+                      self.dirname + "/config2.ini"]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "")
+        self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
+        # Autogenerated date header is different. Remove it
+        # so filecmp passes.
+        normalize_file(self.dirname + "/config2.ini",
+                       [ '# Autogenerated at' ])
+        normalize_file(self.dirname + "/config.ini",
+                       [ '# Autogenerated at' ])
+
+        self.assertTrue(filecmp.cmp(self.dirname + "/config.ini",
+                                    self.dirname + "/config2.ini"))
+
+        # Reopen the db closed by previous call
+        self.admin=AdminTool()
+
+        ### test replacement of old default value
+        replace_in_file(self.dirname + "/config.ini",
+                        "= 2000000", "= 10000")
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'update',
+                      self.dirname + "/config2.ini"]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        expected = "from old default of 10000 to new default of 2000000."
+
+        self.assertIn(expected, out)
+        self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
+        self.assertEqual(find_in_file(self.dirname + "/config2.ini",
+                                     "^password_.*= 2000000$"),
+                         "password_pbkdf2_default_rounds = 2000000")
+
+        # Reopen the db closed by previous call
+        self.admin=AdminTool()
+
+        ### test replacement of too small value
+        replace_in_file(self.dirname + "/config.ini",
+                        "= 10000", "= 10001")
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'update',
+                      self.dirname + "/config2.ini"]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        expected = ("Update 'password_pbkdf2_default_rounds' to a number "
+                    "equal to or larger\nthan 2000000.")
+
+        self.assertIn(expected, out)
+        self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
+        self.assertEqual(find_in_file(self.dirname + "/config2.ini",
+                                     "^password_.*= 10001$"),
+                         "password_pbkdf2_default_rounds = 10001")
+
+
+        # Reopen the db closed by previous call
+        self.admin=AdminTool()
+
+        ### test no action if value is large enough
+        replace_in_file(self.dirname + "/config.ini",
+                        "= 10001", "= 2000001")
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'update',
+                      self.dirname + "/config2.ini"]
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        expected = ""
+
+        self.assertEqual(expected, out)
+        self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
+        self.assertEqual(find_in_file(self.dirname + "/config2.ini",
+                                     "^password_.*= 2000001$"),
+                         "password_pbkdf2_default_rounds = 2000001")
+
 
     def testCliParse(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.admin=AdminTool()
         self.install_init()
 
@@ -444,8 +603,6 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.admin=AdminTool()
         self.install_init()
 
@@ -658,6 +815,305 @@ class AdminTest(object):
         print(err.getvalue().strip())
         self.assertEqual(out, "issue1:issue2")
 
+    def testPragma_reopen_tracker(self):
+        """test that _reopen_tracker works.
+        """
+        if self.backend not in ['anydbm']:
+            self.skipTest("For speed only run test with anydbm.")
+
+        orig_input = AdminTool.my_input
+
+        # must set verbose to see _reopen_tracker hidden setting.
+        # and to get "Reopening tracker" verbose log output
+        inputs = iter(["pragma verbose=true", "pragma list", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = '   _reopen_tracker=False'
+        self.assertIn(expected, out)
+        self.assertIn('descriptions...', out[-1])
+        self.assertNotIn('Reopening tracker', out)
+
+        # -----
+        inputs = iter(["pragma verbose=true", "pragma _reopen_tracker=True",
+                       "pragma list", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        self.assertEqual('Reopening tracker', out[2])
+        expected = '   _reopen_tracker=True'
+        self.assertIn(expected, out)
+
+        # -----
+        AdminTool.my_input = orig_input
+
+    def testPragma(self):
+        """Uses interactive mode since pragmas only apply when using multiple
+           commands.
+        """
+        if self.backend not in ['anydbm']:
+            self.skipTest("For speed only run test with anydbm.")
+
+        orig_input = AdminTool.my_input
+
+        for i in ["oN", "1", "yeS", "True"]:
+            inputs = iter(["pragma verbose=%s" % i, "pragma list", "quit"])
+            AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+            self.install_init()
+            self.admin=AdminTool()
+            sys.argv=['main', '-i', self.dirname]
+
+            with captured_output() as (out, err):
+                ret = self.admin.main()
+
+            out = out.getvalue().strip().split('\n')
+        
+            print(ret)
+            self.assertTrue(ret == 0)
+            expected = '   verbose=True'
+            self.assertIn(expected, out)
+            self.assertIn('descriptions...', out[-1])
+
+        # -----
+        for i in ["oFf", "0", "NO", "FalSe"]:
+            inputs = iter(["pragma verbose=true", "pragma verbose=%s" % i,
+                           "pragma list", "quit"])
+            AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+            self.install_init()
+            self.admin=AdminTool()
+            sys.argv=['main', '-i', self.dirname]
+
+            with captured_output() as (out, err):
+                ret = self.admin.main()
+
+            out = out.getvalue().strip().split('\n')
+        
+            print(ret)
+            self.assertTrue(ret == 0)
+            expected = '   verbose=False'
+            self.assertIn(expected, out)
+
+        # -----  test syntax errors
+        inputs = iter(["pragma", "pragma arg",
+                       "pragma foo=3","quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'Error: Not enough arguments supplied'
+        self.assertIn(expected, out)
+        expected = 'Error: Argument must be setting=value, was given: arg.'
+        self.assertIn(expected, out)
+        expected = 'Error: Unknown setting foo.'
+        self.assertIn(expected, out)
+
+        # -----
+        inputs = iter(["pragma verbose=foo", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'Error: Incorrect value for boolean setting verbose: foo.'
+        self.assertIn(expected, out)
+
+        # -----
+        inputs = iter(["pragma verbose=on", "pragma _inttest=5",
+                       "pragma list", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = '   _inttest=5'
+        self.assertIn(expected, out)
+        self.assertIn('descriptions...', out[-1])
+
+
+        # -----
+        inputs = iter(["pragma verbose=on", "pragma _inttest=fred",
+                       "pragma list", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+        expected = 'Error: Incorrect value for integer setting _inttest: fred.'
+        self.assertIn(expected, out)
+        self.assertIn('descriptions...', out[-1])
+
+        # -----
+        inputs = iter(["pragma indexer_backend=whoosh", "pragma list",
+                       "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        expected = '   indexer_backend=whoosh'
+        self.assertIn(expected, out)
+
+        # -----
+        inputs = iter(["pragma _floattest=4.5", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        expected = 'Error: Internal error: pragma can not handle values of type: float'
+        self.assertIn(expected, out)
+
+        # -----
+        AdminTool.my_input = orig_input
+
+    def testReindex(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        self.install_init()
+
+        # create an issue
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname, 'create', 'issue',
+                  'title="foo bar"', 'assignedto=admin' ]
+        ret = self.admin.main()
+
+        # reindex everything
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(len(out))
+        print(repr(out))
+        # make sure priority is being reindexed
+        self.assertIn('Reindex priority 40%', out)
+
+
+        # reindex whole class
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(len(out))
+        print(repr(out))
+        self.assertEqual(out,
+                         'Reindex issue  0%                                                          \rReindex issue 100%                                                         \rReindex issue done')
+        self.assertEqual(len(out), 170)
+
+        # reindex one item
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue1']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(len(out))
+        print(repr(out))
+        # no output when reindexing just one item
+        self.assertEqual(out, '')
+
+        # reindex range
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue:1-4']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(repr(out))
+        self.assertIn('no such item "issue3"', out)
+
+        # reindex bad class
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue1-4']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(repr(out))
+        self.assertIn('Error: no such class "issue1-4"', out)
+
+        # reindex bad item
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'reindex', 'issue14']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(repr(out))
+        self.assertIn('Error: no such item "issue14"', out)
 
     def disabletestHelpInitopts(self):
 
@@ -665,8 +1121,6 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -688,8 +1142,6 @@ class AdminTest(object):
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -760,8 +1212,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.maxDiff = None # we want full diff
 
         self.install_init()
@@ -839,8 +1289,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -946,8 +1394,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
 
         self.admin=AdminTool()
@@ -1019,8 +1465,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 
@@ -1049,8 +1493,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         # create user1 at id 3
         self.install_init()
         self.admin=AdminTool()
@@ -1137,8 +1579,6 @@ Role "user":
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.
         '''
-        import sys
-
         self.install_init()
         self.admin=AdminTool()
 

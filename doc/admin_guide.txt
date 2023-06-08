@@ -115,6 +115,10 @@ The basic configuration file is as follows (taken from the
   # Default: 
   group = 
 
+  # Maximum number of children to spawn using fork multiprocess mode.
+  # Default: 40
+  max_children = 40
+
   # don't fork (this overrides the pidfile mechanism)'
   # Allowed values: yes, no
   # Default: no
@@ -124,6 +128,14 @@ The basic configuration file is as follows (taken from the
   # Allowed values: yes, no
   # Default: no
   log_hostnames = no
+
+  # Have http(s) request logging done via python logger module.
+  # If set to yes the python logging module is used with qualname
+  # 'roundup.http'. Otherwise logging is done to stderr or the file
+  # specified using the -l/logfile option.
+  # Allowed values: yes, no
+  # Default: no
+  loghttpvialogger = no
 
   # File to which the server records the process id of the daemon.
   # If this option is not set, the server will run in foreground
@@ -161,6 +173,19 @@ The basic configuration file is as follows (taken from the
   # to the directory containing this config file.
   # Default: 
   pem = 
+
+  # Comma separated list of extra headers that should
+  # be copied into the CGI environment.
+  # E.G. if you want to access the REMOTE_USER and
+  # X-Proxy-User headers in the back end,
+  # set to the value REMOTE_USER,X-Proxy-User.
+  # Allowed values: comma-separated list of words
+  # Default: 
+  include_headers = 
+
+  # Change to HTTP/1.0 if needed. This disables keepalive.
+  # Default: HTTP/1.1
+  http_version = HTTP/1.1
 
   # Roundup trackers to serve.
   # Each option in this section defines single Roundup tracker.
@@ -203,11 +228,20 @@ Additional notes for each keyword:
   Make sure the name part doesn't include any url-unsafe characters like
   spaces. Stick to alphanumeric characters and you'll be ok.
 
-To generate a config.ini in the current directory (note it will
-overwrite an existing file) from the roundup-server command line use::
+To generate a config.ini in the current directory from the
+roundup-server command line use::
 
  roundup_server -p 8017  -u roundup --save-config  demo=/trackers/demo \
     sysadmin=/trackers/sysadmin
+
+Note it will save an old config.ini file to config.bak and create a
+new config.ini. The file is recreated from scratch ignoring the
+contents of the current config.ini. You may need to merge the backup
+and config files. save-config doesn't attempt to load or verify an
+existing config.ini. Running this in a tracker home directory will
+move the exsiting config.ini to config.bak and replace it with the
+roundup-server's config.ini. This will make the tracker in the
+directory fail to start util the original config.ini is restored.
 
 Configuring Compression
 =======================
@@ -222,7 +256,7 @@ on the fly, compression is enabled by default, to disable it set::
 in the tracker's ``config.ini``. You should disable compression if
 your proxy (e.g. nginx or apache) or wsgi server (uwsgi) is configured
 to compress responses on the fly. The python standard library includes
-gzip support. For brotli or zstd you will need to install packges. See
+gzip support. For brotli or zstd you will need to install packages. See
 the `installation documentation`_ for details.
 
 Some assets will not be compressed on the fly. Assets with mime types
@@ -286,6 +320,173 @@ get the gzip version and not a brotli compressed version. This
 mechanism allows the admin to allow use of brotli and zstd for
 dynamic content, but not for static content.
 
+Adding a Web Content Security Policy (CSP)
+==========================================
+
+A Content Security Policy (`CSP`_) adds a layer of security to
+Roundup's web interface. It makes it more difficult for an
+attacker to compromise Roundup.  By default Roundup does not add
+a CSP. If you need to implement a CSP, this section will help you
+understand how to add one and document the current level of
+support for CSP in Roundup.
+
+Roundup's web interface has remained mostly unchanged since it
+was created over a decade ago. Current releases have been slowly
+modernizing the HTML to improve security. There are still some
+improvements that need to happen before the tightest CSP
+configurations can be used.
+
+Writing a CSP is complex.  This section just touches on how to
+create and install a CSP to improve security. Some of it might
+break functionality.
+
+There are two ways to add a CSP:
+
+1. a fixed CSP added by a server
+2. a dynamic CSP added by Roundup
+
+Fixed CSP
+---------
+
+If you are using a web server (Apache, Nginx) to run Roundup, you can
+add a ``Content-Security-Policy`` header using that server. WSGI
+servers like uWSGI can also be configured to add headers.  An example
+header would look like::
+
+  Content-Security-Policy: default-src 'self' 'unsafe-inline' 'strict-dynamic';
+
+One thing that may need to be included is the ``unsafe-inline``.
+The default templates use ``onload``, ``onchange``, ``onsubmit``,
+and ``onclick`` JavaScript handlers. Without ``unsafe-inline``
+these won't work and popup helpers will not work. Sadly the use
+of ``unsafe-inline`` is a pretty big hole in this CSP.  You can
+set the hashes for all the JavaScript handlers in the CSP. Then
+replace ``unsafe-inline`` with ``unsafe-hashes`` to help close
+this hole, but has its own issues. See `remediating
+unsafe-inline`_ for another way to mitigate this.
+
+The inclusion of ``strict-dynamic`` allows trusted JavaScript
+files that are downloaded from Roundup to make changes to the web
+interface. These changes are also trusted code that will be run
+when invoked.
+
+More secure CSPs can also be created. However because of the ability
+to customize the web interface, it is difficult to provide guidance.
+
+Dynamic CSP
+-----------
+
+Roundup creates a cryptographic nonce for every client request. The
+nonce is the value of the ``client.client_nonce`` property.
+
+By changing the templates to use the nonce, we can better secure the 
+Roundup instance. However the nonce has to be set in the CSP returned
+by Roundup.
+
+One way to do this is to add a templating utility to the extensions
+directory that generates the CSP on the fly. For example::
+
+    default_security_headers = {
+	'Content-Security-Policy': (
+	    "default-src 'self'; "
+	    "base-uri 'self'; "
+	    "script-src https: 'nonce-{nonce}' 'strict-dynamic'; "
+	    "style-src 'self' 'nonce-{nonce}'; "
+	    "img-src 'self' data:; "
+	    "frame-ancestors 'self'; "
+	    "object-src 'self' 'nonce-{nonce}'; "
+	),
+    }
+
+
+    def AddHtmlHeaders(client, header_dict=None):
+	''' Generate https headers from dict use default security headers
+
+	    Setting the header with a value of None will not inject the
+	    header and can override the default set.
+
+	    Header values will be formatted with a dictionary including a
+	    nonce. Use to set a nonce for inline scripts.
+	'''
+	try:
+	    if client.client_nonce is None:
+		# logger.warning("client_nonce is None")
+		client.client_nonce = client.session_api._gen_sid()
+	except AttributeError:
+	    # client.client_nonce doesn't exist, create it
+	    # logger.warning("client_nonce does not exist, creating")
+	    client.client_nonce = client.session_api._gen_sid()
+
+	headers = default_security_headers.copy()
+	if isinstance(header_dict, dict):
+            headers.update(header_dict)
+
+	client_headers = client.additional_headers
+
+	for header, value in list(headers.items()):
+	    if value is None:
+		continue
+	    client_headers[header] = value.format(
+                nonce=client.client_nonce)
+
+    def init(instance):
+        instance.registerUtil('AddHtmlHeaders', AddHtmlHeaders)
+
+
+Adding the following to ``page.html`` right after the opening
+``<html....`>`` tag::
+
+   <tal:code tal:content="python:utils.AddHtmlHeaders(request.client)" />
+
+will invoke ``AddHtmlHeaders()`` to add the CSP header with the nonce.
+
+With this set of CSP headers, all style, script and object tags will
+need a ``nonce`` attribute. This can be added by changing::
+
+    <script src="javascript.js"></script>
+
+to::
+
+    <script
+        tal:attributes="nonce request/client/client_nonce"
+        src="javascript.js"></script>
+
+for each script, object or style tag.
+
+Remediating ``unsafe-inline``
+-----------------------------
+.. _remediating unsafe-inline:
+
+Using a trusted script to set event handlers to replace the ``onX``
+handlers allows removal of the ``unsafe-inline`` handlers.  If you
+remove ``unsafe-inline`` the ``onX`` handlers will not run. However
+you can use the label provided by the ``onX`` attribute to securely
+enable a callback function.
+
+This method is a work in progress. As an example proof of concept,
+adding this "decorator" script at the end of page.html::
+
+   <script tal:attributes="nonce request/client/client_nonce">
+    /* set submit event listener on forms that have an
+    onsubmit (case insensitive) attribute */
+    forms = document.querySelectorAll(form[onsubmit])
+    for (let form of f) {
+        form.addEventListener('submit',
+                              () => submit_once());
+     };
+   </script>
+
+will set callback for the submit even on any form that has an onsubmit
+attribute to ``submit_once()``. ``submit_once`` is defined in Roundup's
+base_javascript and is generated with a proper nonce.
+
+By including the nonce in the dynamic CSP, we can use our trusted
+"decorator" script to add event listeners. These listeners will call
+the trusted function in base_javascript to replace the ignored ``onX``
+handlers.
+
+.. _CSP: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+
 Configuring native-fts Full Text Search
 =======================================
 
@@ -314,13 +515,13 @@ language described at:
 https://www.sqlite.org/fts5.html#full_text_query_syntax. This
 supports:
 
-  * plain word search (joined with and similar to other search methods)
-  * phrase search with terms enclosed in quotes (``"``)
-  * proximity search with varying distances using ``NEAR()``
-  * boolean operations by grouping with parentheses and using ``AND``
-    and ``OR``
-  * exclusion using ``NOT``
-  * prefix searching by prefixing the term with``^``
+* plain word search (joined with and similar to other search methods)
+* phrase search with terms enclosed in quotes (``"``)
+* proximity search with varying distances using ``NEAR()``
+* boolean operations by grouping with parentheses and using ``AND``
+  and ``OR``
+* exclusion using ``NOT``
+* prefix searching by prefixing the term with``^``
 
 All of the data that is indexed is in a single column, so when column
 specifiers are used they usually result in an error which is detected
@@ -427,20 +628,20 @@ querying.
 
 Also there are various `dictionaries`_ that allow you to:
 
-  * add stopwords
-  * override stemming for a term
-  * add synonyms (e.g. a search for "pg" can also match 'psql'
-    "postgresql")
-  * add terms that expand/contract the search space (Thesaurus
-    dictionary)
-  * additional transforms
+* add stopwords
+* override stemming for a term
+* add synonyms (e.g. a search for "pg" can also match 'psql'
+  "postgresql")
+* add terms that expand/contract the search space (Thesaurus
+  dictionary)
+* additional transforms
   
 .. _dictionaries: https://www.postgresql.org/docs/14/textsearch-dictionaries.html
 
 Use of these is beyond this documentation. Please visit the
 appropriate PostgreSQL documents. The following my also be helpful:
 
-* http://rachbelaid.com/postgres-full-text-search-is-good-enough/
+* https://rachbelaid.com/postgres-full-text-search-is-good-enough/
 
 Ranking information is not used in this implementation. Also stop
 words set in config.ini are ignored. These are areas for improvement.
@@ -487,16 +688,24 @@ database for session data. By default it will use additional
 sqlite databases for storing the session and otk data.
 
 The following table shows which primary databases support
-different session database backends::
+different session database backends:
 
+.. table:: D - default if unconfigured, X - compatible choice
+  :class: captionbelow
 
-  main\/ session>| anydbm | sqlite | redis | mysql | postgresql |
-  anydbm         |    D   |        |   X   |       |            |
-  sqlite         |    X   |    D   |   X   |       |            |
-  mysql          |        |        |       |   D   |            |
-  postgresql     |        |        |       |       |      D     |
-  --------------------------------------------------------------+
-        D - default if unconfigured,   X - compatible choice
+  +---------------+--------+--------+-------+-------+------------+
+  |               |                session db                    |
+  +---------------+--------+--------+-------+-------+------------+
+  |primary db     | anydbm | sqlite | redis | mysql | postgresql |
+  +===============+========+========+=======+=======+============+
+  |anydbm         |    D   |        |   X   |       |            |
+  +---------------+--------+--------+-------+-------+------------+
+  |sqlite         |    X   |    D   |   X   |       |            |
+  +---------------+--------+--------+-------+-------+------------+
+  |mysql          |        |        |       |   D   |            |
+  +---------------+--------+--------+-------+-------+------------+
+  |postgresql     |        |        |       |       |      D     |
+  +---------------+--------+--------+-------+-------+------------+
 
 The ``backend`` setting is in the tracker's ``config.ini``
 file under the ``sessiondb`` section.
@@ -527,7 +736,7 @@ port 7200 using the password ``mypassword`` to open database
 10. The ``redis_url`` setting can load a file to better
 secure the url. If you are using redis 6.0 or newer, you can
 specify a username/password and access control lists to
-improv the security of your data. Another good alternative
+improve the security of your data. Another good alternative
 is to talk to redis using a Unix domain socket.
 
 If you are connecting to redis across the network rather
@@ -581,12 +790,12 @@ Email Access and Register
   will result in those users being registered with the tracker.
 
 More information about how to customise your tracker's security settings
-may be found in the `customisation documentation`_.
+may be found in the `reference documentation`_.
 
 Configuring Authentication Header/Variable
 ------------------------------------------
 
-The front end server running roundup can perform the user
+The front end server running Roundup can perform the user
 authentication. It pass the authenticated username to the backend in a
 variable. By default roundup looks for the ``REMOTE_USER`` variable
 This can be changed by setting the parameter ``http_auth_header`` in the
@@ -624,6 +833,39 @@ To make the tracker honor the new variable changing the tracker
 At the time this is written, support is experimental. If you use it
 you should notify the roundup maintainers using the roundup-users
 mailing list.
+
+
+Securing Secrets
+================
+
+Roundup can read secrets from a file that is referenced from any
+of the config.ini files. If you use Docker, you can bind mount
+the files from a secure location, or store them in a subdirectory
+of the tracker home.
+
+You can also use a secrets management tool like Docker Swarm's
+secrets management. This example config.ini configuration gets
+the database password from a file populated by Swarm secrets::
+
+   [rdbms]
+   # Database user password.
+   # A string that starts with 'file://' is interpreted as a file
+   # path relative to the tracker home. Using 'file:///' defines
+   # an absolute path. The first line of the file will be used as
+   # the value. Any string that does not start with 'file://' is
+   # used as is. It removes any whitespace at the end of the
+   # line, so a newline can be put in the file.
+   # 
+   # Default: roundup
+   password = file:///run/secrets/db_password
+
+assuming that Docker Swarm secrets has the key ``db_password``
+and the ``--secret db_password`` option is used when starting the
+Roundup service.
+
+Because environment variables can be inadvertently exposed in
+logs or process listings, Roundup does not currently support
+loading secrets from environment variables.
 
 Tasks
 =====
@@ -851,8 +1093,133 @@ solution to this is to:
 2. Set the scheduled task to run in the context of this user instead
    of your normal login
 
+Mail gateway script command line
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Usage::
+
+    usage: roundup_mailgw.py [-h] [-v] [-c DEFAULT_CLASS] [-I OAUTH_CLIENT_ID]
+			     [-O OAUTH_DIRECTORY] [-S SET_VALUE]
+			     [-T OAUTH_TOKEN_ENDPOINT]
+			     [args ...]
+
+
+The roundup mail gateway may be called in one of three ways:
+
+- without arguments. Then the env var ROUNDUP_INSTANCE will be tried.
+- with an instance home as the only argument,
+- with both an instance home and a mail spool file, or
+- with an instance home, a mail source type and its specification.
+
+It also supports optional ``-S`` (or ``--set-value``) arguments that allows you
+to set fields for a class created by the roundup-mailgw. The format for
+this option is [class.]property=value where class can be omitted and
+defaults to msg. The ``-S`` options uses the same
+property=value[;property=value] notation accepted by the command line
+roundup command or the commands that can be given on the Subject line of
+an email message (if you're using multiple properties delimited with a
+semicolon the class must be specified only once in the beginning).
+
+It can let you set the type of the message on a per e-mail address basis
+by calling roundup-mailgw with different email addresses and other
+settings.
+
+PIPE:
+ If there is no mail source specified, the mail gateway reads a single
+ message from the standard input and submits the message to the
+ roundup.mailgw module.
+
+UNIX mailbox:
+ In this case, the gateway reads all messages from the UNIX mail spool
+ file and submits each in turn to the roundup.mailgw module. The file is
+ emptied once all messages have been successfully handled. The file is
+ specified as::
+
+   mailbox /path/to/mailbox
+
+In all of the following mail source types, the username and password
+can be stored in a ``~/.netrc`` file. If done so, only the server name
+needs to be specified on the command-line.
+The username and/or password will be prompted for if not supplied on
+the command-line or in ``~/.netrc``.
+
+POP:
+ For the mail source "pop", the gateway reads all messages from the POP
+ server specified and submits each in turn to the roundup.mailgw module.
+ The server is specified as::
+
+    pop username:password@server
+
+ The username and password may be omitted::
+
+    pop username@server
+    pop server
+
+ are both valid.
+
+POPS:
+ Connect to a POP server over tls/ssl.
+ This supports the same notation as POP::
+
+    pops username:password@server
+
+APOP:
+ Same as POP, but using Authenticated POP::
+
+    apop username:password@server
+
+IMAP:
+ Connect to an IMAP server. This supports the same notation as that of
+ POP mail::
+
+    imap username:password@server
+
+ It also allows you to specify a specific mailbox other than INBOX using
+ this format::
+
+    imap username:password@server mailbox
+
+IMAPS:
+ Connect to an IMAP server over tls/ssl.
+ This supports the same notation as IMAP::
+
+    imaps username:password@server [mailbox]
+
+IMAPS_CRAM:
+ Connect to an IMAP server over tls/ssl using CRAM-MD5 authentication.
+ This supports the same notation as IMAP::
+
+    imaps_cram username:password@server [mailbox]
+
+IMAPS_OAUTH:
+ Connect to an IMAP server over tls/ssl using OAUTH authentication.
+ Note that this does not support a password in imaps URLs.
+ Instead it uses only the user and server and a command-line option for
+ the directory with the files ``access_token``, ``refresh_token``,
+ ``client_secret``, and ``client_id``.
+ By default this directory is ``oauth`` in your tracker home directory. The
+ access token is tried first and, if expired, the refresh token together
+ with the client secret is used to retrieve a new access token. Note that
+ both token files need to be *writeable*, the access token is
+ continuously replaced and some cloud providers may also renew the
+ refresh token from time to time::
+
+   imaps_oauth username@server [mailbox]
+
+ The refresh and access tokens (the latter can be left empty), the
+ client id and the client secret need to be retrieved via cloud provider
+ specific protocols or websites.
+
+ You need the requests_ library installed for OAuth.
+
+.. _requests: https://requests.readthedocs.io/en/latest/
+
+
 .. index:: ! roundup-admin
+   single: roundup-admin; usage
+   single: roundup-admin; data formats
    single: roundup-admin; man page reference
+   pair: roundup-admin; designator
 
 Using roundup-admin
 ===================
@@ -864,20 +1231,251 @@ tracker.
 
 Examples above show how to use it to:
 
-   * install and initialize a new tracker
-   * export/import tracker data for migrating between backends
-   * creating a new user fom the command line
-   * list/find users in the tracker
+* install and initialize a new tracker
+* export/import tracker data for migrating between backends
+* creating a new user fom the command line
+* list/find users in the tracker
 
-A brief (incomplete) summary is::
+The basic usage is::
 
-    roundup-admin help
-    roundup-admin -i <tracker_dir> get [-list] designator[, designator,...] propname
-    roundup-admin -i <tracker_dir> set designator[, designator,...] propname=value ...
-    roundup-admin -i <tracker_dir> find [-list] classname propname=value ...
+ Usage: roundup-admin [options] [<command> <arguments>]
 
-Run ``roundup-admin help commands`` for a complete list of subcommands.
+ Options:
+  -i instance home  -- specify the issue tracker "home directory" to administer
+  -u                -- the user[:password] to use for commands (default admin)
+  -d                -- print full designators not just class id numbers
+  -c                -- when outputting lists of data, comma-separate them.
+                       Same as '-S ","'.
+  -S <string>       -- when outputting lists of data, string-separate them
+  -s                -- when outputting lists of data, space-separate them.
+                       Same as '-S " "'.
+  -V                -- be verbose when importing
+  -v                -- report Roundup and Python versions (and quit)
+
+  Only one of -s, -c or -S can be specified.
+
+ Help:
+  roundup-admin -h
+  roundup-admin help                       -- this help
+  roundup-admin help <command>             -- command-specific help
+  roundup-admin help all                   -- all available help
+
+ Commands:
+  commit
+  create classname property=value ...
+  display designator[,designator]*
+  export [[-]class[,class]] export_dir
+  exporttables [[-]class[,class]] export_dir
+  filter classname propname=value ...
+  find classname propname=value ...
+  genconfig <filename>
+  get property designator[,designator]*
+  help topic
+  history designator [skipquiet]
+  import import_dir
+  importtables export_dir
+  initialise [adminpw]
+  install [template [backend [key=val[,key=val]]]]
+  list classname [property]
+  migrate
+  pack period | date
+  perftest [mode] [arguments]*
+  pragma setting=value | 'list'
+  reindex [classname|classname:#-#|designator]*
+  restore designator[,designator]*
+  retire designator[,designator]*
+  rollback
+  security [Role name]
+  set items property=value [property=value ...]
+  specification classname
+  table classname [property[,property]*]
+  templates [trace_search]
+  updateconfig <filename>
+ Commands may be abbreviated as long as the abbreviation
+ matches only one command, e.g. l == li == lis == list.
+
+One thing to note, The ``-u user`` setting does not currently operate
+like a user logging in via the web. The user running roundup-admin
+must have read access to the tracker home directory. As a result the
+user has access to the files and the database info contained in
+config.ini.
+
+Using ``-u user`` sets the actor/user parameter in the
+journal. Changes that are made are attributed to that
+user. The password is ignored if provided. Any existing
+username has full access to the data just like the admin
+user. This is an area for further development so that
+roundup-admin could be used with sudo to provide secure
+command line access to a tracker.
+
+In general you should forget that there is a -u parameter.
+
+All commands (except help, genconfig, templates) require a tracker
+specifier. This is just the path to the roundup tracker you're working
+with. A roundup tracker is where roundup keeps the database and
+configuration file that defines an issue tracker. It may be thought of
+as the issue tracker's "home directory". It may be specified in the
+environment variable ``TRACKER_HOME`` or on the command line as "``-i
+tracker``".
+
+A designator is a classname and an itemid concatenated, eg. bug1,
+user10, ... Property values are represented as strings in command
+arguments and in the printed results:
+
+- Strings are, well, strings.
+- Password values will display as their encoded value.
+- Date values are printed in the full date format in the local time
+  zone, and accepted in the full format or any of the partial formats
+  explained below.::
+
+    Input of...        Means...
+    "2000-04-17.03:45" 2000-04-17.03:45:00
+    "2000-04-17"       2000-04-17.00:00:00
+    "01-25"            yyyy-01-25.00:00:00
+    "08-13.22:13"      yyyy-08-13.22:13:00
+    "11-07.09:32:43"   yyyy-11-07.09:32:43
+    "14:25"            yyyy-mm-dd.14:25:00
+    "8:47:11"          yyyy-mm-dd.08:47:11
+    "2003"             2003-01-01.00:00:00
+    "2003-04"          2003-04-01.00:00:00
+    "."                "right now"
+
+- Link values are printed as item designators. When given as an
+  argument, item designators and key strings are both accepted.
+- Multilink values are printed as lists of item designators joined by
+  commas. When given as an argument, item designators and key strings
+  are both accepted; an empty string, a single item, or a list of items
+  joined by commas is accepted.
+
+When multiple items are specified to the roundup get or roundup set
+commands, the specified properties are retrieved or set on all the
+listed items.  When multiple results are returned by the roundup get or
+roundup find commands, they are printed one per line (default) or joined
+by commas (with the "``-c``" option).
+
+Where the command changes data, a login name/password is required. The
+login may be specified as either "``name``" or "``name:password``".
+
+- ``ROUNDUP_LOGIN`` environment variable
+- the "``-u``" command-line option
+
+If either the name or password is not supplied, they are obtained from
+the command-line.
+
+The ``-u user`` setting does not currently operate like a
+user logging in via the web. The user running roundup-admin
+must have read access to the tracker home directory. As a
+result the user has access to the files and the database
+info contained in config.ini.
+
+Using ``-u user`` sets the actor/user parameter in the
+journal. Changes that are made are attributed to that
+user. The password is ignored if provided. Any existing
+username has full access to the data just like the admin
+user. This is an area for further development so that
+roundup-admin could be used with sudo to provide secure
+command line access to a tracker.
+
+.. _initpw:
+
+When you initialise a new tracker instance you are prompted for the
+admin password. If you want to initialise a tracker non-interactively
+you can put the initialise command and password on the command
+line. But this allows others on the host to see the password (using
+the ps command). To initialise a tracker non-interactively without
+exposing the password, create a file (e.g init_tracker) set to mode
+600 (so only the owner can read it) with the contents:
+
+   initialise admin_password
+
+and feed it to roundup-admin on standard input. E.G.
+
+  cat init_tracker | roundup-admin -i tracker_dir
+
+(for more details see https://issues.roundup-tracker.org/issue2550789.)
+
+.. index:: ! roundup-admin; usage in scripts
+
+Using with the shell
+--------------------
+
+With version 0.6.0 or newer of roundup (which introduced support for
+multiple designators to display and the -d, -S and -s flags):
+
+To find all messages regarding chatting issues that contain the word
+"spam", for example, you could execute the following command from the
+directory where the database dumps its files::
+
+    shell% for issue in `roundup-admin -ds find issue status=chatting`; do
+    > grep -l spam `roundup-admin -ds ' ' get messages $issue`
+    > done
+    msg23
+    msg49
+    msg50
+    msg61
+    shell%
+
+Or, using the -dc option, this can be written as a single command::
+
+    shell% grep -l spam `roundup get messages \
+        \`roundup -dc find issue status=chatting\``
+    msg23
+    msg49
+    msg50
+    msg61
+    shell%
+
+You can also display issue contents::
+
+    shell% roundup-admin display `roundup-admin -dc get messages \
+               issue3,issue1`
+    files: []
+    inreplyto: None
+    recipients: []
+    author: 1
+    date: 2003-02-16.21:23:03
+    messageid: None
+    summary: jkdskldjf
+    files: []
+    inreplyto: None
+    recipients: []
+    author: 1
+    date: 2003-02-15.01:59:11
+    messageid: None
+    summary: jlkfjadsf
+
+or status::
+
+    shell% roundup-admin get name `/tools/roundup/bin/roundup-admin \
+          -dc -i /var/roundup/sysadmin get status issue3,issue1`
+    unread
+    deferred
+
+or status on a single line::
+
+    shell% echo `roundup-admin get name \`/tools/roundup/bin/roundup-admin \
+             -dc -i /var/roundup/sysadmin get status issue3,issue1\``
+    unread deferred
+
+which is the same as::
+
+    shell% roundup-admin -s get name `/tools/roundup/bin/roundup-admin \
+             -dc -i /var/roundup/sysadmin get status issue3,issue1`
+    unread deferred
+
+Also the tautological::
+
+   shell% roundup-admin get name \
+      `roundup-admin -dc get status \`roundup-admin -dc find issue \
+          status=chatting\``
+   chatting
+   chatting
+
+Remember the roundup commands that accept multiple designators accept
+them ',' separated so using '-dc' is almost always required.
+
 
 .. _`customisation documentation`: customizing.html
+.. _`reference documentation`: reference.html
 .. _`upgrading documentation`: upgrading.html
 .. _`installation documentation`: installation.html

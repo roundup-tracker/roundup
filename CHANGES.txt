@@ -16,6 +16,7 @@ python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 
 Fixed:
 
+- Updated directions for verifying Roundup distribution using pgp.
 - Dockerfile healthcheck fixed so it works when trackers are
   specified on command line. Also cleanup of unneeded
   packages. (John Rouillard)
@@ -49,9 +50,61 @@ Fixed:
   Change how in-reply-to threading works in the mailgw. If there is
   more than one issue with a matching parent message, fall back to
   subject matching. See upgrading.txt for details. (John Rouillard)
+- issue2551195 - port scripts from optparse to argparse (Ralf Schlatterbeck)
+- issue2551246 - mitigation, document how -u doesn't work for
+  roundup-admin. (John Rouillard)
+- Document better that files in the template or static_files
+  directories accessed via @@file are available to any user with the
+  url. (John Rouillard)
+- Fix final exception handler in roundup-server to send proper
+  Content-Length header to the client. (John Rouillard)
+- Fix traceback if Origin header is missing. (John Rouillard)
+- issue2551250: Fix sorting of detectors even if there are two with the
+  same name and priority (can happen if they are created in two
+  different files).
+- Fix Traceback when a numeric order attribute is empty (Ralf
+  Schlatterbeck)
+- Update some template schema files to assign Register permissions for the
+  Anonymous user. Replaces the old Create permission. (John Rouillard)
+- Allow '*' and explicit origins in allowed_api_origins. Only return 
+  'Access-Control-Allow-Credentials' when not matching '*'. Fixes
+  security issue with rest when using '*'.  (John Rouillard)
+- issue2551263: In REST response expose rate limiting, sunset, allow
+  HTTP headers to calling javascript.  (John Rouillard)
+- issue2551257: When downloading an attached (user supplied file),
+  make sure that an 'X-Content-Type-Options: nosniff' header is sent.
+  (John Rouillard)
+- issue2551252 - default number of rounds for PKDF2 password increased
+  to 2,000,000.  (John Rouillard)
+- issue2551251 - migrate/re-encrypt PBKDF2 password if stored
+  password used a smaller number of rounds than set in
+  password_pbkdf2_default_rounds.  (John Rouillard)
+- upgrade from jquery-3.5.1 to jquery-3.6.3. Update user.help.html
+  to new version.  (John Rouillard)
+- Dockerfile scanned with hadolint. Fixed multiple issues. (John Rouillard)
+- fix crash due to invalid initialization/reset of configuration.py
+  option_validators. Crashed roundup-admin on second command if an
+  option_validator was added by a detector or extension. (John Rouillard)
+- Dockerfile uses dumb-init to properly wait for child/zombie
+  processes. Defense against child process starting from detector
+  and becoming a zombie when its roundup-server instance exits.
+  (John Rouillard)
+- Move installed frontend/Zope back to frontend/ZRoundup
+  directory. This better identifies the directory when copied into
+  the Zope framework. It also matches existing
+  documentation. (John Rouilard)
+- Multiple fixes/updates for installation documentation.
+  Including docker shell/admin/demo mdoes. (John Rouillard)
+- Invalid item identifiers passed to REST endpoint return a 404
+  rather than a 400 error. E.G. /rest/data/issue/issue4 (rather
+  than .../issue/4). (John Rouillard)
 
 Features:
 
+- Add warning about limited Python 2 support lifetime to install and
+  upgrading docs. (John Rouillard)
+- Dockerfile supports demo mode for instant gratification
+  8-). Also supports shell and admin mode (John Rouillard)
 - Dockerfile build allows adding additional python packages via
   pip, setting UID tracker is run under. (John Rouillard)
 - issue2551140 - Added redis as a session and otk database for use
@@ -66,10 +119,45 @@ Features:
 - sqlite databases use WAL mode when *created* to improve read
   concurrency. Existing sqlite database still use rollback journal
   mode. See upgrading.txt for details. (John Rouillard)
-- issue2551233 - create new roundup-admin command "templates"
-  list all template names, location and descriptions. Should help
-  find where /usr/share/roundup/templates is buried during some
-  install mechanisms. (John Rouillard)
+- issue2551233 - create new roundup-admin command "templates" list all
+  template names, location and descriptions. Should help find where
+  /usr/share/roundup/templates is buried during some install
+  mechanisms. Does not need a tracker home to run. (John Rouillard)
+- Add OAuth authentication to the mailgw script. Now IMAPS can be used
+  with OAuth as required by several large cloud providers. Move command
+  line processing of the mailgw script to ``argparse``. Note that the
+  command line options of the mailgw have changed, see upgrading.txt for
+  details. (Ralf Schlatterbeck)
+- issue2551243: schema-dump.py enhanced with anti-CSRF headers. Flake8
+  cleanup and python2 support. (John Rouillard)
+- issue2551253 - new password hash PBDKF2-SHA512 added. Not
+  available by default. Follow directions in upgrading document
+  to use.  (John Rouillard)
+- roundup-admin migrate command reports the schema version.
+- issue2551262 - the mail gateway subject prefix now allows spaces
+  before/after prefix. Also allow spaces between classname and id
+  number in prefix designator. So "[ issue 23   ] subject" is parsed
+  like "[issue23] subject". (John Rouillard)
+- [doc]: add section on implementing CSP for Roundup to admin
+  doc. (John Rouillard)
+- issue2551265 - deprecate SSHA password hash method. Users using SSHA
+  passwords will have their passwords transprently upgraded to PBKDF2
+  derived hash on next login. (John Rouillard)
+- issue2551253 - Modify password PBKDF2 method to use SHA512. New
+  hash function using PBKDF2-SHA512 available. Will be default in
+  future. Directions for upgrading security by using it now is
+  included in upgrading.txt. (John Rouillard)
+- issue2551275 - Allow configuring max_children in roundup-server.
+  When using roundup-server in fork mode, allow raising number of
+  forked children above the default of 40. (Original patch by Joseph
+  Myers, config settings and docs by John Rouillard.)
+- roundup-admin genconfig does not need a tracker home to run. (John
+  Rouillard)
+- issue2551190 - Allow roundup-admin reindex to work in
+  batches. Running roundup-admin -i ... reindex issue:1-1000 will
+  reindex the first 1000 issues while reporting any missing issues
+  in the range. Also completion progress is reported when indexing a
+  specific class.
 
 2022-07-13 2.2.0
 
@@ -174,6 +262,9 @@ Fixed:
   if the user doesn't have edit permissions. (John Rouillard)
 - issue2551216 - create new mysql databases using COLLATE
   utf8_general_ci to prevent crashes in test suite. (John Rouillard)
+- issue2551146 - fix issues with strings that have multiple %s
+  substutions that were not labeled making i18n difficult/impossible.
+  (John Rouillard)
 
 Features:
 
@@ -1013,7 +1104,7 @@ Features:
   At some future date the older 3 argument style check command will
   be deprecated. See ``upgrading.txt`` for details.
 - New property for permissions added to simplify the model. See
-  ``customizing.txt`` and search for props_only and
+  ``reference.txt`` and search for props_only and
   set_props_only_default in the section 'Adding a new Permission'.
   (John Rouillard)
 - issue2550690 - Inadequate CSRF protection. Improvements in

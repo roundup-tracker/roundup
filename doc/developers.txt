@@ -4,23 +4,24 @@ Developing Roundup
 
 .. note::
    The intended audience of this document is the developers of the core
-   Roundup code. If you just wish to alter some behaviour of your Roundup
-   installation, see `customising roundup`_.
+   Roundup code. If you just wish to alter some behavior of your Roundup
+   installation, see `Customising Roundup`_.
 
 Contents
 
 .. contents::
    :local:
 
-If you are looking for info on managing the roundup-tracker.org
-infrastructure, that information has migrated to website/README.txt
-in the roundup repo.
 
 Getting Started
 ---------------
 
-Anyone wishing to help in the development of Roundup must read `Roundup's
-Design Document`_ and the `implementation notes`_.
+If you are looking for a good first issue, search for `StarterTicket
+on https://issues.roundup-tracker.org`_. These include issues where
+Python development, documentation or web design skills are useful.
+
+You can continue the conversation using the issue or join the
+Roundup-devel list to get assistance and verify your planned changes.
 
 All development is coordinated through two resources:
 
@@ -29,53 +30,158 @@ All development is coordinated through two resources:
 - The issue tracker running at
   https://issues.roundup-tracker.org/
 
+In addition, the Roundup IRC channel on irc.oftc.net can be accessed
+via the web interface shown on the Contact page. The channel is logged
+and the web sites for the logs are shown in the channel topic. You can
+ask questions and use it to coordinate work discussed using the
+resources above.
 
-Small Changes
--------------
+Anyone wishing to help in the development of the Roundup Python core
+may find `Roundup's Design Document`_ and the `implementation notes`_
+helpful.
 
-Most small changes can be submitted as patches through the
-`issue tracker`_ or sent to `roundup-devel mailing list`_.
-
-
-Source Repository Access
-------------------------
-
-See https://www.roundup-tracker.org/code.html.
-For all other questions ask on the development mailinglist.
-
+People working on Documentation or designing changes to the Web
+interface don't need to get into the implementation internals.
 
 Project Rules
 -------------
 
-Mostly the project follows Guido's Style (though naming tends to be a little
-relaxed sometimes). In short:
+Be polite to others. There is no place for ad hominem attacks.
+
+Mostly the project follows Guido's Python Style (though naming tends
+to be a little relaxed sometimes). In short:
 
 - 80 column width code
 - 4-space indentations
-- All modules must have an Id line near the top
 
 Other project rules:
 
-- New functionality must be documented, even briefly (so at least we know
-  where there's missing documentation) and changes to tracker configuration
-  must be logged in the upgrading document.
-- subscribe to roundup-checkins to receive checkin notifications from the
-  other developers with write access to the source-code repository.
-- discuss any changes with the other developers on roundup-dev. If nothing
-  else, this makes sure there's no rude shocks
-- write unit tests for changes you make (where possible), and ensure that
-  all unit tests run before committing changes
-- run pychecker over changed code
+- new functionality must be documented, even briefly (so at
+  least we know where there's missing documentation) and
+  changes to tracker configuration must be logged in the
+  upgrading document.
+- discuss any changes with the other developers on
+  roundup-dev. If nothing else, this makes sure there's no
+  rude shocks.
+- write unit tests for changes you make (where possible),
+  and ensure that all unit tests run before committing
+  changes.
+- run flake8_ or pylint_ over changed code.
+- if you have direct commit access to the repository,
+  subscribe to roundup-checkins to receive checkin
+  notifications from the other developers with write access
+  to the source-code repository.
 
-The administrators of the project reserve the right to boot developers who
-consistently check in code which is either broken or takes the codebase in
-directions that have not been agreed to.
+The goal is to have no flake8 issues. Current code has
+complex functions, some long lines and use of mutable
+objects in function signatures. Some third party code
+(e.g. ZPT) vendored into the codebase has more issues.
 
+The administrators of the project reserve the right to boot
+developers who consistently check in code which is either
+broken or takes the codebase in directions that have not
+been agreed to.
+
+Setting up a Development Environment
+------------------------------------
+
+Roundup doesn't require any external libraries. Installing
+Python 3 and its core libraries is enough to get Roundup
+running.
+
+The easiest way to work with Roundup is to clone the
+repository.  Roundup is developed using the `Mercurial
+distributed version control system (DVCS)`_ [1]_. It is
+`hosted at Sourceforge`_. See
+https://www.roundup-tracker.org/code.html for details.
+
+If you are used to git, Mercurial's `command equivalence
+table`_ can help. Most of the concepts from git (except for
+staging) should be familiar.
+
+To clone the repository use::
+
+   hg clone http://hg.code.sf.net/p/roundup/code roundup
+
+(Yes, that is an http url.) 
+
+This will create a read only clone (you can't ``hg push``)
+of the repo. Changes you make can be attached as patches
+(created using ``hg diff``) to tickets in our `issue
+tracker`_.
+
+See https://www.roundup-tracker.org/code.html for URL's and
+directions on getting read write access which allows pushing
+to the repository.
+
+Once you have your clone, you can run ``python3 ./demo -b
+sqlite`` and get a working Roundup server. This will start
+the server using the ``sqlite`` backend. The code is in the
+``roundup`` subdirectory.
+
+Submitting Changes
+------------------
+
+Most small changes can be submitted as patches through the
+`issue tracker`_ or sent to `Roundup-devel mailing list`_.
+
+Your account on sourceforge can be set up to allow direct
+pushes to the repo. Once that is done, using::
+
+   hg push https://user@hg.code.sf.net/p/roundup/code
+
+or 
+
+   hg push ssh://user@hg.code.sf.net/p/roundup/code
+
+will commit your changes.
+
+
+Other Resources - CI, Code Coverage 
+-----------------------------------
+
+Roundup has a `copy of the mercurial repository on GitHub`_. It is
+updated manually after every few commits to the Mercurial
+repository. Updates trigger the CI pipeline which happens on two
+services:
+
+  1. `GitHub Actions`_. It runs Docker container scans using Anchore as
+     well as security scans for dependencies using CodeQL. Also it
+     runs the test suite on multiple versions of Python.
+  2. `TravisCI`_ is also used to run CI. It runs the test suite on
+     multiple Python versions. It also provides alpha and development
+     Python releases faster than GitHub.
+
+GitHub actions upload coverage statistics to both `CodeCov`_ and
+`Coveralls`_. TravisCI only uploads to CodeCov.
+
+We run our own issue tracker so we can dogfood the code. As
+a result, we do not use GitHub issues. Pull requests are
+grudgingly accepted. They have to be exported and applied to
+the Mercurial repository. This is time consuming so patches
+attached to an issue in our tracker are preferred.
 
 Debugging Aids
 --------------
 
-See :doc:`debugging <debugging>`.
+Try turning on logging of DEBUG level messages. This may be done a number
+of ways, depending on what it is you're testing:
+
+1. If you're testing the database unit tests, then set the environment
+   variable ``LOGGING_LEVEL=DEBUG``. This may be done like so:
+
+    LOGGING_LEVEL=DEBUG python -m pytest test/
+
+   This variable replaces the older HYPERDBDEBUG environment var.
+
+2. If you're testing a particular tracker, then set the logging level in
+   your tracker's ``config.ini``.
+
+If you set the environment variable SENDMAILDEBUG to a filename,
+roundup will write each email message that it sends to that file
+instead to the internet.  This environment variable is independent of
+the python -O flag.
+
 
 Internationalization Notes
 --------------------------
@@ -126,7 +232,7 @@ GNU gettext package
 
 This chapter is full of references to GNU `gettext package`_.
 GNU gettext is a "must have" for nearly all steps of internationalizing
-any program, and it's manual is definetely a recommended reading
+any program, and it's manual is definitely a recommended reading
 for people involved in `I18N`_.
 
 There are GNU gettext ports to all major OS platforms.
@@ -200,7 +306,7 @@ Sometimes translatable strings appear in the source code in untranslated
 form [#note_admin.py]_ and must be translated elsewhere.
 Example::
 
-  for meal in ("spam", "egg", "beacon"):
+  for meal in ("spam", "egg", "bacon"):
       print(_(meal))
 
 In such cases, strings must be marked for translation without actual
@@ -269,7 +375,7 @@ Template markup examples:
   will translate the caption (and return value) for the "wink" button.
 
 * explicit msgids.  Sometimes it may be useful to specify msgid
-  for the element translation explicitely, like this::
+  for the element translation explicitly, like this::
 
     <span i18n:translate="know what i mean?">this text is ignored</span>
 
@@ -305,6 +411,10 @@ this::
     # fire before changes are made
     db.status.audit('create', statusfail)
 
+.. index::
+     i18n; adding translations for your tracker
+     see: internatonalization; i18n
+     see: localization; i18n
 
 Extracting Translatable Messages
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -400,6 +510,11 @@ Translatable Messages`_.)
 At run time, Roundup automatically compiles message catalogs whenever
 `PO`_ file is changed.
 
+.. [1] Roundup is written in Python and we believe in using tools in
+   the Python ecosystem whenever possible.
+
+
+
 .. _`Customising Roundup`: customizing.html
 .. _`Roundup's Design Document`: spec.html
 .. _`implementation notes`: implementation.html
@@ -409,33 +524,48 @@ At run time, Roundup automatically compiles message catalogs whenever
 
 .. _alexander smishlajev:
 .. _als: https://sourceforge.net/u/a1s/profile/
+.. _CodeCov: https://app.codecov.io/gh/roundup-tracker/roundup
+.. _copy of the mercurial repository on GitHub:
+    https://github.com/roundup-tracker/roundup
+.. _command equivalence table: https://wiki.mercurial-scm.org/GitConcepts#Command_equivalence_table
+.. _Coveralls: https://coveralls.io/github/roundup-tracker/roundup
 .. _cygwin: https://www.cygwin.com/
 .. _emacs: https://www.gnu.org/software/emacs/
-.. _gettext package: http://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
+.. _flake8: https://flake8.pycqa.org/en/latest/
+.. _gettext package: https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
 .. _gettext module: https://docs.python.org/2/library/gettext.html
-.. _GNU: http://www.gnu.org/
-.. _GNU mirror sites: http://www.gnu.org/prep/ftp.html
+.. _GitHub Actions: https://github.com/roundup-tracker/roundup/actions
+.. _GNU: https://www.gnu.org/
+.. _GNU mirror sites: https://www.gnu.org/prep/ftp.html
+.. _hosted at sourceforge:
+   https://sourceforge.net/p/roundup/code/ci/default/tree/
 .. _issue tracker: https://issues.roundup-tracker.org/
 .. _Lokalize: https://apps.kde.org/lokalize/
 .. _KDE: https://kde.org/
 .. _linux: https://www.linux.org/
+.. _Mercurial distributed version control system (DVCS):
+   https://www.mercurial-scm.org/
 .. _Plural Forms:
-    http://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
+   https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
 .. _po filetype plugin:
     https://vim.sourceforge.io/scripts/script.php?script_id=695
 .. _PO utilities: https://github.com/pinard/po-utils
 .. _poEdit: https://poedit.net/
+.. _pylint: https://pylint.pycqa.org/en/latest/
 .. _Roundup Source:
 .. _Roundup source distribution:
 .. _Roundup binary distribution:
     https://sourceforge.net/projects/roundup/files/
 .. _roundup-devel mailing list:
    https://sourceforge.net/projects/roundup/lists/roundup-devel
+.. _StarterTicket on https://issues.roundup-tracker.org:
+   https://issues.roundup-tracker.org/issue?@columns=title,id,activity,status&@sort=activity&@filter=status,keywords&status=-1,1,2&keywords=15&@dispname=Starter%20tickets
 .. _TAL:
 .. _Template Attribute Language:
    https://pagetemplates.readthedocs.io/en/latest/history/TALSpecification14.html
 .. _TALES:
 .. _Template Attribute Language Expression Syntax:
    https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
+.. _TravisCI: https://app.travis-ci.com/github/roundup-tracker/roundup
 .. _vim: https://www.vim.org/
-.. _ZPTInternationalization: http://grok.zope.org/documentation/how-to/how-to-internationalize-your-application/view
+.. _ZPTInternationalization: http://grok.zope.org/doc/community/view_generation/i18n_of_your_app.html

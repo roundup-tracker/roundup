@@ -20,7 +20,8 @@ except ImportError:
         # don't completely throw away the existing state, but add some
         # more random state to the existing state
         def seed(v=None):
-            import os, time
+            import os
+            import time
             _r.seed((_r.getstate(),
                      v,
                      hasattr(os, 'getpid') and os.getpid(),

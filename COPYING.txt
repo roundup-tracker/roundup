@@ -1,12 +1,14 @@
-Note links for http://www.zope.com/Marks and  http://www.ekit.com/ are dead.
+Roundup, exclusive of the Zope page templates, is `MIT licensed`_.
+
+.. _MIT licensed: https://opensource.org/license/mit/
 
 Roundup Licensing
 -----------------
 
-Copyright (c) 2009-2022 Roundup-Team
-Copyright (c) 2003-2009 Richard Jones (richard@mechanicalcat.net)
-Copyright (c) 2002 eKit.com Inc (http://www.ekit.com/)
-Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
+| Copyright (c) 2009-2023 Roundup-Team (https://opensource.org/license/mit/)
+| Copyright (c) 2003-2009 Richard Jones  (richard@mechanicalcat.net)
+| Copyright (c) 2002 eKit.com Inc
+| Copyright (c) 2001 Bizar Software Pty Ltd
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +49,8 @@ The license for this code is the `Zope Public License (ZPL) Version 2.0`_,
 included below.
 
 
+.. _Zope Public License (ZPL) Version 2.0: https://opensource.org/license/zpl-2-0/
+
 Zope Public License (ZPL) Version 2.0
 -------------------------------------
 
@@ -86,20 +90,20 @@ following conditions are met:
 
 Disclaimer
 
-  THIS SOFTWARE IS PROVIDED BY ZOPE CORPORATION ''AS IS''
-  AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT
-  NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-  AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
-  NO EVENT SHALL ZOPE CORPORATION OR ITS CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-  DAMAGE.
+    THIS SOFTWARE IS PROVIDED BY ZOPE CORPORATION ''AS IS''
+    AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT
+    NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+    NO EVENT SHALL ZOPE CORPORATION OR ITS CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+    HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+    DAMAGE.
 
 
 This software consists of contributions made by Zope
@@ -107,3 +111,5 @@ Corporation and many individuals on behalf of Zope
 Corporation.  Specific attributions are listed in the
 accompanying credits file.
 
+
+Note link for http://www.zope.com/Marks is dead.

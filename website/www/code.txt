@@ -1,3 +1,9 @@
+.. meta::
+    :description:
+        Information for developers of Roundup. Including directions on
+        checking code from repository, how to run demo mode and
+        execute tests.
+
 Code
 ====
 
@@ -34,7 +40,7 @@ Execute tests
 -------------
 ::
 
-  python run_tests.py
+  python -m pytest test
 
 See repository `README.txt <https://sourceforge.net/p/roundup/code/ci/tip/tree/README.txt>`_
 for more info.

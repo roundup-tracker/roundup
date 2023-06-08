@@ -2,19 +2,82 @@
 .SH NAME
 roundup-demo \- create a roundup "demo" tracker and launch its web interface
 .SH SYNOPSIS
-\fBroundup-demo\fP [\fIbackend\fP [\fBnuke\fP]]
+\fBroundup_demo\fP [\fB\-h\fP] [\fB-b\fP \fIBIND_ADDRESS\fP] 
+[\fB-b\fP {\fBanydbm\fP,\fBmysql\fP,\fBsqlite\fP,\fBpostgresql\fP}]
+[\fB-t\fb
+{\fBminimal\fP,\fBjinja2\fP,\fBclassic\fP,\fBresponsive\fP,\fBdevel\fP}]
+[\fB-p\fP \fIPORT\fP] [\fB-P\fP \fIURLPORT\fP] [\fB-V\fP]
+[\fIdirectory\fP] [\fIbackend\fP] [\fBnuke\fP]
 .SH OPTIONS
 .TP
+\fIdirectory\fP
+
+The home directory for the new demo tracker. (*)
+.TP
+\fIbackend\fP
+
+Choose backend database. Depricated, use \fB-b\fP.
+.TP
 \fBnuke\fP
-Create a fresh demo tracker (deleting the existing one if any). If the
-additional \fIbackend\fP argument is specified, the new demo tracker will
-use the backend named (one of "anydbm", "sqlite", "mysql" or
-"postgresql"; subject to availability on your system).
+
+Create a fresh demo tracker (deleting the existing one if
+any).  E.G.
+.EX
+    roundup-demo -b sqlite -t classic ./mytracker nuke
+.EE
+will remove an existing tracker (if present) from the directory
+\fB./mytracker\fP.  Then it will create and serve a new empty classic
+tracker using the sqlite backend.
+.TP
+\fB-h\fP, \fB--help\fP
+
+Show the help message and exit
+.TP
+\fB-b\fp \fIBIND_ADDRESS\fI, \fB--bind_address\fP \fIBIND_ADDRESS\fP
+
+Choose address for server to listen at. Use 0.0.0.0 to bind to all addreses.
+Default: 127.0.0.1.
+.TP
+\fB-b\fP {\fBanydbm\fP,\fBmysql\fP,\fBsqlite\fP,\fBpostgresql\fP}, \
+\fB--backend_db\fP {\fBanydbm\fP,\fBmysql\fP,\fBsqlite\fP,\fBpostgresql\fP}
+
+Choose backend database. Default:
+sqlite. Available backends are subject to availability on your system.
+.TP
+\fB-t\fP \
+{\fBminimal\fP,\fBjinja2\fP,\fBclassic\fP,\fBresponsive\fP,\fBdevel\fP}, \
+\fP--template\fB \
+{\fBminimal\fP,\fBjinja2\fP,\fBclassic\fP,\fBresponsive\fP,\fBdevel\fP}
+
+Use specified template when building tracker. (*)
+.TP
+\fB-p\fP \fIPORT\fP, \fB--port\fP \fIPORT\fP
+
+Listen at this port. Default: search for open port starting at 8917.
+.TP
+\fB-P\fP \fIURLPORT\fP, \fB--urlport\fP \fIURLPORT\fP When using
+
+docker this option passes the docker external port to the demo
+instance. If using \fBdocker ... -p 9090:8917 ...\fP this should be
+set to \fB-P 9090\fP. Default: as selected by \fB--port\fP.
+.TP
+\fB-V\fP, \fB--version\fP
+
+Show program's version number and exit
+
+.PP
+If items marked with (*) are missing, they will be asked for
+interactively when setting up the tracker.
+
 .SH DESCRIPTION
-This command creates a fresh demo tracker for you to experiment with. The
-email features of Roundup will be turned off (so the nosy feature won't
-send email). It does this by removing the \fInosyreaction.py\fP module
-from the demo tracker's \fIdetectors\fP directory.
+This command creates a fresh demo tracker for you to experiment
+with. The email features of Roundup will be turned off (so the nosy
+feature won't send email). It does this by removing the
+\fBnosyreaction.py\fP module from the demo tracker's \fIdetectors\fP
+directory. If you wish to send email to promote the trcker to
+production, you will need to copy \fBnosyreaction.py\fP from the
+default tracker templates directory.  The \fBtemplates\fP command from
+roundup-admin(1) can help you locate a replacement.
 
 If you wish, you may modify the demo tracker by editing its configuration
 files and HTML templates. See the \fIcustomisation\fP manual for
@@ -25,6 +88,8 @@ creating your real, live tracker. Simply run the \fIroundup-admin\fP
 command to install the tracker from inside the demo tracker home directory,
 and it will be listed as an available template for installation. No data
 will be copied over.
+.SH SEE ALSO
+
 .SH AUTHOR
-This manpage was written by Richard Jones
-<richard@users.sourceforge.net>.
+This manpage was written by Richard Jones and extensively modified by
+John Rouillard <rouilj@users.sourceforge.net>.

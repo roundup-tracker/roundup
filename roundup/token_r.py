@@ -54,8 +54,8 @@ def token_split(s, whitespace=' \r\n\t', quotes='\'"',
     while 1:
         # end of string, finish off the current token
         if pos == length:
-            if state == QUOTE: raise ValueError
-            elif state == TOKEN: l.append(token)
+            if state == QUOTE: raise ValueError     # noqa: E701
+            elif state == TOKEN: l.append(token)    # noqa: E701
             break
         c = s[pos]
         if state == NEWTOKEN:

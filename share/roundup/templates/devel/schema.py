@@ -101,6 +101,8 @@ user = Class(db, "user",
              vcs_name=String())
 
 user.setkey("username")
+db.security.addPermission(name='Register', klass='user',
+                          description='User is allowed to register new user')
 
 # Permissions for revision creation and repository viewing.
 for role in ('User',):
@@ -363,7 +365,7 @@ db.security.addPermissionToRole('Anonymous', 'Web Access')
 
 # Let anonymous users access the email interface (note that this implies
 # that they will be registered automatically, hence they will need the
-# "Create" user Permission below)
+# "Register" user Permission below)
 # This is disabled by default to stop spam from auto-registering users on
 # public trackers.
 #db.security.addPermissionToRole('Anonymous', 'Email Access')
@@ -371,7 +373,7 @@ db.security.addPermissionToRole('Anonymous', 'Web Access')
 # Assign the appropriate permissions to the anonymous user's Anonymous
 # Role. Choices here are:
 # - Allow anonymous users to register
-db.security.addPermissionToRole('Anonymous', 'Create', 'user')
+db.security.addPermissionToRole('Anonymous', 'Register', 'user')
 
 # Allow anonymous users access to view issues (and the related, linked
 # information).

@@ -124,7 +124,7 @@ What is that stuff in the tracker html directory?
 This is the template code that Roundup uses to display the various pages.
 This is based upon the template markup language in Zope called, oddly
 enough, "Zope Page Templates". There's documentation in the Roundup
-customisation_ documentation. For more information have a look at:
+reference_ documentation. For more information have a look at:
 
    https://zope.readthedocs.io/en/latest/zopebook/ZPT.html
 
@@ -184,7 +184,7 @@ I can see values in a multilink but not display the items
 
 Make sure that you have allowed the user to view the labelprop for the
 multilink class. Look for the setlabelprop explanation in the Roundup
-customisation_ documentation.
+reference_ documentation.
 
 Using Roundup
 -------------
@@ -265,5 +265,5 @@ msg_header_property in the roundup docs. In some cases you have to
 explicitly enable the header.)
 
 
-.. _`customisation`: customizing.html
+.. _`reference`: reference.html
 

@@ -7,6 +7,7 @@ __docformat__ = 'restructuredtext'
 class RoundupException(Exception):
     pass
 
+
 class LoginError(RoundupException):
     pass
 
@@ -14,8 +15,10 @@ class LoginError(RoundupException):
 class Unauthorised(RoundupException):
     pass
 
+
 class RejectBase(RoundupException):
     pass
+
 
 class Reject(RejectBase):
     """An auditor may raise this exception when the current create or set

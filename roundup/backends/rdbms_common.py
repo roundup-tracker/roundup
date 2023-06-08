@@ -3258,7 +3258,8 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Interval):
                 value = date.Interval(value)
             elif isinstance(prop, hyperdb.Password):
-                value = password.Password(encrypted=value)
+                value = password.Password(encrypted=value,
+                                          config=self.db.config)
             elif isinstance(prop, String):
                 value = us2s(value)
                 if not isinstance(value, str):

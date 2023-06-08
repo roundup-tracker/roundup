@@ -149,7 +149,7 @@ def eval_import(s):
             # ('issue', 5002L, "status") rather than as a string.
             # This was a bug that existed and was fixed before or with v1.2.0
             import re
-            v = eval(re.sub(r', ([0-9]+)L,',r', \1,', s))
+            v = eval(re.sub(r', ([0-9]+)L,', r', \1,', s))
 
         if isinstance(v, str):
             return v.encode('iso-8859-1').decode('utf-8')

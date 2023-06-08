@@ -149,7 +149,7 @@ def handler(req):
         _env["CGI_SHOW_TIMING"] = _timing
     _form = cgi.FieldStorage(req, environ=_env)
     _client = _tracker.Client(_tracker, Request(req), _env, _form,
-        translator=TranslationService.get_translation(_lang,
+                        translator=TranslationService.get_translation(_lang,
                                                       tracker_home=_home))
     _client.main()
     return apache.OK

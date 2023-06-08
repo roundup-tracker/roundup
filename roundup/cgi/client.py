@@ -477,6 +477,9 @@ class Client:
         # flag to indicate that the HTTP headers have been sent
         self.headers_done = 0
 
+        # record of headers sent for debugging
+        self.headers_sent = []
+
         # additional headers to send with the request - must be registered
         # before the first write
         self.additional_headers = {}
@@ -495,6 +498,8 @@ class Client:
         self.nodeid = None
         self.classname = None
         self.template = None
+        self._ok_message = []
+        self._error_message = []
 
     def _gen_nonce(self):
         """ generate a unique nonce """
@@ -616,6 +621,32 @@ class Client:
         self.setHeader("Content-Length", str(len(output)))
         self.write(output)
 
+    def is_cors_preflight(self):
+        return (
+            self.env['REQUEST_METHOD'] == "OPTIONS"
+            and self.request.headers.get("Access-Control-Request-Headers")
+            and self.request.headers.get("Access-Control-Request-Method")
+            and self.request.headers.get("Origin"))
+
+    def handle_preflight(self):
+        # Call rest library to handle the pre-flight request
+        handler = rest.RestfulInstance(self, self.db)
+        output = handler.dispatch(self.env['REQUEST_METHOD'],
+                                  self.path, self.form)
+
+        if self.response_code == 204:
+            self.write("")
+        else:
+            self.setHeader("Content-Length", str(len(output)))
+            self.write(output)
+
+    def reject_request(self, message, message_type="text/plain",
+                       status=http_.client.UNAUTHORIZED):
+        self.response_code = status
+        self.setHeader("Content-Length", str(len(message)))
+        self.setHeader("Content-Type", message_type)
+        self.write(message)
+
     def handle_rest(self):
         # Set the charset and language
         self.determine_charset()
@@ -628,45 +659,39 @@ class Client:
             self.db.tx_Source = "rest"
             self.db.i18n = self.translator
         except LoginError as err:
-            self.response_code = http_.client.UNAUTHORIZED
             output = s2b("Invalid Login - %s" % str(err))
-            self.setHeader("Content-Length", str(len(output)))
-            self.setHeader("Content-Type", "text/plain")
-            self.write(output)
+            self.reject_request(output, status=http_.client.UNAUTHORIZED)
             return
 
-        # allow preflight request even if unauthenticated
-        if (
-            self.env['REQUEST_METHOD'] == "OPTIONS"
-            and self.request.headers.get("Access-Control-Request-Headers")
-            and self.request.headers.get("Access-Control-Request-Method")
-            and self.request.headers.get("Origin")
-        ):
-            # verify Origin is allowed
-            if not self.is_origin_header_ok(api=True):
-                # Use code 400 as 401 and 403 imply that authentication
-                # is needed or authenticates person is not authorized.
-                # Preflight doesn't do authentication.
-                self.response_code = 400
+        # verify Origin is allowed on all requests including GET.
+        # If a GET, missing origin is allowed  (i.e. same site GET request)
+        if not self.is_origin_header_ok(api=True):
+            if 'HTTP_ORIGIN' not in self.env:
+                msg = self._("Required Header Missing")
+            else:
                 msg = self._("Client is not allowed to use Rest Interface.")
-                output = s2b(
-                    '{ "error": { "status": 400, "msg": "%s" } }' % msg)
-                self.setHeader("Content-Length", str(len(output)))
-                self.setHeader("Content-Type", "application/json")
-                self.write(output)
-                return
 
-            # Call rest library to handle the pre-flight request
-            handler = rest.RestfulInstance(self, self.db)
-            output = handler.dispatch(self.env['REQUEST_METHOD'],
-                                      self.path, self.form)
+            # Use code 400. Codes 401 and 403 imply that authentication
+            # is needed or authenticated person is not authorized.
+            # Preflight doesn't do authentication.
+            output = s2b(
+                '{ "error": { "status": 400, "msg": "%s" } }' % msg)
+            self.reject_request(output,
+                                message_type="application/json",
+                                status=400)
+            return
 
+        # Handle CORS preflight request. We know rest is enabled
+        # because handle_rest is called. Preflight requests
+        # are unauthenticated, so no need to check permissions.
+        if (self.is_cors_preflight()):
+            self.handle_preflight()
+            return
         elif not self.db.security.hasPermission('Rest Access', self.userid):
-            self.response_code = 403
             output = s2b('{ "error": { "status": 403, "msg": "Forbidden." } }')
-            self.setHeader("Content-Length", str(len(output)))
-            self.setHeader("Content-Type", "application/json")
-            self.write(output)
+            self.reject_request(output,
+                                message_type="application/json",
+                                status=403)
             return
 
         self.check_anonymous_access()
@@ -675,22 +700,23 @@ class Client:
             # Call csrf with api (xmlrpc, rest) checks enabled.
             # It will return True if everything is ok,
             # raises exception on check failure.
+            # Note this returns true for a GET request.
+            # Must check supplied Origin header for bad value first.
             csrf_ok = self.handle_csrf(api=True)
         except (Unauthorised, UsageError) as msg:
-            # FIXME should return what the client requests
-            # via accept header.
+            # FIXME should format return value according to
+            # client's accept header, so application/xml, text/plain etc..
             output = s2b('{ "error": { "status": 400, "msg": "%s"}}' %
                          str(msg))
-            self.response_code = 400
-            self.setHeader("Content-Length", str(len(output)))
-            self.setHeader("Content-Type", "application/json")
-            self.write(output)
+            self.reject_request(output,
+                                message_type="application/json",
+                                status=400)
             csrf_ok = False  # we had an error, failed check
             return
 
         # With the return above the if will never be false,
         # Keeping the if so we can remove return to pass
-        # output though  and format output according to accept
+        # output though and format output according to accept
         # header.
         if csrf_ok is True:
             # Call rest library to handle the request
@@ -764,7 +790,7 @@ class Client:
 
                 # if we've made it this far the context is to a bit of
                 # Roundup's real web interface (not a file being served up)
-                # so do the Anonymous Web Acess check now
+                # so do the Anonymous Web Access check now
                 self.check_anonymous_access()
 
                 # check for a valid csrf token identifying the right user
@@ -794,9 +820,6 @@ class Client:
                 # now render the page
                 # we don't want clients caching our dynamic pages
                 self.additional_headers['Cache-Control'] = 'no-cache'
-                # Pragma: no-cache makes Mozilla and its ilk
-                # double-load all pages!!
-                #            self.additional_headers['Pragma'] = 'no-cache'
 
                 # pages with messages added expire right now
                 # simple views may be cached for a small amount of time
@@ -820,7 +843,7 @@ class Client:
                 # exception handlers.
                 self.determine_language()
                 self.db.i18n = self.translator
-
+                self.setHeader("X-Content-Type-Options", "nosniff")
                 self.serve_file(designator)
             except SendStaticFile as file:
                 self.serve_static_file(str(file))
@@ -1165,9 +1188,10 @@ class Client:
                     # if we got here token is valid, use the role
                     # and sub claims.
                     try:
-                        # make sure to str(token['sub']) the subject. As decoded
-                        # by json, it is unicode which thows an error when used
-                        # with 'nodeid in db' down the call chain.
+                        # make sure to str(token['sub']) the
+                        # subject. As decoded by json, it is unicode
+                        # which thows an error when used with 'nodeid
+                        # in db' down the call chain.
                         user = self.db.user.get(str(token['sub']), 'username')
                     except IndexError:
                         raise LoginError("Token subject is invalid.")
@@ -1233,7 +1257,8 @@ class Client:
         except TypeError:
             pass
         if isinstance(action, list):
-            raise SeriousError('broken form: multiple @action values submitted')
+            raise SeriousError(
+                self._('broken form: multiple @action values submitted'))
         elif action != '':
             action = action.value.lower()
         if action in ('login', 'register'):
@@ -1251,8 +1276,30 @@ class Client:
                 raise Unauthorised(self._("Anonymous users are not "
                                           "allowed to use the web interface"))
 
-    def is_origin_header_ok(self, api=False):
-        origin = self.env['HTTP_ORIGIN']
+    def is_origin_header_ok(self, api=False, credentials=False):
+        """Determine if origin is valid for the context
+
+           Header is ok (return True) if ORIGIN is missing and it is a GET.
+           Header is ok if ORIGIN matches the base url.
+           If this is a API call:
+             Header is ok if ORIGIN matches an element of allowed_api_origins.
+             Header is ok if allowed_api_origins includes '*' as first
+               element and credentials is False.
+           Otherwise header is not ok.
+
+           In a credentials context, if we match * we will return
+           header is not ok. All credentialed requests must be
+           explicitly matched.
+        """
+
+        try:
+            origin = self.env['HTTP_ORIGIN']
+        except KeyError:
+            if self.env['REQUEST_METHOD'] == 'GET':
+                return True
+            else:
+                return False
+
         # note base https://host/... ends host with with a /,
         # so add it to origin.
         foundat = self.base.find(origin + '/')
@@ -1267,9 +1314,15 @@ class Client:
         # Original spec says origin is case sensitive match.
         # Living spec doesn't address Origin value's case or
         # how to compare it. So implement case sensitive....
-        if allowed_origins:
-            if allowed_origins[0] == '*' or origin in allowed_origins:
-                return True
+        if origin in allowed_origins:
+            return True
+        # Block use of * when origin match is used for
+        # allowing credentials. See:
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+        # under Credentials Requests and Wildcards
+        if (allowed_origins and allowed_origins[0] == '*'
+            and not credentials):
+            return True
 
         return False
 
@@ -1288,7 +1341,7 @@ class Client:
             return False
 
         allowed_origins = self.db.config['WEB_ALLOWED_API_ORIGINS']
-        if allowed_origins[0] == '*':
+        if allowed_origins and allowed_origins[0] == '*':
             return True
 
         # For referer, loop over allowed_api_origins and
@@ -1403,7 +1456,11 @@ class Client:
         for header in header_names:
             if (config["WEB_CSRF_ENFORCE_HEADER_%s" % header] == 'required'
                     and "HTTP_%s" % header.replace('-', '_') not in self.env):
-                logger.error(self._("csrf header %s required but missing for user%s."), header, current_user)
+                logger.error(self._(
+                    ''"csrf header %(header)s required but missing "
+                    ''"for user%(userid)s.") % {
+                        'header': header,
+                        'userid': current_user})
                 raise Unauthorised(self._("Missing header: %s") % header)
 
         # self.base always matches: ^https?://hostname
@@ -1411,14 +1468,16 @@ class Client:
         if 'HTTP_REFERER' in self.env and enforce != "no":
             if not self.is_referer_header_ok(api=api):
                 referer = self.env['HTTP_REFERER']
+                logmsg = self._(
+                    ''"csrf Referer header check failed for user%(userid)s. "
+                    ''"Value=%(referer)s") % {'userid': current_user,
+                                              'referer': referer}
                 if enforce in ('required', 'yes'):
-                    logger.error(self._("csrf Referer header check failed for user%s. Value=%s"), current_user, referer)
+                    logger.error(logmsg)
                     raise Unauthorised(self._("Invalid Referer: %s") % (
                         referer))
                 elif enforce == 'logfailure':
-                    logger.warning(self._(
-                        "csrf Referer header check failed for user%s. Value=%s"),
-                                   current_user, referer)
+                    logger.warning(logmsg)
             else:
                 header_pass += 1
 
@@ -1429,11 +1488,15 @@ class Client:
         if 'HTTP_ORIGIN' in self.env and enforce != "no":
             if not self.is_origin_header_ok(api=api):
                 origin = self.env['HTTP_ORIGIN']
+                logmsg = self._(
+                    ''"csrf Origin header check failed for user%(userid)s. "
+                    ''"Value=%(origin)s") % {
+                        'userid': current_user, 'origin': origin}
                 if enforce in ('required', 'yes'):
-                    logger.error(self._("csrf Origin header check failed for user%s. Value=%s"), current_user, origin)
+                    logger.error(logmsg)
                     raise Unauthorised(self._("Invalid Origin %s" % origin))
                 elif enforce == 'logfailure':
-                    logger.warning(self._("csrf Origin header check failed for user%s. Value=%s"), current_user, origin)
+                    logger.warning(logmsg)
             else:
                 header_pass += 1
 
@@ -1444,16 +1507,16 @@ class Client:
                 foundat = self.base.find('://' + host + '/')
                 # 4 means self.base has http:/ prefix, 5 means https:/ prefix
                 if foundat not in [4, 5]:
+                    logmsg = self._(
+                        ''"csrf X-FORWARDED-HOST header check failed "
+                        ''"for user%(userid)s. Value=%(host)s") % {
+                            'userid': current_user, 'host': host}
                     if enforce in ('required', 'yes'):
-                        logger.error(self._(
-                            "csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"),
-                                     current_user, host)
+                        logger.error(logmsg)
                         raise Unauthorised(self._(
                             "Invalid X-FORWARDED-HOST %s") % host)
                     elif enforce == 'logfailure':
-                        logger.warning(self._(
-                            "csrf X-FORWARDED-HOST header check failed for user%s. Value=%s"),
-                                       current_user, host)
+                        logger.warning(logmsg)
                 else:
                     header_pass += 1
         else:
@@ -1469,11 +1532,15 @@ class Client:
                 foundat = self.base.find('://' + host + '/')
                 # 4 means http:// prefix, 5 means https:// prefix
                 if foundat not in [4, 5]:
+                    logmsg = self._(
+                        ''"csrf HOST header check failed for "
+                        ''"user%(userid)s. Value=%(host)s") % {
+                            'userid': current_user, 'host': host}
                     if enforce in ('required', 'yes'):
-                        logger.error(self._("csrf HOST header check failed for user%s. Value=%s"), current_user, host)
+                        logger.error(logmsg)
                         raise Unauthorised(self._("Invalid HOST %s") % host)
                     elif enforce == 'logfailure':
-                        logger.warning(self._("csrf HOST header check failed for user%s. Value=%s"), current_user, host)
+                        logger.warning(logmsg)
                 else:
                     header_pass += 1
 
@@ -1494,7 +1561,8 @@ class Client:
                 # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
                 if 'HTTP_X_REQUESTED_WITH' not in self.env:
                     logger.error(self._(
-                        "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."),
+                        ''"csrf X-REQUESTED-WITH xmlrpc required header "
+                        ''"check failed for user%s."),
                                  current_user)
                     raise UsageError(self._("Required Header Missing"))
 
@@ -1533,8 +1601,11 @@ class Client:
         enforce = config['WEB_CSRF_ENFORCE_TOKEN']
         if key is None:  # we do not have an @csrf token
             if enforce == 'required':
-                logger.error(self._("Required csrf field missing for user%s"), current_user)
-                raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
+                logger.error(self._(
+                    "Required csrf field missing for user%s"), current_user)
+                raise UsageError(self._(
+                    ''"We can't validate your session (csrf failure). "
+                    ''"Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
                 # FIXME include url
                 logger.warning(self._("csrf field not supplied by user%s"),
@@ -1546,62 +1617,42 @@ class Client:
 
         current_session = self.session_api._sid
 
-        '''
-        # I think now that LogoutAction redirects to
-        # self.base ([tracker] web parameter in config.ini),
-        # this code is not needed. However I am keeping it
-        # around in case it has to come back to life.
-        # Delete if this is still around in 3/2018.
-        #   rouilj 3/2017.
-        #
-        # Note using this code may cause a CSRF Login vulnerability.
-        # Handle the case where user logs out and tries to
-        # log in again in same window.
-        # The csrf token for the login button is associated
-        # with the prior login, so it will not validate.
-        #
-        # To bypass error, Verify that nonce_user != user and that
-        # user is '2' (anonymous) and there is no current
-        # session key. Validate that the csrf exists
-        # in the db and nonce_user and nonce_session are not None.
-        # Also validate that the action is Login.
-        # Lastly requre at least one csrf header check to pass.
-        # If all of those work process the login.
-        if current_user != nonce_user and \
-           current_user == '2' and \
-           current_session is None and \
-           nonce_user is not None and \
-           nonce_session is not None and \
-           "@action" in self.form and \
-           self.form["@action"].value == "Login":
-            if header_pass > 0:
-                otks.destroy(key)
-                otks.commit()
-                return True
-            else:
-                self.add_error_message("Reload window before logging in.")
-        '''
         # validate against user and session
         if current_user != nonce_user:
-            if enforce in ('required', "yes"):
-                logger.error(
-                    self._("Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
-                    current_user, nonce_user, current_session, nonce_session, key)
-                raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
+            logmsg = self._(
+                ''"Csrf mismatch user: current user %(user)s != stored "
+                ''"user %(stored)s, current session, stored session: "
+                ''"%(cur_sess)s,%(stor_sess)s for key %(key)s.") % {
+                    'user': current_user,
+                    'stored': nonce_user,
+                    'cur_sess': current_session,
+                    'stor_sess': nonce_session,
+                    'key': key}
+            if enforce in ('required', 'yes'):
+                logger.error(logmsg)
+                raise UsageError(self._(
+                    ''"We can't validate your session (csrf failure). "
+                    ''"Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
-                logger.warning(
-                    self._("logged only: Csrf mismatch user: current user %s != stored user %s, current session, stored session: %s,%s for key %s."),
-                    current_user, nonce_user, current_session, nonce_session, key)
+                logger.warning(logmsg)
+
         if current_session != nonce_session:
-            if enforce in ('required', "yes"):
-                logger.error(
-                    self._("Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
-                    current_session, nonce_session, current_user, key)
-                raise UsageError(self._("We can't validate your session (csrf failure). Re-enter any unsaved data and try again."))
+            logmsg = self._(
+                ''"Csrf mismatch user: current session %(curr_sess)s "
+                ''"!= stored session %(stor_sess)s, current user/stored "
+                ''"user is: %(user)s for key %(key)s.") % {
+                    'curr_sess': current_session,
+                    'stor_sess': nonce_session,
+                    'user': current_user,
+                    'key': key}
+            if enforce in ('required', 'yes'):
+                logger.error(logmsg)
+                raise UsageError(self._(
+                    ''"We can't validate your session (csrf failure). "
+                    ''"Re-enter any unsaved data and try again."))
             elif enforce == 'logfailure':
-                logger.warning(
-                    self._("logged only: Csrf mismatch user: current session %s != stored session %s, current user/stored user is: %s for key %s."),
-                    current_session, nonce_session, current_user, key)
+                logger.warning(logmsg)
+
         # we are done and the change can occur.
         return True
 
@@ -2192,7 +2243,8 @@ class Client:
             return None
 
         if isinstance(action, list):
-            raise SeriousError('broken form: multiple @action values submitted')
+            raise SeriousError(
+                self._('broken form: multiple @action values submitted'))
         else:
             action = action.value.lower()
 

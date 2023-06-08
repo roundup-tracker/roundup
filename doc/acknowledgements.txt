@@ -1,3 +1,9 @@
+.. meta::
+    :description:
+        Display contributions of code and documentation to the Roundup
+        Issue Tracker. Includes users who reported issues. Updated for
+        each release.
+
 Acknowledgements
 ================
 The Roundup Initative is a group of people that regularly work
@@ -9,6 +15,27 @@ ideas and everything else that helped!
 `Announcement with changelog for current release.`_
 
 .. _`Announcement with changelog for current release.`: announcement.html
+
+2.3
+---
+
+2.3.0
+~~~~~
+
+Maintainer:  John Rouillard
+
+Release Manager: John Rouillard
+
+Developer activity by changesets::
+
+  rouilj@ieee.org    636 *****************************************************
+  rsc@runtux.com      14 *
+
+Other contributers
+
+Marcus Priesch,
+John Kristensen (jerrykan),
+Thomas Arendsen Hein
 
 2.2
 ---

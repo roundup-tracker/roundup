@@ -23,6 +23,8 @@ import pytest
 try:
     from roundup.backends.sessions_redis import Sessions, OneTimeKeys
     skip_redis = lambda func, *args, **kwargs: func
+
+    from redis import AuthenticationError, ConnectionError
 except ImportError as e:
     from .pytest_patcher import mark_class
     skip_redis = mark_class(pytest.mark.skip(
@@ -35,6 +37,11 @@ from .session_common import SessionTest
 
 class RedisSessionTest(SessionTest):
     def setUp(self):
+        '''This must not be called if redis can not be loaded. It will
+           cause an error since the ConnectionError and
+           AuthenticationError exceptions aren't defined.
+        '''
+        
         SessionTest.setUp(self)
 
         import os
@@ -57,6 +64,11 @@ class RedisSessionTest(SessionTest):
         self.db.Otk = None
         self.sessions = self.db.getSessionManager()
         self.otks = self.db.getOTKManager()
+
+        try:
+            self.sessions.redis.keys()
+        except (AuthenticationError, ConnectionError) as e:
+            self.skipTest('Redis server unavailable: "%s".' % e)
 
         # database should be empty. Verify so we don't clobber
         # somebody's working database.

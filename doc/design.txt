@@ -1,3 +1,9 @@
+.. meta::
+    :description:
+        Documentation of design for the Roundup Issue Tracker. This
+        is the original design (written by Ka-Ping Yee) updated with
+        implementation notes by Richard Jones.
+ 
 ========================================================
 Roundup - An Issue-Tracking System for Knowledge Workers
 ========================================================
@@ -936,7 +942,7 @@ There are two kinds of detectors:
 2. a `reactor` is triggered just after an item has been modified
 
 When the Roundup database is about to perform a ``create()``, ``set()``,
-``retire()``, or ``restore`` operation, it first calls any *auditors*
+``retire()``, or ``restore()`` operation, it first calls any *auditors*
 that have been registered for that operation on that class. Any auditor
 may raise a *Reject* exception to abort the operation.
 
@@ -1325,7 +1331,7 @@ field     display a property like the plain displayer above, but in a
 menu      for a Link property, display a menu of the available choices
 ========= ==============================================================
 
-See the `customisation`_ documentation for the complete list.
+See the `reference`_ documentation for the complete list.
 
 
 Index Views
@@ -1747,5 +1753,5 @@ Changes to this document
 - Added "actor" property
 - 'classname' format specified in class Class.
 
-.. _customisation: customizing.html
+.. _reference: reference.html
 

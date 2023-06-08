@@ -272,31 +272,33 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
                 self.log_error('timeout')
             else:
-                # it'd be nice to be able to detect if these are going to have
-                # any effect...
                 self.send_response(400)
                 self.send_header('Content-Type', 'text/html')
-                self.end_headers()
                 if self.DEBUG_MODE:
                     try:
                         reload(cgitb)
-                        self.wfile.write(s2b(cgitb.breaker()))
-                        self.wfile.write(s2b(cgitb.html()))
+                        output = s2b(cgitb.breaker()) + s2b(cgitb.html())
                     except Exception:
                         s = StringIO()
                         traceback.print_exc(None, s)
-                        self.wfile.write(b"<pre>")
-                        self.wfile.write(s2b(html_escape(s.getvalue())))
-                        self.wfile.write(b"</pre>\n")
+                        output = b"<pre>%s</pre>" % s2b(
+                            html_escape(s.getvalue()))
                 else:
                     # user feedback
-                    self.wfile.write(s2b(cgitb.breaker()))
                     ts = time.ctime()
-                    self.wfile.write(s2b('''<p>%s: An error occurred. Please check
-                    the server log for more information.</p>''' % ts))
+                    output = (
+                        s2b('''<body><p>%s: An error occurred. Please check
+                        the server log for more information.</p></body>''' %
+                            ts)
+                    )
                     # out to the logfile
                     print('EXCEPTION AT', ts)
                     traceback.print_exc()
+
+                # complete output to user.
+                self.send_header('Content-Length', len(output))
+                self.end_headers()
+                self.wfile.write(output)
 
     do_GET = do_POST = do_HEAD = do_PUT = do_DELETE = \
         do_PATCH = do_OPTIONS = run_cgi
@@ -646,6 +648,9 @@ class ServerConfig(configuration.Config):
                 "In order to use this option, "
                 "the server must be run initially as root.\n"
                 "Availability: Unix."),
+            (configuration.IntegerNumberOption, "max_children", 40,
+                "Maximum number of children to spawn using fork "
+                "multiprocess mode."),
             (configuration.BooleanOption, "nodaemon", "no",
                 "don't fork (this overrides the pidfile mechanism)'"),
             (configuration.BooleanOption, "log_hostnames", "no",
@@ -701,6 +706,7 @@ class ServerConfig(configuration.Config):
         "pidfile": "d:",
         "nodaemon": "D",
         "log_hostnames": "N",
+        "max_children": "m:",
         "multiprocess": "t:",
         "template": "i:",
         "loghttpvialogger": 'L',
@@ -809,6 +815,7 @@ class ServerConfig(configuration.Config):
                                 base_server):
                 pass
             server_class = ForkingServer
+            server_class.max_children = self["MAX_CHILDREN"]
         elif self["MULTIPROCESS"] == "thread":
             class ThreadingServer(socketserver.ThreadingMixIn,
                                   base_server):
@@ -940,6 +947,7 @@ Options:
  -l <fname>    log to the file indicated by fname instead of stderr/stdout
  -N            log client machine names instead of IP addresses (much slower)
  -i <fname>    set tracker index template
+ -m <children> maximum number of children to spawn in fork multiprocess mode
  -s            enable SSL
  -L            http request logging uses python logging (roundup.http)
  -e <fname>    PEM file containing SSL key and certificate

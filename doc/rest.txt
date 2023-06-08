@@ -1,8 +1,8 @@
 .. meta::
     :description:
         Documentation on the RESTful interface to the Roundup Issue
-	Tracker.
-
+	Tracker. Enable REST access, endpoints, methods,
+        authentication, discovery.
 
 .. index:: pair: api; Representational state transfer
    pair: api; rest
@@ -149,7 +149,7 @@ If the client has requested a deprecated API endpoint, the header:
    available. This is not returned by current code, but can be used
    when `Programming the REST API`_. It should be used as a hint that
    the REST endpoint will be going away. See
-   https://tools.ietf.org/html/rfc8594 for details on this header and
+   https://www.rfc-editor.org/rfc/rfc8594 for details on this header and
    the sunset link type.
 
 Hyperdb Stats
@@ -231,14 +231,26 @@ the browser and must all be present:
 * `Access-Control-Request-Method`
 * `Origin`
 
-The 204 response will include the headers:
+The headers of the 204 response depend on the
+``allowed_api_origins`` setting. If a ``*`` is included as the
+first element, any client can read the data but they can not
+provide authentication. This limits the available data to what
+the anonymous user can see in the web interface.
+
+All 204 responses will include the headers:
 
 * `Access-Control-Allow-Origin`
 * `Access-Control-Allow-Headers`
 * `Access-Control-Allow-Methods`
-* `Access-Control-Allow-Credentials: true`
 * `Access-Control-Max-Age: 86400`
 
+If the client's ORIGIN header matches an entry besides ``*`` in the
+``allowed_api_origins`` it will also include:
+
+* `Access-Control-Allow-Credentials: true`
+
+permitting the client to log in and perform authenticated operations.
+  
 If the endpoint accepts the PATCH verb the header `Accept-Patch` with
 valid mime types (usually `application/x-www-form-urlencoded,
 multipart/form-data`) will be included.
@@ -878,7 +890,7 @@ creation of a duplicate issue.
 
 To solve this problem, a two step process inspired by the POE - Post
 Once Exactly spec:
-https://tools.ietf.org/html/draft-nottingham-http-poe-00 is provided.
+https://datatracker.ietf.org/doc/html/draft-nottingham-http-poe-00 is provided.
 
 This mechanism returns a single use URL. POSTing to the URL creates
 a new object in the class.
@@ -1411,8 +1423,8 @@ payload. When modifying a property via ``PUT`` or ``PATCH`` or
 Tunneling Methods via POST
 ==========================
 
-If you are working through a proxy and unable to use http method like
-PUT, PATCH or DELETE you can use POST to perform the action. To tunnel
+If you are working through a proxy and unable to use http methods like
+PUT, PATCH, or DELETE, you can use POST to perform the action. To tunnel
 an action through POST, send the ``X-HTTP-METHOD-OVERRIDE`` header
 with a value of DELETE or other capitalized HTTP verb. The body of the
 POST should be what you would send if you were using the method
@@ -1849,7 +1861,7 @@ your company's single sign on infrastructure.
 
 So what we need is a way for this third party service to impersonate
 you and have access to create a roundup timelog entry (see
-`<customizing.html#adding-a-time-log-to-your-issues>`__ ). Then add it
+`<customizing.html#adding-a-time-log-to-your-issues>`_). Then add it
 to the associated issue. This should happen without sharing passwords
 and without allowing the third party service to see the issue (except the
 ``times`` property), user, or other information in the tracker.
@@ -2045,11 +2057,12 @@ username/password authentication.
 Currently use of JWTs an experiment. If this appeals to you consider
 providing patches to existing code to:
 
-1. record all JWTs created by a user
-2. using the record to allow JWTs to be revoked and ignored by the
-   roundup core
-3. provide a UI page for managing/revoking JWTs
-4. provide a rest api for revoking JWTs
+1. create long lived refresh tokens
+2. record all refresh tokens created by a user
+3. using the record to allow refresh tokens to be revoked and
+   ignored by the roundup core
+4. provide a UI page for managing/revoking refresh tokens
+5. provide a rest api for revoking refresh tokens
 
 These end points can be used like::
 

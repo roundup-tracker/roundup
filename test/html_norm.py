@@ -1,6 +1,6 @@
 """Minimal html parser/normalizer for use in test_templating.
 
-When testing markdown -> html coversion libraries, there are
+When testing markdown -> html conversion libraries, there are
 gratuitous whitespace changes in generated output that break the
 tests. Use this to try to normalize the generated HTML into something
 that tries to preserve the semantic meaning allowing tests to stop
@@ -13,8 +13,8 @@ the tests. If you find it useful enjoy.
 Ideally this would be done by hijacking in some way
 lxml.html.usedoctest to get a liberal parser that will ignore
 whitespace. But that means the user has to install lxml to run the
-tests. Simlarly BeautifulSoup could be used to pretty print the html
-but again then BeautifulSoup would need to be instaled to run the
+tests. Similarly BeautifulSoup could be used to pretty print the html
+but again, BeautifulSoup would need to be installed to run the
 tests.
 
 """

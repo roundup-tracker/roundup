@@ -503,7 +503,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             elif isinstance(prop, hyperdb.Interval) and v is not None:
                 d[k] = date.Interval(v)
             elif isinstance(prop, hyperdb.Password) and v is not None:
-                d[k] = password.Password(encrypted=v)
+                d[k] = password.Password(encrypted=v, config=self.config)
             else:
                 d[k] = v
         return d
@@ -2073,12 +2073,8 @@ class Class(hyperdb.Class):
         for prop, propclass in self.getprops().items():
             if isinstance(propclass, hyperdb.String) and propclass.indexme:
                 # index them under (classname, nodeid, property)
-                try:
-                    value = str(self.get(nodeid, prop))
-                except IndexError:
-                    # node has been destroyed
-                    continue
-                self.db.indexer.add_text((self.classname, nodeid, prop), value)
+                self.db.indexer.add_text((self.classname, nodeid, prop),
+                                         str(self.get(nodeid, prop)))
 
     #
     # import / export support
@@ -2150,7 +2146,8 @@ class Class(hyperdb.Class):
             elif isinstance(prop, hyperdb.Interval):
                 value = date.Interval(value)
             elif isinstance(prop, hyperdb.Password):
-                value = password.Password(encrypted=value)
+                value = password.Password(encrypted=value,
+                                          config=self.db.config)
             d[propname] = value
 
         # get a new id if necessary

@@ -38,6 +38,7 @@ except ImportError:
 
 from roundup.anypy.email_ import message_from_bytes
 from roundup.anypy.strings import b2s, u2s, s2b
+from roundup.scripts.roundup_mailgw import parse_arguments
 
 if 'SENDMAILDEBUG' not in os.environ:
     os.environ['SENDMAILDEBUG'] = 'mail-test.log'
@@ -250,7 +251,8 @@ class MailgwTestAbstractBase(DiffHelper):
             """
             def handle_message(self, message):
                 return self._handle_message(message)
-        handler = MailGW(self.instance, args)
+        cmd, parsed_args = parse_arguments (args)
+        handler = MailGW(self.instance, parsed_args)
         handler.db = self.db
         return handler
 
@@ -444,7 +446,7 @@ Reply-To: chef@bork.bork.bork
 Subject: [issue] Testing...
 
 Hi there!
-''', (('-C', 'issue'), ('-S', 'status=chatting;priority=critical')))
+''', ('-S', 'issue.status=chatting;priority=critical'))
         self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
         self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
 
@@ -458,7 +460,7 @@ Reply-To: chef@bork.bork.bork
 Subject: [issue] Testing...
 
 Hi there!
-''', (('-C', 'issue'), ('-S', 'status=chatting'), ('-S', 'priority=critical')))
+''', ('-S', 'issue.status=chatting', '-S', 'issue.priority=critical'))
         self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
         self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
 
@@ -472,7 +474,7 @@ Reply-To: chef@bork.bork.bork
 Subject: [issue] Testing... [status=chatting;priority=critical]
 
 Hi there!
-''', (('-c', 'issue'),))
+''', ('-c', 'issue'))
         self.assertEqual(self.db.issue.get(nodeid, 'title'), 'Testing...')
         self.assertEqual(self.db.issue.get(nodeid, 'status'), '3')
         self.assertEqual(self.db.issue.get(nodeid, 'priority'), '1')
@@ -4288,6 +4290,21 @@ Message-Id: <dummy_test_message_id>
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
 
+    def testSpacedPrefixSubject(self):
+        self.db.keyword.create(name='Foo')
+        self._handle_mail('''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: Chef <chef@bork.bork.bork>
+To: issue_tracker@your.tracker.email.domain.example
+Subject: VeryStrangeRe: [  keyword  1  ] Testing.. [name=Bar]
+Cc: richard@test.test
+Reply-To: chef@bork.bork.bork
+Message-Id: <dummy_test_message_id>
+
+''')
+        assert not os.path.exists(SENDMAILDEBUG)
+        self.assertEqual(self.db.keyword.get('1', 'name'), 'Bar')
+
     def testUnknownPrefixSubject(self):
         self.db.keyword.create(name='Foo')
         self._handle_mail('''Content-Type: text/plain;
@@ -5038,4 +5055,4 @@ zGhS06FLl3V1xx6gBlpqQHjut3efrAGpXGBVpnTJMOcgYAk=
         l = self.db.msg.get(m, 'tx_Source')
         self.assertEqual(l, 'email-sig-openpgp')
 
-# vim: set filetype=python sts=4 sw=4 et si :
+# vim: set filetype=python sts=4 sw=4 et :

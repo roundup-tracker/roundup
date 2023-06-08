@@ -6,8 +6,7 @@
 
 #}
 {%- block doctype -%}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 {%- endblock %}
 {%- macro relbar(class) %}
     <div class="related {{ class }}">
@@ -82,9 +81,14 @@
     {%- endfor %}
 {%- endmacro %}
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {%- if 'name="description"' not in metatags %}
+      <meta name="description"
+        content="Page {{ pagename }} in documentation on the Roundup issue tracker, version {{ release|e }}.">
+    {%- endif %}
     {{ metatags }}
     {%- if builder != 'htmlhelp' %}
       {%- set titlesuffix = " &mdash; "|safe + docstitle|e %}
@@ -143,7 +147,7 @@
 {%- block extrahead %} {% endblock %}
   </head>
   <body>
-    <div class="header"><h1>Roundup</h1>
+    <div class="header"><div class="label">Roundup</div>
       {%- if pagename != "search" %}
         <div id="searchbox" style="display: none">
           <form class="search" action="{{ pathto('search') }}" method="get">

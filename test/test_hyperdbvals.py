@@ -10,6 +10,7 @@
 
 import unittest, os, shutil, errno, sys, difflib, cgi, re
 from hashlib import sha1
+from mock import Mock
 
 from roundup import init, instance, password, hyperdb, date
 
@@ -57,6 +58,7 @@ class TestDatabase:
     classes = {'test': TestClass(), 'test2': TestClass2()}
     def getUserTimezone(self):
         return 0
+    config = Mock(PASSWORD_PBKDF2_DEFAULT_ROUNDS =  1000)
 
 class RawToHyperdbTest(unittest.TestCase):
     def _test(self, propname, value, itemid=None):

@@ -1,26 +1,38 @@
+.. meta::
+    :description:
+        Table of contents for published documentation on the Roundup
+        Issue Tracker.
+
 Docs
 ====
+
+.. admonition:: Welcome
+
+   The documentation is slowly being reorganized using the `Diataxis
+   framework`_. Help with the reorganization is welcome. If a page you
+   used to see is missing, try checking the `Other Docs
+   <olderdocs.html>`_ page.
+
+See: https://wiki.roundup-tracker.org/ReleaseErrata for fixes to
+documentation.
+
+.. _diataxis framework: https://diataxis.fr/
 
 .. toctree::
    :maxdepth: 2
 
-   docs/features
-   docs/installation
-   docs/upgrading
-   docs/FAQ
-   docs/user_guide
-   docs/customizing
+   Features <docs/features>
+   Installation <docs/installation>
+   Upgrading to Newer Versions <docs/upgrading>
+   Security Issues <docs/security>
+   FAQ <docs/FAQ>
+   User's Guide <docs/user_guide>
+   Customising <docs/customizing>
+   Rest API <docs/rest>
+   XML-RPC API <docs/xmlrpc>
+   Reference <docs/reference>
+   Glossary <docs/glossary>
    docs/admin_guide
-   docs/debugging
-   docs/xmlrpc
-   docs/rest
-   docs/tracker_templates
-   docs/glossary
-   docs/acknowledgements
    docs/license
-   Design Overview <docs/overview>
-   Design (original) <docs/design>
-   docs/developers
-   Notes about the MySQL Database backend <docs/mysql>
-   Notes about the PostgreSQL Database backend <docs/postgresql>
-   Richard Jones implementation notes <docs/implementation>
+   docs/acknowledgements
+   olderdocs

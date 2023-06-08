@@ -1,3 +1,4 @@
+# hadolint global ignore=DL3003
 # build in root dir using:
 #
 #     docker build -t roundup-app --rm -f scripts/Dockerfile .
@@ -9,20 +10,24 @@
 
 
 # Global vars for all build stages
+ARG VERBOSE=
 
 # application directory
 ARG appdir=/usr/src/app
 
 # support roundup install from 'local' directory,
-# 'local_pip' local directory using pip to install or
-# latest release from 'pypi'
+# 'pypi' to install latest final or version specified release
+#   from PyPI,
+# 'pip_local' local directory using pip to install, or
+# 'pip_sdist' to install dist/newest_version-tarball
 ARG source=local
 
 # Python version as a.b Used for installation directory and
 # COPY from install dir in second stage.
 ARG pythonversion=3.11
 
-FROM python:3-alpine as build
+#FROM python:3-alpine
+FROM python@sha256:caafba876f841774905f73df0fcaf7fe3f55aaf9cb48a9e369a41077f860d4a7 as build
 
 # Inherit global values https://github.com/moby/moby/issues/37345
 ARG appdir
@@ -30,12 +35,12 @@ ARG appdir
 WORKDIR $appdir
 
 # Update to get security and other improvements;
-RUN apk --update-cache upgrade
+RUN apk --no-cache upgrade
 
 # Add packages needed to compile mysql, pgsql and other python modules.
-# Can't use apk to add them as that installs a 3.9 python version.
+# Can't use apk to add python packages as it installs 3.9 python version.
 #        g++ installs cc1plus needed by pip install
-RUN apk add \
+RUN apk --no-cache add \
     g++ \
     gcc \
     gpgme-dev \
@@ -53,7 +58,7 @@ ARG pythonversion
 RUN image_python_version=$(python -c 'import sys; print("%s.%s"%sys.version_info[0:2])'); \
     if [ "${pythonversion}" != "${image_python_version}" ]; then \
        printf "\n\n*****\npythonversion does not match.\n" ; \
-       printf "Add:\n   --build-arg=\"pythonversion=${image_python_version}\"\nto docker build\n******\n\n"; \
+       printf "Add:\n   --build-arg=\"pythonversion=%s\"\nto docker build\n******\n\n" "${image_python_version}"; \
        exit 1; \
     fi
 
@@ -65,12 +70,26 @@ COPY scripts/Docker/sphinxdeps.txt .
 # suppress warning when running pip as root
 ENV PIP_ROOT_USER_ACTION=ignore
 
-RUN set -xv && CWD=$PWD && \
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+ARG VERBOSE
+
+RUN [ -z "${VERBOSE}" ] || set -xv; \
+    CWD=$PWD && \
+    upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
+	list --outdated | awk 'NR > 2 {print $1}'); \
+    if [ -n "$upgrades" ]; then \
+        echo "Pip updating $upgrades"; \
+        python -m pip --no-cache --disable-pip-version-check \
+           install -U $upgrades < /dev/null; \
+    else \
+        echo Nothing to pip update; \
+    fi; \
+    ls -l /usr/local/lib/python3.11/site-packages; \
     VER=$(apk list -I 'xapian-core-dev' | \
           sed 's/^xapian-core-dev-\([0-9.]*\)-.*/\1/') && \
     cd /tmp && \
-    wget https://oligarchy.co.uk/xapian/$VER/xapian-bindings-$VER.tar.xz && \
-    tar -Jxvf xapian-bindings-$VER.tar.xz && \
+    wget -q "https://oligarchy.co.uk/xapian/$VER/xapian-bindings-$VER.tar.xz" && \
+    tar -Jxvf "xapian-bindings-$VER.tar.xz" && \
     cd xapian-bindings-$VER/ && \
     pip --no-cache-dir install sphinx && \
     sed -i -e '/PYTHON3_SO=/s/distutils\.//g' \
@@ -93,23 +112,43 @@ COPY frontends install/frontends/
 COPY locale install/locale/
 COPY roundup install/roundup/
 COPY share install/share/
+# dist is optional so include README.txt so we don't get an error
+COPY README.txt dist/* install/dist/
 
 # verify source has one of two valid values then
 # install in python3 standard directories from local copy
 # or install in python3 standard directories from pypi using pip
 # import from global/command line
 ARG source
-RUN set -xv && if [ "$source" = "local" ] ||  \
-                  [ "$source" = "pypi"  ] || \
-                  [ "$source" = "local_pip"   ]; then :; \
-           else echo "invalid value for source: $source"; \
-                echo "must be local or pypi"; exit 1; fi; \
-    if [ "$source" = "local" ]; then cd install && ./setup.py install; fi; \
-    if [ "$source" = "local_pip" ]; then cd install && pip install \
-                            --use-feature=in-tree-build . ; fi; \
-    if [ "$source" = "pypi" ]; then pip install roundup; \
-       cp -ril /usr/local/lib/python${pythonversion}/site-packages/usr/local/share/* \
-	   /usr/local/share; fi
+
+RUN [ -z "${VERBOSE}" ] || set -xv; \
+    case "$source" in \
+        "local") \
+            cd install && ./setup.py install;; \
+        "pypi"*) \
+            version_spec=$( printf "%s" "$source" | \
+				sed -ne 's/^pypi\([~=!<>].*\)/\1/p'); \
+            pip install --no-cache-dir roundup${version_spec}; \
+            cp -ril /usr/local/lib/"python${pythonversion}"/site-packages/usr/local/share/* \
+               /usr/local/share;; \
+        "pip_local") \
+	    cd install && \
+		pip -V && \
+		pip install --no-cache-dir . ;; \
+	"pip_sdist") \
+	    dist=$(ls install/dist | sed -ne '/roundup-[0-9].*\.tar\.gz$/p' | tail -n 1); \
+	    if [ -z "$dist" ] ; then \
+		printf "Unable to find a source distribution file in dist\n"; \
+		printf "Exiting\n"; \
+		exit 1; \
+            fi; \
+            printf "Building with distribution: %s\n" "$dist"; \
+            pip install --no-cache-dir install/dist/$dist;; \
+        *) \
+            echo "invalid value for source: $source"; \
+	    echo "must be local, pypi, pip_local or pip_sdist"; \
+            exit 1;; \
+    esac
 
 # Allow user to add more modules during build
 ARG pip_mod
@@ -117,7 +156,8 @@ RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
 
 # build a new smaller docker image for execution. Build image above
 # is 1G in size.
-FROM python:3-alpine
+# FROM python:3-alpine
+FROM python@sha256:caafba876f841774905f73df0fcaf7fe3f55aaf9cb48a9e369a41077f860d4a7
 
 # import from global
 ARG appdir
@@ -128,19 +168,31 @@ WORKDIR $appdir
 ENV PIP_ROOT_USER_ACTION=ignore
 
 # upgrade to get any security updates; bundle with
-# rest of apk actions to reduce layers/wasted space 
+#    rest of apk actions to reduce layers/wasted space 
 # add libraries needed to run gpg/mysql/pgsql/brotli
 # clean out any caches to save space
-RUN apk --update-cache upgrade; \
-    apk add \
+# upgrade pip packages to get security and other updates
+#   bundle with apk updates
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+RUN apk --no-cache upgrade; \
+    apk --no-cache add \
      brotli-libs \
+     dumb-init \
      gpgme \
      mariadb-connector-c \
      libpq \
      libstdc++ \
      libxapian \
      zstd-libs; \
-    rm -f /var/cache/apk/*
+    upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
+	list --outdated | awk 'NR > 2 {print $1}'); \
+    if [ -n "$upgrades" ]; then \
+        echo "Pip updating $upgrades"; \
+        python -m pip --no-cache --disable-pip-version-check \
+           install -U $upgrades < /dev/null; \
+    else \
+        echo Nothing to pip update; \
+    fi
 
 ARG source
 LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
@@ -156,8 +208,13 @@ COPY --from=build /usr/local/share /usr/local/share/
 COPY scripts/Docker/roundup_start .
 COPY scripts/Docker/roundup_healthcheck .
 
+# Do not run roundup as root. This creates roundup user and group.
+ARG roundup_uid
+RUN adduser -D -h ${appdir} -u ${roundup_uid:-1000} roundup
+
 # make roundup scripts execuable and mount a trackerdir on tracker location
-RUN chmod +x roundup_start roundup_healthcheck; mkdir tracker
+RUN chmod +x roundup_start roundup_healthcheck; \
+    mkdir tracker; chown ${roundup_uid:-1000}:${roundup_uid:-1000} tracker
 VOLUME $appdir/tracker
 
 # map port 8080 to your local port
@@ -166,15 +223,13 @@ EXPOSE 8080/tcp
 HEALTHCHECK --start-period=1m \
    CMD ./roundup_healthcheck
 
-# do not run roundup as root. This creates roundup user and group.
-ARG roundup_uid
-RUN adduser -D -h ${appdir} -u ${roundup_uid:-1000} roundup
+# switch to using roundup user
 USER roundup
 
 # run the server, disable output buffering so we can see logs.
 ENV PYTHONUNBUFFERED=1
 #ENTRYPOINT [ "roundup-server", "-n", "0.0.0.0" ]
-ENTRYPOINT [ "./roundup_start" ]
+ENTRYPOINT [ "/usr/bin/dumb-init", "./roundup_start" ]
 
 # allow the invoker to override cmd with multiple trackers
 # in each subdirectory under $appdir/tracker. E.G.

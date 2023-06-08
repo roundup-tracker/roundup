@@ -560,7 +560,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # assume that the "best" algorithm is the first one and doesn't
         # need migration, all others should be migrated.
         cl.db.config.WEB_LOGIN_ATTEMPTS_MIN = 200
-
+        cl.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 10000
         # The third item always fails. Regardless of what is there.
         #  ['plaintext', 'SHA', 'crypt', 'MD5']:
         print(password.Password.deprecated_schemes)
@@ -571,22 +571,41 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                 continue  # crypt is not available on Windows
             pw1 = password.Password('foo', scheme=scheme)
             print(pw1)
-            self.assertEqual(pw1.needs_migration(), True)
+            self.assertEqual(pw1.needs_migration(config=cl.db.config), True)
             self.db.user.set(chef, password=pw1)
             self.db.commit()
             actions.LoginAction(cl).handle()
-            pw = self.db.user.get(chef, 'password')
+            pw = cl.db.user.get(chef, 'password')
             print(pw)
             self.assertEqual(pw, 'foo')
-            self.assertEqual(pw.needs_migration(), False)
+            self.assertEqual(pw.needs_migration(config=cl.db.config), False)
+        cl.db.Otk = self.db.Otk
         pw1 = pw
-        self.assertEqual(pw1.needs_migration(), False)
+        self.assertEqual(pw1.needs_migration(config=cl.db.config), False)
         scheme = password.Password.known_schemes[0]
         self.assertEqual(scheme, pw1.scheme)
         actions.LoginAction(cl).handle()
-        pw = self.db.user.get(chef, 'password')
+        pw = cl.db.user.get(chef, 'password')
         self.assertEqual(pw, 'foo')
         self.assertEqual(pw, pw1)
+
+        # migrate if rounds has increased above rounds was 10000
+        # below will be 100000
+        cl.db.Otk = self.db.Otk
+        pw1 = pw
+        # do not use the production number of PBKDF2
+        os.environ["PYTEST_USE_CONFIG"] = "True"
+        cl.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 100000
+        self.assertEqual(pw1.needs_migration(config=cl.db.config), True)
+        scheme = password.Password.known_schemes[0]
+        self.assertEqual(scheme, pw1.scheme)
+        actions.LoginAction(cl).handle()
+        pw = cl.db.user.get(chef, 'password')
+        self.assertEqual(pw, 'foo')
+        del(os.environ["PYTEST_USE_CONFIG"])
+        # do not assert self.assertEqual(pw, pw1) as pw is a 100,000
+        # cycle while pw1 is only 10,000. They won't compare equally.
+
         cl.db.close()
 
     def testPasswordConfigOption(self):
@@ -595,7 +614,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl = self._make_client(form)
         self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 1000
         pw1 = password.Password('foo', scheme='MD5')
-        self.assertEqual(pw1.needs_migration(), True)
+        self.assertEqual(pw1.needs_migration(config=cl.db.config), True)
         self.db.user.set(chef, password=pw1)
         self.db.commit()
         actions.LoginAction(cl).handle()
@@ -1013,7 +1032,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         e2 = HTMLProperty.is_edit_ok
         HTMLProperty.is_edit_ok = lambda x : True
 
-        # test with no headers and config by default requires 1 
+        # test with no headers. Default config requires that 1 header
+        # is present and passes checks.
         cl.inner_main()
         match_at=out[0].find('Unable to verify sufficient headers')
         print("result of subtest 1:", out[0])
@@ -1189,6 +1209,388 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             os.remove(SENDMAILDEBUG)
         #raise ValueError
 
+    def testRestOriginValidationCredentials(self):
+        import json
+        # set the password for admin so we can log in.
+        passwd=password.Password('admin')
+        self.db.user.set('1', password=passwd)
+
+        out = []
+        def wh(s):
+           out.append(s)
+
+        # rest has no form content
+        form = cgi.FieldStorage()
+        # origin set to allowed value
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'GET',
+                            'PATH_INFO':'rest/data/issue',
+                            'HTTP_ORIGIN': 'http://whoami.com',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_ACCEPT': "application/json;version=1",
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = {
+            'content-type': 'application/json',
+            'accept': 'application/json;version=1',
+            'origin': 'http://whoami.com',
+        }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        cl.handle_rest()
+        print(b2s(out[0]))
+        expected="""
+        {
+            "data": {
+                "collection": [],
+                "@total_size": 0
+            }
+        }"""
+
+        self.assertEqual(json.loads(b2s(out[0])),json.loads(expected))
+        self.assertIn('Access-Control-Allow-Credentials',
+                      cl.additional_headers)
+        self.assertEqual(
+            cl.additional_headers['Access-Control-Allow-Credentials'],
+            'true'
+        )
+        self.assertEqual(
+            cl.additional_headers['Access-Control-Allow-Origin'],
+            'http://whoami.com'
+        )
+        del(out[0])
+
+
+        # Origin not set. AKA same origin GET request.
+        # Should be like valid origin.
+        # Because of HTTP_X_REQUESTED_WITH header it should be
+        # preflighted.
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'GET',
+                            'PATH_INFO':'rest/data/issue',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_ACCEPT': "application/json;version=1",
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_rest()
+        self.assertIn('Access-Control-Allow-Credentials',
+                      cl.additional_headers)
+
+        self.assertEqual(json.loads(b2s(out[0])),json.loads(expected))
+        del(out[0])
+
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'OPTIONS',
+                            'HTTP_ORIGIN': 'http://invalid.com',
+                            'PATH_INFO':'rest/data/issue',
+                            'Access-Control-Request-Headers': 'Authorization',
+                            'Access-Control-Request-Method': 'GET',
+                           }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json',
+              'access-control-request-headers': 'Authorization',
+              'access-control-request-method': 'GET',
+        }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_rest()
+        self.assertNotIn('Access-Control-Allow-Credentials',
+                      cl.additional_headers)
+
+        self.assertNotIn('Access-Control-Allow-Origin',
+            cl.additional_headers
+        )
+
+        self.assertEqual(cl.response_code, 400)
+        del(out[0])
+
+        # origin not set to allowed value
+        # prevents authenticated request like this from
+        # being shared with the requestor because
+        # Access-Control-Allow-Credentials is not
+        # set in response
+        cl.db.config.WEB_ALLOWED_API_ORIGINS = " *  "
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'GET',
+                            'PATH_INFO':'rest/data/issue',
+                            'HTTP_ORIGIN': 'http://invalid.com',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://invalid.com/path/',
+                            'HTTP_ACCEPT': "application/json;version=1",
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = {
+            'content-type': 'application/json',
+            'accept': 'application/json;version=1',
+            'origin': 'http://invalid.com',
+        }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+        cl.handle_rest()
+        self.assertEqual(json.loads(b2s(out[0])),
+                         json.loads(expected)
+        )
+        self.assertNotIn('Access-Control-Allow-Credentials',
+                         cl.additional_headers)
+        self.assertIn('Access-Control-Allow-Origin',
+                      cl.additional_headers)
+        self.assertEqual(
+            h['origin'],
+            cl.additional_headers['Access-Control-Allow-Origin']
+        )
+
+        self.assertIn('Content-Length', cl.additional_headers)
+        del(out[0])
+
+
+        # CORS Same rules as for invalid origin
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'GET',
+                            'PATH_INFO':'rest/data/issue',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_ACCEPT': "application/json;version=1",
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_rest()
+        self.assertIn('Access-Control-Allow-Credentials',
+                      cl.additional_headers)
+
+        self.assertEqual(json.loads(b2s(out[0])),json.loads(expected))
+        del(out[0])
+
+        # origin set to special "null" value. Same rules as for
+        # invalid origin
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'GET',
+                            'PATH_INFO':'rest/data/issue',
+                            'HTTP_ORIGIN': 'null',
+                            'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'HTTP_ACCEPT': "application/json;version=1",
+                            'HTTP_X_REQUESTED_WITH': 'rest',
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = { 'content-type': 'application/json',
+              'accept': 'application/json',
+              'origin': 'null' }
+        cl.request.headers = MockNull(**h)
+                                      
+        cl.write = wh # capture output
+
+        # Should return explanation because content type is text/plain
+        # and not text/xml
+        cl.handle_rest()
+        self.assertNotIn('Access-Control-Allow-Credentials', cl.additional_headers)
+
+        self.assertEqual(json.loads(b2s(out[0])),json.loads(expected))
+        del(out[0])
+
+
+    def testRestOptionsBadAttribute(self):
+        import json
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # rest has no form content
+        form = cgi.FieldStorage()
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'OPTIONS',
+                            'HTTP_ORIGIN': 'http://whoami.com',
+                            'PATH_INFO':'rest/data/user/1/zot',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'content-type': ""
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = {
+            'origin': 'http://whoami.com',
+            'access-control-request-headers': 'x-requested-with',
+            'access-control-request-method': 'GET',
+            'referer': 'http://whoami.com/path',
+            'content-type': "",
+        }
+        cl.request.headers = MockNull(**h)
+
+        cl.write = wh # capture output
+        cl.handle_rest()
+
+        _py3 = sys.version_info[0] > 2
+
+        expected_headers = {
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, '
+                                 'X-Requested-With, X-HTTP-Method-Override',
+            'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
+            'Access-Control-Expose-Headers': 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Limit-Period, Retry-After, Sunset, Allow',
+            'Access-Control-Allow-Origin': 'http://whoami.com',
+            'Access-Control-Max-Age': '86400',
+            'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+            # string representation under python2 has an extra space.
+            'Content-Length': '104' if _py3 else '105',
+            'Content-Type': 'application/json',
+            'Vary': 'Origin'
+        }
+
+        expected_body = b'{\n    "error": {\n        "status": 404,\n        "msg": "Attribute zot not valid for Class user"\n    }\n}\n'
+
+        self.assertEqual(cl.response_code, 404)
+        # json payload string representation differs. Compare as objects.
+        self.assertEqual(json.loads(b2s(out[0])), json.loads(expected_body))
+        self.assertEqual(cl.additional_headers, expected_headers)
+
+        del(out[0])
+
+
+    def testRestOptionsRequestGood(self):
+        import json
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # OPTIONS/CORS preflight has no credentials
+        # rest has no form content
+        form = cgi.FieldStorage()
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'OPTIONS',
+                            'HTTP_ORIGIN': 'http://whoami.com',
+                            'PATH_INFO':'rest/data/issue',
+                            'HTTP_REFERER': 'http://whoami.com/path/',
+                            'Access-Control-Request-Headers': 'Authorization',
+                            'Access-Control-Request-Method': 'POST',
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = {
+            'origin': 'http://whoami.com',
+            'access-control-request-headers': 'Authorization',
+            'access-control-request-method': 'POST',
+            'referer': 'http://whoami.com/path',
+        }
+        cl.request.headers = MockNull(**h)
+
+        cl.write = wh # capture output
+        cl.handle_rest()
+        self.assertEqual(out[0], '')  # 204 options returns no data
+
+        expected_headers = {
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, '
+                                 'X-Requested-With, X-HTTP-Method-Override',
+            'Access-Control-Allow-Methods': 'OPTIONS, GET, POST',
+            'Access-Control-Expose-Headers': 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Limit-Period, Retry-After, Sunset, Allow',
+            'Access-Control-Allow-Origin': 'http://whoami.com',
+            'Access-Control-Max-Age': '86400',
+            'Allow': 'OPTIONS, GET, POST',
+            'Content-Type': 'application/json',
+            'Vary': 'Origin'
+        }
+
+        self.assertEqual(cl.additional_headers, expected_headers)
+
+
+        del(out[0])
+
+    def testRestOptionsRequestBad(self):
+        import json
+
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # OPTIONS/CORS preflight has no credentials
+        # rest has no form content
+        form = cgi.FieldStorage()
+        cl = client.Client(self.instance, None,
+                           {'REQUEST_METHOD':'OPTIONS',
+                            'HTTP_ORIGIN': 'http://invalid.com',
+                            'PATH_INFO':'rest/data/issue',
+                            'HTTP_REFERER':
+                            'http://invalid.com/path/',
+                            'Access-Control-Request-Headers': 'Authorization',
+                            'Access-Control-Request-Method': 'POST',
+                        }, form)
+        cl.db = self.db
+        cl.base = 'http://whoami.com/path/'
+        cl._socket_op = lambda *x : True
+        cl._error_message = []
+        cl.request = MockNull()
+        h = {
+            'origin': 'http://invalid.com',
+            'access-control-request-headers': 'Authorization',
+            'access-control-request-method': 'POST',
+            'referer': 'http://invalid.com/path',
+        }
+        cl.request.headers = MockNull(**h)
+
+        cl.write = wh # capture output
+        cl.handle_rest()
+
+        self.assertEqual(cl.response_code, 400)
+
+        del(out[0])
+
     def testRestCsrfProtection(self):
         import json
         # set the password for admin so we can log in.
@@ -1221,7 +1623,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl._error_message = []
         cl.request = MockNull()
         h = { 'content-type': 'application/json',
-              'accept': 'application/json' }
+              'accept': 'application/json;version=1' }
         cl.request.headers = MockNull(**h)
                                       
         cl.write = wh # capture output
@@ -1229,7 +1631,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # Should return explanation because content type is text/plain
         # and not text/xml
         cl.handle_rest()
-        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, "msg": "Required Header Missing"}}')
+        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, '
+                         '"msg": "Required Header Missing" } }')
         del(out[0])
 
         cl = client.Client(self.instance, None,
@@ -1239,7 +1642,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_AUTHORIZATION': 'Basic YWRtaW46YWRtaW4=',
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                            'HTTP_ACCEPT': "application/json;version=1"
+                            'HTTP_ACCEPT': "application/json;version=1",
+                            'HTTP_ORIGIN': 'http://whoami.com',
                         }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
@@ -1334,7 +1738,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # Should return explanation because content type is text/plain
         # and not text/xml
         cl.handle_rest()
-        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, "msg": "Invalid Origin httxs://bar.edu"}}')
+        self.assertEqual(b2s(out[0]), '{ "error": { "status": 400, "msg": "Client is not allowed to use Rest Interface." } }')
         del(out[0])
 
 
@@ -1503,6 +1907,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         if nodeid is not None:
             cl.nodeid = nodeid
         cl.db = self.db
+        cl.db.Otk =  cl.db.getOTKManager()
         #cl.db.Otk = MockNull()
         #cl.db.Otk.data = {}
         #cl.db.Otk.getall = self.data_get
@@ -2671,6 +3076,7 @@ class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery, testCsvExport):
         if nodeid is not None:
             cl.nodeid = nodeid
         cl.db = self.db
+        cl.db.Otk =  cl.db.getOTKManager()
         #cl.db.Otk = MockNull()
         #cl.db.Otk.data = {}
         #cl.db.Otk.getall = self.data_get

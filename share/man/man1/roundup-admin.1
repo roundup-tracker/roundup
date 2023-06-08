@@ -9,7 +9,9 @@ roundup-admin \- administrate roundup trackers
 Specify the issue tracker "home directory" to administer
 .TP
 \fB-u\fP \fIuser\fP[\fB:\fP\fIpassword\fP]
-The user and password to use for commands
+The user and password to use for commands (partial implemention, see
+Security Notes below).
+.TP
 \fB-h\fP
 Print help text.
 .TP
@@ -199,8 +201,30 @@ the habit.
 Remove journal entries older than a period of time specified or
 before a certain date.
 .TP
-\fBreindex\fP \fI[classname|designator]*\fP
-This will re-generate the search indexes for a tracker.
+\fBperftest\fP \fI[mode] [arguments]*\fP
+Run performance test. For example test the effect
+of changing password hashing parameters.
+.TP
+\fBpragma\fP \fIsetting=value\fP|\fBlist\fP
+Set internal settings to a value. E.G.
+
+     pragma verbose=True
+     pragma verbose=yes
+     pragma verbose=on
+     pragma verbose=1
+
+will turn on verbose mode for roundup-admin.
+
+     pragma list
+
+will show all settings and their current values. If verbose
+is enabled hidden settings and descriptions will be shown.
+.TP
+\fBreindex\fP \fI[classname|classname:#-#|designator]*\fP This will
+re-generate the search indexes for a tracker. You can specify a
+specific item (or items) (e.g. issue23), range(s) of items
+(e.g. issue:1-1000), class(es) (e.g. issue) or reindex all items in
+the database if no arguments are supplied.
 .TP
 \fBrestore\fP \fIdesignator[,designator]*\fP
 Restore the retired node specified by designator.
@@ -252,6 +276,28 @@ merged/updated config file is written to \fI<filename>\fP.
 .PP
 Commands may be abbreviated as long as the abbreviation
 matches only one command, e.g. l == li == lis == list.
+
+.SH SECURITY NOTES
+
+The \fB-u user\fP setting does not currently operate like a
+user logging in via the web. The user running roundup-admin
+must have read access to the tracker home directory. As a
+result the user has access to the files and the database
+info contained in config.ini.
+
+Using \fB-u user\fP sets the actor/user parameter in the
+journal. Changes that are made are attributed to that
+user. The password is ignored if provided. Any existing
+username has full access to the data just like the admin
+user. This is an area for further development so that
+roundup-admin could be used with sudo to provide secure
+command line access to a tracker.
+
+.SH ENVIRONMENT VARIABLES
+
+.TP
+\fBROUNDUP_LOGIN\fP
+Provides an alternate way to set the user.
 
 .SH FURTHER HELP
  roundup-admin -h

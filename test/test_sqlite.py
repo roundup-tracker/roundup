@@ -108,6 +108,8 @@ class sqliteDBTest(sqliteOpener, DBTest, unittest.TestCase):
         # test upgrade adding __fts table
         self.db.post_init()
 
+        self.assertEqual(self.db.db_version_updated, True)
+
         # select should now work.
         self.db.sql("select * from __fts")
 
@@ -159,6 +161,8 @@ class sqliteDBTest(sqliteOpener, DBTest, unittest.TestCase):
 
         # test upgrade altering row
         self.db.post_init()
+
+        self.assertEqual(self.db.db_version_updated, True)
 
         # verify they keep all signifcant digits before the decimal point
         for tablename in ['otk', 'session']:

@@ -29,6 +29,7 @@ html: docs
 	sed -i -e '/<meta/s/og\\:/og:/' \
              -e '/<meta/s/name="og:/property="og:/' html/index.html
 	cp robots.txt html/robots.txt
+	mkdir html/signatures && cp signatures/*.asc html/signatures
 
 linkcheck:
 	mkdir -p $(TMP)/linkcheck $(TMP)/doctrees
@@ -36,3 +37,6 @@ linkcheck:
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in .build/linkcheck/output.txt."
+
+sourceforge_dev_sync:
+	rsync -av html/. web.sourceforge.net:/home/project-web/roundup/htdocs/dev_docs/.

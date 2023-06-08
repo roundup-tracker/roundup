@@ -328,7 +328,7 @@ class Database(rdbms_common.Database):
                     elif isinstance(prop, hyperdb.Interval) and v is not None:
                         v = date.Interval(v)
                     elif isinstance(prop, hyperdb.Password) and v is not None:
-                        v = password.Password(encrypted=v)
+                        v = password.Password(encrypted=v, config=self.config)
                     elif isinstance(prop, hyperdb.Integer) and v is not None:
                         v = int(v)
                     elif (isinstance(prop, hyperdb.Boolean) or

@@ -1,40 +1,66 @@
 .. meta::
     :description:
         Definitions of terms used in the Roundup Issue Tracker
-	documentation.
+	documentation. Referenced by other documents.
 
 ================
 Roundup Glossary
 ================
 
+.. glossary::
+   :sorted:
 
-class
-   a definition of the properties and behaviour of a set of items
-classname
-   the name of a class. It must start with a letter, end with a letter
-   or "_", and only have alphanumerics and "_" in the middle.
-db (or hyperdb)
-   a collection of items
-designator
-   a combined class + itemid reference to any item in the
-   hyperdb. E.g. issue26. Note that form values can include
-   something that looks like a designator composed of a classname, a
-   dash '-', and a number. E.g. file-1. These
-   are used to create new instances of a class via the web interface.
-itemid
-   a numeric reference to a particular item of one class
-item
-   a collection of data that forms one entry in the hyperdb.
-property
-   one element of data that makes up an item. In Roundup, the set 
-   of item properties may be changed as needed - even after the 
-   tracker has been initialised and used in production.
-schema
-   the definition of all the classes that make up an tracker
-tracker
-   the schema and hyperdb that forms one issue tracker
-tracker home
-   the physical location on disk of a tracker
+   class
+      a definition of the properties and behavior of a set of items
+
+   classname
+      the name of a class. It must start with a letter, end with a letter
+      or "_", and only have alphanumerics and "_" in the middle.
+
+   db
+      database used to store the data in the tracker. Roundup supports
+      4 databases: dbm (Berkeley DB/BDB), SQLite, PostgreSQL, MySQL/MariaDB.
+
+   definitional class
+      a class that exists to define a discrete set of values. For example
+      status or priority.
+
+   designator
+      a combined :term:`classname` + :term:`itemid` reference to any item
+      in the hyperdb. E.g. ``issue26``. Note that form values can include
+      something that looks like a designator composed of a classname,
+      a dash '-', and a number. E.g. ``file-1``. These are used to create
+      new instances of a class via the web interface.
+
+   hyperdb
+      a software layer between the user and the underlying :term:`db`.
+      It is responsible for mutating the underlying db when the schema
+      changes. It also executes the detectors when items in the db change.
+
+   item
+      a collection of data that forms one entry in the hyperdb.
+
+   itemid
+      an integer reference to a particular item of one
+      class. Internally it is stored as a string and not an integer
+      number. This results in a string not numeric sort by id in some
+      circumstances.
+
+   property
+      one element of data that makes up an item. In Roundup, the set 
+      of item properties may be changed as needed - even after the 
+      tracker has been initialized and used in production.
+
+   schema
+      the definition of all the classes and properties that make up a
+      tracker. Contained in the file ``schema.py``. The permissions
+      for the schema items are usually defined in the same file.
+
+   tracker
+      the schema and hyperdb that forms one issue tracker
+
+   tracker home
+      the physical location on disk of a tracker
 
 
 -----------------

@@ -2,9 +2,11 @@
 pytz
 # indexer
 Whoosh
+# xapian is also installed
 # extra database support
 psycopg2
 mysqlclient
+redis
 # encryption
 gpg
 # java web tokens
@@ -12,3 +14,5 @@ PyJWT
 # extra HTTP compression methods
 Brotli
 zstd
+# jinja2 template engine
+Jinja2

@@ -565,15 +565,16 @@ class OriginHeadersListOption(Option):
     """List of space seperated origin header values.
     """
 
-    class_description = "A list of space separated case sensitive origin headers 'scheme://host'."
+    class_description = "A list of space separated case sensitive\norigin headers 'scheme://host'."
 
     def set(self, _val):
         pathlist = self._value = []
         for elem in _val.split():
             pathlist.append(elem)
-        if '*' in pathlist and len(pathlist) != 1:
-            raise OptionValueError(self, _val,
-                                   "If using '*' it must be the only element.")
+        if '*' in pathlist and pathlist[0] != '*':
+            raise OptionValueError(
+                self, _val,
+                "If using '*' it must be the first element.")
 
     def _value2str(self, value):
         return ','.join(value)
@@ -829,7 +830,7 @@ class RedisUrlOption(SecretNullableOption):
 
 
 class SessiondbBackendOption(Option):
-    """Make sure that sessiondb is compatile with the primary db.
+    """Make sure that sessiondb is compatible with the primary db.
        Fail with error and suggestions if they are incompatible.
     """
 
@@ -991,13 +992,16 @@ SETTINGS = (
             "Path to the HTML templates directory."),
         (MultiFilePathOption, "static_files", "",
             "A list of space separated directory paths (or a single\n"
-            "directory).  These directories hold additional static\n"
-            "files available via Web UI.  These directories may\n"
-            "contain sitewide images, CSS stylesheets etc. If a '-'\n"
-            "is included, the list processing ends and the TEMPLATES\n"
-            "directory is not searched after the specified\n"
+            "directory).  These directories hold additional public\n"
+            "static files available via Web UI.  These directories\n"
+            "may contain sitewide images, CSS stylesheets etc. If a\n"
+            "'-' is included, the list processing ends and the\n"
+            "TEMPLATES directory is not searched after the specified\n"
             "directories.  If this option is not set, all static\n"
-            "files are taken from the TEMPLATES directory."),
+            "files are taken from the TEMPLATES directory. Access to\n"
+            "these files is public, it is not checked against\n"
+            "registered users. So do not put any sensitive data in\n"
+            "the files in these directories."),
         (MailAddressOption, "admin_email", "roundup-admin",
             "Email address that roundup will complain to if it runs\n"
             "into trouble.\n"
@@ -1017,14 +1021,14 @@ SETTINGS = (
             "the EMAIL_FROM_TAG goes inside the \"Foo Bar\" quotes like so:\n"
             "\"Foo Bar EMAIL_FROM_TAG\" <issue_tracker@tracker.example>"),
         (Option, "new_web_user_roles", "User",
-            "Roles that a user gets when they register"
-            " with Web User Interface.\n"
-            "This is a comma-separated string of role names"
+            "Roles that a user gets when they register\n"
+            "with Web User Interface.\n"
+            "This is a comma-separated string of role names\n"
             " (e.g. 'Admin,User')."),
         (Option, "new_email_user_roles", "User",
-            "Roles that a user gets when they register"
-            " with Email Gateway.\n"
-            "This is a comma-separated string of role names"
+            "Roles that a user gets when they register\n"
+            "with Email Gateway.\n"
+            "This is a comma-separated string of role names\n"
             " (e.g. 'Admin,User')."),
         (Option, "obsolete_history_roles", "Admin",
             "On schema changes, properties or classes in the history may\n"
@@ -1035,24 +1039,28 @@ SETTINGS = (
             "admin role may see these history entries, you can make them\n"
             "visible to all users by adding, e.g., the 'User' role here."),
         (Option, "error_messages_to", "user",
-            'Send error message emails to the "dispatcher", "user", '
+            'Send error message emails to the "dispatcher", "user", \n'
             'or "both" (these are the three allowed values).\n'
-            'The dispatcher is configured using the DISPATCHER_EMAIL'
+            'The dispatcher is configured using the DISPATCHER_EMAIL\n'
             ' setting.'),
         (Option, "html_version", "html4",
+            "This setting should be left at the default value of html4.\n"
+            "Support is ending for xhtml mode.\n"
             "HTML version to generate. The templates are html4 by default.\n"
-            "If you wish to make them xhtml, then you'll need to change this\n"
-            "var to 'xhtml' too so all auto-generated HTML is compliant.\n"
+            "If you wish to make them xhtml, then you'll need to change\n"
+            "this setting to 'xhtml' too so all auto-generated HTML\n"
+            "is compliant.\n"
             "Allowed values: html4, xhtml"),
         (TimezoneOption, "timezone", TimezoneOption.defaulttz,
-            "Default timezone offset,"
-            " applied when user's timezone is not set.",
+            "Default timezone offset,\n"
+            "applied when user's timezone is not set.",
             ["DEFAULT_TIMEZONE"]),
         (BooleanOption, "instant_registration", "no",
             "Register new users instantly, or require confirmation via\n"
             "email?"),
         (BooleanOption, "email_registration_confirmation", "yes",
-            "Offer registration confirmation by email or only through the web?"),
+            "Offer registration confirmation by email or only\n"
+            "through the web?"),
         (IndexerOption, "indexer", "",
             "Force Roundup to use a particular text indexer.\n"
             "If no indexer is supplied, the first available indexer\n"
@@ -1081,7 +1089,8 @@ SETTINGS = (
             "starting with python 2.5. Set this to a higher value if you\n"
             "get the error 'Error: field larger than field limit' during\n"
             "import."),
-        (IntegerNumberGeqZeroOption, 'password_pbkdf2_default_rounds', '10000',
+        (IntegerNumberGeqZeroOption, 'password_pbkdf2_default_rounds',
+         '2000000',
             "Sets the default number of rounds used when encoding passwords\n"
             "using the PBKDF2 scheme. Set this to a higher value on faster\n"
             "systems which want more security.\n"
@@ -1103,8 +1112,8 @@ SETTINGS = (
             "A descriptive name for your roundup instance."),
         (WebUrlOption, "web", NODEFAULT,
             "The web address that the tracker is viewable at.\n"
-            "This will be included in information"
-            " sent to users of the tracker.\n"
+            "This will be included in information\n"
+            "sent to users of the tracker.\n"
             "The URL MUST include the cgi-bin part or anything else\n"
             "that is required to get to the home page of the tracker.\n"
             "URL MUST start with http/https scheme and end with '/'"),
@@ -1211,24 +1220,26 @@ from a source other than roundup (e.g. link in
 email)."""),
         (BooleanOption, 'enable_xmlrpc', "yes",
             """Whether to enable the XMLRPC API in the roundup web
-interface. By default the XMLRPC endpoint is the string 'xmlrpc'
-after the roundup web url configured in the 'tracker' section.
-If this variable is set to 'no', the xmlrpc path has no special meaning
-and will yield an error message."""),
+interface. By default the XMLRPC endpoint is the string
+'xmlrpc' after the roundup web url configured in the
+'tracker' section. If this variable is set to 'no', the
+xmlrpc path has no special meaning and will yield an
+error message."""),
         (BooleanOption, 'translate_xmlrpc', 'no',
             """Whether to enable i18n for the xmlrpc endpoint. Enable it if
-you want to enable translation based on browsers lang (if enabled), trackers
-lang (if set) or environment."""),
+you want to enable translation based on browsers lang
+(if enabled), trackers lang (if set) or environment."""),
         (BooleanOption, 'enable_rest', "yes",
             """Whether to enable the REST API in the roundup web
-interface. By default the REST endpoint is the string 'rest' plus any
-additional REST-API parameters after the roundup web url configured in
-the tracker section. If this variable is set to 'no', the rest path has
-no special meaning and will yield an error message."""),
+interface. By default the REST endpoint is the string
+'rest' plus any additional REST-API parameters after the
+roundup web url configured in the tracker section. If this
+variable is set to 'no', the rest path has no special meaning
+and will yield an error message."""),
         (BooleanOption, 'translate_rest', 'no',
             """Whether to enable i18n for the rest endpoint. Enable it if
-you want to enable translation based on browsers lang (if enabled), trackers
-lang (if set) or environment."""),
+you want to enable translation based on browsers lang
+(if enabled), trackers lang (if set) or environment."""),
         (IntegerNumberGeqZeroOption, 'api_calls_per_interval', "0",
          "Limit API calls per api_interval_in_sec seconds to\n"
          "this number.\n"
@@ -1314,12 +1325,13 @@ value of the Origin header exactly. So 'https://bar.edu' and
 'https://Bar.edu' are two different Origin values. Note that
 the origin value is scheme://host. There is no path
 component. So 'https://bar.edu/' would never be valid.
-Also the value * can be used to match any origin. Note that
-this setting allows any other web page to make requests against
-your roundup tracker and is not generally a good idea.
+The value '*' can be used to match any origin. It must be
+first in the list if used. Note that this value allows
+any web page on the internet to make anonymous requests
+against your Roundup tracker.
 
 You need to set these if you have a web application on a
-different origin accessing your roundup instance.
+different origin accessing your Roundup instance.
 
 (The origin from the tracker.web setting in config.ini is
 always valid and does not need to be specified.)"""),
@@ -1364,8 +1376,9 @@ always passes, so setting it less than 1 is not recommended."""),
             "in the user's browser rather than emailing them to the\n"
             "tracker admin."),
         (BooleanOption, "login_empty_passwords", "no",
-            "Setting this option to yes/true allows users with an empty/blank\n"
-            "password to login to the web/http interfaces."),
+            "Setting this option to yes/true allows users with\n"
+            "an empty/blank password to login to the\n"
+            "web/http interfaces."),
         (BooleanOption, "migrate_passwords", "yes",
             "Setting this option makes Roundup migrate passwords with\n"
             "an insecure password-scheme to a more secure scheme\n"
@@ -1430,11 +1443,14 @@ always passes, so setting it less than 1 is not recommended."""),
         (IntegerNumberGeqZeroOption, 'cache_size', '100',
             "Size of the node cache (in elements)"),
         (BooleanOption, "allow_create", "yes",
-            "Setting this option to 'no' protects the database against table creations."),
+            "Setting this option to 'no' protects the database against\n"
+            "table creations."),
         (BooleanOption, "allow_alter", "yes",
-            "Setting this option to 'no' protects the database against table alterations."),
+            "Setting this option to 'no' protects the database against\n"
+            "table alterations."),
         (BooleanOption, "allow_drop", "yes",
-            "Setting this option to 'no' protects the database against table drops."),
+            "Setting this option to 'no' protects the database against\n"
+            "table drops."),
         (NullableOption, 'template', '',
             "Name of the PostgreSQL template for database creation.\n"
             "For database creation the template used has to match\n"
@@ -1455,7 +1471,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "Set the database cursor for filter queries to serverside\n"
             "cursor, this avoids caching large amounts of data in the\n"
             "client. This option only applies for the postgresql backend."),
-    ), "Settings in this section (except for backend) are used"
+    ), "Settings in this section (except for backend) are used\n"
         " by RDBMS backends only."
     ),
     ("sessiondb", (
@@ -1532,14 +1548,14 @@ always passes, so setting it less than 1 is not recommended."""),
         (FilePathOption, "debug", "",
             "Setting this option makes Roundup write all outgoing email\n"
             "messages to this file *instead* of sending them.\n"
-            "This option has the same effect as environment variable"
-            " SENDMAILDEBUG.\nEnvironment variable takes precedence."),
+            "This option has the same effect as the environment variable\n"
+            "SENDMAILDEBUG.\nEnvironment variable takes precedence."),
         (BooleanOption, "add_authorinfo", "yes",
             "Add a line with author information at top of all messages\n"
             "sent by roundup"),
         (BooleanOption, "add_authoremail", "yes",
-            "Add the mail address of the author to the author information at\n"
-            "the top of all messages.\n"
+            "Add the mail address of the author to the author information\n"
+            "at the top of all messages.\n"
             "If this is false but add_authorinfo is true, only the name\n"
             "of the actor is added which protects the mail address of the\n"
             "actor from being exposed at mail archives, etc."),
@@ -1750,7 +1766,7 @@ class Config:
 
     # List of option names that need additional validation after
     # all options are loaded.
-    option_validators = []
+    option_validators = None
 
     def __init__(self, config_path=None, layout=None, settings=None):
         """Initialize confing instance
@@ -1776,6 +1792,7 @@ class Config:
         self.section_descriptions = {}
         self.section_options = {}
         self.options = {}
+        self.option_validators = []
         # add options from the layout structure
         if layout:
             for section in layout:

@@ -1183,7 +1183,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                         # property no longer exists
                         comments['no_exist'] = self._(
                             "<em>The indicated property no longer exists</em>")
-                        cell.append(self._('<em>%s: %s</em>\n')
+                        cell.append('<em>%s: %s</em>\n'
                                     % (self._(k), str(args[k])))
                         continue
 
@@ -2974,12 +2974,15 @@ def make_key_function(db, classname, sort_on=None):
     linkcl = db.getclass(classname)
     if sort_on is None:
         sort_on = linkcl.orderprop()
+    prop = linkcl.getprops()[sort_on]
 
     def keyfunc(a):
         if num_re.match(a):
             a = linkcl.get(a, sort_on)
-            # In Python3 we may not compare strings and None
+            # In Python3 we may not compare numbers/strings and None
             if a is None:
+                if isinstance(prop, (hyperdb.Number, hyperdb.Integer)):
+                    return 0
                 return ''
         return a
     return keyfunc

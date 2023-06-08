@@ -2,7 +2,11 @@
    form submission for cgi actions.
 '''
 
-import time, struct, binascii, base64
+import base64
+import binascii
+import struct
+import time
+
 from roundup.cgi.exceptions import FormError
 from roundup.i18n import _
 from roundup.anypy.strings import b2s, s2b

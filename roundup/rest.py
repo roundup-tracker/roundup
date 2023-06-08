@@ -1002,7 +1002,11 @@ class RestfulInstance(object):
                     'Permission to view %s%s.%s denied'
                     % (class_name, item_id, keyprop)
                 )
-            itemid = class_obj.lookup(v)
+            try:
+                itemid = class_obj.lookup(v)
+            except TypeError:
+                raise NotFound("Item '%s' not found" % v)
+
         if not self.db.security.hasPermission(
             'View', uid, class_name, itemid=itemid
         ):
@@ -2075,7 +2079,19 @@ class RestfulInstance(object):
                     # User exceeded limits: tell humans how long to wait
                     # Headers above will do the right thing for api
                     # aware clients.
-                    msg = _("Api rate limits exceeded. Please wait: %s seconds.") % limitStatus['Retry-After']
+                    try:
+                        retry_after = limitStatus['Retry-After']
+                    except KeyError:
+                        # handle race condition. If the time between
+                        # the call to grca.update and grca.status
+                        # is sufficient to reload the bucket by 1
+                        # item, Retry-After will be missing from
+                        # limitStatus. So report a 1 second delay back
+                        # to the client. We treat update as sole
+                        # source of truth for exceeded rate limits.
+                        retry_after = 1
+
+                    msg = _("Api rate limits exceeded. Please wait: %s seconds.") % retry_after
                     output = self.error_obj(429, msg, source="ApiRateLimiter")
             else:
                 for header, value in limitStatus.items():
@@ -2194,6 +2210,24 @@ class RestfulInstance(object):
         # response may change based on Origin value.
         self.client.setVary("Origin")
 
+        # expose these headers to rest clients. Otherwise they can't
+        # respond to:
+        #   rate limiting (*RateLimit*, Retry-After)
+        #   obsolete API endpoint (Sunset)
+        #   options request to discover supported methods (Allow)
+        self.client.setHeader(
+            "Access-Control-Expose-Headers",
+            ", ".join([
+                "X-RateLimit-Limit",
+                "X-RateLimit-Remaining",
+                "X-RateLimit-Reset",
+                "X-RateLimit-Limit-Period",
+                "Retry-After",
+                "Sunset",
+                "Allow",
+            ])
+        )
+
         # Allow-Origin must match origin supplied by client. '*' doesn't
         # work for authenticated requests.
         self.client.setHeader(
@@ -2201,11 +2235,24 @@ class RestfulInstance(object):
             self.client.request.headers.get("Origin")
         )
 
-        # allow credentials
-        self.client.setHeader(
-            "Access-Control-Allow-Credentials",
-            "true"
-        )
+        # Allow credentials if origin is acceptable.
+        #
+        # If Access-Control-Allow-Credentials header not returned,
+        # but the client request is made with credentials
+        # data will be sent but not made available to the
+        # calling javascript in browser.
+        # Prevents exposure of data to an invalid origin when
+        # credentials are sent by client.
+        #
+        # If admin puts * first in allowed_api_origins
+        # we do not allow credentials but do reflect the origin.
+        # This allows anonymous access.
+        if self.client.is_origin_header_ok(api=True, credentials=True):
+            self.client.setHeader(
+                "Access-Control-Allow-Credentials",
+                "true"
+            )
+
         # set allow header in case of error. 405 handlers below should
         # replace it with a custom version as will OPTIONS handler
         # doing CORS.

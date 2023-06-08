@@ -1,3 +1,4 @@
+=====================
 Roundup Issue Tracker
 =====================
 
@@ -21,12 +22,12 @@ Roundup Issue Tracker
    <div class="release_info note">
      <!-- package version/pypi download -->
      <a
-	  href="https://pypi.org/project/roundup/#files">
+          href="https://pypi.org/project/roundup/#files">
        <span style="padding-inline-end: 1.75ch">Download:</span>
        <img style="vertical-align: text-top"
-	   src="https://img.shields.io/pypi/v/roundup?color=blue&label=Current%20Version&cacheSeconds=86400"
-	   alt="Display current version of Roundup on PyPI."
-	   height="18" width="127">
+           src="https://img.shields.io/pypi/v/roundup?color=blue&label=Current%20Version&cacheSeconds=86400"
+           alt="Display current version of Roundup on PyPI."
+           height="18" width="127">
      </a>
 
      <!-- supported python versions: <img src="https://shields.io/pypi/pyversions/roundup"> -->
@@ -34,26 +35,37 @@ Roundup Issue Tracker
      <!-- changes since 2.2.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.2.0/master?sort=semver"> -->
      <!-- status beta, stable, mature.... <img src="https://img.shields.io/pypi/status/roundup"> -->
      <!-- mozilla observatory <img src="https://img.shields.io/mozilla-observatory/grade/www.roundup-tracker.org?publish"> -->
+     <!-- commits from last named release: <img alt="GitHub commits difference between two branches/tags/commits" src="https://img.shields.io/github/commits-difference/roundup-tracker/roundup?base=2.2.0&head=master">a -->
+     <!-- newest tag by date - use for alpha/beta release notifications?
+     <img alt="GitHub tag (latest by date)" src="https://img.shields.io/github/v/tag/roundup-tracker/roundup"> -->
 
      <!-- downloads/month -->
-     <a style="display:block; margin-block-start: 1em;"
-	  href="https://pypistats.org/packages/roundup">
+     <a style="display:block; margin-block-start: 0.5em;"
+          href="https://pypistats.org/packages/roundup">
        <span style="padding-inline-start: 10.75ch"></span>
        <img
-	 src="https://img.shields.io/badge/dynamic/json?color=blue&label=downloads%2Fmonth&cacheSeconds=86400&query=data.last_month&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Froundup%2Frecent"
-	 alt=""
-	 height="18" width="127">
+         src="https://img.shields.io/badge/dynamic/json?color=blue&label=Downloads%2FMonth&cacheSeconds=86400&query=data.last_month&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Froundup%2Frecent"
+         alt="Badge displaying number of downloads per month."
+         height="18" width="127">
+     </a>
+     <a style="display:block; margin-block-start: 0.5em;"
+        href="https://hub.docker.com/r/rounduptracker/roundup">
+     <span style="padding-inline-start: 10.75ch"></span>
+     <img
+        src="https://img.shields.io/docker/image-size/rounduptracker/roundup?label=Docker%20Size"
+        alt="Graphic displaying size of newest docker image on hub.docker.com."
+        height="18" width="127">
      </a>
 
      <!-- build status -->
      <a 
-	 style="display:block; margin-block-start: 1em;"
-	 href="https://github.com/roundup-tracker/roundup/actions?query=workflow%3Aroundup-ci++">
+         style="display:block; margin-block-start: 1em;"
+         href="https://github.com/roundup-tracker/roundup/actions?query=workflow%3Aroundup-ci++">
        <span>Build Status:</span>
        <img
-	   src="https://img.shields.io/github/workflow/status/roundup-tracker/roundup/roundup-ci?label=roundup-ci&logo=github"
-	   alt="Current build status on GitHub"
-           height="18" width="127">
+         src="https://github.com/roundup-tracker/roundup/actions/workflows/ci-test.yml/badge.svg"
+         alt="Status of primary regression test job on github."
+         height="18" width="127"><br>
      </a>
    </div>
 
@@ -62,69 +74,130 @@ command-line, web, REST, XML-RPC and e-mail interfaces.  It is based
 on the winning design from Ka-Ping Yee in the Software Carpentry
 "Track" design competition.
 
-The current stable version of Roundup is 2.2.0. It is a bug fix
-and feature release for the 2.1.0 release 
+The current stable version of Roundup is 2.3.0b2. It is a bug fix
+and feature release for the 2.2.0 release 
 
-Some improvements from the 2.1.0 release are:
+Release Highlights
+==================
 
-    * Roundup supports dynamic and static compression of http
-      responses. This improves performance when a front end web
-      server isn't serving compressed assets.
+Some improvements from the 2.2.0 release are:
 
-    * REST interface: supports CORS allowing Roundup to be
-      used by third party web sites. Origins allowed to use
-      REST can be specified. OpenAPI (Swagger) docs can be
-      added. Error handling/reporting improved.
+* Dockerfile demo mode implemented.
 
-    * Dockerfile support. Docker-compose for a mysql based
-      tracker.
+* SQLite backends can use WAL mode to reduce blocking between readers
+  and writers.
 
-    * New full text search methods. SQLite FTS and PostgreSQL
-      full text search are supported. These allow search
-      expressions in addition to simple word based searches.
+* Redis can be used for session database with SQLite and dbm
+  backends. Provides a major performance improvement.
 
-    * Secret values in config.ini can be stored in external
-      files. This allows config.ini to be stored in a VCS
-      without exposing secrets.
+* roundup-mailgw can use OAUTH authentication to SMTP
+  server. (roundup-mailgw command line options changed as a result.)
 
-    * Translation object added to internal database handle. This
-      allows auditors and extensions to provide efficient
-      translations.
+* Postgres full text index can now be enabled.
 
-    * MySQL database creation uses COLLATE utf8_general_ci
+* Modifications to in-reply-to threading when there are multiple
+  matches.
 
-    * Wsgi startup improvements (must be enabled by setting
-      feature flag).
+* Many updates to documentation to make it scannable, useful and
+  work on mobile.
 
-    * Fix crash when importing legacy Roundup tracker with long
-      integers.
+* Admin documentation includes a section on setting up Content
+  Security Policy (CSP)
 
-    * Fix issues with Roundup unable to find supporting files
-      when installed via pip.
+* REST now allows rate limiting headers to be accessed by client
+  javascript.
 
-More info on the 57 changes can be found in the `change note`_.
+* Default number of rounds for PBKDF2 updated to 2M to account for
+  improvements in password crackers and CPU power.
 
-For more information on Roundup see the :doc:`design overview
-<docs/design>`, and all the other :doc:`documentation <docs>`. Roundup
-has been deployed for:
+* Support PBKDF2 with SHA512 for password storage
 
-    * bug tracking and TODO list management (the classic
-      installation)
-    * customer help desk support (with a wizard for the phone
-      answerers, linking to networking, system and development
-      issue trackers)
-    * issue management for IETF working groups
-    * sales lead tracking
-    * conference paper submission and double-blind referee
-      management
-    * weblogging (well, almost :) 
+* Deprecate SSHA password hash function.
+
+* roundup-admin reindex can be done in batches to managle load
+  incurred by reindexing.
+
+* roundup-admin can list avaailable templates and their installed
+  locations.
+
+* Crash fixes in detector handling, configuration handling, 
+
+More info on the 51 changes can be found in the `change note`_.
+
+Roundup Use Cases
+=================
+
+For more information on Roundup see the :doc:`features list
+<docs/features>`, :doc:`design overview <docs/design>`, and all the
+other :doc:`documentation <docs>`. Roundup has been deployed for:
+
+* bug tracking and TODO list management (the classic
+  installation)
+* customer help desk support (with a wizard for the phone
+  answerers, linking to networking, system and development
+  issue trackers)
+* issue management for IETF working groups
+* sales lead tracking
+* conference paper submission and double-blind referee
+  management
+* weblogging (well, almost :) 
 
 ...and so on. It's been designed with :doc:`flexibility
 <docs/customizing>` in mind - it's not just another bug
-tracker. Roundup ships with a *demo tracker* to play with - after
-you've unpacked the source, just run "python demo.py" and load up the
-URL it prints out!
+tracker.
 
+
+Try It Out
+==========
+
+Roundup ships with a **demo tracker** to play with - you don't need to
+install Roundup. After you've unpacked the source, just run "``python
+demo.py``" and load up the URL it prints out!
+
+You can install using a virtual environment with pip by:
+
+1. create a virtual environment with::
+
+     python3 -m venv roundup
+
+2. activate the environment with (assuming your shell is
+   sh/bash/zsh/ksh like)::
+
+     . roundup/bin/activate
+
+3. install the latest release of Roundup with::
+
+     python3 -m pip install roundup
+
+4. create a demo tracker with::
+
+     roundup-demo
+
+   using ``./demo`` as the directory and the ``classic`` tracker.
+
+5. load the URL printed by the demo tracker
+
+6. when you are done, use `deactivate` to return your shell to using
+   the system python.
+
+Or choose the source directory gratification mode to run the demo
+with these steps (change the ``-2.2.0`` version identifier to match
+your downloaded file).
+
+1. ``python3 -m pip download roundup``
+2. ``tar -xzvf roundup-2.2.0.tar.gz``
+
+   * if you don't have a tar command, ``python -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz`` can be used.
+
+3. ``cd roundup-2.2.0``
+4. ``python3 demo.py``
+
+Both of these methods produce the same result.
+
+(The source download can also be used to create a Docker image.)
+
+Origin Story
+============
 Roundup was originally released as version 0.1.1 in late August, 2001.
 The first `change note`_ written said:
 

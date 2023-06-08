@@ -125,9 +125,9 @@ def main():
     data_files = [
         ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
         ('share/roundup/frontends', ['frontends/wsgi.py']),
-        ('share/roundup/frontends/Zope', Zope['module']),
-        ('share/roundup/frontends/Zope/icons', Zope['icons']),
-        ('share/roundup/frontends/Zope/dtml', Zope['dtml'])
+        ('share/roundup/frontends/ZRoundup', Zope['module']),
+        ('share/roundup/frontends/ZRoundup/icons', Zope['icons']),
+        ('share/roundup/frontends/ZRoundup/dtml', Zope['dtml'])
     ]
     # install man pages on POSIX platforms
     if os.name == 'posix':
@@ -198,8 +198,8 @@ def main():
           long_description_content_type='text/x-rst',
           url='https://www.roundup-tracker.org',
           download_url='https://pypi.org/project/roundup',
-          classifiers=['Development Status :: 5 - Production/Stable',
-                       #'Development Status :: 4 - Beta',
+          classifiers=[#'Development Status :: 5 - Production/Stable',
+                       'Development Status :: 4 - Beta',
                        #'Development Status :: 3 - Alpha',
                        'Environment :: Console',
                        'Environment :: Web Environment',
@@ -223,6 +223,8 @@ def main():
                        'Programming Language :: Python :: 3.8',
                        'Programming Language :: Python :: 3.9',
                        'Programming Language :: Python :: 3.10',
+                       'Programming Language :: Python :: 3.11',
+                       'Programming Language :: Python :: 3.12',
                        'Topic :: Communications :: Email',
                        'Topic :: Office/Business',
                        'Topic :: Software Development :: Bug Tracking',

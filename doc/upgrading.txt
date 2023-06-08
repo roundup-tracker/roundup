@@ -1,7 +1,7 @@
 .. meta::
     :description:
-        Critical documentation on how to upgrade the Roundup Issue
-	Tracker. Actions that must or can be taken when upgrading from
+	Critical documentation for upgrading the Roundup Issue
+	Tracker. Actions that must be taken when upgrading from
 	one version to another are documented here.
 
 .. index:: Upgrading
@@ -10,20 +10,80 @@
 Upgrading to newer versions of Roundup
 ======================================
 
-Please read each section carefully and edit your tracker home files
+Please read each section carefully and edit the files in your tracker home
 accordingly. Note that there is information about upgrade procedures in the
 `administration guide`_ in the `Software Upgrade`_ section.
 
-If a specific version transition isn't mentioned here (eg. 0.6.7 to 0.6.8)
-then you don't need to do anything. If you're upgrading from 0.5.6 to
-0.6.8 though, you'll need to check the "0.5 to 0.6" and "0.6.x to 0.6.3"
-steps.
+If a specific version transition isn't mentioned here (e.g. 0.6.7 to
+0.6.8) then you don't need to do anything.  If you're upgrading from
+0.5.6 to 0.6.8 though, you'll need to apply the "0.5 to 0.6" and
+"0.6.x to 0.6.3" steps.
 
-**IMPORTANT** The v1.5.x releases of Roundup were the last to support
-Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
-Python version 2.7 that is newer than 2.7.2 is required to run
-roundup.  Starting with Roundup version 2.0.0 we also support Python 3
-versions newer than 3.4.
+General steps:
+
+   1. Make note of your current Roundup version.
+   2. Take your Roundup installation offline (web, email,
+      cron scripts, roundup-admin etc.)
+   3. Backup your Roundup instance
+   4. Install the new version of Roundup (preferably in a new virtual
+      environment)
+   5. Make version specific changes as described below for
+      each version transition. If you are starting at 1.5.0
+      and installing to 2.3.0, you need to make the changes for **all**
+      versions starting at 1.5 and ending at 2.3. E.G.
+      1.5.0 -> 1.5.1, 1.5.1 -> 1.6.0, ..., 2.1.0 -> 2.2.0,
+      2.2.0 -> 2.3.0.
+   6. Run ``roundup-admin -i <tracker_home> migrate`` using the newer
+      version of Roundup for **all** the trackers you have
+      upgraded. This will update the database if it is required.
+   7. Bring your Roundup instance back online
+   8. Test
+
+.. note::
+   The v1.5.x releases of Roundup were the last to support
+   Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
+   Python version 2.7 that is newer than 2.7.2 is required to run
+   Roundup.  Starting with Roundup version 2.0.0 we also support Python 3
+   versions newer than 3.6.
+
+Recent release notes have the following labels:
+
+* required - Roundup will not work properly if these steps are not done
+* recommended - Roundup will still work, but these steps can cause
+  security or stability issues if not done.
+* optional - new features or changes to existing features you might
+  want to use
+* info - important possibly visible changes in how things operate
+
+If you use virtual environments for your installation, you can run
+trackers with different versions of Roundup. So you can have one tracker
+using version 2.2.0 and another tracker using version 1.6.1. This
+allows you to upgrade trackers one at a time rather than having to
+upgrade all your trackers at once.
+
+.. note::
+
+   This file only includes versions released in the last 10
+   years. If you are upgrading from an older version, start with the
+   changes in the `historical migration <upgrading-history.html>`_
+   document.
+
+.. admonition:: Python 2 Support
+
+  If you are running Roundup under Python 2, you should make plans to
+  switch to Python 3. The continuous Integration (CI) and other services
+  used for developing Roundup are dropping support for Python 2. Also
+  optional packages are dropping Python 2 support. As a result Python 2
+  may not be supported for many more release cycles.
+
+.. admonition:: XHTML Support Deprecation Notice
+
+  If you are running a tracker where the ``html_version`` setting in
+  ``config.ini`` is ``xhtml``, you should plan to change your
+  templates to use html (HTML5). If you are affected by this, please
+  send email to the roundup-users mailing list (roundup-users at
+  lists.sourceforge.net). Version 2.3.0 is expected to be the last
+  version to support XHTML.
 
 Contents:
 
@@ -46,6 +106,57 @@ to generate a new ini file preserving all your settings.
 You can then merge any local comments from the tracker's
 ``config.ini`` to ``newconfig.ini`` and replace
 ``config.ini`` with ``newconfig.ini``.
+
+``updateconfig`` will tell you if it is changing old default
+values or if a value must be changed manually.
+
+Using the roundup-mailgw script (required)
+------------------------------------------
+
+In previous versions the roundup-mailgw script had a ``-C`` (or
+``--class``) option for specifying a class to be used with ``-S`` (or
+``--set``) option(s). In the latest version the ``-C`` option is gone,
+the class for this option is specified as a prefix, e.g. instead of ::
+
+    roundup-mailgw -C issue -S issueprop=value
+
+You now specify ::
+
+    roundup-mailgw -S issue.issueprop=value
+
+If multiple values need to be set, this can be achieved with multiple
+``-S`` options or with delimiting multiple values with a semicolon (in
+that case the string needs to be quoted because semicolon is a shell
+special character)::
+
+    roundup-mailgw -S 'issue.issueprop1=value1;issueprop2=value2'
+    roundup-mailgw -S issue.issueprop1=value1 -S issue.issueprop2=value2
+
+are equivalent.  Note that the class is provided as a prefix for the
+set-string, not for each property. The class can be omitted altogether
+in which case it defaults to ``msg`` (this default existed in previous
+versions).
+
+If you do not use the ``-C`` (or ``--class``) option in your current
+setup of mailgw you don't need to change anything.
+
+Replace Create User permission for Anonymous with Register (required)
+---------------------------------------------------------------------
+
+Check your trackers schema.py. If you have the following code::
+
+    db.security.addPermissionToRole('Anonymous', 'Create', 'user')
+
+after the permission for Anonymous 'Email Access', change it to::
+
+    db.security.addPermissionToRole('Anonymous', 'Register', 'user')
+
+The comment for Anonymous 'Email Access' may refer to Create. Change
+it to refer to Register.
+
+This will be an issue if you used the devel or responsive tracker
+templates. If you used a classic, minimal or jinja2 template the
+permission change (but not the comment change) should be done already.
 
 Rdbms version change from 7 to 8 (required)
 -------------------------------------------
@@ -112,6 +223,149 @@ ephemeral, there is no plan to migrate this data to the new
 SQLite databases. If you want to keep using the data set the
 ``sessiondb`` ``backend`` option as described above.
 
+Update ``config.ini``'s ``password_pbkdf2_default_rounds`` (required)
+---------------------------------------------------------------------
+
+Roundup hashes passwords using PBKDF2 with SHA1. In this release, you
+can `upgrade to PBKDF2-SHA512 from current PBKDF2-SHA1`.  If you
+upgrade, you want to set the default rounds according to the
+PBKDF2-SHA512 upgrading directions. Note that this algorithm is
+expected to be the default in a future version of Roundup.
+
+If you don't want to upgrade, we recommend that you increase the
+default number of rounds from the original 10000. PBKDF2 has a
+parameter that makes hashing a password more difficult to do.  The
+original 10000 value was set years ago. It has not been updated for
+advancements in computing power.
+
+This release of Roundup changes the value to 2000000 (2
+million). This exceeds the current `recommended setting of
+1,300,000`_ for PBKDF2 when used with SHA1.
+
+.. caution::
+
+  If you were using the old 10000 value, **it will be automatically
+  upgraded** to 2 million by using ``roundup-admin``'s
+  ``updateconfig``.  If you were not using the old 10000 default, you
+  should update it manually.
+
+After the change users will still be able to log in using the older
+10000 round hashed passwords. If ``migrate_passwords`` is set to
+``yes``, passwords will be automatically re-hashed using the new
+higher value when the user logs in. If
+``password_pbkdf2_default_rounds`` is set to a lower value than was
+used to hash a password, the password will not be rehashed so the
+higher value will be kept. The lower value will be used only if the
+password is changed using the web or command line.
+
+Increasing the number of rounds will slow down re-hashing. That's the
+whole point.  Sadly it will also slow down logins.  Usually the hash
+takes under 1 second, but if you are using a slow chip (e.g. an ARM V6
+at 700 bogo mips) it can take 30 seconds to compute the 2000000
+rounds. The slowdown is linear. So what takes .001 seconds at 10000
+rounds will take: ``2000000/10000 * .001 = 200 * .001`` seconds or 0.2
+seconds.
+
+You can see how long it will take by using the new ``roundup-admin``
+``perftest`` command. After you have finished migrating your database,
+run::
+
+  roundup-admin -i <tracker_home> perftest password scheme=PBKDF2 rounds=10000
+
+and then::
+
+  roundup-admin -i <tracker_home> perftest password scheme=PBKDF2 rounds=2,000,000
+
+so see the difference. Output from this command looks like::
+
+   Hash time: 0.203151849s scheme: PBKDF2 rounds: 10000
+
+If your testing reports a hash time above 0.5 seconds for 10000
+rounds, there may be another issue. See if executing::
+
+  python3 -c 'from hashlib import pbkdf2_hmac'
+
+produces an error.
+
+If you get an ImportError, you are using Roundup's fallback PBKDF2
+implementation. It is much slower than the library version.  As a
+result re-encrypting the password (and logging in, which requires
+calculating the encrypted password) will be very slow.
+
+You should find out how to make the import succeed. You may need to
+install an OS vendor package or some other library.
+
+.. _recommended setting of 1,300,000: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
+
+Upgrade to PBKDF2-SHA512 from current PBKDF2-SHA1 (recommended)
+---------------------------------------------------------------
+
+We recommend that you upgrade to using PBKDF2-SHA512 for hashing your
+passwords. This is a more secure method than the old PBKDF2 (with
+SHA1). Because the algorithm is more secure, it uses a smaller value
+for ``password_pbkdf2_default_rounds``. Setting
+``password_pbkdf2_default_rounds`` to ``250000`` exceeds the current
+`recommended setting of 210,000`_ iterations for PBKDF2 when used with
+SHA512.
+
+You can see how long this takes to calculate on your hardware using
+``roundup-admin``'s perftest command. For example::
+
+  roundup-admin -i <tracker_home> perftest password scheme=PBKDF2S5 rounds=250,000
+
+produces::
+
+  Hash time: 0.161892945 seconds, scheme: PBKDF2S5, rounds: 250000
+
+Any increase in the number of rounds will cause the password to
+automatically be rehashed to the higher value the next time the user
+logs in via the web interface. Changing the number of rounds to a
+**lower** value will not trigger a rehash during login unless the
+scheme is also being changed. The lower number will be used only when
+the password is explicitly changed using the web interface or the
+command line (``roundup-admin`` for example).
+
+Change the default hashing scheme by adding the following lines to
+|the interfaces.py file|_ in your tracker home::
+
+  ## Use PBDKF2S5 (PBKDF2-SHA512) for passwords. Re-hash old PBDFK2
+  # Force password with scheme PBKDF2 (SHA1) to get re-hashed
+  Password.deprecated_schemes.insert(0, Password.known_schemes[0])
+  # choose PBKDF2S5 as the scheme to use for rehashing.
+  Password.default_scheme = Password.experimental_schemes[0]
+
+You may need to create the ``interfaces.py`` file if it doesn't exist.
+In the future, when the default hash is changed to PBKDF2S5, upgrade
+directions will include instructions to remove these lines and
+the file ``interfaces.py`` if it becomes empty.
+
+You can verify that PBKDF2S5 is used by default by running::
+
+  roundup-admin -i <tracker_home> perftest password rounds=250,000
+
+and verify that the scheme is PBKDF2S5. 
+
+.. _the interfaces.py file:
+   reference.html#interfaces-py-hooking-into-the-core-of-roundup
+
+.. |the interfaces.py file| replace:: the ``interfaces.py`` file
+
+.. _recommended setting of 210,000: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
+
+jQuery updated with updates to user.help.html (recommended)
+-----------------------------------------------------------
+
+The devel and responsive templates shipped with an old version of
+jQuery. According to automated tests, it may have a security issue. It
+has been updated to the current version: 3.6.3. If your tracker is
+based on one of these templates (see the ``TEMPLATE-INFO.txt`` file in
+your tracker), remove the old ``html/jquery.js`` file from your
+tracker and copy the new ``jquery-3.6.3.js`` file from the template
+directory to your tracker's ``html`` directory. Also copy in the new
+``user.help.html`` file. It now references the new ``jquery-3.6.3.js``
+file.
+
+
 Session/OTK data storage using Redis (optional)
 -----------------------------------------------
 
@@ -163,14 +417,33 @@ journal method to a rollback journal (``delete`` mode) by
 using step 2 and replacing ``wal`` with ``delete``. (Note:
 SQLite supports other journaling modes, but only ``wal`` and
 ``delete`` persist. Roundup doesn't set a journaling mode
-when it opens the database, so options such as ``truncate``
-are not used.)
+when it opens the database, so journaling mode options such
+as ``truncate`` are not useful.)
 
 For details on WAL mode see `<https://www.sqlite.org/wal.html>`_
 and `<https://www.sqlite.org/pragma.html#pragma_journal_mode>`_.
 
-Change in processing of In-Reply_to email header
-------------------------------------------------
+Change in processing allowed_api_origins setting (info)
+-------------------------------------------------------
+
+In this release you can use both ``*`` (as the first origin) and
+explicit origins in the `allowed_api_origins`` setting in
+``config.ini``. (Before it was only one or the other.)
+
+You do not need to use ``*``. If you do, it allows any client
+anonymous (unauthenticated) access to the Roundup tracker. This
+is the same as browsing the tracker without logging in. If they
+try to provide credentials, access to the data will be denied by
+`CORS`_.
+
+If you include explicit origins (e.g. \https://example.com),
+users from those origins will not be blocked if they use
+credentials to log in.
+
+.. _CORS: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+
+Change in processing of In-Reply_to email header (info)
+-------------------------------------------------------
 
 Messages received via email usually include a ``[issue23]``
 designator in the subject line. This indicates what issue is
@@ -192,6 +465,20 @@ If you don't have messages assigned to multiple issues you
 will see no change. If you do have multi-linked messages
 this will hopefully result in better message->issue
 matching.
+
+Incremental/batch full test reindexing with roundup-admin (info)
+----------------------------------------------------------------
+
+The ``reindex`` command in ``roundup-admin`` can reindex
+a range of items. For example::
+
+  roundup-admin -i ... reindex issues:1-1000
+
+will reindex only the first 1000 issues. This is useful since
+reindexing can take a while and slow down the tracker. By running
+it in batches you can control when the reindex runs rather than having
+to wait for it to complete all the reindexing. See the man page or
+`administration guide`_ for details.
 
 .. index:: Upgrading; 2.1.0 to 2.2.0
 
@@ -349,10 +636,10 @@ Change passwords using crypt module (optional)
 
 The crypt module is being removed from the standard library.  Any
 stored password using crypt encoding will fail to verify once the
-crypt module is removed (expected in Python 3.13 see
-pep-0594). Automatic migration of passwords (if enabled in config.ini)
-re-encrypts old passwords using something other than crypt if a user
-logs in using the web interface.
+crypt module is removed (expected in Python 3.13 see `pep-0594
+<https://peps.python.org/pep-0594/>`_). Automatic migration of
+passwords (if enabled in config.ini) re-encrypts old passwords using
+something other than crypt if a user logs in using the web interface.
 
 You can find users with passwords still encrypted using crypt by
 running::
@@ -405,7 +692,7 @@ in your TAL based templates. The ``jinja2`` based templates are
 missing this file, but if you implemented one you want to surround the
 jinja2 code with::
 
-  {% if context.is_view_ok() %}
+  {% if context.is_edit_ok() %}
     <submit button code here>
   {% endif %}
 
@@ -415,8 +702,8 @@ jinja2 code with::
 Migrating from 2.0.0 to 2.1.0
 =============================
 
-Rdbms version change from 5 to 6 (**)
--------------------------------------
+Rdbms version change from 5 to 6 (required)
+-------------------------------------------
 
 To fix an issue with importing databases, the database has to be
 upgraded for rdbms backends.
@@ -490,16 +777,16 @@ then upgraded to version 5 you have the uniqueness enforcing
 constraint. Running migrate updates to schema version 6 and installs
 the unique index constraint if it is missing.
 
-Setuptools is now required to install
--------------------------------------
+Setuptools is now required to install (info)
+--------------------------------------------
 
 Roundup install now uses setuptools rather than distutils. You must
 install setuptools.  Use the version packgaged by your OS vendor.  If
 your OS vendor doesn't supply setuptools use ``pip install
 setuptools``. (You may need pip3 rather than pip if using python3.)
 
-Define Authentication Header
-----------------------------
+Define Authentication Header (optional)
+---------------------------------------
 
 The web server in front of roundup (apache, nginx) can perform user
 authentication. It can pass the authenticated username to the backend
@@ -541,8 +828,8 @@ At the time this is written, support is experimental. If you use it
 you should notify the roundup maintainers using the roundup-users
 at lists.sourceforge.net mailing list.
 
-Classname Format Enforced
--------------------------
+Classname Format Enforced (info)
+--------------------------------
 
 Check schema.py and look at all Class(), IssueClass(), FileClass()
 calls. The second argument is the classname. All classnames must:
@@ -554,8 +841,8 @@ calls. The second argument is the classname. All classnames must:
 this was not enforced before. Using non-standard classnames could lead
 to other issues.
 
-jQuery updated with updates to user.help.html
----------------------------------------------
+jQuery updated with updates to user.help.html (recommended)
+-----------------------------------------------------------
 
 The devel and responsive templates shipped with an old version of
 jQuery with some security issues. It has been updated to the current
@@ -568,8 +855,8 @@ references the new ``jquery-3.5.1.js`` file and also fixes a bug that
 prevented applying the change from the helper to the field on the main
 form.
 
-Roundup-admin security stops on incorrect properties
-----------------------------------------------------
+Roundup-admin security stops on incorrect properties (info)
+-----------------------------------------------------------
 
 The ``roundup-admin ... security`` command used to continue
 running through the rest of the security roles after reporting a
@@ -578,8 +865,8 @@ property error. Now it stops after reporting the incorrect property.
 If run non-interactively, it exits with status 1. It can now be
 used in a startup script to detect permission errors.
 
-Futureproof devel and responsive timezone selection extension
--------------------------------------------------------------
+Futureproof devel and responsive timezone selection extension (recommended)
+---------------------------------------------------------------------------
 
 The devel and responsive (derived from devel) templates use a select
 control to list all available timezones when pytz is used. It
@@ -613,8 +900,8 @@ Migrating from 1.6.X to 2.0.0
 .. index:: roundup-admin; updateconfig subcommand
 
 
-Python 2 MYSQL users MUST READ
-------------------------------
+Python 2 MYSQL users MUST READ (required)
+-----------------------------------------
 
 To fix issues with encoding of data and text searching, roundup now
 explicitly sets the database connection character set. Roundup prior
@@ -700,8 +987,8 @@ roundup-users AT lists.sourceforge.net mailing list.
 As people report successful or unsuccessful conversions, we will update
 the errata page at: https://wiki.roundup-tracker.org/ReleaseErrata.
 
-Upgrade tracker's config.ini file
----------------------------------
+Upgrade tracker's config.ini file (recommended)
+-----------------------------------------------
 
 Once you have installed the new roundup, use::
 
@@ -713,8 +1000,10 @@ merge any local comments from the tracker's ``config.ini`` into
 settings as you want. Then replace ``config.ini`` with the
 ``newconfig.ini`` file.
 
-Python 3 support
-----------------
+.. _Python 3 support:
+
+Python 3 support (info)
+-----------------------
 
 Many of the ``.html`` and ``.py`` files from Roundup that are copied
 into tracker directories have changed for Python 3 support.  If you
@@ -746,8 +1035,8 @@ back to using python 2. (Note going back to Python 2 will require
 the same steps as moving from 2 to 3 except using Python 3 to perform
 the export.)
 
-Rate Limit New User Registration
---------------------------------
+Rate Limit New User Registration (info)
+---------------------------------------
 
 The new user registration form can be abused by bots to allow
 automated registration for spamming. This can be limited by using the
@@ -780,23 +1069,23 @@ can back the code out of the tracker. You must change the name of the
 field in the html template to ``opaqueregistration`` from ``opaque``
 in order to use the core code.
 
-PGP mail processing
--------------------
+PGP mail processing (required)
+------------------------------
 
 Roundup now uses the ``gpg`` module instead of ``pyme`` to process PGP
 mail.  If you have PGP processing enabled, make sure the ``gpg``
 module is installed.
 
-MySQL client module
--------------------
+MySQL client module (recommended)
+---------------------------------
 
 Although the ``MySQLdb`` module from
 https://pypi.org/project/MySQL-python/ is still supported, it is
 recommended to switch to the updated module from
 https://pypi.org/project/mysqlclient/.
 
-XMLRPC Access Role
-------------------
+XMLRPC Access Role (info/required)
+----------------------------------
 
 A new permission has been added to control access to the XMLRPC
 endpoint. If the user doesn't have the new "Xmlrpc Access" permission,
@@ -809,8 +1098,8 @@ tracker's schema.py and add::
 This is usually included near where other permissions like "Web Access"
 or "Email Access" are assigned.
 
-New values for db.tx_Source
----------------------------
+New values for db.tx_Source (info)
+----------------------------------
 
 The database attribute tx_Source reports "xmlrpc" and "rest" when the
 /xmlrpc and /rest web endpoints are used. Check all code (extensions,
@@ -833,8 +1122,8 @@ or::
     if db.tx_Source in ['web', 'rest', 'xmlrpc', 'email-sig-openpgp', 'cli' ]:
 
 
-CSV export changes
-------------------
+CSV export changes (info)
+-------------------------
 
 The original Roundup CSV export function for indexes reported id
 numbers for links. The wiki had a version that resolved the id's to
@@ -863,8 +1152,8 @@ be added for missing parameters.
 This turns exported values that may look like formulas into strings so
 some versions of Excel won't try to interpret them as a formula.
 
-Update userauditor.py to restrict usernames
--------------------------------------------
+Update userauditor.py to restrict usernames (recommended)
+---------------------------------------------------------
 
 A username can be created with embedded commas and < and >
 characters. Even though the < and > are usually escaped when
@@ -877,8 +1166,8 @@ detectors directory. Otherwise merge the changes from the template
 userauditor.py. https://issues.roundup-tracker.org/issue2550921 may be
 helpful.
 
-Consider reindexing if you use European languages
--------------------------------------------------
+Consider reindexing if you use European languages (recommended)
+---------------------------------------------------------------
 
 A couple of bugs dealing with incorrect indexing of European languages
 (Russian and German were reported) have been fixed. Note reindexing
@@ -897,8 +1186,8 @@ minutes. Using whoosh took about 2 hours. Using xapian took about 6
 hours. All examples were with Python 2. Anecdotal evidence shows
 Python 3 is faster, but YMMV.
 
-Merge improvements in statusauditor.py
---------------------------------------
+Merge improvements in statusauditor.py (optional)
+-------------------------------------------------
 
 By default the detector statusauditor.py will change the status from
 "unread" to "chatting" when a second message is added to an issue.
@@ -925,11 +1214,11 @@ have a ``detectors/config.ini`` file. (Note this is
 ``config.ini`` file at the root of the tracker home.)
 
 This enhancement is disabled by default. Enable it by changing the
-value in ``detectors/config.ini`` from:
+value in ``detectors/config.ini`` from::
 
    chatting_requires_two_users = False
 
-to
+to::
 
    chatting_requires_two_users = True
 
@@ -958,26 +1247,26 @@ If you have an incorrect value (say you use ``T`` rather than
 
 to fix this set the value to ``yes`` (True) or ``no`` (False).
 
-Responsive template changes
----------------------------
+Responsive template changes (optional)
+--------------------------------------
 
 There have been some changes to the responsive template. You can
 diff/merge these changes into your responsive template based tracker.
 
-Jinja template changes
-----------------------
+Jinja template changes (required)
+---------------------------------
 
 Auto escaping has been enabled in the jinja template engine, this
 means it is no longer necessary to manually escape dynamic strings
-with "\|e", but strings that should not be escaped need to be marked
-with "\|safe" (e.g. "{{ context.history()|u|safe }}"). Also, the i18n
+with ``|e``, but strings that should not be escaped need to be marked
+with ``|safe`` (e.g. ``{{ context.history()|u|safe }}``). Also, the i18n
 extension has been enabled and the template has been updated to use
-the extension for translatable text instead of explicit "i18n.gettext"
-calls:
+the extension for translatable text instead of explicit ``i18n.gettext``
+calls::
 
    {% trans %}List of issues{% endtrans %}
 
-instead of:
+instead of::
 
    {{ i18n.gettext('List of issues')|u }}
 
@@ -1012,14 +1301,14 @@ Update tracker config file
 After installing the new version of roundup, you should
 update the ``config.ini`` file for your tracker. To do this:
 
- 1. backup your existing ``config.ini`` file
- 2. using the newly installed code, run::
+1. backup your existing ``config.ini`` file
+2. using the newly installed code, run::
 
-       roundup-admin -i /path/to/tracker updateconfig config.ini.new
+      roundup-admin -i /path/to/tracker updateconfig config.ini.new
 
-    to create the file config.ini.new. Replace
-    ``/path/to/tracker`` with the path to your tracker.
- 3. replace your tracker's config.ini with config.ini.new
+   to create the file config.ini.new. Replace
+   ``/path/to/tracker`` with the path to your tracker.
+3. replace your tracker's config.ini with config.ini.new
 
 Using updateconfig keeps all the settings from your
 tracker's config.ini file and adds settings for all the new
@@ -1033,7 +1322,7 @@ Read the new config.ini and configure it to enable new
 features. Details on using these features can be found in
 this section.
 
-Make sure that user can view labelprop on classes (REQUIRED)
+Make sure that user can view labelprop on classes (required)
 ------------------------------------------------------------
 
 If you have View permissions that use ```properties=...```,
@@ -1066,8 +1355,10 @@ content.
 See: https://sourceforge.net/p/roundup/mailman/message/35763294/
 for the initial discussion of the issue.
 
-Cross Site Request Forgery Detection Added
-------------------------------------------
+.. _cross site request forgery detection added:
+
+Cross Site Request Forgery Detection Added (recommended)
+--------------------------------------------------------
 
 Roundup 1.6. supports a number of defenses against CSRF.
 
@@ -1075,16 +1366,16 @@ Http header verification against the tracker's ``web``
 setting in the ``[tracker]`` section of config.ini for the
 following headers:
 
- 1. Analyze the ``Referer`` HTTP header to make sure it
-    includes the web setting.
- 2. Analyze the ``Origin`` HTTP header to make sure the
-    schema://host matches the web setting.
- 3. Analyze the ``X-Forwarded-Host`` header set by a proxy
-    running in front of roundup to make sure it agrees with
-    the host part of the web setting.
- 4. Analyze the ``Host`` header to make sure it agrees with
-    the host part of the web setting. This is not done if
-    ``X-Forwarded-Host`` is set.
+1. Analyze the ``Referer`` HTTP header to make sure it
+   includes the web setting.
+2. Analyze the ``Origin`` HTTP header to make sure the
+   schema://host matches the web setting.
+3. Analyze the ``X-Forwarded-Host`` header set by a proxy
+   running in front of roundup to make sure it agrees with
+   the host part of the web setting.
+4. Analyze the ``Host`` header to make sure it agrees with
+   the host part of the web setting. This is not done if
+   ``X-Forwarded-Host`` is set.
 
 By default roundup 1.6 does not require any specific header
 to be present. However at least one of the headers above
@@ -1105,7 +1396,7 @@ is not true the post is rejected and the user is notified.
 The standard context/submit templating item creates CSRF tokens by
 default. If you have forms using the POST method that are not using
 the standard submit routine, you should add the following field to all
-forms:
+forms::
 
    <input name="@csrf" type="hidden"
       tal:attributes="value python:utils.anti_csrf_nonce()">
@@ -1115,7 +1406,7 @@ utils.anti_csrf_nonce() and is put in a database to be
 retreived if the token is used. Token lifetimes are 2 weeks
 by default but can be configured in config.ini. Roundup will
 automatically prune old tokens. Calling anti_csrf_nonce with
-an integer lifetime, for example:
+an integer lifetime, for example::
 
    <input name="@csrf" type="hidden"
       tal:attributes="value python:utils.anti_csrf_nonce(lifetime=10)">
@@ -1208,7 +1499,7 @@ made it difficult to exploit. However allowing the use of
 subdirectories to organize the templates required that it be fixed.
 
 
-Database back end specified in config.ini (REQUIRED)
+Database back end specified in config.ini (required)
 ----------------------------------------------------
 
 The ``db/backend_name`` file is no longer used to configure the database
@@ -1317,7 +1608,7 @@ the email entry in the tracker section::
   # Default: 
   replyto_address = 
 
-Login from a search or after logout works better (REQUIRED)
+Login from a search or after logout works better (required)
 -----------------------------------------------------------
 
 The login form has been improved to work with some back end code
@@ -1329,11 +1620,17 @@ tracker's base url. If the base_url uses http, you can set the url to
 https.
 
 Replace the existing code in the tracker's html/page.html page that
-looks similar to (look for name="__came_from")::
+looks similar to (look for name="__came_from"):
 
-  <input type="hidden" name="__came_from" tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
+.. code::
+   :class: big-code
 
-with the following::
+   <input type="hidden" name="__came_from" tal:attributes="value string:${request/base}${request/env/PATH_INFO}">
+
+with the following:
+
+.. code:: html
+  :class: big-code
 
   <input type="hidden" name="__came_from"
     tal:condition="exists:request/env/QUERY_STRING"
@@ -1379,7 +1676,10 @@ a new checkbox (checked by default) that keeps you on the same page so
 you can add a new keywords one after the other.
 
 To add this to your own tracker, add the following code (prefixed with
-a +) after the entry box for the new keyword in html/keyword.item.html::
+a +) after the entry box for the new keyword in html/keyword.item.html:
+
+.. code::
+   :class: big-code
 
       <tr>
        <th i18n:translate="">Keyword</th>
@@ -1470,7 +1770,10 @@ The default templates have been updated to use this in the "Your
 Query" section of the trackers html/page.html file. You will want to
 change your template. Lines starting with - are the original line and
 you want to change it to match the line starting with the + (remove
-the + from the line)::
+the + from the line):
+
+.. code::
+  :class: big-code
 
       <tal:block tal:repeat="qs request/user/queries">
   -    <a href="#" tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name}"
@@ -1784,1844 +2087,13 @@ vs.::
 The new calls escape the passed string by default and avoid XSS security
 issues.
 
-.. index:: Upgrading; 1.4.20 to 1.4.21
 
-Migrating from 1.4.20 to 1.4.21
-===============================
-
-The ``_generic.calendar.html`` page of the instance has been updated to include
-``<meta name="robots" content="noindex, nofollow" />``.  This prevents
-robots to follow all the links in the calendar.  If you haven't modified the
-page on your local instance, you can simply replace it with the one in
-``share/roundup/templates/classic/html/_generic.calendar.html``; if you did,
-you can add the tag manually.  See issue2550765 and changeset a099ff2ceff3.
-
-If you are using the xml-rpc interface, there is a change
-  in accessing it. You can not send text/xml data to any
-  roundup url and get a response, you must use the /xmlrpc
-  url. For example, if you used to send your xmlrpc request to:
-
-   http://myroundup.com/roundup
-
-  you need to change the url to read:
-
-   http://myroundup.com/roundup/xmlrpc
-
-  to invoke the xmlrpc handler. This allows us to send xml
-  data to roundup for other handlers (e.g. REST, SOAP ...)
-  in the future.
-
-
-.. index:: upgrading; 1.4.19 to 1.4.20
-
-Migrating from 1.4.19 to 1.4.20
-===============================
-
-Roundup used to allow certain HTML-Tags in OK- and Error-messages. Since
-these messages are passed via the URL (due to roundup redirecting after
-an edit), we did have security-issues (see issue2550724).
-
-If you have customized the OK or Error messages in your
-roundup-installation and you were using features like bold or italic
-in the message, you will have to do without this highlighting and
-remove HTML tags from messages.
-
-If you were using <br> tags for multi-line messages, you now should use
-newlines instead, these will be replaced with <br/> during formatting.
-
-Note that the previous implementation also allowed links inside
-messages. Since these links could be set by an attacker, no links in
-roundup messages are supported anymore. This does *not* affect the
-"clear this message" link in OK-messages as it is generated by the
-template and is not part of the OK-message.
-
-If you have not modified any roundup messages, you need not do anything,
-the templates shipped with roundup did not use HTML tags in messages for
-highlighting.
-
-
-.. index:: upgrading; 1.4.17 to 1.4.18
-
-Migrating from 1.4.17 to 1.4.18
-===============================
-
-There was a bug in 1.4.17 where files were unlinked from issues if a
-mail without attachment was received via the mail interface. The
-following script will list likely issues being affected by the bug.
-The date in the script is the date of the 1.4.17 release. If you have
-installed 1.4.17 later than this date, you can change the date
-appropriately to your installation date. Run the script in the directory
-of your tracker::
-
-  #!/usr/bin/python
-  import os
-  from roundup import instance
-  from roundup.date import Date
-  dir     = os.getcwd ()
-  tracker = instance.open (dir)
-  db      = tracker.open ('admin')
-  # you may want to change this to your install date to find less candidates
-  last_release = Date('2011-05-13')
-  affected = {}
-  for i in db.issue.getnodeids():
-      for j in db.issue.history(i):
-          if i in affected:
-              break
-          if j[1] < last_release or j[3] != 'set' or 'files' not in j[4]:
-              continue
-          for op, p in j[4]['files']:
-              if op == '-':
-                  affected [i] = 1
-                  break
-  print(', '.join(sorted(affected.keys())))
-
-To find out which files where attached before you can look in the
-history of the affected issue.  For fixing issues you can re-attach the
-files in question using the "set" command of roundup-admin, e.g., if the
-list of files attached to an issue should be files 5, 17, 23 for issue42
-you will set this using
-
-roundup-admin -i /path/to/your/tracker set issue42 files=5,17,23
-
-.. index:: upgrading; 1.4.x to 1.4.17
-
-Migrating from 1.4.x to 1.4.17
-==============================
-
-There is a new config-option `migrate_passwords` in section `web` to
-auto-migrate passwords at web-login time to a more secure storage
-scheme. Default for the new option is "yes" so if you don't want that
-passwords are auto-migrated to a more secure password scheme on user
-login, set this to "no" before running your tracker(s) after the
-upgrade.
-
-The standalone roundup-server now defaults to listening on localhost (no
-longer on all network interfaces). This will not affect you if you're
-already using a configuration file for roundup-server. If you are using
-an empty setting for the `host` parameter in the config-file you should
-explicitly put 0.0.0.0 there as the use of an empty string to specify
-listening to all interfaces is deprecated and will go away in a future
-version.  If you are starting the server without a configuration file
-and want to explicitly listen to all network interface, you should
-specify the -n option with the address `0.0.0.0`.
-
-.. _new search permissions for query in 1.4.17:
-
-Searching now requires either read-permission without a check method, or
-you will have to add a "Search" permission for a class or a list of
-properties for a class (if you want to allow searching). For the classic
-template (or other templates derived from it) you want to add the
-following lines to your `schema.py` file::
-
-  p = db.security.addPermission(name='Search', klass='query')
-  db.security.addPermissionToRole('User', p)
-
-This is needed, because for the `query` class users may view only their
-own queries (or public queries). This is implemented with a `check`
-method, therefore the default search permissions will not allow
-searching and you'll have to add an explicit search permission.
-If you have modified your schema, you can check if you're missing any
-search permissions with the following script, run it in your tracker
-directory, it will list for each Class and Property the roles that may
-search for this property::
-
-    #!/usr/bin/python
-    from __future__ import print_function
-    import os
-    from roundup import instance
-
-    tracker = instance.open(os.getcwd ())
-    db = tracker.open('admin')
-
-    for cl in sorted(db.getclasses()):
-        print("Class:", cl)
-        for p in sorted(db.getclass(cl).getprops(protected=True).keys()):
-            print("    Property:", p)
-            roles = []
-            for role in sorted(db.security.role.keys()):
-                if db.security.roleHasSearchPermission(cl,p,role):
-                    roles.append(role)
-            print("        roles may search:", ', '.join(roles))
-
-
-.. index:: upgrading; 1.4.x to 1.4.12
-
-Migrating from 1.4.x to 1.4.12
-==============================
-
-Item creation now checks the "Create" permission instead of the "Edit"
-permission for individual properties. If you have modified your tracker
-permissions from the default distribution, you should check that
-"Create" permissions exist for all properties you want users to be able
-to create.
-
-
-Fixing some potential security holes
-------------------------------------
-
-Enhanced checking was added to the user registration auditor. If you
-run a public tracker you should update your tracker's
-``detectors/userauditor.py`` using the new code from
-``share/roundup/templates/classic/detectors/userauditor.py``. In most
-cases you may just copy the file over, but if you've made changes to
-the auditor in your tracker then you'll need to manually integrate
-the new code.
-
-Some HTML templates were found to have formatting security problems:
-
-``html/page.html``::
-
-  -tal:replace="request/user/username">username</span></b><br>
-  +tal:replace="python:request.user.username.plain(escape=1)">username</span></b><br>
-
-``html/_generic.help-list.html``::
-
-  -tal:content="structure python:item[prop]"></label>
-  +tal:content="python:item[prop]"></label>
-
-The lines marked "+" should be added and lines marked "-" should be
-deleted (minus the "+"/"-" signs).
-
-
-Some HTML interface tweaks
---------------------------
-
-You may wish to copy the ``user_utils.js`` and ``style.css` files from the
-source distribution ``share/roundup/templates/classic/html/`` directory to the
-``html`` directory of your trackers as it includes a small improvement.
-
-If you have made local changes to those files you'll need to manually work
-the differences in to your versions or ignore the changes.
-
-
-.. index:: upgrading; 1.4.x to 1.4.11
-
-Migrating from 1.4.x to 1.4.11
-==============================
-
-Close potential security hole
------------------------------
-
-If your tracker has untrusted users you should examine its ``schema.py``
-file and look for the section granting the "Edit" permission to your users.
-This should look something like::
-
-    p = db.security.addPermission(name='Edit', klass='user', check=own_record,
-        description="User is allowed to edit their own user details")
-
-and should be modified to restrict the list of properties they are allowed
-to edit by adding the ``properties=`` section like::
-
-    p = db.security.addPermission(name='Edit', klass='user', check=own_record,
-        properties=('username', 'password', 'address', 'realname', 'phone',
-            'organisation', 'alternate_addresses', 'queries', 'timezone'),
-        description="User is allowed to edit their own user details")
-
-Most importantly the "roles" property should not be editable - thus not
-appear in that list of properties.
-
-
-Grant the "Register" permission to the Anonymous role
------------------------------------------------------
-
-A separate "Register" permission has been introduced to allow
-anonymous users to register. This means you will need to add the
-following to your tracker's ``schema.py`` to add the permission and
-assign it to the Anonymous role (replacing any previously assigned
-"Create user" permission for the Anonymous role)::
-
-  +db.security.addPermission(name='Register', klass='user',
-  +     description='User is allowed to register new user')
-
-   # Assign the appropriate permissions to the anonymous user's Anonymous
-   # Role. Choices here are:
-   # - Allow anonymous users to register
-  -db.security.addPermissionToRole('Anonymous', 'Create', 'user')
-  +db.security.addPermissionToRole('Anonymous', 'Register', 'user')
-
-The lines marked "+" should be added and lines marked "-" should be
-deleted (minus the "+"/"-" signs).
-
-You should also modify the ``html/page.html`` template to change the
-permission tested there::
-
-   -tal:condition="python:request.user.hasPermission('Create', 'user')"
-   +tal:condition="python:request.user.hasPermission('Register', 'user')"
-
-
-Generic class editor may now restore retired items
---------------------------------------------------
-
-The instructions for doing so won't be present in your tracker unless you copy
-the ``_generic.index.html`` template from the roundup distribution in
-``share/roundup/templates/classic/html`` to your tracker's ``html`` directory.
-
-
-.. index:: upgrading; 1.4.x to 1.4.9
-
-Migrating from 1.4.x to 1.4.9
+Migrating from older versions
 =============================
 
-Customized MailGW Class
------------------------
+See the `historical migration <upgrading-history.html>`_ document.
 
-If you have customized the MailGW class in your tracker: The new MailGW
-class opens the database for each message in the method handle_message
-(instance.open) instead of passing the opened database as a parameter to
-the MailGW constructor. The old handle_message has been renamed to
-_handle_message. The new method opens the database and wraps the call to
-the old method into a try/finally.
-
-Your customized MailGW class needs to mirror this behavior.
-
-Fix the "remove" button in issue files and messages lists
----------------------------------------------------------
-
-The "remove" button(s) in the issue messages list needs to be altered. Find
-the following in your tracker's ``html/issue.item.html`` template::
-
-  <td>
-   <form style="padding:0" tal:condition="context/is_edit_ok"
-         tal:attributes="action string:issue${context/id}">
-    <input type="hidden" name="@remove@files" tal:attributes="value file/id">
-
-and add ``method="POST"`` as shown below::
-
-  <td>
-   <form style="padding:0" method="POST" tal:condition="context/is_edit_ok"
-         tal:attributes="action string:issue${context/id}">
-    <input type="hidden" name="@remove@files" tal:attributes="value file/id">
-
-Then also find::
-
-  <td>
-   <form style="padding:0" tal:condition="context/is_edit_ok"
-         tal:attributes="action string:issue${context/id}">
-    <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
-
-and add ``method="POST"`` as shown below::
-
-  <td>
-   <form style="padding:0" method="POST" tal:condition="context/is_edit_ok"
-         tal:attributes="action string:issue${context/id}">
-    <input type="hidden" name="@remove@messages" tal:attributes="value msg/id">
-
-
-Fixing the "retire" button in user management list
---------------------------------------------------
-
-Some previous versions of this upgrading document missed ``method="POST"``
-in the change to the "retire" link in the user management list
-in section `Migrating from 1.4.x to 1.4.7`_.
-Make sure the change is done as listed below in this document.
-
-
-.. index:: upgrading; 1.4.x to 1.4.7
-
-Migrating from 1.4.x to 1.4.7
-=============================
-
-Several security issues were addressed in this release. Some aspects of your
-trackers may no longer function depending on your local customisations. Core
-functionality that will need to be modified:
-
-Grant the "retire" permission to users for their queries
---------------------------------------------------------
-
-Users will no longer be able to retire their own queries. To remedy this you
-will need to add the following to your tracker's ``schema.py`` just under the
-line that grants them permission to edit their own queries::
-
-   p = db.security.addPermission(name='Edit', klass='query', check=edit_query,
-      description="User is allowed to edit their queries")
-   db.security.addPermissionToRole('User', p)
- + p = db.security.addPermission(name='Retire', klass='query', check=edit_query,
- +    description="User is allowed to retire their queries")
- + db.security.addPermissionToRole('User', p)
-   p = db.security.addPermission(name='Create', klass='query',
-      description="User is allowed to create queries")
-   db.security.addPermissionToRole('User', p)
-
-The lines marked "+" should be added, minus the "+" sign.
-
-
-Fix the "retire" link in the users list for admin users
--------------------------------------------------------
-
-The "retire" link found in the file ``html/user.index.html``::
-
-  <td tal:condition="context/is_edit_ok">
-   <a tal:attributes="href string:user${user/id}?@action=retire&@template=index"
-    i18n:translate="">retire</a>
-
-Should be replaced with::
-
-  <td tal:condition="context/is_retire_ok">
-     <form style="padding:0" method="POST"
-           tal:attributes="action string:user${user/id}">
-      <input type="hidden" name="@template" value="index">
-      <input type="hidden" name="@action" value="retire">
-      <input type="submit" value="retire" i18n:attributes="value">
-     </form>
-
-
-Fix for Python 2.6+ users
--------------------------
-
-If you use Python 2.6 you should edit your tracker's
-``detectors/nosyreaction.py`` file to change::
-
-   import sets
-
-at the top to::
-
-   from roundup.anypy.sets_ import set
-
-and then all instances of ``sets.Set()`` to ``set()`` in the later code.
-
-
-
-Trackers currently allowing HTML file uploading
------------------------------------------------
-
-Trackers which wish to continue to allow uploading of HTML content against issues
-will need to set a new configuration variable in the ``[web]`` section of the
-tracker's ``config.ini`` file:
-
-   # Setting this option enables Roundup to serve uploaded HTML
-   # file content *as HTML*. This is a potential security risk
-   # and is therefore disabled by default. Set to 'yes' if you
-   # trust *all* users uploading content to your tracker.
-   # Allowed values: yes, no
-   # Default: no
-   allow_html_file = no
-
-
-
-.. index:: upgrading; 1.4.2 to 1.4.3
-
-Migrating from 1.4.2 to 1.4.3
-=============================
-
-If you are using the MySQL backend you will need to replace some indexes
-that may have been created by version 1.4.2.
-
-You should to access your MySQL database directly and remove any indexes
-with a name ending in "_key_retired_idx". You should then re-add them with
-the same spec except the key column name needs a size. So an index on
-"_user (__retired, _name)" should become "_user (__retired, _name(255))".
-
-
-.. index:: upgrading; 1.4.x to 1.4.2
-
-Migrating from 1.4.x to 1.4.2
-=============================
-
-.. index:: roundup-admin; migrate subcommand
-
-You should run the "roundup-admin migrate" command for your tracker once
-you've installed the latest codebase.
-
-Do this before you use the web, command-line or mail interface and before
-any users access the tracker.
-
-This command will respond with either "Tracker updated" (if you've not
-previously run it on an RDBMS backend) or "No migration action required"
-(if you have run it, or have used another interface to the tracker,
-or are using anydbm).
-
-It's safe to run this even if it's not required, so just get into the
-habit.
-
-
-.. index:: upgrading; 1.3.3 to 1.4.0
-
-Migrating from 1.3.3 to 1.4.0
-=============================
-
-Value of the "refwd_re" tracker configuration option (section "mailgw")
-is treated as UTF-8 string.  In previous versions, it was ISO8859-1.
-
-If you have running trackers based on the classic template, please
-update the messagesummary detector as follows::
-
-    --- detectors/messagesummary.py 17 Apr 2003 03:26:38 -0000      1.1
-    +++ detectors/messagesummary.py 3 Apr 2007 06:47:21 -0000       1.2
-    @@ -8,7 +8,7 @@
-     if newvalues.has_key('summary') or not newvalues.has_key('content'):
-         return
-
-    -    summary, content = parseContent(newvalues['content'], 1, 1)
-    +    summary, content = parseContent(newvalues['content'], config=db.config)
-     newvalues['summary'] = summary
-
-In the latest version we have added some database indexes to the
-SQL-backends (mysql, postgresql, sqlite) for speeding up building the
-roundup-index for full-text search. We recommend that you create the
-following database indexes on the database by hand::
-
- CREATE INDEX words_by_id ON __words (_textid);
- CREATE UNIQUE INDEX __textids_by_props ON __textids (_class, _itemid, _prop);
-
-.. index:: upgrading; 1.2.x to 1.3.0
-
-Migrating from 1.2.x to 1.3.0
-=============================
-
-1.3.0 Web interface changes
----------------------------
-
-Some of the HTML files in the "classic" and "minimal" tracker templates
-were changed to fix some bugs and clean them up. You may wish to compare
-them to the HTML files in your tracker and apply any changes.
-
-
-.. index:: upgrading; 1.1.2 to 1.2.0
-
-Migrating from 1.1.2 to 1.2.0
-=============================
-
-1.2.0 Sorting and grouping by multiple properties
--------------------------------------------------
-
-Starting with this version, sorting and grouping by multiple properties
-is possible. This means that request.sort and request.group are now
-lists. This is reflected in several places:
-
- * ``renderWith`` now has list attributes for ``sort`` and ``group``,
-   where you previously wrote::
-
-    renderWith(... sort=('-', 'activity'), group=('+', 'priority')
-
-   you write now::
-
-    renderWith(... sort=[('-', 'activity')], group=[('+', 'priority')]
-
- * In templates that permit to edit sorting/grouping, request.sort and
-   request.group are (possibly empty) lists. You can now sort and group
-   by multiple attributes. For an example, see the classic template. You
-   may want search for the variable ``n_sort`` which can be set to the
-   number of sort/group properties.
-
- * Templates that diplay new headlines for each group of items with
-   equal group properties can now use the modified ``batch.propchanged``
-   method that can take several properties which are checked for
-   changes. See the example in the classic template which makes use of
-   ``batch.propchanged``.
-
-.. index:: upgrading; 1.1.0 to 1.1.1
-
-Migrating from 1.1.0 to 1.1.1
-=============================
-
-1.1.1 "Clear this message"
---------------------------
-
-In 1.1.1, the standard ``page.html`` template includes a "clear this message"
-link in the green "ok" message bar that appears after a successful edit
-(or other) action.
-
-To include this in your tracker, change the following in your ``page.html``
-template::
-
- <p tal:condition="options/ok_message | nothing" class="ok-message"
-    tal:repeat="m options/ok_message" tal:content="structure m">error</p>
-
-to be::
-
- <p tal:condition="options/ok_message | nothing" class="ok-message">
-   <span tal:repeat="m options/ok_message"
-      tal:content="structure string:$m <br/ > " />
-    <a class="form-small" tal:attributes="href request/current_url"
-       i18n:translate="">clear this message</a>
- </p>
-
-
-If you implemented the "clear this message" in your 1.1.0 tracker, then you
-should change it to the above and it will work much better!
-
-
-.. index:: upgrading; 1.0.x to 1.1.0
-
-Migrating from 1.0.x to 1.1.0
-=============================
-
-1.1 Login "For Session Only"
-----------------------------
-
-In 1.1, web logins are alive for the length of a session only, *unless* you
-add the following to the login form in your tracker's ``page.html``::
-
-    <input type="checkbox" name="remember" id="remember">
-    <label for="remember" i18n:translate="">Remember me?</label><br>
-
-See the classic tracker ``page.html`` if you're unsure where this should
-go.
-
-
-1.1 Query Display Name
-----------------------
-
-The ``dispname`` web variable has been renamed ``@dispname`` to avoid
-clashing with other variables of the same name. If you are using the
-display name feature, you will need to edit your tracker's ``page.html``
-and ``issue.index.html`` pages to change ``dispname`` to ``@dispname``.
-
-A side-effect of this change is that the renderWith method used in the
-``home.html`` page may now take a dispname argument.
-
-
-1.1 "Clear this message"
-------------------------
-
-In 1.1, the standard ``page.html`` template includes a "clear this message"
-link in the green "ok" message bar that appears after a successful edit
-(or other) action.
-
-To include this in your tracker, change the following in your ``page.html``
-template::
-
- <p tal:condition="options/ok_message | nothing" class="ok-message"
-    tal:repeat="m options/ok_message" tal:content="structure m">error</p>
-
-to be::
-
- <p tal:condition="options/ok_message | nothing" class="ok-message">
-   <span tal:repeat="m options/ok_message"
-      tal:content="structure string:$m <br/ > " />
-    <a class="form-small" tal:attributes="href string:issue${context/id}"
-       i18n:translate="">clear this message</a>
- </p>
-
-
-.. index:: upgrading; 0.8.x to 1.0
-
-Migrating from 0.8.x to 1.0
-===========================
-
-1.0 New Query Permissions
--------------------------
-
-New permissions are defined for query editing and viewing. To include these
-in your tracker, you need to add these lines to your tracker's
-``schema.py``::
-
- # Users should be able to edit and view their own queries. They should also
- # be able to view any marked as not private. They should not be able to
- # edit others' queries, even if they're not private
- def view_query(db, userid, itemid):
-     private_for = db.query.get(itemid, 'private_for')
-     if not private_for: return True
-     return userid == private_for
- def edit_query(db, userid, itemid):
-     return userid == db.query.get(itemid, 'creator')
- p = db.security.addPermission(name='View', klass='query', check=view_query,
-     description="User is allowed to view their own and public queries")
- db.security.addPermissionToRole('User', p)
- p = db.security.addPermission(name='Edit', klass='query', check=edit_query,
-     description="User is allowed to edit their queries")
- db.security.addPermissionToRole('User', p)
- p = db.security.addPermission(name='Create', klass='query',
-     description="User is allowed to create queries")
- db.security.addPermissionToRole('User', p)
-
-and then remove 'query' from the line::
-
- # Assign the access and edit Permissions for issue, file and message
- # to regular users now
- for cl in 'issue', 'file', 'msg', 'query', 'keyword':
-
-so it looks like::
-
- for cl in 'issue', 'file', 'msg', 'keyword':
-
-
-.. index:: upgrading; 0.8.0 to 0.8.3
-
-Migrating from 0.8.0 to 0.8.3
-=============================
-
-0.8.3 Nosy Handling Changes
----------------------------
-
-A change was made to fix a bug in the ``nosyreaction.py`` standard
-detector. To incorporate this fix in your trackers, you will need to copy
-the ``nosyreaction.py`` file from the ``templates/classic/detectors``
-directory of the source to your tracker's ``templates`` directory.
-
-If you have modified the ``nosyreaction.py`` file from the standard
-version, you will need to roll your changes into the new file.
-
-
-.. index:: upgrading; 0.7.1 to 0.8.0
-
-Migrating from 0.7.1 to 0.8.0
-=============================
-
-You *must* fully uninstall previous Roundup version before installing
-Roundup 0.8.0.  If you don't do that, ``roundup-admin install``
-command may fail to function properly.
-
-0.8.0 Backend changes
----------------------
-
-Backends 'bsddb' and 'bsddb3' are removed.  If you are using one of these,
-you *must* migrate to another backend before upgrading.
-
-
-0.8.0 API changes
------------------
-
-Class.safeget() was removed from the API. Test your item ids before calling
-Class.get() instead.
-
-
-0.8.0 New tracker layout
-------------------------
-
-The ``config.py`` file has been replaced by ``config.ini``. You may use the
-roundup-admin command "genconfig" to generate a new config file::
-
-  roundup-admin genconfig <tracker home>/config.ini
-
-and modify the values therein based on the contents of your old config.py.
-In most cases, the names of the config variables are the same.
-
-The ``select_db.py`` file has been replaced by a file in the ``db``
-directory called ``backend_name``. As you might guess, this file contains
-just the name of the backend. To figure what the contents of yours should
-be, use the following table:
-
-  ================================ =========================
-  ``select_db.py`` contents        ``backend_name`` contents
-  ================================ =========================
-  from back_anydbm import ...      anydbm
-  from back_metakit import ...     metakit
-  from back_sqlite import ...      sqlite
-  from back_mysql import ...       mysql
-  from back_postgresql import ...  postgresql
-  ================================ =========================
-
-The ``dbinit.py`` file has been split into two new files,
-``initial_data.py`` and ``schema.py``. The contents of this file are:
-
-``initial_data.py``
-  You don't need one of these as your tracker is already initialised.
-
-``schema.py``
-  Copy the body of the ``def open(name=None)`` function from your old
-  tracker's ``dbinit.py`` file to this file. As the lines you're copying
-  aren't part of a function definition anymore, one level of indentation
-  needs to be removed (remove only the leading four spaces on each
-  line).
-
-  The first few lines -- those starting with ``from roundup.hyperdb
-  import ...`` and the ``db = Database(config, name)`` line -- don't
-  need to be copied. Neither do the last few lines -- those starting
-  with ``import detectors``, down to ``return db`` inclusive.
-
-You may remove the ``__init__.py`` module from the "detectors" directory as
-it is no longer used.
-
-There's a new way to write extension code for Roundup. If you have code in
-an ``interfaces.py`` file you should move it. See the `customisation
-documentation`_ for information about how extensions are now written.
-Note that some older trackers may use ``interfaces.py`` to customise the
-mail gateway behaviour. You will need to keep your ``interfaces.py`` file
-if this is the case.
-
-
-0.8.0 Permissions Changes
--------------------------
-
-The creation of a new item in the user interfaces is now controlled by the
-"Create" Permission. You will need to add an assignment of this Permission
-to your users who are allowed to create items. The most common form of this
-is the following in your ``schema.py`` added just under the current
-assignation of the Edit Permission::
-
-    for cl in 'issue', 'file', 'msg', 'query', 'keyword':
-        p = db.security.getPermission('Create', cl)
-        db.security.addPermissionToRole('User', p)
-
-You will need to explicitly let anonymous users access the web interface so
-that regular users are able to see the login form. Note that almost all
-trackers will need this Permission. The only situation where it's not
-required is in a tracker that uses an HTTP Basic Authenticated front-end.
-It's enabled by adding to your ``schema.py``::
-
-    p = db.security.getPermission('Web Access')
-    db.security.addPermissionToRole('Anonymous', p)
-
-Finally, you will need to enable permission for your users to edit their
-own details by adding the following to ``schema.py``::
-
-    # Users should be able to edit their own details. Note that this
-    # permission is limited to only the situation where the Viewed or
-    # Edited item is their own.
-    def own_record(db, userid, itemid):
-        '''Determine whether the userid matches the item being accessed.'''
-        return userid == itemid
-    p = db.security.addPermission(name='View', klass='user', check=own_record,
-        description="User is allowed to view their own user details")
-    p = db.security.addPermission(name='Edit', klass='user', check=own_record,
-        description="User is allowed to edit their own user details")
-    db.security.addPermissionToRole('User', p)
-
-
-0.8.0 Use of TemplatingUtils
-----------------------------
-
-If you used custom python functions in TemplatingUtils, they must
-be moved from interfaces.py to a new file in the ``extensions`` directory.
-
-Each Function that should be available through TAL needs to be defined
-as a toplevel function in the newly created file. Furthermore you
-add an inititialization function, that registers the functions with the
-tracker.
-
-If you find this too tedious, donfu wrote an automatic init function that
-takes an existing TemplatingUtils class, and registers all class methods
-that do not start with an underscore. The following hack should be placed
-in the ``extensions`` directory alongside other extensions::
-
-    class TemplatingUtils:
-         # copy from interfaces.py
-
-    def init(tracker):
-         util = TemplatingUtils()
-
-         def setClient(tu):
-             util.client = tu.client
-             return util
-
-         def execUtil(name):
-             return lambda tu, *args, **kwargs: \
-                     getattr(setClient(tu), name)(*args, **kwargs)
-
-         for name in dir(util):
-             if callable(getattr(util, name)) and not name.startswith('_'):
-                  tracker.registerUtil(name, execUtil(name))
-
-
-0.8.0 Logging Configuration
----------------------------
-
-See the `administration guide`_ for information about configuring the new
-logging implemented in 0.8.0.
-
-
-.. index:: upgrading; 0.7.2 to 0.7.3
-
-Migrating from 0.7.2 to 0.7.3
-=============================
-
-0.7.3 Configuration
--------------------
-
-If you choose, you may specify the directory from which static files are
-served (those which use the URL component ``@@file``). Currently the
-directory defaults to the ``TEMPLATES`` configuration variable. You may
-define a new variable, ``STATIC_FILES`` which overrides this value for
-static files.
-
-
-.. index:: upgrading; 0.7.0 to 0.7.2
-
-Migrating from 0.7.0 to 0.7.2
-=============================
-
-0.7.2 DEFAULT_TIMEZONE is now required
---------------------------------------
-
-The DEFAULT_TIMEZONE configuration variable is now required. Add the
-following to your tracker's ``config.py`` file::
-
-    # You may specify a different default timezone, for use when users do not
-    # choose their own in their settings.
-    DEFAULT_TIMEZONE = 0            # specify as numeric hour offest
-
-.. index:: upgrading; 0.7.0 to 0.7.1
-
-Migrating from 0.7.0 to 0.7.1
-=============================
-
-0.7.1 Permission assignments
-----------------------------
-
-If you allow anonymous access to your tracker, you might need to assign
-some additional View (or Edit if your tracker is that open) permissions
-to the "anonymous" user. To do so, find the code in your ``dbinit.py`` that
-says::
-
-    for cl in 'issue', 'file', 'msg', 'query', 'keyword':
-        p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('User', p)
-        p = db.security.getPermission('Edit', cl)
-        db.security.addPermissionToRole('User', p)
-    for cl in 'priority', 'status':
-        p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('User', p)
-
-Add add a line::
-
-        db.security.addPermissionToRole('Anonymous', p)
-
-next to the existing ``'User'`` lines for the Permissions you wish to
-assign to the anonymous user.
-
-
-.. index:: upgrading; versions earlier than 0.7
-
-Migrating from 0.6 to 0.7
-=========================
-
-0.7.0 Permission assignments
-----------------------------
-
-Due to a change in the rendering of web widgets, permissions are now
-checked on Classes where they previously weren't (this is a good thing).
-
-You will need to add some additional Permission assignments for your
-regular users, or some displays will break. After the following in your
-tracker's ``dbinit.py``::
-
-    # Assign the access and edit Permissions for issue, file and message
-    # to regular users now
-    for cl in 'issue', 'file', 'msg', 'query', 'keyword':
-        p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('User', p)
-        p = db.security.getPermission('Edit', cl)
-        db.security.addPermissionToRole('User', p)
-
-add::
-
-    for cl in 'priority', 'status':
-        p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('User', p)
-
-
-0.7.0 Getting the current user id
----------------------------------
-
-The Database.curuserid attribute has been removed.
-
-Any code referencing this attribute should be replaced with a
-call to Database.getuid().
-
-
-0.7.0 ZRoundup changes
-----------------------
-
-The templates in your tracker's html directory will need updating if you
-wish to use ZRoundup. If you've not modified those files (or some of them),
-you may just copy the new versions from the Roundup source in the
-templates/classic/html directory.
-
-If you have modified the html files, then you'll need to manually edit them
-to change all occurances of special form variables from using the colon ":"
-special character to the at "@" special character. That is, variables such
-as::
-
-  :action :required :template :remove:messages ...
-
-should become::
-
-  @action @required @template @remove@messages ...
-
-Note that ``tal:`` statements are unaffected. So are TAL expression type
-prefixes such as ``python:`` and ``string:``. Please ask on the
-roundup-users mailing list for help if you're unsure.
-
-
-0.7.0 Edit collision detection
-------------------------------
-
-Roundup now detects collisions with editing in the web interface (that is,
-two people editing the same item at the same time).
-
-You must copy the ``_generic.collision.html`` file from Roundup source in
-the ``templates/classic/html`` directory. to your tracker's ``html``
-directory.
-
-
-Migrating from 0.6.x to 0.6.3
-=============================
-
-0.6.3 Configuration
--------------------
-
-You will need to copy the file::
-
-  templates/classic/detectors/__init__.py
-
-to your tracker's ``detectors`` directory, replacing the one already there.
-This fixes a couple of bugs in that file.
-
-
-
-Migrating from 0.5 to 0.6
-=========================
-
-
-0.6.0 Configuration
--------------------
-
-Introduced EMAIL_FROM_TAG config variable. This value is inserted into
-the From: line of nosy email. If the sending user is "Foo Bar", the
-From: line is usually::
-
-     "Foo Bar" <issue_tracker@tracker.example>
-
-the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so::
-
-     "Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>
-
-I've altered the mechanism in the detectors __init__.py module so that it
-doesn't cross-import detectors from other trackers (if you run more than one
-in a single roundup-server). This change means that you'll need to copy the
-__init__.py from roundup/templates/classic/detectors/__init__.py to your
-<tracker home>/detectors/__init__.py. Don't worry, the "classic" __init__ is a
-one-size-fits-all, so it'll work even if you've added/removed detectors.
-
-0.6.0 Templating changes
-------------------------
-
-The ``user.item`` template (in the tracker home "templates" directory)
-needs to have the following hidden variable added to its form (between the
-``<form...>`` and ``</form>`` tags::
-
-  <input type="hidden" name=":template" value="item">
-
-
-0.6.0 Form handling changes
----------------------------
-
-Roundup's form handling capabilities have been significantly expanded. This
-should not affect users of 0.5 installations - but if you find you're
-getting errors from form submissions, please ask for help on the Roundup
-users mailing list:
-
-  https://sourceforge.net/projects/roundup/lists/roundup-users
-
-See the customisation doc section on `Form Values`__ for documentation of the
-new form variables possible.
-
-__ customizing.html#form-values
-
-
-0.6.0 Multilingual character set support
-----------------------------------------
-
-Added internationalization support. This is done via encoding all data
-stored in roundup database to utf-8 (unicode encoding). To support utf-8 in
-web interface you should add the folowing line to your tracker's html/page
-and html/_generic.help files inside <head> tag::
-
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-Since latin characters in utf-8 have the same codes as in ASCII table, this
-modification is optional for users who use only plain latin characters.
-
-After this modification, you will be able to see and enter any world
-character via web interface. Data received via mail interface also converted
-to utf-8, however only new messages will be converted. If your roundup
-database contains some of non-ASCII characters in one of 8-bit encoding,
-they will not be visible in new unicode environment. Some of such data (e.g.
-user names, keywords, etc)  can be edited by administrator, the others
-(e.g. messages' contents) is not editable via web interface. Currently there
-is no tool for converting such data, the only solution is to close
-appropriate old issues and create new ones with the same content.
-
-
-0.6.0 User timezone support
----------------------------
-
-From version 0.6.0 roundup supports displaying of Date data in user' local
-timezone if he/she has provided timezone information. To make it possible
-some modification to tracker's schema and HTML templates are required.
-First you must add string property 'timezone' to user class in dbinit.py
-like this::
-
-    user = Class(db, "user",
-                    username=String(),   password=Password(),
-                    address=String(),    realname=String(),
-                    phone=String(),      organisation=String(),
-                    alternate_addresses=String(),
-                    queries=Multilink('query'), roles=String(),
-                    timezone=String())
-
-And second - html interface. Add following lines to
-$TRACKER_HOME/html/user.item template::
-
-     <tr>
-      <th>Timezone</th>
-      <td tal:content="structure context/timezone/field">timezone</td>
-     </tr>
-
-After that all users should be able to provide their timezone information.
-Timezone should be a positive or negative integer - offset from GMT.
-
-After providing timezone, roundup will show all dates values, found in web
-and mail interfaces in local time. It will also accept any Date info in
-local time, convert and store it in GMT.
-
-
-0.6.0 Search page structure
----------------------------
-
-In order to accomodate query editing the search page has been restructured. If
-you want to provide your users with query editing, you should update your
-search page using the macros detailed in the customisation doc section
-`Searching on categories`__.
-
-__ customizing.html#searching-on-categories
-
-Also, the url field in the query class no longer starts with a '?'. You'll need
-to remove this question mark from the url field to support queries. There's
-a script in the "tools" directory called ``migrate-queries.py`` that should
-automatically change any existing queries for you. As always, make a backup
-of your database before running such a script.
-
-
-0.6.0 Notes for metakit backend users
--------------------------------------
-
-Roundup 0.6.0 introduced searching on ranges of dates and intervals. To
-support it, some modifications to interval storing routine were made. So if
-your tracker uses metakit backend and your db schema contains intervals
-property, searches on that property will not be accurate for db items that
-was stored before roundup' upgrade. However all new records should be
-searchable on intervals.
-
-It is possible to convert your database to new format: you can export and
-import back all your data (consult "Migrating backends" in "Maintenance"
-documentation). After this operation all your interval properties should
-become searchable.
-
-Users of backends others than metakit should not worry about this issue.
-
-
-Migrating from 0.4.x to 0.5.0
-=============================
-
-This has been a fairly major revision of Roundup:
-
-1. Brand new, much more powerful, flexible, tasty and nutritious templating.
-   Unfortunately, this means all your current templates are useless. Hopefully
-   the new documentation and examples will be enough to help you make the
-   transition. Please don't hesitate to ask on roundup-users for help (or
-   complete conversions if you're completely stuck)!
-2. The database backed got a lot more flexible, allowing Metakit and SQL
-   databases! The only decent SQL database implemented at present is sqlite,
-   but others shouldn't be a whole lot more work.
-3. A brand new, highly flexible and much more robust security system including
-   a system of Permissions, Roles and Role assignments to users. You may now
-   define your own Permissions that may be checked in CGI transactions.
-4. Journalling has been made less storage-hungry, so has been turned on
-   by default *except* for author, recipient and nosy link/unlink events. You
-   are advised to turn it off in your trackers too.
-5. We've changed the terminology from "instance" to "tracker", to ease the
-   learning curve/impact for new users.
-6. Because of the above changes, the tracker configuration has seen some
-   major changes. See below for the details.
-
-Please, **back up your database** before you start the migration process. This
-is as simple as copying the "db" directory and all its contents from your
-tracker to somewhere safe.
-
-
-0.5.0 Configuration
--------------------
-
-First up, rename your ``instance_config.py`` file to just ``config.py``.
-
-Then edit your tracker's ``__init__.py`` module. It'll currently look
-like this::
-
- from instance_config import *
- try:
-     from dbinit import *
- except ImportError:
-     pass # in installdir (probably :)
- from interfaces import *
-
-and it needs to be::
-
- import config
- from dbinit import open, init
- from interfaces import Client, MailGW
-
-Due to the new templating having a top-level ``page`` that defines links for
-searching, indexes, adding items etc, the following variables are no longer
-used:
-
-- HEADER_INDEX_LINKS
-- HEADER_ADD_LINKS
-- HEADER_SEARCH_LINKS
-- SEARCH_FILTERS
-- DEFAULT_INDEX
-- UNASSIGNED_INDEX
-- USER_INDEX
-- ISSUE_FILTER
-
-The new security implementation will require additions to the dbinit module,
-but also removes the need for the following tracker config variables:
-
-- ANONYMOUS_ACCESS
-- ANONYMOUS_REGISTER
-
-but requires two new variables which define the Roles assigned to users who
-register through the web and e-mail interfaces:
-
-- NEW_WEB_USER_ROLES
-- NEW_EMAIL_USER_ROLES
-
-in both cases, 'User' is a good initial setting. To emulate
-``ANONYMOUS_ACCESS='deny'``, remove all "View" Permissions from the
-"Anonymous" Role. To emulate ``ANONYMOUS_REGISTER='deny'``, remove the "Web
-Registration" and/or the "Email Registration" Permission from the "Anonymous"
-Role. See the section on customising security in the `customisation
-documentation`_ for more information.
-
-Finally, the following config variables have been renamed to make more sense:
-
-- INSTANCE_HOME -> TRACKER_HOME
-- INSTANCE_NAME -> TRACKER_NAME
-- ISSUE_TRACKER_WEB -> TRACKER_WEB
-- ISSUE_TRACKER_EMAIL -> TRACKER_EMAIL
-
-
-0.5.0 Schema Specification
---------------------------
-
-0.5.0 Database backend changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Your select_db module in your tracker has changed a fair bit. Where it used
-to contain::
-
- # WARNING: DO NOT EDIT THIS FILE!!!
- from roundup.backends.back_anydbm import Database
-
-it must now contain::
-
- # WARNING: DO NOT EDIT THIS FILE!!!
- from roundup.backends.back_anydbm import Database, Class, FileClass, IssueClass
-
-Yes, I realise the irony of the "DO NOT EDIT THIS FILE" statement :)
-Note the addition of the Class, FileClass, IssueClass imports. These are very
-important, as they're going to make the next change work too. You now need to
-modify the top of the dbinit module in your tracker from::
-
- import instance_config
- from roundup import roundupdb
- from select_db import Database
-
- from roundup.roundupdb import Class, FileClass
-
- class Database(roundupdb.Database, select_db.Database):
-     ''' Creates a hybrid database from:
-          . the selected database back-end from select_db
-          . the roundup extensions from roundupdb
-     '''
-     pass
-
- class IssueClass(roundupdb.IssueClass):
-     ''' issues need the email information
-     '''
-     pass
-
-to::
-
- import config
- from select_db import Database, Class, FileClass, IssueClass
-
-Yes, remove the Database and IssueClass definitions and those other imports.
-They're not needed any more!
-
-Look for places in dbinit.py where ``instance_config`` is used too, and
-rename them ``config``.
-
-
-0.5.0 Journalling changes
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Journalling has been optimised for storage. Journalling of links has been
-turned back on by default. If your tracker has a large user base, you may wish
-to turn off journalling of nosy list, message author and message recipient
-link and unlink events. You do this by adding ``do_journal='no'`` to the Class
-initialisation in your dbinit. For example, your *msg* class initialisation
-probably looks like this::
-
-    msg = FileClass(db, "msg",
-                    author=Link("user"), recipients=Multilink("user"),
-                    date=Date(),         summary=String(),
-                    files=Multilink("file"),
-                    messageid=String(),  inreplyto=String())
-
-to turn off journalling of author and recipient link events, add
-``do_journal='no'`` to the ``author=Link("user")`` part of the statement,
-like so::
-
-    msg = FileClass(db, "msg",
-                    author=Link("user", do_journal='no'),
-                    recipients=Multilink("user", do_journal='no'),
-                    date=Date(),         summary=String(),
-                    files=Multilink("file"),
-                    messageid=String(),  inreplyto=String())
-
-Nosy list link event journalling is actually turned off by default now. If you
-want to turn it on, change to your issue class' nosy list, change its
-definition from::
-
-    issue = IssueClass(db, "issue",
-                    assignedto=Link("user"), topic=Multilink("keyword"),
-                    priority=Link("priority"), status=Link("status"))
-
-to::
-
-    issue = IssueClass(db, "issue", nosy=Multilink("user", do_journal='yes'),
-                    assignedto=Link("user"), topic=Multilink("keyword"),
-                    priority=Link("priority"), status=Link("status"))
-
-noting that your definition of the nosy Multilink will override the normal one.
-
-
-0.5.0 User schema changes
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Users have two more properties, "queries" and "roles". You'll have something
-like this in your dbinit module now::
-
-    user = Class(db, "user",
-                    username=String(),   password=Password(),
-                    address=String(),    realname=String(),
-                    phone=String(),      organisation=String(),
-                    alternate_addresses=String())
-    user.setkey("username")
-
-and you'll need to add the new properties and the new "query" class to it
-like so::
-
-    query = Class(db, "query",
-                    klass=String(),     name=String(),
-                    url=String())
-    query.setkey("name")
-
-    # Note: roles is a comma-separated string of Role names
-    user = Class(db, "user",
-                    username=String(),   password=Password(),
-                    address=String(),    realname=String(),
-                    phone=String(),      organisation=String(),
-                    alternate_addresses=String(),
-                    queries=Multilink('query'), roles=String())
-    user.setkey("username")
-
-The "queries" property is used to store off the user's favourite database
-queries. The "roles" property is explained below in `0.5.0 Security
-Settings`_.
-
-
-0.5.0 Security Settings
-~~~~~~~~~~~~~~~~~~~~~~~
-
-See the `security documentation`_ for an explanation of how the new security
-system works. In a nutshell though, the security is handled as a four step
-process:
-
-1. Permissions are defined as having a name and optionally a hyperdb class
-   they're specific to,
-2. Roles are defined that have one or more Permissions,
-3. Users are assigned Roles in their "roles" property, and finally
-4. Roundup checks that users have appropriate Permissions at appropriate times
-   (like editing issues).
-
-Your tracker dbinit module's *open* function now has to define any
-Permissions that are specific to your tracker, and also the assignment
-of Permissions to Roles. At the moment, your open function
-ends with::
-
-    import detectors
-    detectors.init(db)
-
-    return db
-
-and what we need to do is insert some commands that will set up the security
-parameters. Right above the ``import detectors`` line, you'll want to insert
-these lines::
-
-    #
-    # SECURITY SETTINGS
-    #
-    # new permissions for this schema
-    for cl in 'issue', 'file', 'msg', 'user':
-        db.security.addPermission(name="Edit", klass=cl,
-            description="User is allowed to edit "+cl)
-        db.security.addPermission(name="View", klass=cl,
-            description="User is allowed to access "+cl)
-
-    # Assign the access and edit permissions for issue, file and message
-    # to regular users now
-    for cl in 'issue', 'file', 'msg':
-        p = db.security.getPermission('View', cl)
-        db.security.addPermissionToRole('User', p)
-        p = db.security.getPermission('Edit', cl)
-        db.security.addPermissionToRole('User', p)
-    # and give the regular users access to the web and email interface
-    p = db.security.getPermission('Web Access')
-    db.security.addPermissionToRole('User', p)
-    p = db.security.getPermission('Email Access')
-    db.security.addPermissionToRole('User', p)
-
-    # May users view other user information? Comment these lines out
-    # if you don't want them to
-    p = db.security.getPermission('View', 'user')
-    db.security.addPermissionToRole('User', p)
-
-    # Assign the appropriate permissions to the anonymous user's Anonymous
-    # Role. Choices here are:
-    # - Allow anonymous users to register through the web
-    p = db.security.getPermission('Web Registration')
-    db.security.addPermissionToRole('Anonymous', p)
-    # - Allow anonymous (new) users to register through the email gateway
-    p = db.security.getPermission('Email Registration')
-    db.security.addPermissionToRole('Anonymous', p)
-    # - Allow anonymous users access to the "issue" class of data
-    #   Note: this also grants access to related information like files,
-    #         messages, statuses etc that are linked to issues
-    #p = db.security.getPermission('View', 'issue')
-    #db.security.addPermissionToRole('Anonymous', p)
-    # - Allow anonymous users access to edit the "issue" class of data
-    #   Note: this also grants access to create related information like
-    #         files and messages etc that are linked to issues
-    #p = db.security.getPermission('Edit', 'issue')
-    #db.security.addPermissionToRole('Anonymous', p)
-
-    # oh, g'wan, let anonymous access the web interface too
-    p = db.security.getPermission('Web Access')
-    db.security.addPermissionToRole('Anonymous', p)
-
-Note in the comments there the places where you might change the permissions
-to restrict users or grant users more access. If you've created additional
-classes that users should be able to edit and view, then you should add them
-to the "new permissions for this schema" section at the start of the security
-block. Then add them to the "Assign the access and edit permissions" section
-too, so people actually have the new Permission you've created.
-
-One final change is needed that finishes off the security system's
-initialisation. We need to add a call to ``db.post_init()`` at the end of the
-dbinit open() function. Add it like this::
-
-    import detectors
-    detectors.init(db)
-
-    # schema is set up - run any post-initialisation
-    db.post_init()
-    return db
-
-You may verify the setup of Permissions and Roles using the new
-"``roundup-admin security``" command.
-
-
-0.5.0 User changes
-~~~~~~~~~~~~~~~~~~
-
-To support all those schema changes, you'll need to massage your user database
-a little too, to:
-
-1. make sure there's an "anonymous" user - this user is mandatory now and is
-   the one that unknown users are logged in as.
-2. make sure all users have at least one Role.
-
-If you don't have the "anonymous" user, create it now with the command::
-
-  roundup-admin create user username=anonymous roles=Anonymous
-
-making sure the capitalisation is the same as above. Once you've done that,
-you'll need to set the roles property on all users to a reasonable default.
-The admin user should get "Admin", the anonymous user "Anonymous"
-and all other users "User". The ``fixroles.py`` script in the tools directory
-will do this. Run it like so (where python is your python 2+ binary)::
-
-  python tools/fixroles.py -i <tracker home> fixroles
-
-
-
-0.5.0 CGI interface changes
----------------------------
-
-The CGI interface code was completely reorganised and largely rewritten. The
-end result is that this section of your tracker interfaces module will need
-changing from::
-
- from roundup import cgi_client, mailgw
- from roundup.i18n import _
-
- class Client(cgi_client.Client):
-     ''' derives basic CGI implementation from the standard module,
-         with any specific extensions
-     '''
-     pass
-
-to::
-
- from roundup import mailgw
- from roundup.cgi import client
-
- class Client(client.Client):
-     ''' derives basic CGI implementation from the standard module,
-         with any specific extensions
-     '''
-     pass
-
-You will also need to install the new version of roundup.cgi from the source
-cgi-bin directory if you're using it.
-
-
-0.5.0 HTML templating
----------------------
-
-You'll want to make a backup of your current tracker html directory. You
-should then copy the html directory from the Roundup source "classic" template
-and modify it according to your local schema changes.
-
-If you need help with the new templating system, please ask questions on the
-roundup-users mailing list (available through the roundup web page on
-sourceforge, https://www.roundup-tracker.org/.
-
-
-0.5.0 Detectors
----------------
-
-The nosy reactor has been updated to handle the tracker not having an
-"assignedto" property on issues. You may want to copy it into your tracker's
-detectors directory. Chances are you've already fixed it though :)
-
-
-Migrating from 0.4.1 to 0.4.2
-=============================
-
-0.4.2 Configuration
--------------------
-The USER_INDEX definition introduced in 0.4.1 was too restrictive in its
-allowing replacement of 'assignedto' with the user's userid. Users must change
-the None value of 'assignedto' to 'CURRENT USER' (the string, in quotes) for
-the replacement behaviour to occur now.
-
-The new configuration variables are:
-
-- EMAIL_KEEP_QUOTED_TEXT
-- EMAIL_LEAVE_BODY_UNCHANGED
-- ADD_RECIPIENTS_TO_NOSY
-
-See the sample configuration files in::
-
- <roundup source>/roundup/templates/classic/instance_config.py
-
-and::
-
- <roundup source>/roundup/templates/extended/instance_config.py
-
-and the `customisation documentation`_ for information on how they're used.
-
-
-0.4.2 Changes to detectors
---------------------------
-You will need to copy the detectors from the distribution into your instance
-home "detectors" directory. If you used the classic schema, the detectors
-are in::
-
- <roundup source>/roundup/templates/classic/detectors/
-
-If you used the extended schema, the detectors are in::
-
- <roundup source>/roundup/templates/extended/detectors/
-
-The change means that schema-specific code has been removed from the
-mail gateway and cgi interface and made into auditors:
-
-- nosyreactor.py has now got an updatenosy auditor which updates the nosy
-  list with author, recipient and assignedto information.
-- statusauditor.py makes the unread or resolved -> chatting changes and
-  presets the status of an issue to unread.
-
-There's also a bug or two fixed in the nosyreactor code.
-
-0.4.2 HTML templating changes
------------------------------
-The link() htmltemplate function now has a "showid" option for links and
-multilinks. When true, it only displays the linked item id as the anchor
-text. The link value is displayed as a tooltip using the title anchor
-attribute. To use in eg. the superseder field, have something like this::
-
-   <td>
-    <display call="field('superseder', showid=1)">
-    <display call="classhelp('issue', 'id,title', label='list', width=500)">
-    <property name="superseder">
-     <br>View: <display call="link('superseder', showid=1)">
-    </property>
-   </td>
-
-The stylesheets have been cleaned up too. You may want to use the newer
-versions in::
-
- <roundup source>/roundup/templates/<template>/html/default.css
-
-
-
-Migrating from 0.4.0 to 0.4.1
-=============================
-
-0.4.1 Files storage
--------------------
-
-Messages and files from newly created issues will be put into subdierectories
-in thousands e.g. msg123 will be put into files/msg/0/msg123, file2003
-will go into files/file/2/file2003. Previous messages are still found, but
-could be put into this structure.
-
-0.4.1 Configuration
--------------------
-
-To allow more fine-grained access control, the variable used to check
-permission to auto-register users in the mail gateway is now called
-ANONYMOUS_REGISTER_MAIL rather than overloading ANONYMOUS_REGISTER. If the
-variable doesn't exist, then ANONYMOUS_REGISTER is tested as before.
-
-Configuring the links in the web header is now easier too. The following
-variables have been added to the classic instance_config.py::
-
-  HEADER_INDEX_LINKS   - defines the "index" links to be made available
-  HEADER_ADD_LINKS     - defines the "add" links
-  DEFAULT_INDEX        - specifies the index view for DEFAULT
-  UNASSIGNED_INDEX     - specifies the index view for UNASSIGNED
-  USER_INDEX           - specifies the index view for USER
-
-See the <roundup source>/roundup/templates/classic/instance_config.py for more
-information - including how the variables are to be set up. Most users will
-just be able to copy the variables from the source to their instance home. If
-you've modified the header by changing the source of the interfaces.py file in
-the instance home, you'll need to remove that customisation and move it into
-the appropriate variables in instance_config.py.
-
-The extended schema has similar variables added too - see the source for more
-info.
-
-0.4.1 Alternate E-Mail Addresses
---------------------------------
-
-If you add the property "alternate_addresses" to your user class, your users
-will be able to register alternate email addresses that they may use to
-communicate with roundup as. All email from roundup will continue to be sent
-to their primary address.
-
-If you have not edited the dbinit.py file in your instance home directory,
-you may simply copy the new dbinit.py file from the core code. If you used
-the classic schema, the interfaces file is in::
-
- <roundup source>/roundup/templates/classic/dbinit.py
-
-If you used the extended schema, the file is in::
-
- <roundup source>/roundup/templates/extended/dbinit.py
-
-If you have modified your dbinit.py file, you need to edit the dbinit.py
-file in your instance home directory. Find the lines which define the user
-class::
-
-    user = Class(db, "msg",
-                    username=String(),   password=Password(),
-                    address=String(),    realname=String(),
-                    phone=String(),      organisation=String(),
-                    alternate_addresses=String())
-
-You will also want to add the property to the user's details page. The
-template for this is the "user.item" file in your instance home "html"
-directory. Similar to above, you may copy the file from the roundup source if
-you haven't modified it. Otherwise, add the following to the template::
-
-   <display call="multiline('alternate_addresses')">
-
-with appropriate labelling etc. See the standard template for an idea.
-
-
-
-Migrating from 0.3.x to 0.4.0
-=============================
-
-0.4.0 Message-ID and In-Reply-To addition
------------------------------------------
-0.4.0 adds the tracking of messages by message-id and allows threading
-using in-reply-to. Most e-mail clients support threading using this
-feature, and we hope to add support for it to the web gateway. If you
-have not edited the dbinit.py file in your instance home directory, you may
-simply copy the new dbinit.py file from the core code. If you used the
-classic schema, the interfaces file is in::
-
- <roundup source>/roundup/templates/classic/dbinit.py
-
-If you used the extended schema, the file is in::
-
- <roundup source>/roundup/templates/extended/dbinit.py
-
-If you have modified your dbinit.py file, you need to edit the dbinit.py
-file in your instance home directory. Find the lines which define the msg
-class::
-
-    msg = FileClass(db, "msg",
-                    author=Link("user"), recipients=Multilink("user"),
-                    date=Date(),         summary=String(),
-                    files=Multilink("file"))
-
-and add the messageid and inreplyto properties like so::
-
-    msg = FileClass(db, "msg",
-                    author=Link("user"), recipients=Multilink("user"),
-                    date=Date(),         summary=String(),
-                    files=Multilink("file"),
-                    messageid=String(),  inreplyto=String())
-
-Also, configuration is being cleaned up. This means that your dbinit.py will
-also need to be changed in the open function. If you haven't changed your
-dbinit.py, the above copy will be enough. If you have, you'll need to change
-the line (round line 50)::
-
-    db = Database(instance_config.DATABASE, name)
-
-to::
-
-    db = Database(instance_config, name)
-
-
-0.4.0 Configuration
---------------------
-``TRACKER_NAME`` and ``EMAIL_SIGNATURE_POSITION`` have been added to the
-instance_config.py. The simplest solution is to copy the default values
-from template in the core source.
-
-The mail gateway now checks ``ANONYMOUS_REGISTER`` to see if unknown users
-are to be automatically registered with the tracker. If it is set to "deny"
-then unknown users will not have access. If it is set to "allow" they will be
-automatically registered with the tracker.
-
-
-0.4.0 CGI script roundup.cgi
-----------------------------
-The CGI script has been updated with some features and a bugfix, so you should
-copy it from the roundup cgi-bin source directory again. Make sure you update
-the ROUNDUP_INSTANCE_HOMES after the copy.
-
-
-0.4.0 Nosy reactor
-------------------
-The nosy reactor has also changed - copy the nosyreactor.py file from the core
-source::
-
-   <roundup source>/roundup/templates/<template>/detectors/nosyreactor.py
-
-to your instance home "detectors" directory.
-
-
-0.4.0 HTML templating
----------------------
-The field() function was incorrectly implemented - links and multilinks now
-display as text fields when rendered using field(). To display a menu (drop-
-down or select box) you need to use the menu() function.
-
-
-
-Migrating from 0.2.x to 0.3.x
-=============================
-
-0.3.x Cookie Authentication changes
------------------------------------
-0.3.0 introduces cookie authentication - you will need to copy the
-interfaces.py file from the roundup source to your instance home to enable
-authentication. If you used the classic schema, the interfaces file is in::
-
- <roundup source>/roundup/templates/classic/interfaces.py
-
-If you used the extended schema, the file is in::
-
- <roundup source>/roundup/templates/extended/interfaces.py
-
-If you have modified your interfaces.Client class, you will need to take
-note of the login/logout functionality provided in roundup.cgi_client.Client
-(classic schema) or roundup.cgi_client.ExtendedClient (extended schema) and
-modify your instance code apropriately.
-
-
-0.3.x Password encoding
------------------------
-This release also introduces encoding of passwords in the database. If you
-have not edited the dbinit.py file in your instance home directory, you may
-simply copy the new dbinit.py file from the core code. If you used the
-classic schema, the interfaces file is in::
-
- <roundup source>/roundup/templates/classic/dbinit.py
-
-If you used the extended schema, the file is in::
-
- <roundup source>/roundup/templates/extended/dbinit.py
-
-
-If you have modified your dbinit.py file, you may use encoded passwords:
-
-1. Edit the dbinit.py file in your instance home directory
-   a. At the first code line of the open() function::
-
-       from roundup.hyperdb import String, Date, Link, Multilink
-
-      alter to include Password, as so::
-
-       from roundup.hyperdb import String, Password, Date, Link, Multilink
-
-   b. Where the password property is defined (around line 66)::
-
-       user = Class(db, "user",
-                       username=String(),   password=String(),
-                       address=String(),    realname=String(),
-                       phone=String(),      organisation=String())
-       user.setkey("username")
-
-      alter the "password=String()" to "password=Password()"::
-
-       user = Class(db, "user",
-                       username=String(),   password=Password(),
-                       address=String(),    realname=String(),
-                       phone=String(),      organisation=String())
-       user.setkey("username")
-
-2. Any existing passwords in the database will remain cleartext until they
-   are edited. It is recommended that at a minimum the admin password be
-   changed immediately::
-
-      roundup-admin -i <instance home> set user1 password=<new password>
-
-
-0.3.x Configuration
--------------------
-FILTER_POSITION, ANONYMOUS_ACCESS, ANONYMOUS_REGISTER have been added to
-the instance_config.py. Simplest solution is to copy the default values from
-template in the core source.
-
-MESSAGES_TO_AUTHOR has been added to the IssueClass in dbinit.py. Set to 'yes'
-to send nosy messages to the author. Default behaviour is to not send nosy
-messages to the author. You will need to add MESSAGES_TO_AUTHOR to your
-dbinit.py in your instance home.
-
-
-0.3.x CGI script roundup.cgi
-----------------------------
-There have been some structural changes to the roundup.cgi script - you will
-need to install it again from the cgi-bin directory of the source
-distribution. Make sure you update the ROUNDUP_INSTANCE_HOMES after the
-copy.
-
-
-.. _`customisation documentation`: customizing.html
-.. _`security documentation`: security.html
+.. _`security documentation`: security-history.html
 .. _`administration guide`: admin_guide.html
 .. _`xmlrpc guide`: xmlrpc.html
 .. _FTS5 full-text search engine: https://www.sqlite.org/fts5.html
@@ -3629,3 +2101,5 @@ copy.
 .. _`administration guide notes on native-fts`: admin_guide.html#configuring-native-fts-full-text-search
 .. _Configuring Compression: admin_guide.html#configuring-compression
 .. _Software Upgrade: admin_guide.html#software-upgrade
+.. _new search permissions for query in 1.4.17:
+   upgrading-history.html#new-search-permissions-for-query-in-1-4-17

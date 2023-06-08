@@ -1,5 +1,7 @@
 # check syntax using:
-# https://config.travis-ci.com/explore
+#  https://config.travis-ci.com/explore
+
+# have commit skip build by adding '[skip travis]' to commit message.
 
 os: linux
 
@@ -31,7 +33,7 @@ python:
 services:
   - mysql
   - postgresql
-  - redis-server
+  - redis
 
 jobs:
     allow_failures:  # releases not ready for prime time yet.
@@ -51,8 +53,16 @@ addons:
       - swig
       # Required to build gpgme.
       - gpgsm
+      - libgpgme-dev
 
 before_install:
+  # deal with setuptools error:
+  # pkg_resources.extern.packaging.version.InvalidVersion: Invalid
+  #    version: '0.23ubuntu1' (package: distro-info)
+  - sudo apt-get remove distro-info
+  # pin setuptools to try to get gpgme to build
+  - pip install "setuptools<66"
+  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then sudo apt-get install python3-gpg; fi
   # build xapian
   - echo "$TRAVIS_PYTHON_VERSION"
   # Sphinx required to build the xapian python bindings. Use 1.8.5 on
@@ -62,7 +72,7 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then pip install sphinx; fi
   - XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
   # force specific version 1.4.19 for python 3.12 for debugging
-  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then XAPIAN_VER=1.4.19; fi; echo $XAPIAN_VER
+  # #REMOVE# - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then XAPIAN_VER=1.4.19; fi; echo $XAPIAN_VER
   - cd /tmp
   - curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
   - tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
@@ -76,7 +86,7 @@ before_install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
   - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-  - case "$TRAVIS_PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && make install; esac
+  - case "$TRAVIS_PYTHON_VERSION" in disable) echo skipping xapian build;; *) make && make install; esac
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
 
@@ -99,13 +109,14 @@ before_install:
   - make && make install
 
   # gpgme
-  - GPGME_VERSION=1.17.1
-  - cd /tmp
-  - curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
-  - tar -jxf gpgme-$GPGME_VERSION.tar.bz2
-  - cd gpgme-$GPGME_VERSION
-  - ./configure --prefix=$VIRTUAL_ENV
-  - make && make install
+  #- GPGME_VERSION=1.18.0
+  #- cd /tmp
+  - pip install "setuptools<66"
+  #- curl -s -O https://www.gnupg.org/ftp/gcrypt/gpgme/gpgme-$GPGME_VERSION.tar.bz2
+  #- tar -jxf gpgme-$GPGME_VERSION.tar.bz2
+  #- cd gpgme-$GPGME_VERSION
+  #- ./configure --prefix=$VIRTUAL_ENV
+  #- make && make install
 
   # change back to the checked out repository directory
   - cd $TRAVIS_BUILD_DIR
@@ -113,11 +124,13 @@ before_install:
 install:
   - if [[ $TRAVIS_PYTHON_VERSION == "3.4"* ]]; then  pip install mysqlclient==1.3.14; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mysqlclient; fi
+  # https://issues.roundup-tracker.org/issue2551267
+  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then pip install gpg; fi
   - pip install psycopg2
   - pip install redis
-  - pip install gpg pytz whoosh pyjwt requests
+  - pip install pytz whoosh pyjwt requests
   - pip install jinja2
-  - pip install pytest-cov codecov
+  - pip install pytest-cov
   - pip install beautifulsoup4
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune==0.8.4; fi
@@ -149,8 +162,10 @@ before_script:
 script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
+  - python -c "import sys; print('python version ', sys.version)"
   - if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
-    py.test -r a
+    python -m pytest -r a
+      --durations=20
       -W default
       -W "ignore:SelectableGroups:DeprecationWarning" 
       -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 
@@ -160,9 +175,18 @@ script:
       -v --maxfail=5 test/ --cov=roundup;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
-      py.test -v -r a --maxfail=5 test/ --cov=roundup;
+    python -m pytest -v -r a --maxfail=5 test/ --cov=roundup;
     fi
   - ./setup.py build_doc
 
 after_success:
-  - codecov
+  # from https://docs.codecov.com/docs/codecov-uploader#integrity-checking-the-uploader
+  - curl https://keybase.io/codecovsecurity/pgp_keys.asc |
+    gpg --no-default-keyring --keyring trustedkeys.gpg --import # One-time step
+  - curl -Os https://uploader.codecov.io/latest/linux/codecov
+  - curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
+  - curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM.sig
+  - gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+  - shasum -a 256 -c codecov.SHA256SUM
+  - chmod +x codecov
+  - ./codecov -t ${CODECOV_TOKEN}

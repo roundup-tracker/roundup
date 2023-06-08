@@ -57,6 +57,8 @@ config.RDBMS_TEMPLATE = "template0"
 # these TRACKER_WEB and MAIL_DOMAIN values are used in mailgw tests
 config.MAIL_DOMAIN = "your.tracker.email.domain.example"
 config.TRACKER_WEB = "http://tracker.example/cgi-bin/roundup.cgi/bugs/"
+# override number of rounds to reduce CI time
+#config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 1000
 # uncomment the following to have excessive debug output from test cases
 # FIXME: tracker logging level should be increased by -v arguments
 #   to 'run_tests.py' script
@@ -287,6 +289,8 @@ class DBTest(commonDBTest):
 
             # test upgrade adding index
             self.db.post_init()
+
+            self.assertEqual(self.db.db_version_updated, True)
 
             # they're back
             self.db.sql('show indexes from _user;')

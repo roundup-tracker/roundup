@@ -1,63 +1,71 @@
-.TH ROUNDUP-MAILGW 1 "07 October 2019"
+>.TH ROUNDUP-MAILGW 1 "27 October 2022"
 .SH NAME
 roundup-mailgw \- mail gateway for roundup
 .SH SYNOPSIS
-\fBroundup-mailgw\fP [\fI-v\fP] [\fI-c\fP \fIdefault_class\fP]
-[[\fI-C\fP \fIclass\fP] \fI-S\fP \fIfield=value\fP]
+\fBroundup-mailgw\fP [\fI-h|--help] [\fI-v\fP] [\fI--version\fP]
+[\fI-c|--default-class\fP \fIdefault_class\fP]
+[\fI-S|--set-value\fP \fI[class.]field=value\fP]
+[\fI-O|--oauth-directory\fP \fIdirectory\fP]
+[\fI-T|--oauth-token-endpoint\fP \fIendpoint-url\fP]
 [\fIinstance_home\fP] [\fImail source [specification]\fP]
 .SH OPTIONS
 .TP
-\fB-v\fP
+\fB-v\fP \fB--version\fP
 Print version and exit.
 .TP
-\fB-c\fP \fIhyperdb class\fP
-specify the default tracker class - one of issue (the default), msg, file, user etc. Overrides the 
-tracker's mailgw default_class setting.
+\fB-c\fP \fB--default-class\fP \fIhyperdb class\fP
+specify the default tracker class - one of issue (the default), msg,
+file, user etc. Overrides the tracker's mailgw \fIdefault_class\fP setting.
 .TP
-\fB-C\fP \fIhyperdb class\fP
-specify a tracker class - one of msg (the default), issue, file, user - to
-manipulate with -S options
+\fB-S\fP \fB--set-value\fP \fI[class.]property\fP\fB=\fP\fIvalue\fP[\fB;\fP\fIproperty\fP\fB=\fP\fIvalue\fP]
+specify the values to set on the class specified as prefix using the same
+format as the Subject line property manipulations. If the class prefix
+is left out it defaults to \fImsg\fP. Can also be
+specified with \fB--set-value\fP (and abbreviated to \fB--set\fP).
 .TP
-\fB-S\fP \fIproperty\fP\fB=\fP\fIvalue\fP[\fB;\fP\fIproperty\fP\fB=\fP\fIvalue\fP] \fIpairs\fP
-specify the values to set on the class specified by \fB-C\fP using the same
-format as the Subject line property manipulations. Can also be
-specified with \fB--set\fP.
+\fB-O\fP \fB--oauth-directory\fP \fIdirectory\fP
+Only with OAuth authentication specify the directory containing
+additional OAuth credentials.
+.TP
+\fB-T\fP \fB--oauth-token-endpoint\fP \fIurl\fP
+Token endpoint URL of your cloud provider, only used with OAuth.
 .SH DESCRIPTION
 The roundup mail gateway may be called in one of four ways:
 .IP \(bu
 without arguments which will use the env var ROUNDUP_INSTANCE,
 .IP \(bu
-with an instance_home as the only argument,
+with an \fIinstance_home\fP as the only argument,
 .IP \(bu
-with both an instance_home and a mail spool file, or
+with both an \fIinstance_home\fP and a mail spool file, or
 .IP \(bu
 with both an instance home and a mail source type and its specification.
 .PP
 \fBPIPE\fP
 .br
-In the first and second cases, the mail gateway reads a single message from the
-standard input and submits the message to the roundup.mailgw module.
+If there is no mail source specified, the mail gateway reads a single
+message from the standard input and submits the message to the
+roundup.mailgw module.
 
 \fBUNIX mailbox\fP
 .br
-In the second case, the gateway reads all messages from the mail spool
+In this case, the gateway reads all messages from the UNIX mail spool
 file and submits each in turn to the roundup.mailgw module. The file is
 emptied once all messages have been successfully handled. The file is
 specified as:
- \fImailbox /path/to/mailbox\fP
+ \fBmailbox\fP \fI/path/to/mailbox\fP
 
-In all of the following the username and password can be stored in a
-~/.netrc file. In this case only the server name need be specified on
-the command-line.
+In all of the following mail source types, the username and password
+can be stored in a ~/.netrc file. If done so, only the server name
+needs to be specified on the command-line.
 
 The username and/or password will be prompted for if not supplied on
 the command-line or in ~/.netrc.
 
 \fBPOP\fP
 .br
-In the third case, the gateway reads all messages from the POP server
-specified and submits each in turn to the roundup.mailgw module. The
-server is specified as:
+For the mail source "pop", the gateway reads all messages from the POP
+server specified and submits each in turn to the roundup.mailgw module.
+The server is specified as:
  \fBpop\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP
 .br
 The username and password may be omitted:
@@ -68,13 +76,8 @@ are both valid.
 
 \fBPOPS\fP
 .br
-Connect to the POP server over ssl/tls. This requires python 2.4 or
-later. This supports the same notation as POP.
-
- 
- \fBpops\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP
-.br
-etc.
+Connect to the POP server over ssl/tls.
+This supports the same notation as POP.
 
 \fBAPOP\fP
 .br
@@ -97,12 +100,30 @@ Connect to an IMAP server over ssl/tls.
 This supports the same notation as IMAP.
  \fBimaps\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP [\fImailbox\fP]
 
-
 \fBIMAPS_CRAM\fP
 .br
 Connect to an IMAP server over ssl/tls using CRAM-MD5 authentication.
 This supports the same notation as IMAP.
  \fBimaps_cram\fP \fIusername\fP\fB:\fP\fIpassword\fP\fB@\fP\fIserver\fP [\fImailbox\fP]
+
+\fBIMAPS_OAUTH\fP
+.br
+Connect to an IMAP server over ssl/tls using OAUTH authentication.
+Note that this does not support a password in imaps URLs.
+Instead it uses only the user and server and a command-line option for
+the directory with the files \fBaccess_token\fP, \fBrefresh_token\fP,
+\fBclient_secret\fP, and \fBclient_id\fP.
+By default this directory is \fBoauth\fP in your tracker home directory. The
+access token is tried first and, if expired, the refresh token together
+with the client secret is used to retrieve a new access token. Note that
+both token files need to be \fIwriteable\fP, the access token is
+continuously replaced and some cloud providers may also renew the
+refresh token from time to time:
+ \fBimaps_oauth\fP \fIusername\fP\fB@\fP\fIserver\fP [\fImailbox\fP]
+.br
+The refresh and access tokens (the latter can be left empty), the
+client id and the client secret need to be retrieved via cloud provider
+specific protocols or websites.
 
 .SH ENVIRONMENT VARIABLES
 
@@ -116,8 +137,8 @@ If your msg class has a messsagetype property you can set
 up aliases to receive the different types of messages. Setting up
 an alias in your MTA Using:
 
-  tracker: |/tools/roundup/bin/roundup-mailgw -C msg
-             -S "messagetype=reply - to all" /var/roundup/sysadmin
+  tracker: |/tools/roundup/bin/roundup-mailgw
+             -S "msg.messagetype=reply - to all" /var/roundup/sysadmin
 
 (the lines are split for readability. In the alias file they will be
 on the same line). Replace /tools/roundup/bin/roundup-mailgw by your
@@ -128,11 +149,26 @@ to all".  The roundup tracker instance is located at
 
 A comment alias would receive emails at tracker_comment with:
 
-  tracker_comment: |/tools/roundup/bin/roundup-mailgw -C msg 
-             -S "messagetype=comment - to technical" /var/roundup/sysadmin
+  tracker_comment: |/tools/roundup/bin/roundup-mailgw
+             -S "msg.messagetype=to tech" /var/roundup/sysadmin
 
 which would be a technical message. These messages can trigger
 different workflows based on the messagetype.
+
+Both examples use the default class specified in the tracker's
+config.ini (usually the issue class).
+
+You can also set properties directly on the issue class. If
+your tracker's issue has a "private" property that limits
+who can view an issue and its messages:
+
+  security: |/tools/roundup/bin/roundup-mailgw
+             -S "issue.private=true" -S "issue.keyword+=security"
+             /var/roundup/sysadmin
+
+would set the private property on a issue to restrict
+visiblity and mark the issue as a security topic using a
+keyword.
 
 Both examples use the default class specified in the tracker's
 config.ini (usually the issue class).
@@ -144,4 +180,5 @@ This manpage was written by Bastian Kleineidam
 The main author of roundup is Richard Jones
 <richard@users.sourceforge.net>.
 
-Updates by John Rouillard <rouilj@users.sourceforge.net>.
+Updates by John Rouillard <rouilj@users.sourceforge.net> and Ralf
+Schlatterbeck <rsc@runtux.com>.

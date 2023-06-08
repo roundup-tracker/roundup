@@ -21,5 +21,6 @@ user = db.getclass('user')
 user.create(username="admin", password=adminpw,
     address=admin_email, roles='Admin')
 user.create(username="anonymous", roles='Anonymous')
-user.create(username='testuser', password=password.Password('testuser'),
+user.create(username='testuser',
+            password=password.Password('testuser', config=db.config),
     realname='Test User', roles='User', address='t1@example.com')

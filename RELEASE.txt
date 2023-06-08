@@ -14,9 +14,13 @@ Roundup release checklist:
     in the locale directory. Run:
 
        cd locale
-       make template
-       make *.po
+       make merge
        cd ..
+
+    'make merge' will remake template if the source and html files are
+    out of date. 'make template' will regenerate roundup.pot. Touch
+    any .py file in the roundup/ directory to force 'make template'
+    to run.
 
 2.  Run unit tests! They should pass successfully. Install pytest
     using pip2/pip3 for python2 and python3. Then invoke pytest
@@ -134,13 +138,14 @@ Roundup release checklist:
     pypi account and be added as a maintainer to roundup. Ask existing
     maintainer for access. You can do this two ways:
 
-      python3 setup.py sdist upload --repository pypi --sign
+      python3 setup.py sdist upload --repository pypi
 
     which rebuilds the source distribution tarball and uploads it.
-    This means that you have uploaded something tha is not tested. It
-    should be the same as the tarball you tested but....
+    This means that you have uploaded something that is not tested,
+    also it does not have a gpg signature. It should be the same as
+    the tarball you tested but....
 
-    Another way to do this is to use twine (pip install twine).
+    A better way to do this is to use twine (pip install twine).
     You need to sign the tarball. This can be done with:
 
       cd dist
@@ -148,27 +153,29 @@ Roundup release checklist:
       
     you should be prompted to use the roundup release key. If not you
     can add  --local=roundup-devel@lists.sourceforge.net.
-    This will create a file by the name <filename>.tgz.asc. Then
-    use twine to upload *both* the asc and distibution tarball
-    at the same time. E.G.:x
+    This will create a file by the name <filename>.tgz.asc.
+    The original directions used twine to upload the tarball and the
+    signature, but as of May 2023, PyPI no longer accepts signature
+    files.
 
-       twine upload --repository pypi <filename>.tar.gz <filename>.tar.gz.asc
+    So we publish the signature as part of the website. Move the file
+    to the website/www/signatures directory. Commit the .asc signature
+    file to mercurial. Add a new list item at the start of the
+    signature list in doc/security.txt (look for the word multicol).
 
-    (If you upload the .asc file separately from the distibution file
-    it gets a different path and is not able to be located in the pypi
-    interface. The asc file is downloaded using the tarball path and
-    add `asc'.)
+    Use twine to upload the distribution tarball. E.G.
+
+       twine upload --repository pypi <filename>.tar.gz
 
     The distribution file should appear on
     https://pypi.python.org/pypi/roundup in no time. If you are using
     python older than 2.7.13 you need a .pypirc shown below since the
-    URL has changed. If using 2.7.13 or newer, you can remove the
-    "--repository pypi" option and use 'setup.py sdist upload...'.
+    URL has changed.
 
     You can also use twine to upload the .whl (wheel) format
     distributions (if created). Follow the directions for generating
-    the gpg asc files and upload the .whl distribution and .whl.asc
-    signature files together.
+    the gpg asc files and place the .whl.asc in the signature
+    directory.
 
 14. Refresh website.
       website/README.txt
@@ -196,35 +203,49 @@ Roundup release checklist:
 17 Push release docker image to dockerhub
 17a. install docker
 17b. run: (issues, how to release a version e.g. to update alpine for
-           secuity issues. Should release tag be
-	   roundup-tracker/roundup:2.2.0-1, -2 etc? Then add a tag
-	   roundup-tracker/roundup:2.2.0 that changes and always tags
-	   the latest -X release??)
+           security issues. Currently thinking that release tag is
+	   rounduptracker/roundup:2.2.0-1, -2 etc? Then add a tag
+	   rounduptracker/roundup:2.2.0 that moves to always tag
+	   the latest -N release??)
 
-        docker build -t roundup-tracker/roundup:2.2.0 --build-arg="source=pypi" -f scripts/Docker/Dockerfile .
+        docker build -t rounduptracker/roundup:2.2.0 \
+           --build-arg="source=pypi" -f scripts/Docker/Dockerfile .
 
-     to create the dockerfile. *Change 2.2.0 to current version*
+     to create the docker image. *Change 2.2.0 to current version*
      Always use the exact release tag.
 17c. vulnerability scan local image using:
 
-        docker run --rm --volume
+        docker run --rm --volume \
 	/var/run/docker.sock:/var/run/docker.sock \
-            --name Grype anchore/grype:latest roundup-tracker/roundup:2.2.0
+            --name Grype anchore/grype:latest rounduptracker/roundup:2.2.0
 
      should report no vulnerabilities (note match version with current
      build)
+
+     Also can scan (optionally) using trivy:
+
+        docker run --rm --volume \
+	/var/run/docker.sock:/var/run/docker.sock \
+          --name trivy aquasec/trivy:latest image rounduptracker/roundup:2.2.0
+
+     You may need to explicitly update/refresh the scanners with:
+     "docker pull anchore/grype:latest" and similarly for
+     aquasec/trivy if used.
 17d. test roundup in demo mode:
 
         docker run -it --rm -p 8917:8080 \
          -v $PWD/tracker:/usr/src/app/tracker \
-         roundup-tracker/roundup:2.2.0 demo
-17e. push to DockerHub login (login using 'docker login <username>'
-     first and user must be member of roundup-tracker org with ability
-     to publish)
+         rounduptracker/roundup:2.2.0 demo
 
-	 docker tag roundup-tracker/roundup:2.2.0 roundup-tracker/roundup
-         docker push roundup-tracker/roundup:2.2.0
-         docker push roundup-tracker/roundup  # update roundup:latest
+17e. push to DockerHub login (login using 'docker login <username>'
+     first and user must be member of rounduptracker org with ability
+     to publish). Replace -N with the release number (e.g. -1, -2, -3...)
+
+	 docker tag rounduptracker/roundup:2.2.0 roundup-tracker/roundup
+	 docker tag rounduptracker/roundup:2.2.0 roundup-tracker/roundup:2.2.0-N
+         docker push rounduptracker/roundup:2.2.0
+         docker push rounduptracker/roundup:2.2.0-N
+         docker push rounduptracker/roundup  # update roundup:latest
 
 -------------
 
@@ -247,3 +268,47 @@ repository: https://test.pypi.org/legacy/
 username: <your username on test.pypi.org here>
 password: <your password here>
 ========
+
+-------------
+
+==========================
+GPG public key operations.
+==========================
+
+LIST IN KEYRING
+===============
+
+$ gpg --list-keys -a roundup-devel@lists.sourceforge.net
+
+   pub   rsa4096 2018-07-11 [SC] [expires: 2028-07-17]
+         411E354B5D1AF26125D621221F2DD0CB756A76D8
+   uid           [ultimate] Roundup Team (signing key for roundup
+         releases) <roundup-devel@lists.sourceforge.net>
+   sub   rsa4096 2018-07-11 [E] [expires: 2028-07-17]
+
+EXTEND EXPIRATION DATE
+======================
+
+Needs private key and passphrse for private key
+
+$ gpg --edit-key 411E354B5D1AF26125D621221F2DD0CB756A76D8
+
+  > expire
+  [add some number of months/years to it]
+  > key 1
+    [ this chooses the subkey "sub" ]
+  > expire
+  [add some number of months/years to the sub key ]
+  > save
+  [ saves both keys, will need the private key and passphrase ]
+
+EXPORT NEW KEY
+==============
+
+$ gpg --export -a roundup-devel@lists.sourceforge.net >> \
+   tools/roundup.public.pgp.key
+
+then edit roundup.public.pgp.key keeping only the last key stat starts
+with: -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+Commmit new key to mercurial.

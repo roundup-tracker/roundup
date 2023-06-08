@@ -23,6 +23,7 @@ __docformat__ = 'restructuredtext'
 # --- patch sys.path to make sure 'import roundup' finds correct version
 import sys
 import os.path as osp
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 thisdir = osp.dirname(osp.abspath(__file__))
 rootdir = osp.dirname(osp.dirname(thisdir))
@@ -43,37 +44,30 @@ from roundup import mailgw
 from roundup.i18n import _
 
 
-def usage(args, message=None):
-    if message is not None:
-        print(message)
-    print(_(
-        """Usage: %(program)s [-v] [-c class] [[-C class] -S field=value]* [instance home] [mail source [specification]]
-
-Options:
- -v: print version and exit
- -c: default class of item to create (else the tracker's MAIL_DEFAULT_CLASS)
- -C / -S: see below
-
+usage_epilog = """
 The roundup mail gateway may be called in one of the following ways:
  . without arguments. Then the env var ROUNDUP_INSTANCE will be tried.
  . with an instance home as the only argument,
- . with both an instance home and a mail spool file,
+ . with both an instance home and a mail spool file, or
  . with an instance home, a mail source type and its specification.
 
-It also supports optional -C and -S arguments that allows you to set a
-fields for a class created by the roundup-mailgw. The default class if
-not specified is msg, but the other classes: issue, file, user can
-also be used. The -S or --set options uses the same
+It also supports optional -S (or --set-value) arguments that allows you
+to set fields for a class created by the roundup-mailgw. The format for
+this option is [class.]property=value where class can be omitted and
+defaults to msg. The -S options uses the same
 property=value[;property=value] notation accepted by the command line
-roundup command or the commands that can be given on the Subject line
-of an email message.
+roundup command or the commands that can be given on the Subject line of
+an email message (if you're using multiple properties delimited with a
+semicolon the class must be specified only once in the beginning).
 
-It can let you set the type of the message on a per email address basis.
+It can let you set the type of the message on a per email address basis
+by calling roundup-mailgw with different email addresses and other
+settings.
 
 PIPE:
- If there is no mail source specified,
- the mail gateway reads a single message from the standard input
- and submits the message to the roundup.mailgw module.
+ If there is no mail source specified, the mail gateway reads a single
+ message from the standard input and submits the message to the
+ roundup.mailgw module.
 
 Mail source "mailbox":
  In this case, the gateway reads all messages from the UNIX mail spool
@@ -82,25 +76,25 @@ Mail source "mailbox":
  specified as:
    mailbox /path/to/mailbox
 
-In all of the following mail source type the username and password
-can be stored in a ~/.netrc file. If done so case only the server name
-need to be specified on the command-line.
+In all of the following mail source types, the username and password
+can be stored in a ~/.netrc file. If done so, only the server name
+needs to be specified on the command-line.
 
 The username and/or password will be prompted for if not supplied on
 the command-line or in ~/.netrc.
 
 POP:
- For the mail source "pop", the gateway reads all messages from the POP server
- specified and submits each in turn to the roundup.mailgw module. The
- server is specified as:
+ For the mail source "pop", the gateway reads all messages from the POP
+ server specified and submits each in turn to the roundup.mailgw module.
+ The server is specified as:
     pop username:password@server
- Alternatively, one can omit one or both of username and password:
+ The username and password may be omitted:
     pop username@server
     pop server
  are both valid.
 
 POPS:
- Connect to a POP server over ssl. This requires python 2.4 or later.
+ Connect to a POP server over ssl/tls.
  This supports the same notation as POP.
 
 APOP:
@@ -116,66 +110,99 @@ IMAP:
     imap username:password@server mailbox
 
 IMAPS:
- Connect to an IMAP server over ssl.
+ Connect to an IMAP server over ssl/tls.
  This supports the same notation as IMAP.
     imaps username:password@server [mailbox]
 
 IMAPS_CRAM:
- Connect to an IMAP server over ssl using CRAM-MD5 authentication.
+ Connect to an IMAP server over ssl/tls using CRAM-MD5 authentication.
  This supports the same notation as IMAP.
     imaps_cram username:password@server [mailbox]
 
-""") % {'program': args[0]})
-    return 1
+IMAPS_OAUTH:
+ Connect to an IMAP server over ssl/tls using OAUTH authentication.
+ Note that this does not support a password in imaps URLs.
+ Instead it uses only the user and server and a command-line option for
+ the directory with the files 'access_token', 'refresh_token',
+ 'client_secret', and 'client_id'.
+ By default this directory is 'oauth' in your tracker home directory. The
+ access token is tried first and, if expired, the refresh token together
+ with the client secret is used to retrieve a new access token. Note that
+ both token files need to be *writeable*, the access token is
+ continuously replaced and some cloud providers may also renew the
+ refresh token from time to time:
+    imaps_oauth username@server [mailbox]
+ The refresh and access tokens (the latter can be left empty), the
+ client id and the client secret need to be retrieved via cloud provider
+ specific protocols or websites.
 
+
+
+"""
+
+def parse_arguments(argv):
+    '''Handle the arguments to the program
+    '''
+    # take the argv array and parse it leaving the non-option
+    # arguments in the list 'args'.
+    cmd = ArgumentParser(epilog=usage_epilog,
+        formatter_class=RawDescriptionHelpFormatter)
+    cmd.add_argument('args', nargs='*')
+    cmd.add_argument('-v', '--version', action='store_true',
+        help='print version and exit')
+    cmd.add_argument('-c', '--default-class', default='',
+        help="Default class of item to create (else the tracker's "
+        "MAILGW_DEFAULT_CLASS)")
+    cmd.add_argument('-O', '--oauth-directory',
+        help='Directory with OAUTH credentials, default "oauth" in '
+        'tracker home')
+    cmd.add_argument('-S', '--set-value', action='append',
+        help="Set additional properties on some classes", default=[])
+    cmd.add_argument('-T', '--oauth-token-endpoint',
+        help="OAUTH token endpoint for access_token renew, default=%(default)s",
+        default='https://login.microsoftonline.com/'
+            'organizations/oauth2/v2.0/token')
+    return cmd, cmd.parse_args(argv)
 
 def main(argv):
     '''Handle the arguments to the program and initialise environment.
     '''
-    # take the argv array and parse it leaving the non-option
-    # arguments in the args array.
-    try:
-        optionsList, args = getopt.getopt(argv[1:], 'vc:C:S:', ['set=',
-                                                                'class='])
-    except getopt.GetoptError:
-        # print help information and exit:
-        usage(argv)
-        sys.exit(2)
-
-    for (opt, _arg) in optionsList:
-        if opt == '-v':
-            print('%s (python %s)' % (roundup_version, sys.version.split()[0]))
-            return
+    cmd, args = parse_arguments(argv)
+    if args.version:
+        print('%s (python %s)' % (roundup_version, sys.version.split()[0]))
+        return
 
     # figure the instance home
-    if len(args) > 0:
-        instance_home = args[0]
+    if len(args.args) > 0:
+        instance_home = args.args[0]
     else:
         instance_home = os.environ.get('ROUNDUP_INSTANCE', '')
     if not (instance_home and os.path.isdir(instance_home)):
-        return usage(argv)
+        cmd.print_help(sys.stderr)
+        return _('\nError: The instance home must be specified')
 
     # get the instance
     import roundup.instance
     instance = roundup.instance.open(instance_home)
 
     if hasattr(instance, 'MailGW'):
-        handler = instance.MailGW(instance, optionsList)
+        handler = instance.MailGW(instance, args)
     else:
-        handler = mailgw.MailGW(instance, optionsList)
+        handler = mailgw.MailGW(instance, args)
 
     # if there's no more arguments, read a single message from stdin
-    if len(args) == 1:
+    if len(args.args) == 1:
         return handler.do_pipe()
 
     # otherwise, figure what sort of mail source to handle
-    if len(args) < 3:
-        return usage(argv, _(
-            'Error: not enough source specification information'))
-    source, specification = args[1:3]
+    if len(args.args) < 3:
+        cmd.print_help(sys.stderr)
+        return _('\nError: not enough source specification information')
+
+    source, specification = args.args[1:3]
 
     # time out net connections after a minute if we can
-    if source not in ('mailbox', 'imaps', 'imaps_cram'):
+    if source not in ('mailbox', 'imaps', 'imaps_cram', 'imaps_oauth'):
         if hasattr(socket, 'setdefaulttimeout'):
             socket.setdefaulttimeout(60)
 
@@ -200,7 +227,8 @@ def main(argv):
             password = match.group('pass')
             server = match.group('server')
         else:
-            return usage(argv, _('Error: %s specification not valid') % source)
+            cmd.print_help(sys.stderr)
+            return _('\nError: %s specification not valid') % source
 
     # now invoke the mailgw handler depending on the server handler requested
     if source.startswith('pop'):
@@ -209,24 +237,27 @@ def main(argv):
     elif source == 'apop':
         return handler.do_apop(server, username, password)
     elif source.startswith('imap'):
-        ssl = cram = 0
+        d = {}
         if source.endswith('s'):
-            ssl = 1
+            d.update(ssl = 1)
         elif source.endswith('s_cram'):
-            ssl = cram = 1
+            d.update(ssl = 1, cram = 1)
+        elif source == 'imaps_oauth':
+            d.update(ssl = 1, oauth = 1, oauth_path = args.oauth_directory)
+            d.update(token_endpoint = args.oauth_token_endpoint)
         mailbox = ''
-        if len(args) > 3:
-            mailbox = args[3]
-        return handler.do_imap(server, username, password, mailbox, ssl,
-                               cram)
+        if len(args.args) > 3:
+            mailbox = args.args[3]
+        return handler.do_imap(server, username, password, mailbox, **d)
 
-    return usage(argv, _('Error: The source must be either "mailbox",'
-                         ' "pop", "pops", "apop", "imap", "imaps" or'
-                         ' "imaps_cram'))
+    cmd.print_help(sys.stderr)
+    return _('\nError: The source must be either "mailbox",'
+             ' "pop", "pops", "apop", "imap", "imaps", '
+             ' "imaps_cram", or "imaps_oauth"')
 
 
 def run():
-    sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv [1:]))
 
 
 # call main
