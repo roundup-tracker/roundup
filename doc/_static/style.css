@@ -105,10 +105,11 @@ body > .header div.label { font-size: 2em; font-weight: bold; margin: 0.67em 0 0
 body > .footer { margin: 1em 0 1em -14em; clear:both;}
 body > .navigation 
 {
+  float: left;
   margin-left: -14em;
   margin-inline-start: -14em;
+  margin-block-start: unset;
   width: 14em;
-  float: left;
 }
 body > .content 
 {
