@@ -86,11 +86,14 @@ all your trackers to update the database schema version. Do
 this before you use the web, command-line or mail interface
 and before any users access the tracker.
 
-Roundup requires Python 2 newer than version 2.7.2 or Python 3 newer
+Roundup requires Python 2 newer than version 2.7.12 or Python 3 newer
 than or equal to version 3.6 for correct operation. (Python
-3.4 or 3.5 may work, but are not tested.)
+3.4 or 3.5 may work, but are not tested.) Note that Python 2 support
+is being removed from the CI platforms, so you should deploy new
+trackers with Python 3 and plan on upgrading older trackers from Python
+2 to Python 3. See the upgrade guide.
 
-To give Roundup a try, just download (see below), unpack and run::
+To give Roundup a try, just download (directions above), unpack and run::
 
     python demo.py
 
