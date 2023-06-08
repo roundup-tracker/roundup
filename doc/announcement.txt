@@ -47,7 +47,7 @@ Among the notable improvements from the 2.2.0 release are:
   Security Policy (CSP)
 
 * REST now allows rate limiting headers to be accessed by client
-  javascript.
+  JavaScript.
 
 * Default number of rounds for PBKDF2 updated to 2M to account for
   improvements in password crackers and CPU power.
@@ -56,10 +56,10 @@ Among the notable improvements from the 2.2.0 release are:
 
 * Deprecate SSHA password hash function.
 
-* roundup-admin reindex can be done in batches to managle load
+* roundup-admin reindex can be done in batches to manage load
   incurred by reindexing.
 
-* roundup-admin can list avaailable templates and their installed
+* roundup-admin can list available templates and their installed
   locations.
 
 * Crash fixes in detector handling, configuration handling, 
