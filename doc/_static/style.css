@@ -281,9 +281,8 @@ div.related li.right
   background-color: #f7f7f7;
 }
 
-/* This is a little hack to inject a 'news' block into the title
-   page without having to set up a custom directive. */
-#roundup-issue-tracker .news
+/* style for the floating release_info badge block on the home page */
+#roundup-issue-tracker .release_info
 {
   float: right;
   width: auto;
@@ -292,7 +291,6 @@ div.related li.right
   padding: 1em;
   margin: 1em;
 }
-#roundup-issue-tracker .note .admonition-title { display: none; }
 
 table
 { 
