@@ -20,7 +20,7 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
    your production tracker
  - requires *no* additional support software - python (2.7 or 3.6+) is
    enough to get you going
- - easy to set up higher-performance storage backends like sqlite_,
+ - supports higher-performance storage backends like sqlite_,
    mysql_ and postgresql_
 
 *simple to use*
@@ -119,7 +119,7 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
    available at the /xmlrpc endpoint.
  - provides same access to tracker as roundup-admin, but based on
    XMLRPC calls
- - see the `xmlrpc guide`_ for more details simple clients etc.
+ - see the `xmlrpc guide`_ for more details basic and advanced clients etc.
 
 *RESTful interface*
  - accessible using basic HTTP authentication at /rest starting point
