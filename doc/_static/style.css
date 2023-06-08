@@ -283,7 +283,7 @@ div.related li.right
 
 /* This is a little hack to inject a 'news' block into the title
    page without having to set up a custom directive. */
-#roundup-issue-tracker .note
+#roundup-issue-tracker .news
 {
   float: right;
   width: auto;
