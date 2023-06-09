@@ -182,6 +182,29 @@ roundup will write each email message that it sends to that file
 instead to the internet.  This environment variable is independent of
 the python -O flag.
 
+Testing Notes
+-------------
+
+Create tests for your changes. Also run the tests in reverse to try to
+identify test dependencies. You can do this by creating a
+``conftest.py`` in the top of the source tree and include the
+following contents::
+
+   def pytest_collection_modifyitems(items): 
+       items.reverse()
+
+to run all the tests in reverse. More tips at: https://testmon.org/blog/hidden-test-dependencies/.
+
+The full test suite can take a while to run. The `pytest-testmon
+<https://pypi.org/project/pytest-testmon/>`_ package can be installed
+with pip. It analyzes changes to code and run tests that test that
+code. This can significantly reduce the time it takes to run a basic
+test suite. Use it by running::
+
+  python3 -m pytest -v --testmon test
+
+once over the whole test suite. Then subsequent calls will analyze the
+changed files/functions and run tests that cover those changes.
 
 Internationalization Notes
 --------------------------
