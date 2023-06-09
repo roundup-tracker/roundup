@@ -1083,7 +1083,7 @@ class Client:
 
     def authenticate_bearer_token(self, challenge):
         ''' authenticate the bearer token. Refactored from determine_user()
-            to alow it to be overridden if needed.
+            to allow it to be overridden if needed.
         '''
         try:  # will jwt import?
             import jwt
@@ -1190,7 +1190,7 @@ class Client:
                     try:
                         # make sure to str(token['sub']) the
                         # subject. As decoded by json, it is unicode
-                        # which thows an error when used with 'nodeid
+                        # which throws an error when used with 'nodeid
                         # in db' down the call chain.
                         user = self.db.user.get(str(token['sub']), 'username')
                     except IndexError:
