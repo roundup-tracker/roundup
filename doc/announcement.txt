@@ -62,10 +62,11 @@ Among the notable improvements from the 2.2.0 release are:
 * roundup-admin can list available templates and their installed
   locations.
 
-* Crash fixes in detector handling, configuration handling, 
+* Crash fixes in detector handling, configuration handling, fix for
+  sorting of multilinks.
 
 The file CHANGES.txt has a detailed list of feature additions and
-bug fixes (51) for each release. The most recent changes from
+bug fixes (52) for each release. The most recent changes from
 there are at the end of this announcement. Also see the
 information in doc/upgrading.txt.
 
