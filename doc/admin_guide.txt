@@ -1233,7 +1233,7 @@ Examples above show how to use it to:
 
 * install and initialize a new tracker
 * export/import tracker data for migrating between backends
-* creating a new user fom the command line
+* creating a new user from the command line
 * list/find users in the tracker
 
 The basic usage is::
