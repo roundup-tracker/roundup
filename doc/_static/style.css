@@ -202,7 +202,8 @@ a.toc-backref { color: #000000; }
 }
 .menu > ul > li.current > *
 { 
-  background-color:#dddddd;
+  background-color: #f0f0f0;
+  border-block-end: solid medium #cccccc;
 }
 
 .menu ul li:first-child { margin-top:0;}
@@ -235,9 +236,15 @@ a.toc-backref { color: #000000; }
   border-top: none;
 }
 
+/* make submenu items clickable cross whole width of menu */
+.menu ul ul > li > a {
+    display: block;
+}
+
 .menu ul li.toctree-l2.current {
-  background-color: #dddddd;
-  pading-block: 0.25em;
+  background-color: #f0f0f0;
+  border-inline-start: solid 2px rgb(220, 0, 0);
+  padding-block: 1em;
 }
 
 /* related */
@@ -459,3 +466,13 @@ div.file_insert { /* use to insert COPYING into license.txt */
     background: #f3f1cc;
     padding-inline: 0.5em;
 }
+
+/* consider highlighting header element that is a target */
+/*
+:target > :is(h1,h2,h3,h4,h5,h6) {
+  background: rgb(254, 227, 227);
+  outline: rgb(254, 227, 227) solid 3px;
+  padding: 0.3em;
+}
+*/
+
