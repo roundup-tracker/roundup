@@ -664,6 +664,8 @@ A tracker schema defines what data is stored in the tracker's database.
 Schemas are defined using Python code in the ``schema.py`` module of your
 tracker.
 
+.. index:: schema; allowed changes
+
 What you can/can't do to the schema
 -----------------------------------
 
@@ -753,7 +755,7 @@ specifying (default) labelling and ordering of classes.)::
         priority=Link("priority"))
     issue.setkey('title')
 
-.. index:: schema; allowed changes
+.. index:: schema; classes and properties
 
 Classes and Properties - creating a new information store
 ---------------------------------------------------------
@@ -798,6 +800,10 @@ was added. It uses the single form (i.e. issue and user not issues and
 users) for its classes. Most REST documentation suggests using plural
 forms. However, to make your API consistent, use singular forms for
 classes that you add.
+
+.. index::
+   schema; classes
+   schema; items
 
 Class and Items
 ~~~~~~~~~~~~~~~
