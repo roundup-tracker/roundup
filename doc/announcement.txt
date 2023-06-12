@@ -235,6 +235,8 @@ Fixed:
 - Invalid item identifiers passed to REST endpoint return a 404
   rather than a 400 error. E.G. /rest/data/issue/issue4 (rather
   than .../issue/4). (John Rouillard)
+- issue2551280 - sorted() method of MultilinkHTMLProperty is broken?
+  (Gabor Nagy report and fix; commit John Rouillard)
 
 Features:
 ---------
