@@ -122,6 +122,18 @@ jobs:
           #grep max_allowed /etc/mysql/mysql.conf.d/mysqld.cnf
           #ls  /etc/mysql/conf.d/  /etc/mysql/mysql.conf.d/
           #sleep 5
+          # try to improve performance speed by disabling some ACID
+          # settings and change some layout defaults.
+          
+          echo "innodb_flush_log_at_trx_commit = 2" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+          echo "innodb_file_per_table = OFF" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+          echo "innodb_doublewrite=OFF" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+          echo "innodb_fast_shutdown=2" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+          echo "innodb_log_file_size=1048576" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+          echo "innodb_flush_method=O_DIRECT" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+          echo "innodb_log_buffer_size=3M" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+          echo "innodb_buffer_pool_size=180M" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+          sleep 3
           sudo service mysql restart
           #sleep 10
           #ps -ef | grep mysqld
@@ -131,9 +143,11 @@ jobs:
       - name: Install postgres
         run: |
           sudo apt-get update && sudo apt-get install postgresql
-          # Disable fsync for speed, don't care about data durability
-          #   when testing
+          # Disable fsync, full page writes for speed,
+          # don't care about data durability when testing
           sudo sed -i -e '$a\fsync = off' /etc/postgresql/*/*/postgresql.conf
+          sudo sed -i -e '$a\full_page_writes = off' /etc/postgresql/*/*/postgresql.conf
+          sudo sed -i -e '$a\synchronous_commit = off' /etc/postgresql/*/*/postgresql.conf
           sudo service postgresql restart; sleep 10
           # set up postgresql database
           sudo -u postgres psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
