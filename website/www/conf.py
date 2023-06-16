@@ -168,7 +168,9 @@ html_collapse_toctree = True
 # template names.
 #html_additional_pages = {}
 
+# disable permalinks
 html_add_permalinks = ''
+html_permalinks = False  # when sphinx > 3.5 is used.
 
 # If false, no module index is generated.
 #html_use_modindex = True

@@ -84,7 +84,7 @@ release = VERSION
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -116,6 +116,10 @@ exclude_patterns = ['_build',
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+
+# disable permalinks
+html_add_permalinks = ''
+html_permalinks = False  # when sphinx > 3.5 is used.
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
