@@ -7,7 +7,11 @@ help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
 	@echo "  linkcheck to check all external links for integrity"
-
+	@echo "  sourceforge_prod_sync sync html directory to sourceforce"
+	@echo "      production website"
+	@echo "  sourceforge_dev_sync sync html directory to sourceforce"
+	@echo "      /dev_docs subdirectory"
+	@echo "  clean remove all produced files"
 clean:
 	-rm -rf $(TMP) $(HTML) docs COPYING.txt
 
@@ -40,3 +44,7 @@ linkcheck:
 
 sourceforge_dev_sync:
 	rsync -av html/. web.sourceforge.net:/home/project-web/roundup/htdocs/dev_docs/.
+
+sourceforge_prod_sync:
+	read -p "sync to production y/N? " resp; echo "$$resp" | grep -i "^y"
+	rsync -av html/. web.sourceforge.net:/home/project-web/roundup/htdocs/.
