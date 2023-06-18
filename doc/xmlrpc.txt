@@ -83,10 +83,10 @@ issues. Patches with tests to roundup to use defusedxml are welcome.
 
 .. caution::
 
-   The current ``roundup-xmlrpc-server`` implementation does not support
-   SSL. This means that usernames and passwords will be passed in
-   cleartext unless the server is being proxied behind another server
-   (such as Apache or lighttpd) that provide SSL.
+   The current standalone ``roundup-xmlrpc-server`` implementation
+   does not support SSL. This means that usernames and passwords will
+   be passed in cleartext unless the server is proxied behind
+   another server (such as Apache or lighttpd) that provides SSL.
 
 Client API
 ==========
