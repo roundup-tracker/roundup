@@ -1618,18 +1618,23 @@ Docker Support
 ==============
 
 If you don't want to install Roundup on a host, you can create a
-Docker container. This installs Roundup using the `stand-alone web
-server`_ method. This image only supports http. We suggest putting an
+Docker container or use the `pre-built container on
+hub.docker.com
+<https://hub.docker.com/r/rounduptracker/roundup>`_. Docker hub
+images support `multiple tags <#tags-for-dockerhub-docker-images>`_.
+Docker images run Roundup using the `stand-alone web
+server`_ method. The image only supports http. We suggest putting an
 https terminating proxy in front of it.
 
 This is a work in progress and patches to improve it are welcome. You
 can find the docker config files under the `scripts/Docker` directory
 of the source tree.
 
-The dockerized Roundup is based on a 64 bit Alpine distribution.  It
-includes database drivers for anydbm, sqlite, MySQL and Postgresql
-(Postgresl is untested). It also includes additional libraries that
-are listed in `scripts/Docker/requirements.txt` (including redis).
+The Roundup container uses the 64 bit Alpine Python distribution.
+It includes database drivers for anydbm, SQLite, MySQL and
+Postgresql (Postgresql is untested). It also includes additional
+libraries that are listed in `scripts/Docker/requirements.txt`
+(including redis client support).
 
 Email support is a work in progress. Outgoing email to an external
 SMTP server should work. Receiving email should work by using a
@@ -1935,8 +1940,10 @@ releases (not pre-releases) are tagged this way. For example, the
 tags when 2.3.0 is released will be:
 
 ``rounduptracker/roundup:latest``
-   is a moving tag that tracks the latest build
-   with the newest version of Roundup.
+   is a moving tag that tracks the latest build with the newest
+   production version of Roundup using the current newest Alpine
+   release with the versions of Python packages at the time of
+   the build.
 
 ``rounduptracker/roundup:2.3.0``
    is a moving tag that tracks the latest build
@@ -1959,12 +1966,12 @@ example: ``rounduptracker/roundup:2.3.0b1-devel``,
 ``rounduptracker/roundup:devel``
 
 You should not assume that any ``devel`` tag is static. They are
-mainly for use by Roundup developer/maintainer for testing. There
-may be alternate tags ending with ``-devel`` to indicate builds
-from specific Mercurial versions/hashes. Also the tag may be
-overwritten to change the underlying Python libraries or
-images. Unless you like the bleeding edge, these should not be
-used in production.
+mainly for use by Roundup developers/maintainers/testers for
+testing. There may be alternate tags ending with ``-devel`` to
+indicate builds from specific Mercurial versions/hashes. Also the
+tag may be overwritten to change the underlying Python libraries
+or images. Unless you like the bleeding edge, these should
+**not** be used in production.
 
 Maintenance
 ===========

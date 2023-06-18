@@ -185,8 +185,8 @@ Follow the source gratification mode with these steps (change the
 3. ``cd roundup-2.3.0``
 4. ``python3 demo.py``
 
-(The source download can also be used to create a custom Docker
-image.)
+(The source download can also be used to `create a custom Docker
+image <docs/installation.html#docker-support>`_.)
 
 Alternatively, you can install using a virtual environment with pip
 by:
