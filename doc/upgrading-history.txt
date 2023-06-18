@@ -82,7 +82,7 @@ Roundup used to allow certain HTML-Tags in OK- and Error-messages. Since
 these messages are passed via the URL (due to roundup redirecting after
 an edit), we did have security-issues (see issue2550724).
 
-If you have customized the OK or Error messages in your
+If you have customised the OK or Error messages in your
 roundup-installation and you were using features like bold or italic
 in the message, you will have to do without this highlighting and
 remove HTML tags from messages.
@@ -326,14 +326,14 @@ Migrating from 1.4.x to 1.4.9
 Customized MailGW Class
 -----------------------
 
-If you have customized the MailGW class in your tracker: The new MailGW
+If you have customised the MailGW class in your tracker: The new MailGW
 class opens the database for each message in the method handle_message
 (instance.open) instead of passing the opened database as a parameter to
 the MailGW constructor. The old handle_message has been renamed to
 _handle_message. The new method opens the database and wraps the call to
 the old method into a try/finally.
 
-Your customized MailGW class needs to mirror this behavior.
+Your customised MailGW class needs to mirror this behavior.
 
 Fix the "remove" button in issue files and messages lists
 ---------------------------------------------------------

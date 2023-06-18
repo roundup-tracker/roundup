@@ -1743,7 +1743,7 @@ seen.
 However the templating system can access the hyperdb directly which
 allows filtering to happen with admin privs escaping the standard
 permissions scheme. For example access to a user's roles should be
-limited to the user (read only) and an admin.  If you have customized
+limited to the user (read only) and an admin.  If you have customised
 your schema to implement `Restricting the list of
 users that are assignable to a task <customizing.html#restricting-the-list-of-users-that-are-assignable-to-a-task>`__
 so that only users with a

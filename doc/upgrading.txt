@@ -1204,7 +1204,7 @@ Statusauditor.py has been enhanced to prevent the status from changing
 to "chatting" until a second user (person) adds a message.  If you
 want this functionality, you need to merge the distributed
 statusauditor.py with your tracker's statusauditor.py. If you have not
-customized your tracker's statusauditor.py, copy the one from the
+customised your tracker's statusauditor.py, copy the one from the
 distibuted template. In addition to the python file, you also must
 copy/merge the distributed ``detectors/config.ini`` into your
 tracker's detectors directory. Most people can copy

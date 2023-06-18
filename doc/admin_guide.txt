@@ -371,7 +371,7 @@ interface. These changes are also trusted code that will be run
 when invoked.
 
 More secure CSPs can also be created. However because of the ability
-to customize the web interface, it is difficult to provide guidance.
+to customise the web interface, it is difficult to provide guidance.
 
 Dynamic CSP
 -----------

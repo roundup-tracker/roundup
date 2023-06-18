@@ -1,6 +1,6 @@
 .. meta::
     :description:
-        How to customize and extend the Roundup Issue
+        How to customise and extend the Roundup Issue
         Tracker. Includes many cookbook and how-to
         examples.
 
@@ -2376,7 +2376,7 @@ The `reference document`_ also has examples:
 Examples on the Wiki
 ====================
 
-Even more examples of customization have been contributed by
+Even more examples of customisation have been contributed by
 users. They can be found on the `wiki
 <https://wiki.roundup-tracker.org/CustomisationExamples>`_.
 

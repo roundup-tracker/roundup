@@ -1182,7 +1182,7 @@ in config.ini should be ``https://tracker.example.org``.
 	# going though roundup
 	location /@@file/ {
 	  rewrite ^/@@file/(.*) /html/$1 break;
-	  # note that you can not use cache control (see customizing doc)
+	  # note that you can not use cache control (see customising doc)
           # in roundup to set the expires headers since we are
 	  # bypassing roundup. Consider using a map or different
 	  # location stanzas to vary the expiration times.  
