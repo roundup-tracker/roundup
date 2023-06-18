@@ -58,7 +58,7 @@ div.toctree-wrapper * + *, div.contents * + *, div.release_info * {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    line-height: 1.25;
+    line-height: 1.1;
     /* Larger spacing before header and smaller after to make
        header part of following section */
     margin-block-end: 0.3em;
@@ -177,7 +177,11 @@ div[class^=highlight-], div[class^=highlight-] * { width:
 /* style */
 
 :link { color: rgb(220,0,0); text-decoration: none;}
-:link:hover {text-decoration: underline;}
+:link:hover {
+    text-decoration: underline;
+    text-underline-position: under;
+    text-decoration-thickness: .3ex;
+}
 :visited { color: rgb(187,0,0); text-decoration: none;}
 a.toc-backref { color: #000000; }
 
