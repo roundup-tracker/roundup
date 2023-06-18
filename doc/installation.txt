@@ -1614,6 +1614,23 @@ See the section on `Preventing SPAM`_ in the
 `customisation documentation`_ that has a simple detector
 that will block lot of spam attempts.
 
+Also you can consider adding `reCaptcha to reduce bot logins as
+described on the wiki
+<https://wiki.roundup-tracker.org/RequireReCAPTCHAForLogin>`_. The
+wiki also documents how to add `multi-factor (MFA)/one time
+keys/password using TOTP/HOTP
+<https://wiki.roundup-tracker.org/OneTimePasswords>`_. If you
+have a single sign on system, the `wiki page on using Shibboleth
+<https://wiki.roundup-tracker.org/ShibbolethLogin>`_
+or `LDAP <https://wiki.roundup-tracker.org/LDAPLogin2_1_5_1>`_
+with Roundup. More customisation can be found under the
+Security headings of the `CustomisationExamples wiki page
+<https://wiki.roundup-tracker.org/CustomisationExamples>`_ and
+`AdminstrationExample
+<https://wiki.roundup-tracker.org/AdministrationExample>`_ pages
+on the wiki.
+
+
 Docker Support
 ==============
 
