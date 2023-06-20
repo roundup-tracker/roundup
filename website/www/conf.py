@@ -169,8 +169,11 @@ html_collapse_toctree = True
 #html_additional_pages = {}
 
 # disable permalinks
-html_add_permalinks = ''
-html_permalinks = False  # when sphinx > 3.5 is used.
+from sphinx import version_info
+if version_info < (3,5,0):
+    html_add_permalinks = ''
+else:
+    html_permalinks = False  # when sphinx > 3.5 is used.
 
 # If false, no module index is generated.
 #html_use_modindex = True
@@ -187,7 +190,7 @@ html_permalinks = False  # when sphinx > 3.5 is used.
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
 # base URL from which the finished HTML is served.
-html_use_opensearch = ''
+html_use_opensearch = html_baseurl
 
 # If nonempty, this is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = ''

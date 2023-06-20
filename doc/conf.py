@@ -118,8 +118,11 @@ exclude_patterns = ['_build',
 pygments_style = 'sphinx'
 
 # disable permalinks
-html_add_permalinks = ''
-html_permalinks = False  # when sphinx > 3.5 is used.
+from sphinx import version_info
+if version_info < (3,5,0):
+    html_add_permalinks = ''
+else:
+    html_permalinks = False  # when sphinx > 3.5 is used.
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
