@@ -1455,19 +1455,24 @@ When performing and xmlrpc call, if you see something like::
   xmlrpclib.Fault: <Fault 1: "<class
      'roundup.exceptions.UsageError'>:Required Header Missing">
 
-change the setting of csrf_enforce_header_x-requested-with in
-config.ini to no. So it looks like::
-
-  csrf_enforce_header_x-requested-with = no
-
-Alternatively change your xmlrpc client to add appropriate headers to
+change your xmlrpc client to add appropriate headers to
 the request including the:
 
   X-Requested-With:
 
-header as well as any other required csrf headers (e.g. referer, origin)
-configured in config.ini. See the advanced python client at the end of 
-the `xmlrpc guide`_.
+header as well as any other required csrf headers (e.g. referer,
+origin) configured in config.ini. See the `advanced python client
+<xmlrpc.html#advanced-python-client-adding-anti-csrf-headers>`_ at
+the end of the xmlrpc guide.
+
+Alternatively change the setting of
+csrf_enforce_header_x-requested-with in config.ini to ``no``. So it
+looks like::
+
+  csrf_enforce_header_x-requested-with = no
+
+This is not recommended as it reduces csrf protection.
+
 
 Support for SameSite cookie option for session cookie
 -----------------------------------------------------
