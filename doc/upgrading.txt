@@ -1325,9 +1325,9 @@ this section.
 Make sure that user can view labelprop on classes (required)
 ------------------------------------------------------------
 
-If you have View permissions that use ```properties=...```,
-make sure that the labelprop for the class is listed in the
-properties list.
+If you have View permissions that use ```properties=...```, make sure
+that the `labelprop <reference.html#setlabelprop-property>`_ for the
+class is listed in the properties list.
 
 The first one of these that exists must must be in the list:
 
