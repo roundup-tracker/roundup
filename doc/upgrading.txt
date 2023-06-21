@@ -1343,9 +1343,9 @@ if none of those apply, you must allow
 E.G. If your class does a setlabelprop("foo") you must include "foo"
 in the properties list even if the class has name or title properties.
 
-See:
-https://www.roundup-tracker.org/docs/customizing.html#setlabelprop-property
-for further details on the labelprop.
+See: `reference.html setlabelprop
+<reference.html#setlabelprop-property>`_ for further details on the
+labelprop.
 
 If you don't do this, you will find that multilinks (and possibly
 links) may not be displayed properly. E.G. templates that iterate over
