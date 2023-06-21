@@ -1210,10 +1210,9 @@ IMAPS_OAUTH:
  client id and the client secret need to be retrieved via cloud provider
  specific protocols or websites.
 
- You need the requests_ library installed for OAuth.
+ You need the requests_ library installed to ue the IMAPS_OAUTH method.
 
 .. _requests: https://requests.readthedocs.io/en/latest/
-
 
 .. index:: ! roundup-admin
    single: roundup-admin; usage

@@ -1532,6 +1532,10 @@ installed)::
 where pop_spec is "``username:password@server``" that specifies the roundup
 submission user's POP account name, password and server.
 
+apop (authenticated) and pops (pop over ssl) methods are also
+supported. See `the section on mailgw in the admin guide
+<admin_guide.html#mail-gateway-script-command-line>`_.
+
 On windows, you would set up the command `using the windows scheduler`_.
 
 As a regular job using an IMAP source
@@ -1545,13 +1549,17 @@ installed)::
 
 where imap_spec is "``username:password@server``" that specifies the roundup
 submission user's IMAP account name, password and server. You may
-optionally include a mailbox to use other than the default ``INBOX`` with
-"``imap username:password@server mailbox``".
+optionally include a mailbox to use other than the default ``INBOX`` with::
 
-If you have a secure (ie. HTTPS) IMAP server then you may use ``imaps``
-in place of ``imap`` in the command to use a secure connection.
+  imap username:password@server mailbox
 
-As with the POP job, on windows, you would set up the command 
+If you have a secure (ie. HTTPS) IMAP server then you may use
+``imaps`` in place of ``imap`` in the command to use a securnae
+connection.  To use imap with CRAM or OAUTH, see `the section on
+mailgw in the admin guide
+<admin_guide.html#mail-gateway-script-command-line>`_ .
+
+As with the POP job, on windows, you would set up the command
 `using the windows scheduler`_.
 
 
