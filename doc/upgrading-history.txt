@@ -182,8 +182,8 @@ own queries (or public queries). This is implemented with a `check`
 method, therefore the default search permissions will not allow
 searching and you'll have to add an explicit search permission.
 If you have modified your schema, you can check if you're missing any
-search permissions with the following script, run it in your tracker
-directory, it will list for each Class and Property the roles that may
+search permissions with the following script, run it in your :term:`tracker
+home` directory, it will list for each Class and Property the roles that may
 search for this property::
 
     #!/usr/bin/python
