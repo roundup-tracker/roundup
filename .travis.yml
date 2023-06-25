@@ -163,15 +163,15 @@ script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
   - python -c "import sys; print('python version ', sys.version)"
-  - if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
-    python -m pytest -r a
-      --durations=20
-      -W default
-      -W "ignore:SelectableGroups:DeprecationWarning" 
-      -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" 
-      -W "ignore:'U' mode::docutils.io" 
-      -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" 
-      -W "ignore:unclosed file:ResourceWarning:enum" 
+  - set -xv; if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
+    python -m pytest -r a \
+      --durations=20 \
+      -W default \
+      -W "ignore:SelectableGroups:DeprecationWarning" \
+      -W "ignore:the imp module:DeprecationWarning:gpg.gpgme:15" \
+      -W "ignore:'U' mode::docutils.io" \
+      -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
+      -W "ignore:unclosed file:ResourceWarning:enum" \
       -v --maxfail=5 test/ --cov=roundup;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
