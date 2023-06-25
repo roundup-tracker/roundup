@@ -178,11 +178,18 @@ div[class^=highlight-], div[class^=highlight-] * { width:
 
 :link { color: rgb(220,0,0); text-decoration: none;}
 :link:hover {
-    text-decoration: underline;
+    text-decoration: underline solid .3ex;
     text-underline-position: under;
-    text-decoration-thickness: .3ex;
 }
-:visited { color: rgb(187,0,0); text-decoration: none;}
+:visited { color: rgb(200,0,0); text-decoration: none;}
+:visited:hover {
+    /* would like to change from solid line to dashed, but
+       because of privacy abusing people I can't change that
+       value. So settle for darkgrey underline.
+    */
+    text-decoration-color: darkgrey;
+}
+
 a.toc-backref { color: #000000; }
 
 .header h1 { margin-left: 1em; }
