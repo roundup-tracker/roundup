@@ -166,7 +166,7 @@ jobs:
         run: |
           sudo apt-get install swig gpgsm libgpgme-dev
           # pygments for markdown2 to highlight code blocks
-          pip install markdown2 pygments
+          pip install 'markdown2<=2.4.8' pygments
           # docutils for ReStructuredText
           pip install beautifulsoup4 brotli docutils gpg jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
