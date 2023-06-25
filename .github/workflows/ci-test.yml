@@ -48,7 +48,7 @@ jobs:
       matrix:
         # Run in all these versions of Python
         python-version:
-          - "2.7"
+          # - "2.7"
           - "3.10"
           # - "3.9"
           - "3.8"
