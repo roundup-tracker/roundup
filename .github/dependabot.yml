@@ -18,8 +18,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-  - package-ecosystem: "docker" 
-    directory: "/scripts/Docker" 
-    target-branch: "master" 
-    schedule:
-      interval: "weekly"
+#  - package-ecosystem: "docker" 
+#    directory: "/scripts/Docker" 
+#    target-branch: "master" 
+#    schedule:
+#      interval: "weekly"
