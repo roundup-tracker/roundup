@@ -256,7 +256,8 @@ docutils
   package installed.
 
 markdown, markdown2 or mistune
-  To use markdown rendering you need to have the markdown_, markdown2_
+  To use markdown rendering you need to have the markdown_,
+  markdown2_ (2.4.9 known to be broken, 2.3.3 known to work),
   or mistune_ (v0.8.4 tested) package installed.
 
 zstd, brotli
