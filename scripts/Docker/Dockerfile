@@ -195,13 +195,16 @@ RUN apk --no-cache upgrade; \
     fi
 
 ARG source
+ARG pythonversion
+ARG pip_mod
 LABEL "org.opencontainers.image.vendor"="Roundup Issue Tracker Team" \
       "org.opencontainers.image.title"="Roundup Issue Tracker" \
-      "org.opencontainers.image.description"="Roundup Issue Tracker with multi-backend support installed via $source" \
+      "org.opencontainers.image.description"="Roundup Issue Tracker with multi-backend support installed via $source with python version $pythonversion" \
       "org.opencontainers.image.version"="2.2.0" \
       "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net" \
       "org.opencontainers.image.licenses"="MIT AND ZPL-2.0 AND Python-2.0" \
-      "org.opencontainers.image.documentation"="https://www.roundup-tracker.org/docs/installation.html"
+      "org.opencontainers.image.documentation"="https://www.roundup-tracker.org/docs/installation.html" \
+      "pip-modules"="$pip_mod"
 
 
 ARG pythonversion
