@@ -571,10 +571,16 @@ Choosing Your Backend
 ---------------------
 
 The actual storage of Roundup tracker information is handled by backends.
-There's several to choose from, each with benefits and limitations:
+
+Roundup supports basic full text search (FTS) for all backends. Some
+backends support a faster native FTS. Also Roundup supports using
+whoosh or xapian for FTS.
+
+There are several backends to choose from, each with benefits and
+limitations:
 
 ========== =========== ===== ==============================
-Name       Speed       Users   Support
+Name       Speed       Users Support
 ========== =========== ===== ==============================
 anydbm     Slowest     Few   Always available
 sqlite     Fastest     Few   Always available
@@ -603,7 +609,8 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   Installed SQLite should be the latest version available (3.3.8 is known
   to work, 3.1.3 is known to have problems).
 
-  Roundup supports using sqlite's full text search capability. This
+  Roundup supports using `SQLite's full text search capability
+  <admin_guide.html#sqlite-details>`_. This
   can improve searching if you are not installing another indexer like
   xapian or whoosh. It works best with English text.
 **postgresql**
@@ -612,6 +619,12 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   requirements. You must also configure
   the ``rdbms`` section of your tracker's ``config.ini``.  It is recommended
   that you use at least version 2.8 of psycopg2.
+
+  Roundup supports using `postgresql's full text search
+  capability
+  <admin_guide.html#postgresql-info>`_. This
+  can improve searching if you are not installing another indexer like
+  xapian or whoosh. It can be tuned to work with different languages.
 **mysql**
   Backend for popular RDBMS MySQL. You must read `doc/mysql.txt`_ for
   additional installation steps and requirements. You must also
