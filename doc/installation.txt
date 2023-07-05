@@ -582,8 +582,17 @@ postgresql Fast        Many  Needs install/admin (psycopg2_)
 mysql      Fast        Many  Needs install/admin (MySQLdb_)
 ========== =========== ===== ==============================
 
+**anydbm**
+  This was one of the original database backends. It is a simple
+  key/value store and is a prototype implementation for NoSQL
+  backends. It also used to be the only backend that was
+  guaranteed to be present. These days using SQLite is preferred
+  unless you have some reason for preferring a key/value backend
+  (e.g. you are interested in adding support for MongoDB or other
+  NoSQL persistence layer).
 **sqlite**
-  This uses the embedded database engine PySQLite_ to provide a very fast
+  This uses the embedded database engine SQLite and the PySQLite_
+  driver to provide a very fast
   backend. This is not suitable for trackers which will have many
   simultaneous users, but requires much less installation and maintenance
   effort than more scalable postgresql and mysql backends.
