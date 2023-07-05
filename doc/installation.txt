@@ -181,7 +181,7 @@ latest version from https://www.python.org/. It is highly recommended
 that users install the latest patch version of Python as these contain
 many fixes to serious bugs.
 
-Some variants of Linux will need an additional "python dev" package
+Some variants of Linux will need an additional '`python-dev`' package
 installed for Roundup installation to work. Debian and derivatives, are
 known to require this.
 
