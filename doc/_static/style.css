@@ -178,7 +178,7 @@ div[class^=highlight-], div[class^=highlight-] * { width:
 
 :link { color: rgb(220,0,0); text-decoration: none;}
 :link:hover {
-    text-decoration: underline solid .3ex;
+    text-decoration: underline solid clamp(1px, .3ex, 4px);
     text-underline-position: under;
 }
 :visited { color: rgb(200,0,0); text-decoration: none;}
