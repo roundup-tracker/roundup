@@ -1228,7 +1228,7 @@ FastCGI (Cherokee, Hiawatha, lighttpd)
 
 The Hiawatha and lighttpd web servers can run Roundup using FastCGI.
 Cherokee can run FastCGI but it also supports wsgi directly using a
-uWSGI, Gnuicorn etc.
+wsgi server like uWSGI, Gnuicorn etc.
 
 To run Roundup using FastCGI, the flup_ package can be used under
 Python 2 and Python 3. We don't have a detailed config for this, but
