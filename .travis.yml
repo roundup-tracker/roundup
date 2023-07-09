@@ -25,9 +25,9 @@ python:
   - 3.10.4
 #  - 3.9
 #  - 3.8
-  - 3.6
-  - 3.11-dev
-  - nightly
+#  - 3.6
+#  - 3.11-dev
+#  - nightly
 #  - pypy3
 
 services:
@@ -135,7 +135,7 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune==0.8.4; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* && $TRAVIS_PYTHON_VERSION != "2."* ]]; then pip install Markdown; fi
-  - pip install markdown2
+  - pip install 'markdown2<=2.4.8'
   - pip install brotli
   # zstd fails to build under python nightly aborting test.
   # allow testing to still happen if the optional package doesn't install.
