@@ -23,8 +23,8 @@ Roundup Reference
   The documentation is slowly being reorganized using the `Diataxis
   framework`_. Help with the reorganization is welcome.
 
-  This is the document you should look at for background on a tutorial
-  or how-to guide in the customisation document.
+  This document provides background for the tutorials
+  or how-tos in the customisation document.
 
   .. _customisation document: customizing.html
   .. _diataxis framework: https://diataxis.fr/
