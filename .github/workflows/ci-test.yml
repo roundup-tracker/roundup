@@ -48,7 +48,7 @@ jobs:
       matrix:
         # Run in all these versions of Python
         python-version:
-          - "2.7"
+          # - "2.7"
           - "3.10"
           # - "3.9"
           - "3.8"
@@ -90,7 +90,7 @@ jobs:
         # if: {{ false }}
           # continue running if step fails
         # continue-on-error: true
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
 
       # Setup version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
@@ -122,6 +122,17 @@ jobs:
           #grep max_allowed /etc/mysql/mysql.conf.d/mysqld.cnf
           #ls  /etc/mysql/conf.d/  /etc/mysql/mysql.conf.d/
           #sleep 5
+          # try to improve performance speed by disabling some ACID
+          # settings and change some layout defaults.
+          sudo sed -i -e '$a\innodb_flush_log_at_trx_commit = 2' /etc/mysql/mysql.conf.d/mysqld.cnf
+          sudo sed -i -e '$a\innodb_file_per_table = OFF' /etc/mysql/mysql.conf.d/mysqld.cnf
+          sudo sed -i -e '$a\innodb_doublewrite=OFF' /etc/mysql/mysql.conf.d/mysqld.cnf
+          sudo sed -i -e '$a\innodb_fast_shutdown=2' /etc/mysql/mysql.conf.d/mysqld.cnf
+          sudo sed -i -e '$a\innodb_log_file_size=1048576' /etc/mysql/mysql.conf.d/mysqld.cnf
+          sudo sed -i -e '$a\innodb_flush_method=O_DIRECT' /etc/mysql/mysql.conf.d/mysqld.cnf
+          sudo sed -i -e '$a\innodb_log_buffer_size=3M' /etc/mysql/mysql.conf.d/mysqld.cnf
+          sudo sed -i -e '$a\innodb_buffer_pool_size=180M' /etc/mysql/mysql.conf.d/mysqld.cnf
+          sleep 3
           sudo service mysql restart
           #sleep 10
           #ps -ef | grep mysqld
@@ -131,9 +142,11 @@ jobs:
       - name: Install postgres
         run: |
           sudo apt-get update && sudo apt-get install postgresql
-          # Disable fsync for speed, don't care about data durability
-          #   when testing
+          # Disable fsync, full page writes for speed,
+          # don't care about data durability when testing
           sudo sed -i -e '$a\fsync = off' /etc/postgresql/*/*/postgresql.conf
+          sudo sed -i -e '$a\full_page_writes = off' /etc/postgresql/*/*/postgresql.conf
+          sudo sed -i -e '$a\synchronous_commit = off' /etc/postgresql/*/*/postgresql.conf
           sudo service postgresql restart; sleep 10
           # set up postgresql database
           sudo -u postgres psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
@@ -153,7 +166,7 @@ jobs:
         run: |
           sudo apt-get install swig gpgsm libgpgme-dev
           # pygments for markdown2 to highlight code blocks
-          pip install markdown2 pygments
+          pip install 'markdown2<=2.4.8' pygments
           # docutils for ReStructuredText
           pip install beautifulsoup4 brotli docutils gpg jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
@@ -241,7 +254,7 @@ jobs:
       - name: Upload coverage to Coveralls
         # python 2.7 and 3.6 versions of coverage can't produce lcov files.
         if: matrix.python-version != '2.7' && matrix.python-version != '3.6'
-        uses: coverallsapp/github-action@f350da2c033043742f89e8c0b7b5145a1616da6d # master
+        uses: coverallsapp/github-action@c7885c00cb7ec0b8f9f5ff3f53cddb980f7a4412 # master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage.lcov
@@ -277,7 +290,7 @@ jobs:
     
     steps:
       - name: Coveralls Finished
-        uses: coverallsapp/github-action@f350da2c033043742f89e8c0b7b5145a1616da6d # master
+        uses: coverallsapp/github-action@c7885c00cb7ec0b8f9f5ff3f53cddb980f7a4412 # master
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true

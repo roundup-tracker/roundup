@@ -253,7 +253,7 @@ number of other items in the in the database.  A *multilink*
 property, for example, can be used to refer to related items
 or keyword categories relevant to an item.
 
-For Roundup, all items have four properties that are not customizable:
+For Roundup, all items have four properties that are not customisable:
 
 1. a *date* property named **creation**
 2. a *link* property named **creator**

@@ -47,7 +47,7 @@ Among the notable improvements from the 2.2.0 release are:
   Security Policy (CSP)
 
 * REST now allows rate limiting headers to be accessed by client
-  javascript.
+  JavaScript.
 
 * Default number of rounds for PBKDF2 updated to 2M to account for
   improvements in password crackers and CPU power.
@@ -56,16 +56,17 @@ Among the notable improvements from the 2.2.0 release are:
 
 * Deprecate SSHA password hash function.
 
-* roundup-admin reindex can be done in batches to managle load
+* roundup-admin reindex can be done in batches to manage load
   incurred by reindexing.
 
-* roundup-admin can list avaailable templates and their installed
+* roundup-admin can list available templates and their installed
   locations.
 
-* Crash fixes in detector handling, configuration handling, 
+* Crash fixes in detector handling, configuration handling, fix for
+  sorting of multilinks.
 
 The file CHANGES.txt has a detailed list of feature additions and
-bug fixes (51) for each release. The most recent changes from
+bug fixes (52) for each release. The most recent changes from
 there are at the end of this announcement. Also see the
 information in doc/upgrading.txt.
 
@@ -86,11 +87,14 @@ all your trackers to update the database schema version. Do
 this before you use the web, command-line or mail interface
 and before any users access the tracker.
 
-Roundup requires Python 2 newer than version 2.7.2 or Python 3 newer
+Roundup requires Python 2 newer than version 2.7.12 or Python 3 newer
 than or equal to version 3.6 for correct operation. (Python
-3.4 or 3.5 may work, but are not tested.)
+3.4 or 3.5 may work, but are not tested.) Note that Python 2 support
+is being removed from the CI platforms, so you should deploy new
+trackers with Python 3 and plan on upgrading older trackers from Python
+2 to Python 3. See the upgrade guide.
 
-To give Roundup a try, just download (see below), unpack and run::
+To give Roundup a try, just download (directions above), unpack and run::
 
     python demo.py
 
@@ -231,6 +235,8 @@ Fixed:
 - Invalid item identifiers passed to REST endpoint return a 404
   rather than a 400 error. E.G. /rest/data/issue/issue4 (rather
   than .../issue/4). (John Rouillard)
+- issue2551280 - sorted() method of MultilinkHTMLProperty is broken?
+  (Gabor Nagy report and fix; commit John Rouillard)
 
 Features:
 ---------

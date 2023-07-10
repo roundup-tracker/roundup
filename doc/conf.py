@@ -23,7 +23,7 @@ import os
 
 
 # Read Roundup version by importing it from parent directory,
-# this ensures that 'unkown version' is inserted even if
+# this ensures that 'unknown version' is inserted even if
 # `roundup` is importable from other location in sys.path
 SYSSAVE = sys.path
 DOCROOT = os.path.abspath(os.path.dirname(__file__))
@@ -84,7 +84,7 @@ release = VERSION
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -116,6 +116,13 @@ exclude_patterns = ['_build',
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+
+# disable permalinks
+from sphinx import version_info
+if version_info < (3,5,0):
+    html_add_permalinks = ''
+else:
+    html_permalinks = False  # when sphinx > 3.5 is used.
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []

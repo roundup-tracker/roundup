@@ -27,7 +27,7 @@ ARG source=local
 ARG pythonversion=3.11
 
 #FROM python:3-alpine
-FROM python@sha256:caafba876f841774905f73df0fcaf7fe3f55aaf9cb48a9e369a41077f860d4a7 as build
+FROM python@sha256:0a56f24afa1fc7f518aa690cb8c7be661225e40b157d9bb8c6ef402164d9faa7 as build
 
 # Inherit global values https://github.com/moby/moby/issues/37345
 ARG appdir
@@ -157,7 +157,7 @@ RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
 # build a new smaller docker image for execution. Build image above
 # is 1G in size.
 # FROM python:3-alpine
-FROM python@sha256:caafba876f841774905f73df0fcaf7fe3f55aaf9cb48a9e369a41077f860d4a7
+FROM python@sha256:0a56f24afa1fc7f518aa690cb8c7be661225e40b157d9bb8c6ef402164d9faa7
 
 # import from global
 ARG appdir
@@ -195,10 +195,17 @@ RUN apk --no-cache upgrade; \
     fi
 
 ARG source
-LABEL "org.roundup-tracker.vendor"="Roundup Issue Tracker Team" \
-      "org.roundup-tracker.description"="Roundup Issue Tracker multi-backend" \
-      "version"="2.2.0 $source" \
-      "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net"
+ARG pythonversion
+ARG pip_mod
+LABEL "org.opencontainers.image.vendor"="Roundup Issue Tracker Team" \
+      "org.opencontainers.image.title"="Roundup Issue Tracker" \
+      "org.opencontainers.image.description"="Roundup Issue Tracker with multi-backend support installed via $source with python version $pythonversion" \
+      "org.opencontainers.image.version"="2.2.0" \
+      "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net" \
+      "org.opencontainers.image.licenses"="MIT AND ZPL-2.0 AND Python-2.0" \
+      "org.opencontainers.image.documentation"="https://www.roundup-tracker.org/docs/installation.html" \
+      "pip-modules"="$pip_mod"
+
 
 ARG pythonversion
 # pull over built assets

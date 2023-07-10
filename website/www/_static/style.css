@@ -58,7 +58,7 @@ div.toctree-wrapper * + *, div.contents * + *, div.release_info * {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    line-height: 1.25;
+    line-height: 1.1;
     /* Larger spacing before header and smaller after to make
        header part of following section */
     margin-block-end: 0.3em;
@@ -105,10 +105,11 @@ body > .header div.label { font-size: 2em; font-weight: bold; margin: 0.67em 0 0
 body > .footer { margin: 1em 0 1em -14em; clear:both;}
 body > .navigation 
 {
+  float: left;
   margin-left: -14em;
   margin-inline-start: -14em;
+  margin-block-start: unset;
   width: 14em;
-  float: left;
 }
 body > .content 
 {
@@ -176,8 +177,19 @@ div[class^=highlight-], div[class^=highlight-] * { width:
 /* style */
 
 :link { color: rgb(220,0,0); text-decoration: none;}
-:link:hover {text-decoration: underline;}
-:visited { color: rgb(187,0,0); text-decoration: none;}
+:link:hover {
+    text-decoration: underline solid clamp(1px, .3ex, 4px);
+    text-underline-position: under;
+}
+:visited { color: rgb(200,0,0); text-decoration: none;}
+:visited:hover {
+    /* would like to change from solid line to dashed, but
+       because of privacy abusing people I can't change that
+       value. So settle for darkgrey underline.
+    */
+    text-decoration-color: darkgrey;
+}
+
 a.toc-backref { color: #000000; }
 
 .header h1 { margin-left: 1em; }
@@ -201,7 +213,8 @@ a.toc-backref { color: #000000; }
 }
 .menu > ul > li.current > *
 { 
-  background-color:#dddddd;
+  background-color: #f0f0f0;
+  border-block-end: solid medium #cccccc;
 }
 
 .menu ul li:first-child { margin-top:0;}
@@ -234,9 +247,15 @@ a.toc-backref { color: #000000; }
   border-top: none;
 }
 
+/* make submenu items clickable cross whole width of menu */
+.menu ul ul > li > a {
+    display: block;
+}
+
 .menu ul li.toctree-l2.current {
-  background-color: #dddddd;
-  pading-block: 0.25em;
+  background-color: #f0f0f0;
+  border-inline-start: solid 2px rgb(220, 0, 0);
+  padding-block: 1em;
 }
 
 /* related */
@@ -281,9 +300,8 @@ div.related li.right
   background-color: #f7f7f7;
 }
 
-/* This is a little hack to inject a 'news' block into the title
-   page without having to set up a custom directive. */
-#roundup-issue-tracker .note
+/* style for the floating release_info badge block on the home page */
+#roundup-issue-tracker .release_info
 {
   float: right;
   width: auto;
@@ -292,7 +310,6 @@ div.related li.right
   padding: 1em;
   margin: 1em;
 }
-#roundup-issue-tracker .note .admonition-title { display: none; }
 
 table
 { 
@@ -441,6 +458,7 @@ div.highlight > pre {
     background-color: #f5f4d8;
     background-size: 20px 100%, 20px 100%, 16px 100%, 16px 100%;
     background-attachment: local, local, scroll, scroll;
+    padding: 0.5em;
 }
 
 /* https://moderncss.dev/totally-custom-list-styles/ make a list
@@ -460,6 +478,15 @@ div.file_insert { /* use to insert COPYING into license.txt */
     padding-inline: 0.5em;
 }
 
+/* consider highlighting header element that is a target */
+/*
+:target > :is(h1,h2,h3,h4,h5,h6) {
+  background: rgb(254, 227, 227);
+  outline: rgb(254, 227, 227) solid 3px;
+  padding: 0.3em;
+}
+*/
+
 /* website only */
 /* assume desktop reader for local html files, also no contact
    page for local doc files */
@@ -469,9 +496,11 @@ div.file_insert { /* use to insert COPYING into license.txt */
     body { padding-inline-start: unset; /* remove space for float menu */}
     body > .header { margin-inline-start: unset;
 	             margin-block-start: 3em; /* move down from search */}
-    body > .navigation { margin-inline-start: unset;
+    body > .navigation { float: none;
+			 margin-block-start: unset;
+			 margin-inline-start: unset;
 			 width: unset;
-			 float: none;}
+}
     body > .navigation li > ul > li { padding-block: 1em;
     /* move links away from each other */ }
     #roundup-issue-tracker .note { float: none; /* download box */}

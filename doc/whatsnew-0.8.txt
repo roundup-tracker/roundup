@@ -57,7 +57,7 @@ Logging of internal messages
 Roundup's previously ad-hoc logging of events has been cleaned up and is
 now configured in a single place in the tracker configuration file.
 
-The `customization documentation`_ has more details on how this is
+The `customisation documentation`_ has more details on how this is
 configured.
 
 roundup-mailgw now logs fatal exceptions rather than mailing them to admin.
@@ -104,7 +104,7 @@ Extending Roundup
 =================
 
 To write extension code for Roundup you place a file in the tracker home
-``extensions`` directory. See the `customization documentation`_ for more
+``extensions`` directory. See the `customisation documentation`_ for more
 information about how this is done.
 
 
@@ -184,4 +184,4 @@ Web server
   The builtin web server may now perform HTTP Basic Authentication by
   itself.
 
-.. _`customization documentation`: reference.html
+.. _`customisation documentation`: reference.html

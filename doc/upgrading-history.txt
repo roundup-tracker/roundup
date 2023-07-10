@@ -82,7 +82,7 @@ Roundup used to allow certain HTML-Tags in OK- and Error-messages. Since
 these messages are passed via the URL (due to roundup redirecting after
 an edit), we did have security-issues (see issue2550724).
 
-If you have customized the OK or Error messages in your
+If you have customised the OK or Error messages in your
 roundup-installation and you were using features like bold or italic
 in the message, you will have to do without this highlighting and
 remove HTML tags from messages.
@@ -182,8 +182,8 @@ own queries (or public queries). This is implemented with a `check`
 method, therefore the default search permissions will not allow
 searching and you'll have to add an explicit search permission.
 If you have modified your schema, you can check if you're missing any
-search permissions with the following script, run it in your tracker
-directory, it will list for each Class and Property the roles that may
+search permissions with the following script, run it in your :term:`tracker
+home` directory, it will list for each Class and Property the roles that may
 search for this property::
 
     #!/usr/bin/python
@@ -326,14 +326,14 @@ Migrating from 1.4.x to 1.4.9
 Customized MailGW Class
 -----------------------
 
-If you have customized the MailGW class in your tracker: The new MailGW
+If you have customised the MailGW class in your tracker: The new MailGW
 class opens the database for each message in the method handle_message
 (instance.open) instead of passing the opened database as a parameter to
 the MailGW constructor. The old handle_message has been renamed to
 _handle_message. The new method opens the database and wraps the call to
 the old method into a try/finally.
 
-Your customized MailGW class needs to mirror this behavior.
+Your customised MailGW class needs to mirror this behavior.
 
 Fix the "remove" button in issue files and messages lists
 ---------------------------------------------------------
@@ -522,6 +522,13 @@ following database indexes on the database by hand::
 
  CREATE INDEX words_by_id ON __words (_textid);
  CREATE UNIQUE INDEX __textids_by_props ON __textids (_class, _itemid, _prop);
+
+You can find out which database backend you are using by looking at
+the ``db/backend_name`` file in the tracker's home directory. The
+username, password, and database name can all be found in the
+``config.ini`` file if you are using ``mysql`` or ``postgresql``. You
+can run the SQL commands using the native client interface: ``psql``
+(postgres), ``mysql`` (MySQL), or ``sqlite3`` (SQLite).
 
 .. index:: upgrading; 1.2.x to 1.3.0
 

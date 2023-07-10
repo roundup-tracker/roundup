@@ -371,7 +371,7 @@ interface. These changes are also trusted code that will be run
 when invoked.
 
 More secure CSPs can also be created. However because of the ability
-to customize the web interface, it is difficult to provide guidance.
+to customise the web interface, it is difficult to provide guidance.
 
 Dynamic CSP
 -----------
@@ -1210,10 +1210,9 @@ IMAPS_OAUTH:
  client id and the client secret need to be retrieved via cloud provider
  specific protocols or websites.
 
- You need the requests_ library installed for OAuth.
+ You need the requests_ library installed to ue the IMAPS_OAUTH method.
 
 .. _requests: https://requests.readthedocs.io/en/latest/
-
 
 .. index:: ! roundup-admin
    single: roundup-admin; usage
@@ -1233,7 +1232,7 @@ Examples above show how to use it to:
 
 * install and initialize a new tracker
 * export/import tracker data for migrating between backends
-* creating a new user fom the command line
+* creating a new user from the command line
 * list/find users in the tracker
 
 The basic usage is::

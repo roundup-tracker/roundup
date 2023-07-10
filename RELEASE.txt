@@ -32,8 +32,9 @@ Roundup release checklist:
 3.  Update version in:
       CHANGES.txt (set date for version as well) 
       roundup/__init__.py
-      website/www/index.txt
-      website/www/conf.py  (also update copyright)
+      website/www/index.txt (current stable version, release highlights)
+      website/www/conf.py  (update copyright, version from __init__.py)
+      scripts/Docker/Docker update value of org.opencontainers.image.version
 3a. Update license end date in COPYING.txt
 3b. Update doc/acknowledgements.txt (add section for
     release, churn contributers etc.). (Use hg churn -c -r ####..####)

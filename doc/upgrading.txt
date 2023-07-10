@@ -1204,7 +1204,7 @@ Statusauditor.py has been enhanced to prevent the status from changing
 to "chatting" until a second user (person) adds a message.  If you
 want this functionality, you need to merge the distributed
 statusauditor.py with your tracker's statusauditor.py. If you have not
-customized your tracker's statusauditor.py, copy the one from the
+customised your tracker's statusauditor.py, copy the one from the
 distibuted template. In addition to the python file, you also must
 copy/merge the distributed ``detectors/config.ini`` into your
 tracker's detectors directory. Most people can copy
@@ -1325,9 +1325,9 @@ this section.
 Make sure that user can view labelprop on classes (required)
 ------------------------------------------------------------
 
-If you have View permissions that use ```properties=...```,
-make sure that the labelprop for the class is listed in the
-properties list.
+If you have View permissions that use ```properties=...```, make sure
+that the `labelprop <reference.html#setlabelprop-property>`_ for the
+class is listed in the properties list.
 
 The first one of these that exists must must be in the list:
 
@@ -1343,9 +1343,9 @@ if none of those apply, you must allow
 E.G. If your class does a setlabelprop("foo") you must include "foo"
 in the properties list even if the class has name or title properties.
 
-See:
-https://www.roundup-tracker.org/docs/customizing.html#setlabelprop-property
-for further details on the labelprop.
+See: `reference.html setlabelprop
+<reference.html#setlabelprop-property>`_ for further details on the
+labelprop.
 
 If you don't do this, you will find that multilinks (and possibly
 links) may not be displayed properly. E.G. templates that iterate over
@@ -1455,19 +1455,24 @@ When performing and xmlrpc call, if you see something like::
   xmlrpclib.Fault: <Fault 1: "<class
      'roundup.exceptions.UsageError'>:Required Header Missing">
 
-change the setting of csrf_enforce_header_x-requested-with in
-config.ini to no. So it looks like::
-
-  csrf_enforce_header_x-requested-with = no
-
-Alternatively change your xmlrpc client to add appropriate headers to
+change your xmlrpc client to add appropriate headers to
 the request including the:
 
   X-Requested-With:
 
-header as well as any other required csrf headers (e.g. referer, origin)
-configured in config.ini. See the advanced python client at the end of 
-the `xmlrpc guide`_.
+header as well as any other required csrf headers (e.g. referer,
+origin) configured in config.ini. See the `advanced python client
+<xmlrpc.html#advanced-python-client-adding-anti-csrf-headers>`_ at
+the end of the xmlrpc guide.
+
+Alternatively change the setting of
+csrf_enforce_header_x-requested-with in config.ini to ``no``. So it
+looks like::
+
+  csrf_enforce_header_x-requested-with = no
+
+This is not recommended as it reduces csrf protection.
+
 
 Support for SameSite cookie option for session cookie
 -----------------------------------------------------

@@ -13,20 +13,20 @@ Roundup Reference
 
 .. admonition:: Welcome
 
-  This document used to be part of the `customization document`_.  The
-  customization document was getting large and unwieldy.  It was a
+  This document used to be part of the `customisation document`_.  The
+  customisation document was getting large and unwieldy.  It was a
   combination of examples and internal information that made finding
   information difficult. We often had questions on the mailing list that
-  were well answered in the customization document, but finding the info
+  were well answered in the customisation document, but finding the info
   was difficult.
 
   The documentation is slowly being reorganized using the `Diataxis
   framework`_. Help with the reorganization is welcome.
 
-  This is the document you should look at for background on a tutorial
-  or how-to guide in the customization document.
+  This document provides background for the tutorials
+  or how-tos in the customisation document.
 
-  .. _customization document: customizing.html
+  .. _customisation document: customizing.html
   .. _diataxis framework: https://diataxis.fr/
 
 .. This document borrows from the ZopeBook section on ZPT. The original is at:
@@ -170,6 +170,8 @@ Section **main**
   Allowed values: ``dispatcher``, ``user``, or ``both``
 
  html_version -- ``html4``
+  This setting should be left at the default value of html4.
+  Support is ending for xhtml mode.
   HTML version to generate. The templates are ``html4`` by default.
   If you wish to make them xhtml, then you'll need to change this
   var to ``xhtml`` too so all auto-generated HTML is compliant.
@@ -662,6 +664,8 @@ A tracker schema defines what data is stored in the tracker's database.
 Schemas are defined using Python code in the ``schema.py`` module of your
 tracker.
 
+.. index:: schema; allowed changes
+
 What you can/can't do to the schema
 -----------------------------------
 
@@ -751,7 +755,7 @@ specifying (default) labelling and ordering of classes.)::
         priority=Link("priority"))
     issue.setkey('title')
 
-.. index:: schema; allowed changes
+.. index:: schema; classes and properties
 
 Classes and Properties - creating a new information store
 ---------------------------------------------------------
@@ -796,6 +800,10 @@ was added. It uses the single form (i.e. issue and user not issues and
 users) for its classes. Most REST documentation suggests using plural
 forms. However, to make your API consistent, use singular forms for
 classes that you add.
+
+.. index::
+   schema; classes
+   schema; items
 
 Class and Items
 ~~~~~~~~~~~~~~~
@@ -1272,6 +1280,48 @@ functionality.
 .. _detectors:
 .. _Auditors and reactors:
 
+
+Schema Integrity
+----------------
+
+There is a table in all SQL based schemas called ``schema``. It
+contains a representation of the current schema and the current
+Roundup schema version. Roundup will exit the version is not supported
+by the release. E.G. Roundup 2.1.0 will not work with a database
+created by 2.3.0 as db version 8 used by 2.3.0 is not supported by
+2.1.0.
+
+The current schema representation is automatically updated whenever a
+change is made to the schema via ``schema.py``. The schema version is
+upgraded when running ``roundup-admin migrate`` although it can be
+upgraded automatically in some cases by run a Roundup process (mailgw,
+web interface). This information is kept in one large blob in the
+table. To view this in a more understandable format, you can use the
+commands below (requires the jq command):
+
+Postgres
+  .. code::
+
+    psql -tq -d 'roundup_db'  -U roundup_user -c \
+       'select schema from schema;' | \
+       python3 -c 'import json, sys; d = eval(sys.stdin.read()); \
+       print(json.dumps(d, indent=2));' | jq . | less
+
+replace ``roundup_db``, ``roundup_user`` with the values from
+``config.ini`` and use a ``~/.pgpass`` file or type the database
+password when prompted.
+
+SQLite
+  .. code::
+
+    sqlite3 demo/db/db 'select schema from schema;' | \
+      python3 -c 'import json, sys; d = eval(sys.stdin.read()); \
+      print(json.dumps(d, indent=2));' | jq . | less
+
+Something similar for MySQL can be generated as well.
+Replacing ``jq .`` with ``jq .version`` will display the schema
+version.
+
 Detectors - adding behaviour to your tracker
 ============================================
 
@@ -1503,7 +1553,7 @@ this you can:
 but with great power comes great responsibility.
 
 Interfaces.py has been around since the earliest releases of Roundup
-and used to be the main way to get a lot of customization done. In
+and used to be the main way to get a lot of customisation done. In
 modern Roundup, the extensions_ mechanism is used to `add actions
 <#defining-new-web-actions>`_ and `templating utilities`_. But there are
 places where interfaces.py is still useful. Note that the tracker
@@ -2431,9 +2481,9 @@ returning.
 Default templates
 -----------------
 
-The default templates are html4 compliant. If you wish to change them to be
-xhtml compliant, you'll need to change the ``html_version`` configuration
-variable in ``config.ini`` to ``'xhtml'`` instead of ``'html4'``.
+The default templates are html4 compliant. Support for xhtml is due to
+be phased out so leave the ``html_version`` configuration
+variable in ``config.ini`` as ``'html'`` instead of ``'xhtml'``.
 
 Most customisation of the web view can be done by modifying the
 templates in the tracker ``'html'`` directory. There are several types

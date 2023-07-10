@@ -23,7 +23,7 @@ Contents
 
    user_guide
 
-   customizing
+   customising <customizing.txt>
    rest
    xmlrpc
    reference

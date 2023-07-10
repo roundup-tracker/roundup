@@ -35,7 +35,8 @@ Other contributers
 
 Marcus Priesch,
 John Kristensen (jerrykan),
-Thomas Arendsen Hein
+Thomas Arendsen Hein,
+Gabor Nagy
 
 2.2
 ---

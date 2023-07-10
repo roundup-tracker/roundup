@@ -181,7 +181,7 @@ latest version from https://www.python.org/. It is highly recommended
 that users install the latest patch version of Python as these contain
 many fixes to serious bugs.
 
-Some variants of Linux will need an additional "python dev" package
+Some variants of Linux will need an additional '``python-dev``' package
 installed for Roundup installation to work. Debian and derivatives, are
 known to require this.
 
@@ -256,7 +256,8 @@ docutils
   package installed.
 
 markdown, markdown2 or mistune
-  To use markdown rendering you need to have the markdown_, markdown2_
+  To use markdown rendering you need to have the markdown_,
+  markdown2_ (2.4.9 known to be broken, 2.3.3 known to work),
   or mistune_ (v0.8.4 tested) package installed.
 
 zstd, brotli
@@ -570,10 +571,16 @@ Choosing Your Backend
 ---------------------
 
 The actual storage of Roundup tracker information is handled by backends.
-There's several to choose from, each with benefits and limitations:
+
+Roundup supports basic full text search (FTS) for all backends. Some
+backends support a faster native FTS. Also Roundup supports using
+whoosh or xapian for FTS.
+
+There are several backends to choose from, each with benefits and
+limitations:
 
 ========== =========== ===== ==============================
-Name       Speed       Users   Support
+Name       Speed       Users Support
 ========== =========== ===== ==============================
 anydbm     Slowest     Few   Always available
 sqlite     Fastest     Few   Always available
@@ -581,8 +588,17 @@ postgresql Fast        Many  Needs install/admin (psycopg2_)
 mysql      Fast        Many  Needs install/admin (MySQLdb_)
 ========== =========== ===== ==============================
 
+**anydbm**
+  This was one of the original database backends. It is a simple
+  key/value store and is a prototype implementation for NoSQL
+  backends. It also used to be the only backend that was
+  guaranteed to be present. These days using SQLite is preferred
+  unless you have some reason for preferring a key/value backend
+  (e.g. you are interested in adding support for MongoDB or other
+  NoSQL persistence layer).
 **sqlite**
-  This uses the embedded database engine PySQLite_ to provide a very fast
+  This uses the embedded database engine SQLite and the PySQLite_
+  driver to provide a very fast
   backend. This is not suitable for trackers which will have many
   simultaneous users, but requires much less installation and maintenance
   effort than more scalable postgresql and mysql backends.
@@ -593,7 +609,8 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   Installed SQLite should be the latest version available (3.3.8 is known
   to work, 3.1.3 is known to have problems).
 
-  Roundup supports using sqlite's full text search capability. This
+  Roundup supports using `SQLite's full text search capability
+  <admin_guide.html#sqlite-details>`_. This
   can improve searching if you are not installing another indexer like
   xapian or whoosh. It works best with English text.
 **postgresql**
@@ -602,6 +619,12 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   requirements. You must also configure
   the ``rdbms`` section of your tracker's ``config.ini``.  It is recommended
   that you use at least version 2.8 of psycopg2.
+
+  Roundup supports using `postgresql's full text search
+  capability
+  <admin_guide.html#postgresql-info>`_. This
+  can improve searching if you are not installing another indexer like
+  xapian or whoosh. It can be tuned to work with different languages.
 **mysql**
   Backend for popular RDBMS MySQL. You must read `doc/mysql.txt`_ for
   additional installation steps and requirements. You must also
@@ -1182,7 +1205,7 @@ in config.ini should be ``https://tracker.example.org``.
 	# going though roundup
 	location /@@file/ {
 	  rewrite ^/@@file/(.*) /html/$1 break;
-	  # note that you can not use cache control (see customizing doc)
+	  # note that you can not use cache control (see customising doc)
           # in roundup to set the expires headers since we are
 	  # bypassing roundup. Consider using a map or different
 	  # location stanzas to vary the expiration times.  
@@ -1205,7 +1228,7 @@ FastCGI (Cherokee, Hiawatha, lighttpd)
 
 The Hiawatha and lighttpd web servers can run Roundup using FastCGI.
 Cherokee can run FastCGI but it also supports wsgi directly using a
-uWSGI, Gnuicorn etc.
+wsgi server like uWSGI, Gnuicorn etc.
 
 To run Roundup using FastCGI, the flup_ package can be used under
 Python 2 and Python 3. We don't have a detailed config for this, but
@@ -1532,6 +1555,10 @@ installed)::
 where pop_spec is "``username:password@server``" that specifies the roundup
 submission user's POP account name, password and server.
 
+apop (authenticated) and pops (pop over ssl) methods are also
+supported. See `the section on mailgw in the admin guide
+<admin_guide.html#mail-gateway-script-command-line>`_.
+
 On windows, you would set up the command `using the windows scheduler`_.
 
 As a regular job using an IMAP source
@@ -1545,13 +1572,17 @@ installed)::
 
 where imap_spec is "``username:password@server``" that specifies the roundup
 submission user's IMAP account name, password and server. You may
-optionally include a mailbox to use other than the default ``INBOX`` with
-"``imap username:password@server mailbox``".
+optionally include a mailbox to use other than the default ``INBOX`` with::
 
-If you have a secure (ie. HTTPS) IMAP server then you may use ``imaps``
-in place of ``imap`` in the command to use a secure connection.
+  imap username:password@server mailbox
 
-As with the POP job, on windows, you would set up the command 
+If you have a secure (ie. HTTPS) IMAP server then you may use
+``imaps`` in place of ``imap`` in the command to use a securnae
+connection.  To use imap with CRAM or OAUTH, see `the section on
+mailgw in the admin guide
+<admin_guide.html#mail-gateway-script-command-line>`_ .
+
+As with the POP job, on windows, you would set up the command
 `using the windows scheduler`_.
 
 
@@ -1614,22 +1645,44 @@ See the section on `Preventing SPAM`_ in the
 `customisation documentation`_ that has a simple detector
 that will block lot of spam attempts.
 
+Also you can consider adding `reCaptcha to reduce bot logins as
+described on the wiki
+<https://wiki.roundup-tracker.org/RequireReCAPTCHAForLogin>`_. The
+wiki also documents how to add `multi-factor (MFA)/one time
+keys/password using TOTP/HOTP
+<https://wiki.roundup-tracker.org/OneTimePasswords>`_. If you
+have a single sign on system, the `wiki page on using Shibboleth
+<https://wiki.roundup-tracker.org/ShibbolethLogin>`_
+or `LDAP <https://wiki.roundup-tracker.org/LDAPLogin2_1_5_1>`_
+with Roundup. More customisation can be found under the
+Security headings of the `CustomisationExamples wiki page
+<https://wiki.roundup-tracker.org/CustomisationExamples>`_ and
+`AdminstrationExample
+<https://wiki.roundup-tracker.org/AdministrationExample>`_ pages
+on the wiki.
+
+
 Docker Support
 ==============
 
 If you don't want to install Roundup on a host, you can create a
-Docker container. This installs Roundup using the `stand-alone web
-server`_ method. This image only supports http. We suggest putting an
+Docker container or use the `pre-built container on
+hub.docker.com
+<https://hub.docker.com/r/rounduptracker/roundup>`_. Docker hub
+images support `multiple tags <#tags-for-dockerhub-docker-images>`_.
+Docker images run Roundup using the `stand-alone web
+server`_ method. The image only supports http. We suggest putting an
 https terminating proxy in front of it.
 
 This is a work in progress and patches to improve it are welcome. You
 can find the docker config files under the `scripts/Docker` directory
 of the source tree.
 
-The dockerized Roundup is based on a 64 bit Alpine distribution.  It
-includes database drivers for anydbm, sqlite, MySQL and Postgresql
-(Postgresl is untested). It also includes additional libraries that
-are listed in `scripts/Docker/requirements.txt` (including redis).
+The Roundup container uses the 64 bit Alpine Python distribution.
+It includes database drivers for anydbm, SQLite, MySQL and
+Postgresql (Postgresql is untested). It also includes additional
+libraries that are listed in `scripts/Docker/requirements.txt`
+(including redis client support).
 
 Email support is a work in progress. Outgoing email to an external
 SMTP server should work. Receiving email should work by using a
@@ -1935,8 +1988,10 @@ releases (not pre-releases) are tagged this way. For example, the
 tags when 2.3.0 is released will be:
 
 ``rounduptracker/roundup:latest``
-   is a moving tag that tracks the latest build
-   with the newest version of Roundup.
+   is a moving tag that tracks the latest build with the newest
+   production version of Roundup using the current newest Alpine
+   release with the versions of Python packages at the time of
+   the build.
 
 ``rounduptracker/roundup:2.3.0``
    is a moving tag that tracks the latest build
@@ -1959,12 +2014,12 @@ example: ``rounduptracker/roundup:2.3.0b1-devel``,
 ``rounduptracker/roundup:devel``
 
 You should not assume that any ``devel`` tag is static. They are
-mainly for use by Roundup developer/maintainer for testing. There
-may be alternate tags ending with ``-devel`` to indicate builds
-from specific Mercurial versions/hashes. Also the tag may be
-overwritten to change the underlying Python libraries or
-images. Unless you like the bleeding edge, these should not be
-used in production.
+mainly for use by Roundup developers/maintainers/testers for
+testing. There may be alternate tags ending with ``-devel`` to
+indicate builds from specific Mercurial versions/hashes. Also the
+tag may be overwritten to change the underlying Python libraries
+or images. Unless you like the bleeding edge, these should
+**not** be used in production.
 
 Maintenance
 ===========

@@ -2733,7 +2733,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             return value
 
         # determine orderprop for property if property is a link or multilink
-        prop = self._db.getclass(self._classname).getprops()[property]
+        prop = self._db.getclass(self._prop.classname).getprops()[property]
         if type(prop) in [hyperdb.Link, hyperdb.Multilink]:
             orderprop = value[0]._db.getclass(prop.classname).orderprop()
             sort_by_link = True

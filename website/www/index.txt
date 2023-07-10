@@ -19,7 +19,7 @@ Roundup Issue Tracker
 
 .. raw:: html
 
-   <div class="release_info note">
+   <div class="release_info news">
      <!-- package version/pypi download -->
      <a
           href="https://pypi.org/project/roundup/#files">
@@ -74,18 +74,32 @@ command-line, web, REST, XML-RPC and e-mail interfaces.  It is based
 on the winning design from Ka-Ping Yee in the Software Carpentry
 "Track" design competition.
 
-The current stable version of Roundup is 2.3.0b2. It is a bug fix
-and feature release for the 2.2.0 release 
+It is designed to be customised so you can "track your issues your
+way".
+
+The current stable version of Roundup is 2.3.0b2. It is a bug fix and
+feature release for the 2.2.0 release.
+
+It runs with Python 2.7.12+ or 3.6+.
+
+.. admonition:: Python 2 Support
+
+   Although the original plan was to support Python 2 until 2025,
+   CI resources for testing with Python 2 are being phased out by a
+   number of CI services. Python 3 should be used to deploy new
+   trackers and older trackers should be `upgraded to use Python 3
+   <docs/upgrading.html#python-3-support-info>`_.
 
 Release Highlights
 ==================
 
 Some improvements from the 2.2.0 release are:
 
-* Dockerfile demo mode implemented.
+* Dockerfile demo mode implemented. This allows quick evaluation as
+  well as the ability to spin up a configured tracker to customise.
 
 * SQLite backends can use WAL mode to reduce blocking between readers
-  and writers.
+  and writers improving concurrent use.
 
 * Redis can be used for session database with SQLite and dbm
   backends. Provides a major performance improvement.
@@ -96,33 +110,36 @@ Some improvements from the 2.2.0 release are:
 * Postgres full text index can now be enabled.
 
 * Modifications to in-reply-to threading when there are multiple
-  matches.
+  matches results in more predictable handling of messages.
 
 * Many updates to documentation to make it scannable, useful and
   work on mobile.
 
 * Admin documentation includes a section on setting up Content
-  Security Policy (CSP)
+  Security Policy (CSP) to better secure your Roundup trackers.
 
 * REST now allows rate limiting headers to be accessed by client
-  javascript.
+  JavaScript.
 
 * Default number of rounds for PBKDF2 updated to 2M to account for
   improvements in password crackers and CPU power.
 
-* Support PBKDF2 with SHA512 for password storage
+* Support PBKDF2 with SHA512 for password storage to improve
+  resistance to password crackers.
 
 * Deprecate SSHA password hash function.
 
-* roundup-admin reindex can be done in batches to managle load
+* roundup-admin reindex can be done in batches to manage load
   incurred by reindexing.
 
-* roundup-admin can list avaailable templates and their installed
-  locations.
+* roundup-admin can list available templates and their installed
+  locations. This is useful when installing via pip or in a docker
+  container as supporting files are not stored in the usual locations
+  like /usr/share/roundup.
 
-* Crash fixes in detector handling, configuration handling, 
+* Crash fixes in detector handling and configuration handling. 
 
-More info on the 51 changes can be found in the `change note`_.
+More info on the 51 changes can be found in the `change notes`_.
 
 Roundup Use Cases
 =================
@@ -140,7 +157,8 @@ other :doc:`documentation <docs>`. Roundup has been deployed for:
 * sales lead tracking
 * conference paper submission and double-blind referee
   management
-* weblogging (well, almost :) 
+* weblogging (well, almost :)
+* thing management using the `GTD methodology <https://gettingthingsdone.com/>`_.
 
 ...and so on. It's been designed with :doc:`flexibility
 <docs/customizing>` in mind - it's not just another bug
@@ -154,7 +172,24 @@ Roundup ships with a **demo tracker** to play with - you don't need to
 install Roundup. After you've unpacked the source, just run "``python
 demo.py``" and load up the URL it prints out!
 
-You can install using a virtual environment with pip by:
+Follow the source gratification mode with these steps (change the
+``-2.3.0`` version identifier to match your downloaded file).
+
+1. ``python3 -m pip download roundup``
+2. ``tar -xzvf roundup-2.3.0.tar.gz``
+
+   * if you don't have a tar command (e.g windows), use:
+     ``python -c 'import tarfile; tarfile.open(sys.argv[1]).extractall();' roundup-2.3.0.tar.gz``
+
+
+3. ``cd roundup-2.3.0``
+4. ``python3 demo.py``
+
+(The source download can also be used to `create a custom Docker
+image <docs/installation.html#docker-support>`_.)
+
+Alternatively, you can install using a virtual environment with pip
+by:
 
 1. create a virtual environment with::
 
@@ -180,21 +215,7 @@ You can install using a virtual environment with pip by:
 6. when you are done, use `deactivate` to return your shell to using
    the system python.
 
-Or choose the source directory gratification mode to run the demo
-with these steps (change the ``-2.2.0`` version identifier to match
-your downloaded file).
-
-1. ``python3 -m pip download roundup``
-2. ``tar -xzvf roundup-2.2.0.tar.gz``
-
-   * if you don't have a tar command, ``python -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz`` can be used.
-
-3. ``cd roundup-2.2.0``
-4. ``python3 demo.py``
-
 Both of these methods produce the same result.
-
-(The source download can also be used to create a Docker image.)
 
 Origin Story
 ============
@@ -206,5 +227,6 @@ The first `change note`_ written said:
     something different for a while. Roundup here I come... 
 
 .. _`download`: https://pypi.org/project/roundup/
+.. _`change notes`: https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt
 .. _`change note`: https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt
 .. _`its own set of docs`: https://www.roundup-tracker.org/dev-docs/docs.html

@@ -253,12 +253,16 @@ class _Pointer(_Type):
     def __init__(self, classname, do_journal='yes', try_id_parsing='yes',
                  required=False, default_value=None,
                  msg_header_property=None, quiet=False, rev_multilink=None):
-        """ Default is to journal link and unlink events.
+        """ The base class used by Link and Multilink classes.
+
+            Default is to journal link and unlink events.
+
             When try_id_parsing is false, we don't allow IDs in input
             fields (the key of the Link or Multilink property must be
             given instead). This is useful when the name of a property
             can be numeric. It will only work if the linked item has a
             key property and is a questionable feature for multilinks.
+
             The msg_header_property is used in the mail gateway when
             sending out messages: By default roundup creates headers of
             the form: 'X-Roundup-issue-prop: value' for all properties
@@ -270,6 +274,7 @@ class _Pointer(_Type):
             'msg_header_property="username"' for the assigned_to
             property will generated message headers of the form:
             'X-Roundup-issue-assigned_to: joe_user'.
+
             The rev_multilink is used to inject a reverse multilink into
             the Class linked by a Link or Multilink property. Note that
             the result is always a Multilink. The name given with
