@@ -65,7 +65,7 @@ jobs:
 
         include:
             # example: if 3.12 fails the jobs still succeeds
-            - python-version: 3.12
+            - python-version: 3.12 
               os: ubuntu-22.04
               experimental: true
             
