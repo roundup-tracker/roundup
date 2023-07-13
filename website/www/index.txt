@@ -77,8 +77,8 @@ on the winning design from Ka-Ping Yee in the Software Carpentry
 It is designed to be customised so you can "track your issues your
 way".
 
-The current stable version of Roundup is 2.3.0b2. It is a bug fix and
-feature release for the 2.2.0 release.
+The current stable version of Roundup is 2.3.0. It fixes bugs and
+and adds features compared to the 2.2.0 release.
 
 It runs with Python 2.7.12+ or 3.6+.
 
@@ -110,7 +110,7 @@ Some improvements from the 2.2.0 release are:
 * Postgres full text index can now be enabled.
 
 * Modifications to in-reply-to threading when there are multiple
-  matches results in more predictable handling of messages.
+  matches resulting in more predictable handling of messages.
 
 * Many updates to documentation to make it scannable, useful and
   work on mobile.
@@ -137,9 +137,10 @@ Some improvements from the 2.2.0 release are:
   container as supporting files are not stored in the usual locations
   like /usr/share/roundup.
 
-* Crash fixes in detector handling and configuration handling. 
+* Crash fixes in detector handling, configuration handling, fix for
+  sorting of multilinks.
 
-More info on the 51 changes can be found in the `change notes`_.
+More info on the 53 changes can be found in the `change notes`_.
 
 Roundup Use Cases
 =================

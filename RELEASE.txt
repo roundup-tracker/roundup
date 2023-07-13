@@ -103,7 +103,7 @@ Roundup release checklist:
     added and removed files. Last release e.g. 1.5.1 where tip is what would
     become 1.6) E.G.
       
-      hg status --rev 2.0.0:tip | sed -ne 's/^A //p' | while read i ; \
+      hg status --rev 2.2.0:tip | sed -ne 's/^A //p' | while read i ; \
       do echo $i; grep "$i" roundup.egg-info/SOURCES.txt; done | \
       uniq -c | sort -rn
 
@@ -114,7 +114,7 @@ Roundup release checklist:
     (Note: files under website/ shouldn't be in the manifest.)
 10a: Check for removed files still in manifest:
 
-      hg status --rev 2.0.0:tip | sed -ne 's/^R //p' | while read i ; \
+      hg status --rev 2.2.0:tip | sed -ne 's/^R //p' | while read i ; \
       do echo $i; grep "$i" roundup.egg-info/SOURCES.txt; done | \
       uniq -c | sort -n
 
@@ -141,7 +141,7 @@ Roundup release checklist:
 
      Move file to website/www/signature directory
 
-       mv <filename>.tar.gz.asc ../webite/www/signature/.
+       mv <filename>.tar.gz.asc ../webite/www/signatures/.
        hg add ../website/www/signature/<filename>.tar.gz.asc
        # commiting the file will be done in step 12
        cd ..

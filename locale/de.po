@@ -5,9 +5,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Roundup 2.3.0b2\n"
+"Project-Id-Version: Roundup 2.3.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2023-05-29 20:29-0400\n"
+"POT-Creation-Date: 2023-07-12 22:51-0400\n"
 "PO-Revision-Date: 2016-04-11 09:13+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
@@ -2520,38 +2520,38 @@ msgid ""
 "property %(property)s: %(value)r is an invalid date interval (%(errormsg)s)"
 msgstr "Eigenschaft %s: %r ist kein gültiges Datumsintervall (%s)"
 
-#: ../roundup/hyperdb.py:429
+#: ../roundup/hyperdb.py:434
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a number"
 msgstr "Eigenschaft %s: %r ist keine Zahl"
 
-#: ../roundup/hyperdb.py:443
+#: ../roundup/hyperdb.py:448
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not an integer"
 msgstr "Eigenschaft %s: %r ist keine Zahl"
 
-#: ../roundup/hyperdb.py:465
+#: ../roundup/hyperdb.py:470
 #, python-format
 msgid "\"%s\" not a node designator"
 msgstr "\"%s\" ist kein gültiger Bezeichner"
 
-#: ../roundup/hyperdb.py:1494 ../roundup/hyperdb.py:1502
-#: ../roundup/hyperdb.py:1494:1502
+#: ../roundup/hyperdb.py:1499 ../roundup/hyperdb.py:1507
+#: ../roundup/hyperdb.py:1499:1507
 #, python-format
 msgid "Not a property name: %s"
 msgstr "Keine Eigenschaft: %s"
 
-#: ../roundup/hyperdb.py:1979
+#: ../roundup/hyperdb.py:1984
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a %(classname)s."
 msgstr "Der Wert \"%(value)s\" ist nicht in der Liste für \"%(propname)s\""
 
-#: ../roundup/hyperdb.py:1985
+#: ../roundup/hyperdb.py:1990
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr "Sie können für die Eigenschaft %s  nur IDs eingeben"
 
-#: ../roundup/hyperdb.py:2020
+#: ../roundup/hyperdb.py:2025
 #, fuzzy, python-format
 msgid "%(property)r is not a property of %(classname)s"
 msgstr "%r ist keine Eigenschaft von %s"
