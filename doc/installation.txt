@@ -2009,7 +2009,7 @@ tags when 2.3.0 is released will be:
    security guarantees that using a sha256 sum does.
 
 In addition to the release tags, there may be one or more
-development tags available. All tags will start with `devel`. For
+development tags available. All tags will include `devel`. For
 example: ``rounduptracker/roundup:2.3.0b1-devel``,
 ``rounduptracker/roundup:devel``
 
