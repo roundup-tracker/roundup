@@ -114,8 +114,8 @@ class AdminTool:
         }
         self.settings_help = {
             'display_protected':
-            _("Have 'display designator' show protected fields: "
-              "creator, id etc."),
+            _("Have 'display designator' and 'specification class' show "
+              "protected fields: creator, id etc."),
 
             'indexer_backend':
             _("Set indexer to use when running 'reindex' NYI"),
