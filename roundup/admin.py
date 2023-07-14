@@ -114,7 +114,8 @@ class AdminTool:
         }
         self.settings_help = {
             'display_protected':
-            _("Have 'display designator' show protected fields: creator. NYI"),
+            _("Have 'display designator' show protected fields: "
+              "creator, id etc."),
 
             'indexer_backend':
             _("Set indexer to use when running 'reindex' NYI"),
@@ -522,10 +523,18 @@ Command help:
             cl = self.get_class(classname)
 
             # display the values
-            keys = sorted(cl.properties)
+            normal_props = sorted(cl.properties)
+            if self.settings['display_protected']:
+                keys = sorted(cl.getprops())
+            else:
+                keys = normal_props
+
             for key in keys:
                 value = cl.get(nodeid, key)
-                print(_('%(key)s: %(value)s') % locals())
+                # prepend * for protected propeties else just indent
+                # with space.
+                protected = "*" if key not in normal_props else ' '
+                print(_('%(protected)s%(key)s: %(value)s') % locals())
 
     def do_export(self, args, export_files=True):
         ''"""Usage: export [[-]class[,class]] export_dir
@@ -1479,6 +1488,19 @@ Erase it? Y/N: """) % locals())  # noqa: E122
          will show all settings and their current values. If verbose
          is enabled hidden settings and descriptions will be shown.
         """
+        """
+          The following are to be implemented:
+
+           indexer - Not Implemented - set indexer to use for
+                     reindex.  Use when changing indexer backends.
+
+           exportfiles={true|false} - Not Implemented - If true
+                    (default) export/import db tables and files. If
+                    False, export/import just database tables, not
+                    files. Use for faster database migration.
+                    Replaces exporttables/importtables with
+                    exportfiles=false then export/import
+        """
 
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
@@ -1798,8 +1820,12 @@ Erase it? Y/N: """) % locals())  # noqa: E122
 
         # get the key property
         keyprop = cl.getkey()
-        for key in cl.properties:
-            value = cl.properties[key]
+        if self.settings['display_protected']:
+            properties = cl.getprops()
+        else:
+            properties = cl.properties
+        for key in properties:
+            value = properties[key]
             if keyprop == key:
                 sys.stdout.write(_('%(key)s: %(value)s (key property)\n') %
                                  locals())

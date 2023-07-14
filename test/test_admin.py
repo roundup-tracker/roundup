@@ -1032,6 +1032,26 @@ class AdminTest(object):
         expected = 'Error: Internal error: pragma can not handle values of type: float'
         self.assertIn(expected, out)
 
+
+        # -----
+        inputs = iter(["pragma display_protected=yes",
+                       "display user1",
+                       "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        
+        print(ret)
+        expected = '\n*creation: '
+        self.assertIn(expected, out)
+
         # -----
         AdminTool.my_input = orig_input
 
@@ -1479,6 +1499,7 @@ Role "user":
                 'timezone: <roundup.hyperdb.String>',
                 'password: <roundup.hyperdb.Password>',
             ]
+
             
         with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, 'specification', 'user']
@@ -1487,6 +1508,28 @@ Role "user":
         outlist = out.getvalue().strip().split("\n")
         print(outlist)
         self.assertEqual(sorted(outlist), sorted(spec))
+
+        # -----
+        inputs = iter(["pragma display_protected=1", "spec user", "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        # strip greeting and help text lines
+        outlist = out.getvalue().strip().split('\n')[2:]
+        
+        protected = [ 'id: <roundup.hyperdb.String>',
+                      'creation: <roundup.hyperdb.Date>',
+                      'activity: <roundup.hyperdb.Date>',
+                      'creator: <roundup.hyperdb.Link to "user">',
+                      'actor: <roundup.hyperdb.Link to "user">']
+        print(outlist)
+        self.assertEqual(sorted(outlist), sorted(spec + protected))
 
     def testRetireRestore(self):
         ''' Note the tests will fail if you run this under pdb.

@@ -12,6 +12,16 @@ v2.7.2 or later are required to run newer releases of Roundup.
 Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
 python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 
+2024-XX-YY 2.4.0
+
+Fixed:
+
+Features:
+
+- issue2551103 - add pragma 'display_protected' to roundup-admin. If
+  true, print protected attributes like id, activity, actor...
+  when using display or specification subcommands. (John Rouillard)
+
 2023-07-13 2.3.0
 
 Fixed:
