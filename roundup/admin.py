@@ -1490,10 +1490,6 @@ Erase it? Y/N: """) % locals())  # noqa: E122
         """
         """
           The following are to be implemented:
-
-           indexer - Not Implemented - set indexer to use for
-                     reindex.  Use when changing indexer backends.
-
            exportfiles={true|false} - Not Implemented - If true
                     (default) export/import db tables and files. If
                     False, export/import just database tables, not
@@ -2046,6 +2042,8 @@ Desc: %(description)s
                     print("Reopening tracker")
                 tracker = roundup.instance.open(self.tracker_home)
                 self.tracker = tracker
+                self.settings['indexer_backend'] = self.tracker.config['INDEXER']
+
         except ValueError as message:  # noqa: F841
             self.tracker_home = ''
             print(_("Error: Couldn't open tracker: %(message)s") % locals())
