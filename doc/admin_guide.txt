@@ -1248,6 +1248,8 @@ The basic usage is::
   -S <string>       -- when outputting lists of data, string-separate them
   -s                -- when outputting lists of data, space-separate them.
                        Same as '-S " "'.
+  -P pragma=value   -- Set a pragma on command line rather than interactively.
+                       Can be used multiple times.
   -V                -- be verbose when importing
   -v                -- report Roundup and Python versions (and quit)
 

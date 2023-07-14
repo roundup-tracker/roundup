@@ -21,6 +21,8 @@ Features:
 - issue2551103 - add pragma 'display_protected' to roundup-admin. If
   true, print protected attributes like id, activity, actor...
   when using display or specification subcommands. (John Rouillard)
+- add -P pragma=value command line option to roundup-admin. Allows
+  setting pragmas when using non-interactive mode. (John Rouillard)
 
 2023-07-13 2.3.0
 

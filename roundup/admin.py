@@ -173,6 +173,8 @@ Options:
  -S <string>       -- when outputting lists of data, string-separate them
  -s                -- when outputting lists of data, space-separate them.
                       Same as '-S " "'.
+ -P pragma=value   -- Set a pragma on command line rather than interactively.
+                      Can be used multiple times.
  -V                -- be verbose when importing
  -v                -- report Roundup and Python versions (and quit)
 
@@ -2114,7 +2116,7 @@ Desc: %(description)s
 
     def main(self):
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hcdsS:vV')
+            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hcdP:sS:vV')
         except getopt.GetoptError as e:
             self.usage(str(e))
             return 1
@@ -2160,6 +2162,8 @@ Desc: %(description)s
                 self.separator = ' '
             elif opt == '-d':
                 self.print_designator = 1
+            elif opt == '-P':
+                self.do_pragma([arg])
             elif opt == '-u':
                 login_opt = arg.split(':')
                 self.name = login_opt[0]

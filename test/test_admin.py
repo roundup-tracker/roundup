@@ -1510,18 +1510,15 @@ Role "user":
         self.assertEqual(sorted(outlist), sorted(spec))
 
         # -----
-        inputs = iter(["pragma display_protected=1", "spec user", "quit"])
-        AdminTool.my_input = lambda _self, _prompt: next(inputs)
-
         self.install_init()
         self.admin=AdminTool()
-        sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'display_protected=1', 'specification', 'user']
             ret = self.admin.main()
 
-        # strip greeting and help text lines
-        outlist = out.getvalue().strip().split('\n')[2:]
+        outlist = out.getvalue().strip().split('\n')
         
         protected = [ 'id: <roundup.hyperdb.String>',
                       'creation: <roundup.hyperdb.Date>',
