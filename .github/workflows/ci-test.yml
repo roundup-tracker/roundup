@@ -32,10 +32,6 @@ jobs:
   test:
     name: CI build test
 
-    # run the finalizer for coveralls even if one or more
-    # experimental matrix runs fail.
-    continue-on-error: ${{ matrix.experimental }}
-
     #runs-on: ubuntu-latest
     # use below if running on multiple OS's.
     runs-on: ${{ matrix.os }}
@@ -76,6 +72,10 @@ jobs:
         exclude:
             # skip all python versions on 20.04 except explicitly included
             - os: ubuntu-20.04
+
+    # run the finalizer for coveralls even if one or more
+    # experimental matrix runs fail.
+    continue-on-error: ${{ matrix.experimental }}
 
     env:
       # get colorized pytest output even without a controlling tty
