@@ -61,9 +61,9 @@ jobs:
 
         include:
             # example: if 3.12 fails the jobs still succeeds
-            - python-version: 3.12 
-              os: ubuntu-22.04
-              experimental: true
+            #- python-version: 3.12 
+            #  os: ubuntu-22.04
+            #  experimental: true
             
             # 3.6 not available on new 22.04 runners, so run on 20.04 ubuntu
             - python-version: 3.6
@@ -75,7 +75,9 @@ jobs:
 
     # run the finalizer for coveralls even if one or more
     # experimental matrix runs fail.
-    continue-on-error: ${{ matrix.experimental }}
+    # moving it above strategy produces unexpected value false
+    # moving it below (here) produces unexpected value ''.
+    # continue-on-error: ${{ matrix.experimental }}
 
     env:
       # get colorized pytest output even without a controlling tty
