@@ -76,7 +76,9 @@ command.
 .TP
 \fBdisplay\fP \fIdesignator[,designator]*\fP
 This lists the properties and their associated values for the given
-node.
+node. The pragma \fBdisplay_header\fP can be used to add a header
+between designators that includes the active/retired status of
+the item.
 .TP
 \fBexport\fP \fI[[-]class[,class]] export_dir\fP
 Export the database to colon-separated-value files.
@@ -182,6 +184,10 @@ property, alphabetically.
 With \fB-c\fP, \fB-S\fP or \fB-s\fP print a list of item id's if no
 property specified.  If property specified, print list of that
 property for every class instance.
+
+The pragma \fBshow_retired\fP can be used to print only retired items
+or to print retired and active items. The default is to print only
+active items.
 .TP
 \fBmigrate\fP
 Update a tracker's database to be compatible with the Roundup
@@ -272,6 +278,10 @@ Lists the names, location and description of all known templates.
 Lists all instances of the given class. If the properties are not
 specified, all properties are displayed. By default, the column
 widths are the width of the largest value.
+
+The pragma \fBshow_retired\fP can be used to print only retired items
+or to print retired and active items. The default is to print only
+active items.
 .TP
 \fBupdateconfig\fP \fI<filename>\fP
 This is used when updating software. It merges the \fBconfig.ini\fP

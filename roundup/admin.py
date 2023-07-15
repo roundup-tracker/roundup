@@ -104,6 +104,7 @@ class AdminTool:
         self.db_uncommitted = False
         self.force = None
         self.settings = {
+            'display_header': False,
             'display_protected': False,
             'indexer_backend': "as set in config.ini",
             '_reopen_tracker': False,
@@ -114,6 +115,10 @@ class AdminTool:
             '_floattest': 3.5,
         }
         self.settings_help = {
+            'display_header':
+            _("Have 'display designator[,designator*]' show header inside "
+              "         []'s before items. Includes retired/active status."),
+
             'display_protected':
             _("Have 'display designator' and 'specification class' show "
               "protected fields: creator, id etc."),
@@ -533,6 +538,9 @@ Command help:
             else:
                 keys = normal_props
 
+            if self.settings['display_header']:
+                status = "retired" if cl.is_retired(nodeid) else "active"
+                print('\n[%s (%s)]' % (designator, status))
             for key in keys:
                 value = cl.get(nodeid, key)
                 # prepend * for protected properties else just indent

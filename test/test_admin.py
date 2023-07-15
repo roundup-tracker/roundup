@@ -1639,8 +1639,7 @@ Role "user":
         expected_list=sorted("1: admin\n   2: anonymous\n   3: user1\n   4: user1".split("\n"))
         self.assertEqual(out_list, expected_list)
 
-
-        # verify that active users
+        # verify that active users are shown
         self.admin=AdminTool()
         with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, '-P',
@@ -1651,6 +1650,26 @@ Role "user":
         expected="1: admin\n   2: anonymous\n   3: user1"
         self.assertEqual(out, expected)
 
+        # test display headers for retired/active
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'display_header=yes', 'display', 'user3,user4']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        self.assertIn("[user3 (active)]\n", out)
+        self.assertIn( "[user4 (retired)]\n", out)
+
+        # test that there are no headers
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'display', 'user3,user4']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        self.assertNotIn("user3", out)
+        self.assertNotIn("user4", out)
 
     def testTable(self):
         ''' Note the tests will fail if you run this under pdb.
