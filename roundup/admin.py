@@ -107,7 +107,8 @@ class AdminTool:
             'display_protected': False,
             'indexer_backend': "as set in config.ini",
             '_reopen_tracker': False,
-            'show_retired': False,
+            'show_retired': "no",
+            '_retired_val': False,
             'verbose': False,
             '_inttest': 3,
             '_floattest': 3.5,
@@ -123,7 +124,8 @@ class AdminTool:
             '_reopen_tracker':
             _("Force reopening of tracker when running each command."),
 
-            'show_retired': _("Show retired items in table, list etc. NYI"),
+            'show_retired': _("Show retired items in table, list etc. One of 'no', 'only', 'both'"),
+            '_retired_val': _("internal mapping for show_retired."),
             'verbose': _("Enable verbose output: tracing, descriptions..."),
 
             '_inttest': "Integer valued setting. For testing only.",
@@ -533,7 +535,7 @@ Command help:
 
             for key in keys:
                 value = cl.get(nodeid, key)
-                # prepend * for protected propeties else just indent
+                # prepend * for protected properties else just indent
                 # with space.
                 protected = "*" if key not in normal_props else ' '
                 print(_('%(protected)s%(key)s: %(value)s') % locals())
@@ -1296,6 +1298,9 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             raise UsageError(_('Too many arguments supplied'))
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
+
+        retired = self.settings['_retired_val']
+
         classname = args[0]
 
         # get the class
@@ -1311,7 +1316,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             if len(args) == 2:
                 # create a list of propnames since user specified propname
                 proplist = []
-                for nodeid in cl.list():
+                for nodeid in cl.getnodeids(retired=retired):
                     try:
                         proplist.append(cl.get(nodeid, propname))
                     except KeyError:
@@ -1321,9 +1326,9 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             else:
                 # create a list of index id's since user didn't specify
                 # otherwise
-                print(self.separator.join(cl.list()))
+                print(self.separator.join(cl.getnodeids(retired=retired)))
         else:
-            for nodeid in cl.list():
+            for nodeid in cl.getnodeids(retired=retired):
                 try:
                     value = cl.get(nodeid, propname)
                 except KeyError:
@@ -1544,7 +1549,18 @@ Erase it? Y/N: """) % locals())  # noqa: E122
                     '%(value)s.') % {"setting": setting, "value": value})
             value = _val
         elif type(self.settings[setting]) is str:
-            pass
+            if setting == "show_retired":
+                if value not in ["no", "only", "both"]:
+                    raise UsageError(_(
+                        'Incorrect value for setting %(setting)s: '
+                        '%(value)s. Should be no, both, or only.') % {
+                            "setting": setting, "value": value})
+                if value == "both":
+                    self.settings['_retired_val'] = None
+                elif value == "only":  # numerical value not boolean
+                    self.settings['_retired_val'] = True
+                else:  # numerical value not boolean
+                    self.settings['_retired_val'] = False
         else:
             raise UsageError(_('Internal error: pragma can not handle '
                                'values of type: %s') %
@@ -1863,6 +1879,8 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             raise UsageError(_('Not enough arguments supplied'))
         classname = args[0]
 
+        retired = self.settings['_retired_val']
+
         # get the class
         cl = self.get_class(classname)
 
@@ -1903,7 +1921,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             else:
                 # this is going to be slow
                 maxlen = len(spec)
-                for nodeid in cl.list():
+                for nodeid in cl.getnodeids(retired=retired):
                     curlen = len(str(cl.get(nodeid, spec)))
                     if curlen > maxlen:
                         maxlen = curlen
@@ -1914,7 +1932,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
                         for name, width in props]))
 
         # and the table data
-        for nodeid in cl.list():
+        for nodeid in cl.getnodeids(retired=retired):
             table_columns = []
             for name, width in props:
                 if name != 'id':

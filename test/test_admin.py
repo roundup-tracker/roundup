@@ -1612,6 +1612,44 @@ Role "user":
         expected="1: admin\n   2: anonymous\n   3: user1"
         self.assertEqual(out, expected)
 
+        # test show_retired pragma three cases:
+        # no - no retired items
+        # only - only retired items
+        # both - all items
+
+        # verify that user4 only is listed
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'show_retired=only', 'list', 'user']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        expected="4: user1"
+        self.assertEqual(out, expected)
+
+        # verify that all users are shown
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'show_retired=both', 'list', 'user']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        expected="1: admin\n   2: anonymous\n   3: user1\n   4: user1"
+        self.assertEqual(out, expected)
+
+
+        # verify that active users
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'show_retired=no', 'list', 'user']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        expected="1: admin\n   2: anonymous\n   3: user1"
+        self.assertEqual(out, expected)
 
 
     def testTable(self):
