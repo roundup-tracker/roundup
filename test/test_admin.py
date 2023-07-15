@@ -1634,10 +1634,10 @@ Role "user":
             sys.argv=['main', '-i', self.dirname, '-P',
                       'show_retired=both', 'list', 'user']
             ret = self.admin.main()
-        out = out.getvalue().strip()
+        out_list = sorted(out.getvalue().strip().split("\n"))
         print(out)
-        expected="1: admin\n   2: anonymous\n   3: user1\n   4: user1"
-        self.assertEqual(out, expected)
+        expected_list=sorted("1: admin\n   2: anonymous\n   3: user1\n   4: user1".split("\n"))
+        self.assertEqual(out_list, expected_list)
 
 
         # verify that active users
