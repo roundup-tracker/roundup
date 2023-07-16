@@ -71,6 +71,9 @@ except TypeError:
 
 
 def _test():
+    import sys
+    _py3 = sys.version_info[0] > 2
+
     Comp = NoneAndDictComparable
 
     assert Comp(None) < Comp(0)
@@ -82,6 +85,13 @@ def _test():
     assert not Comp({}) < Comp(None)
     assert not Comp((0, 0)) < Comp((0, None))
 
+    try:
+        not Comp("") < Comp((0, None))
+        if _py3:
+            assert False, "Incompatible types are reporting comparable."
+    except TypeError:
+        pass
+
     assert Comp((0, 0)) < Comp((0, 0, None))
     assert Comp((0, None, None)) < Comp((0, 0, 0))
 
@@ -89,6 +99,12 @@ def _test():
     assert Comp(1) > Comp(0)
     assert not Comp(1) < Comp(0)
     assert not Comp(0) > Comp(0)
+
+
+    assert Comp(0) <= Comp(1)
+    assert Comp(1) >= Comp(0)
+    assert not Comp(1) <= Comp(0)
+    assert Comp(0) >= Comp(0)
 
     assert Comp({0: None}) < Comp({0: 0})
     assert Comp({0: 0}) < Comp({0: 1})
