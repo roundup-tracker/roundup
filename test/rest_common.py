@@ -1076,8 +1076,12 @@ class TestCase():
 
     def testRestRateLimit(self):
 
-        self.db.config['WEB_API_CALLS_PER_INTERVAL'] = 20
-        self.db.config['WEB_API_INTERVAL_IN_SEC'] = 60
+        calls_per_interval = 20
+        interval_sec = 60
+        wait_time_str = str(int(interval_sec/calls_per_interval))
+
+        self.db.config['WEB_API_CALLS_PER_INTERVAL'] = calls_per_interval
+        self.db.config['WEB_API_INTERVAL_IN_SEC'] = interval_sec
 
         # Otk code never passes through the
         # retry loop. Not sure why but I can force it
@@ -1090,17 +1094,22 @@ class TestCase():
             # sqlite or anydbm. So don't need to exercise code.
             pass
         
-        print("Now realtime start:", datetime.utcnow())
+        start_time = datetime.utcnow()
         # don't set an accept header; json should be the default
         # use up all our allowed api calls
-        for i in range(20):
-            # i is 0 ... 19
+        for i in range(calls_per_interval):
+            # i is 0 ... calls_per_interval
             self.client_error_message = []
             self.server.client.env.update({'REQUEST_METHOD': 'GET'})
             results = self.server.dispatch('GET',
                             "/rest/data/user/%s/realname"%self.joeid,
                             self.empty_form)
  
+            loop_time = datetime.utcnow()
+            self.assertLess((loop_time-start_time).total_seconds(),
+                            int(wait_time_str),
+                    "Test system is too slow to complete test as configured")
+
             # is successful
             self.assertEqual(self.server.client.response_code, 200)
             # does not have Retry-After header as we have
@@ -1136,11 +1145,12 @@ class TestCase():
             59, delta=5)
         self.assertEqual(
             str(self.server.client.additional_headers["Retry-After"]),
-            "3")  # check as string
+            wait_time_str)  # check as string
 
         print("Reset:", self.server.client.additional_headers["X-RateLimit-Reset"])
         print("Now realtime pre-sleep:", datetime.utcnow())
-        sleep(3.1) # sleep as requested so we can do another login
+        # sleep as requested so we can do another login
+        sleep(float(wait_time_str) + 0.1)
         print("Now realtime post-sleep:", datetime.utcnow())
 
         # this should succeed
@@ -1181,11 +1191,13 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 429)
         self.assertEqual(
             str(self.server.client.additional_headers["Retry-After"]),
-            "3")  # check as string
+            wait_time_str)  # check as string
 
         json_dict = json.loads(b2s(results))
-        self.assertEqual(json_dict['error']['msg'],
-                         "Api rate limits exceeded. Please wait: 3 seconds.")
+        self.assertEqual(
+            json_dict['error']['msg'],
+            "Api rate limits exceeded. Please wait: %s seconds." % 
+            wait_time_str)
 
         # reset rest params
         self.db.config['WEB_API_CALLS_PER_INTERVAL'] = 0
