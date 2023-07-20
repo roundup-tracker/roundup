@@ -1507,10 +1507,39 @@ class TestApiRateLogin(WsgiSetup):
               'Allow'),
             'Access-Control-Allow-Origin': 'http://localhost:9001',
             'Access-Control-Allow-Credentials': 'true',
-            'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
-            'Content-Length': '167',
-            'Content-Encoding': 'gzip'}
+            'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH'
+        }
 
         for header in headers_expected.keys():
             self.assertEqual(f.headers[header],
                              headers_expected[header])
+
+        expected_data = {
+            "status": {
+                "link": "http://localhost:9001/rest/data/status"
+            },
+            "keyword": {
+                "link": "http://localhost:9001/rest/data/keyword"
+            },
+            "priority": {
+                "link": "http://localhost:9001/rest/data/priority"
+            },
+            "user": {
+                "link": "http://localhost:9001/rest/data/user"
+            },
+            "file": {
+                "link": "http://localhost:9001/rest/data/file"
+            },
+            "msg": {
+                "link": "http://localhost:9001/rest/data/msg"
+            },
+            "query": {
+                "link": "http://localhost:9001/rest/data/query"
+            },
+            "issue": {
+                "link": "http://localhost:9001/rest/data/issue"
+            }
+        }
+
+        json_dict = json.loads(f.text)
+        self.assertEqual(json_dict['data'], expected_data)
