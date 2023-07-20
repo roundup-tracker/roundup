@@ -43,8 +43,8 @@ from roundup.cgi.exceptions import (
     Redirect, SendFile, SendStaticFile, SeriousError)
 from roundup.cgi.form_parser import FormParser
 
-from roundup.exceptions import LoginError, Reject, RejectRaw, \
-                               Unauthorised, UsageError
+from roundup.exceptions import LoginError, RateLimitExceeded, Reject, \
+                               RejectRaw, Unauthorised, UsageError
 
 from roundup.mailer import Mailer, MessageSendError
 
@@ -572,12 +572,20 @@ class Client:
             self.determine_language()
         # Open the database as the correct user.
         try:
-            self.determine_user()
+            self.determine_user(is_api="xmlrpc")
             self.db.tx_Source = "xmlrpc"
             self.db.i18n = self.translator
         except LoginError as msg:
             output = xmlrpc_.client.dumps(
                 xmlrpc_.client.Fault(401, "%s" % msg),
+                allow_none=True)
+            self.setHeader("Content-Type", "text/xml")
+            self.setHeader("Content-Length", str(len(output)))
+            self.write(s2b(output))
+            return
+        except RateLimitExceeded as msg:
+            output = xmlrpc_.client.dumps(
+                xmlrpc_.client.Fault(429, "%s" % msg),
                 allow_none=True)
             self.setHeader("Content-Type", "text/xml")
             self.setHeader("Content-Length", str(len(output)))
@@ -655,12 +663,18 @@ class Client:
         # Open the database as the correct user.
         # TODO: add everything to RestfulDispatcher
         try:
-            self.determine_user()
+            self.determine_user(is_api="rest")
             self.db.tx_Source = "rest"
             self.db.i18n = self.translator
         except LoginError as err:
             output = s2b("Invalid Login - %s" % str(err))
             self.reject_request(output, status=http_.client.UNAUTHORIZED)
+            return
+        except RateLimitExceeded as err:
+            output = s2b("%s" % str(err))
+            # PYTHON2:FIXME http_.client.TOO_MANY_REQUESTS missing
+            # python2 so use numeric code.
+            self.reject_request(output, status=429)
             return
 
         # verify Origin is allowed on all requests including GET.
@@ -854,6 +868,8 @@ class Client:
             except SysCallError:
                 # OpenSSL.SSL.SysCallError is similar to IOError above
                 pass
+            except RateLimitExceeded:
+                raise
 
         except SeriousError as message:
             self.write_html(str(message))
@@ -916,6 +932,9 @@ class Client:
                     raise NotFound(e)
         except FormError as e:
             self.add_error_message(self._('Form Error: ') + str(e))
+            self.write_html(self.renderContext())
+        except RateLimitExceeded as e:
+            self.add_error_message(str(e))
             self.write_html(self.renderContext())
         except IOError:
             # IOErrors here are due to the client disconnecting before
@@ -1110,7 +1129,7 @@ class Client:
 
         return(token)
 
-    def determine_user(self):
+    def determine_user(self, is_api=False):
         """Determine who the user is"""
         self.opendb('admin')
 
@@ -1171,8 +1190,8 @@ class Client:
                         # So we set the user to anonymous first.
                         self.make_user_anonymous()
                         login = self.get_action_class('login')(self)
-                        login.verifyLogin(username, password)
-                    except LoginError:
+                        login.verifyLogin(username, password, is_api=is_api)
+                    except (LoginError, RateLimitExceeded):
                         self.make_user_anonymous()
                         raise
                     user = username

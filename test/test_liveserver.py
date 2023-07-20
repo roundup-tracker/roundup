@@ -7,6 +7,7 @@ from roundup.anypy.strings import b2s
 from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
+from time import sleep
 
 from wsgiref.validate import validator
 
@@ -615,55 +616,6 @@ class BaseTestCases(WsgiSetup):
         print(f.headers)
 
         self.assertEqual(f.status_code, 404)
-
-    def DISABLEtest_rest_login_rate_limit(self):
-        """login rate limit applies to api endpoints. Only failure
-            logins count though. So log in 10 times in a row
-            to verify that valid username/passwords aren't limited.
-     
-            FIXME: client.py does not implement this. Also need a live
-            server instance that has
-
-               cls.db.config.WEB_LOGIN_ATTEMPTS_MIN = 4
-
-            not 0.
-        """
-
-        for i in range(10):
-            # use basic auth for rest endpoint
-        
-            f = requests.options(self.url_base() + '/rest/data',
-                                 auth=('admin', 'sekrit'),
-                                 headers = {'content-type': "",
-                                            'Origin': "http://localhost:9001",}
-            )
-            print(f.status_code)
-            print(f.headers)
-            
-            self.assertEqual(f.status_code, 204)
-            expected = { 'Access-Control-Allow-Origin': '*',
-                         'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
-                         'Allow': 'OPTIONS, GET',
-                         'Access-Control-Allow-Methods': 'HEAD, OPTIONS, GET, POST, PUT, DELETE, PATCH',
-                     'Access-Control-Allow-Credentials': 'true',
-            }
-
-        for i in range(10):
-            # use basic auth for rest endpoint
-        
-            f = requests.options(self.url_base() + '/rest/data',
-                                 auth=('admin', 'ekrit'),
-                                 headers = {'content-type': "",
-                                            'Origin': "http://localhost:9001",}
-            )
-            print(i, f.status_code)
-            print(f.headers)
-            print(f.text)
-
-            if (i < 3): # assuming limit is 4.
-                self.assertEqual(f.status_code, 401)
-            else:
-                self.assertEqual(f.status_code, 429)
 
     def test_ims(self):
         ''' retreive the user_utils.js file with old and new
@@ -1361,3 +1313,204 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         # use a ts: search as well so it only works on postgres_fts indexer
         f = requests.get(self.url_base() + "?@search_text=ts:RESULT")
         self.assertIn("foo bar RESULT", f.text)
+
+class TestApiRateLogin(WsgiSetup):
+    """Class to run test in BaseTestCases with the cache_tracker
+       feature flag enabled when starting the wsgi server
+    """
+
+    backend = 'sqlite'
+
+    @classmethod
+    def setup_class(cls):
+        '''All tests in this class use the same roundup instance.
+           This instance persists across all tests.
+           Create the tracker dir here so that it is ready for the
+           create_app() method to be called.
+
+           cribbed from WsgiSetup::setup_class
+        '''
+
+        # tests in this class.
+        # set up and open a tracker
+        cls.instance = db_test_base.setupTracker(cls.dirname, cls.backend)
+
+        # open the database
+        cls.db = cls.instance.open('admin')
+
+        # add a user without edit access for status.
+        cls.db.user.create(username="fred", roles='User',
+            password=password.Password('sekrit'), address='fred@example.com')
+
+        # set the url the test instance will run at.
+        cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
+        # set up mailhost so errors get reported to debuging capture file
+        cls.db.config.MAILHOST = "localhost"
+        cls.db.config.MAIL_HOST = "localhost"
+        cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
+
+        # added to enable csrf forgeries/CORS to be tested
+        cls.db.config.WEB_CSRF_ENFORCE_HEADER_ORIGIN = "required"
+        cls.db.config.WEB_ALLOWED_API_ORIGINS = "https://client.com"
+        cls.db.config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH'] = "required"
+
+        # set login failure api limits
+        cls.db.config.WEB_API_FAILED_LOGIN_LIMIT = 4
+        cls.db.config.WEB_API_FAILED_LOGIN_INTERVAL_IN_SEC = 12
+
+        # enable static precompressed files
+        cls.db.config.WEB_USE_PRECOMPRESSED_FILES = 1
+
+        cls.db.config.save()
+
+        cls.db.commit()
+        cls.db.close()
+
+        # re-open the database to get the updated INDEXER
+        cls.db = cls.instance.open('admin')
+
+        result = cls.db.issue.create(title="foo bar RESULT")
+
+        # add a message to allow retrieval
+        result = cls.db.msg.create(author = "1",
+                                   content = "a message foo bar RESULT",
+                                   date=rdate.Date(),
+                                   messageid="test-msg-id")
+
+        cls.db.commit()
+        cls.db.close()
+        
+        # Force locale config to find locales in checkout not in
+        # installed directories
+        cls.backup_domain = i18n.DOMAIN
+        cls.backup_locale_dirs = i18n.LOCALE_DIRS
+        i18n.LOCALE_DIRS = ['locale']
+        i18n.DOMAIN = ''
+
+    def test_rest_login_RateLimit(self):
+        """login rate limit applies to api endpoints. Only failure
+            logins count though. So log in 10 times in a row
+            to verify that valid username/passwords aren't limited.
+        """
+
+        # verify that valid logins are not counted against the limit.
+        for i in range(10):
+            # use basic auth for rest endpoint
+        
+            request_headers = {'content-type': "",
+                               'Origin': "http://localhost:9001",}
+            f = requests.options(self.url_base() + '/rest/data',
+                                 auth=('admin', 'sekrit'),
+                                 headers=request_headers
+            )
+            #print(f.status_code)
+            #print(f.headers)
+            #print(f.text)
+            
+            self.assertEqual(f.status_code, 204)
+
+        # Save time. check headers only for final response.
+        headers_expected = {
+            'Access-Control-Allow-Origin': request_headers['Origin'],
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
+            'Allow': 'OPTIONS, GET',
+            'Access-Control-Allow-Methods': 'OPTIONS, GET',
+            'Access-Control-Allow-Credentials': 'true',
+        }
+
+        for header in headers_expected.keys():
+            self.assertEqual(f.headers[header],
+                             headers_expected[header])
+
+
+        # first 3 logins should report 401 then the rest should report
+        # 429
+        headers_expected = {
+            'Content-Type': 'text/plain'
+        }
+
+        for i in range(10):
+            # use basic auth for rest endpoint
+        
+            f = requests.options(self.url_base() + '/rest/data',
+                                 auth=('admin', 'ekrit'),
+                                 headers = {'content-type': "",
+                                            'Origin': "http://localhost:9001",}
+            )
+
+            if (i < 4): # assuming limit is 4.
+                for header in headers_expected.keys():
+                    self.assertEqual(f.headers[header],
+                                     headers_expected[header])
+                self.assertEqual(f.status_code, 401)
+            else:
+                self.assertEqual(f.status_code, 429)
+
+                headers_expected = { 'Content-Type': 'text/plain',
+                                     'X-RateLimit-Limit': '4',
+                                     'X-RateLimit-Limit-Period': '12',
+                                     'X-RateLimit-Remaining': '0',
+                                     'Retry-After': '3',
+                                     'Access-Control-Expose-Headers':
+                                     ('X-RateLimit-Limit, '
+                                      'X-RateLimit-Remaining, '
+                                      'X-RateLimit-Reset, '
+                                      'X-RateLimit-Limit-Period, '
+                                      'Retry-After'),
+                                     'Content-Length': '50'}
+
+                for header in headers_expected.keys():
+                    self.assertEqual(f.headers[header],
+                                     headers_expected[header])
+
+                self.assertAlmostEqual(float(f.headers['X-RateLimit-Reset']),
+                                       10.0, delta=3,
+                msg="limit reset not within 3 seconds of 10")
+
+        # test lockout this is a valid login but should be rejected
+        # with 429.
+        f = requests.options(self.url_base() + '/rest/data',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                                        'Origin': "http://localhost:9001",}
+        )
+        self.assertEqual(f.status_code, 429)
+
+        for header in headers_expected.keys():
+            self.assertEqual(f.headers[header],
+                             headers_expected[header])
+
+
+        sleep(4)
+        # slept long enough to get a login slot. Should work with
+        # 200 return code.
+        f = requests.get(self.url_base() + '/rest/data',
+                             auth=('admin', 'sekrit'),
+                             headers = {'content-type': "",
+                                        'Origin': "http://localhost:9001",}
+        )
+        self.assertEqual(f.status_code, 200)
+        print(i, f.status_code)
+        print(f.headers)
+        print(f.text)
+
+        headers_expected = {
+            'Content-Type': 'application/json',
+            'Vary': 'Origin, Accept-Encoding',
+            'Access-Control-Expose-Headers':
+            ( 'X-RateLimit-Limit, '
+              'X-RateLimit-Remaining, '
+              'X-RateLimit-Reset, '
+              'X-RateLimit-Limit-Period, '
+              'Retry-After, '
+              'Sunset, '
+              'Allow'),
+            'Access-Control-Allow-Origin': 'http://localhost:9001',
+            'Access-Control-Allow-Credentials': 'true',
+            'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH',
+            'Content-Length': '167',
+            'Content-Encoding': 'gzip'}
+
+        for header in headers_expected.keys():
+            self.assertEqual(f.headers[header],
+                             headers_expected[header])

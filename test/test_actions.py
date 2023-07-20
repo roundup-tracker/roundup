@@ -7,7 +7,7 @@ from roundup.date import Date, Interval
 from roundup.cgi.actions import *
 from roundup.cgi.client import add_message
 from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError, FormError
-from roundup.exceptions import Reject
+from roundup.exceptions import RateLimitExceeded, Reject
 
 from roundup.anypy.cmp_ import NoneAndDictComparable
 from time import sleep
@@ -459,7 +459,8 @@ class LoginTestCase(ActionTestCase):
             self.client._error_message = []
             self.assertLoginLeavesMessages(['Invalid login'])
 
-        self.assertRaisesMessage(Reject, LoginAction(self.client).handle,
+        self.assertRaisesMessage(RateLimitExceeded,
+                                 LoginAction(self.client).handle,
                'Logins occurring too fast. Please wait: 3 seconds.')
 
         sleep(3) # sleep as requested so we can do another login
@@ -467,7 +468,8 @@ class LoginTestCase(ActionTestCase):
         self.assertLoginLeavesMessages(['Invalid login']) # this is expected
         
         # and make sure we need to wait another three seconds
-        self.assertRaisesMessage(Reject, LoginAction(self.client).handle,
+        self.assertRaisesMessage(RateLimitExceeded,
+                                 LoginAction(self.client).handle,
                'Logins occurring too fast. Please wait: 3 seconds.')
 
     def testLoginRateLimitOff(self):

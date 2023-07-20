@@ -652,6 +652,21 @@ class IntegerNumberGeqZeroOption(Option):
         except ValueError:
             raise OptionValueError(self, value, "Integer number required")
 
+class IntegerNumberGtZeroOption(Option):
+
+    """Integer numbers greater than zero."""
+
+    def str2value(self, value):
+        try:
+            v = int(value)
+            if v < 1:
+                raise OptionValueError(self, value,
+                      "Integer number greater than zero required")
+            return v
+        except OptionValueError:
+            raise  # pass through subclass
+        except ValueError:
+            raise OptionValueError(self, value, "Integer number required")
 
 class OctalNumberOption(Option):
 
@@ -1247,13 +1262,23 @@ you want to enable translation based on browsers lang
          "calls will be made available. If set to 360 and\n"
          "api_intervals_in_sec is set to 3600, the 361st call in\n"
          "10 seconds results in a 429 error to the caller. It\n"
-         "tells them to wait 10 seconds (360/3600) before making\n"
+         "tells them to wait 10 seconds (3600/360) before making\n"
          "another api request. A value of 0 turns off rate\n"
          "limiting in the API. Tune this as needed. See rest\n"
          "documentation for more info.\n"),
-        (IntegerNumberGeqZeroOption, 'api_interval_in_sec', "3600",
+        (IntegerNumberGtZeroOption, 'api_interval_in_sec', "3600",
          "Defines the interval in seconds over which an api client can\n"
          "make api_calls_per_interval api calls. Tune this as needed.\n"),
+        (IntegerNumberGeqZeroOption, 'api_failed_login_limit', "4",
+         "Limit login failure to the API per api_failed_login_interval_in_sec\n"
+         "seconds.\n"
+         "A value of 0 turns off failed login rate\n"
+         "limiting in the API. You should not disable this. See rest\n"
+         "documentation for more info.\n"),
+        (IntegerNumberGtZeroOption, 'api_failed_login_interval_in_sec', "600",
+         "Defines the interval in seconds over which api login failures\n"
+         "are recorded. It allows api_failed_login_limit login failures\n"
+         "in this time interval. Tune this as needed.\n"),
         (CsrfSettingOption, 'csrf_enforce_token', "yes",
             """How do we deal with @csrf fields in posted forms.
 Set this to 'required' to block the post and notify

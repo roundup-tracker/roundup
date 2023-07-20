@@ -16,6 +16,10 @@ python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 
 Fixed:
 
+- issue2551063 - Rest/Xmlrpc interfaces needs failed login protection.
+  Failed API login rate limiting with expiring lockout added. (John
+  Rouillard)
+
 Features:
 
 - issue2551103 - add pragma 'display_protected' to roundup-admin. If

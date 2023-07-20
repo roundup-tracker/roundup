@@ -77,6 +77,39 @@ that is not hosted at the same origin as Roundup, you must permit
 the origin using the ``allowed_api_origins`` setting in
 ``config.ini``.
 
+Rate Limiting API Failed Logins
+-------------------------------
+
+To make brute force password guessing harder, the REST API has an
+invalid login rate limiter. It rate limits the number of failed login
+attempts with an invalid user or password. Valid login attempts are
+managed by the normal API rate limiter. The rate limiter is a GCRA
+leaky bucket variant. All APIs (REST/XMLRPC) share the same rate
+limiter. The rate limiter for the HTML/web interface is not shared by
+the API failed login rate limiter.
+
+It is configured by settings in config.ini. Setting
+``api_failed_login_limit`` to a non-zero value enabled the limiter.
+Setting it to 0 disables the limiter (not suggested). If a user fails
+to log in more than ``api_failed_login_limit`` times in
+``api_failed_login_interval_in_sec`` seconds, a 429 HTTP error will be
+returned. The error also tell the user how long they must wait to try
+to log in again.
+
+When a 429 error is returned, the account is locked until enough time
+has passed
+(``api_failed_login_interval_in_sec/api_failed_login_limit`` seconds)
+to make one additional login token available. Any attempt to log in
+while it is locked will fail. This is true even if a the correct
+password is supplied for a locked account. This means a brute force
+attempt can't try more than one password every
+``api_failed_login_interval_in_sec/api_failed_login_limit`` seconds on
+average.
+
+The default values allow up to 4 attempts to login before delaying the
+user by 2.5 minutes (150 seconds). At this time there is no supported
+method to reset the rate limiter.
+
 Rate Limiting the API
 ---------------------
 

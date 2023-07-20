@@ -21,6 +21,15 @@ from roundup.cgi.client import BinaryFieldStorage
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
 DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
 
+try:
+    # python2 is missing this definition
+    http_.server.BaseHTTPRequestHandler.responses[429]
+except KeyError:
+    http_.server.BaseHTTPRequestHandler.responses[429] = (
+         'Too Many Requests',
+        'The user has sent too many requests in '
+        'a given amount of time ("rate limiting")'
+    )
 
 class Headers(object):
     """ Idea more or less stolen from the 'apache.py' in same directory.

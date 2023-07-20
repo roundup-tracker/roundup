@@ -301,6 +301,31 @@ class ConfigTest(unittest.TestCase):
        self.assertEqual("3", 
             config._get_option('WEB_LOGIN_ATTEMPTS_MIN')._value2str(3.00))
 
+    def testIntegerNumberGtZeroOption(self):
+
+       config = configuration.CoreConfig()
+
+       # Update existing IntegerNumberGeqZeroOption to IntegerNumberOption
+       config.update_option('WEB_LOGIN_ATTEMPTS_MIN',
+                            configuration.IntegerNumberGtZeroOption,
+                            "1", description="new desc")
+
+       self.assertEqual(None,
+                    config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set("1"))
+
+       # -1 is not allowed
+       self.assertRaises(configuration.OptionValueError,
+                    config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set, "-1")
+
+       # but can't float this
+       self.assertRaises(configuration.OptionValueError,
+                    config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set, "2.4")
+
+       # but can't float this
+       self.assertRaises(configuration.OptionValueError,
+                    config._get_option('WEB_LOGIN_ATTEMPTS_MIN').set, "0.5")
+
+
     def testOriginHeader(self):
         config = configuration.CoreConfig()
 
