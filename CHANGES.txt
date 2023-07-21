@@ -19,6 +19,9 @@ Fixed:
 - issue2551063 - Rest/Xmlrpc interfaces needs failed login protection.
   Failed API login rate limiting with expiring lockout added. (John
   Rouillard)
+- issue2551184 - improve i18n handling. Patch to test to make sure it
+  uses the test tracker's locale files and not other locale
+  files. (Marcus Priesch)
 
 Features:
 
