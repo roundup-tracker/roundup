@@ -22,6 +22,9 @@ Fixed:
 - issue2551184 - improve i18n handling. Patch to test to make sure it
   uses the test tracker's locale files and not other locale
   files. (Marcus Priesch)
+- issue2551283 - fail if version 2.4.9 of markdown2 is used, it's
+  broken. Support version 2.4.10 with its new schema filtering
+  method and 2.4.8 and earlier. (John Rouillard)
 
 Features:
 

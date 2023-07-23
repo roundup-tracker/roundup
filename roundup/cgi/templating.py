@@ -61,10 +61,49 @@ def _import_markdown2():
         import markdown2
         import re
 
-        class Markdown(markdown2.Markdown):
-            # don't allow disabled protocols in links
-            _safe_protocols = re.compile('(?!' + ':|'.join([
-                re.escape(s) for s in _disable_url_schemes])
+        # Note: version 2.4.9 does not work with Roundup as it breaks
+        # [issue1](issue1) formatted links.
+
+        # Versions 2.4.8 and 2.4.10 use different methods to filter
+        # allowed schemes. 2.4.8 uses a pre-compiled regexp while
+        # 2.4.10 uses a regexp string that it compiles.
+
+        markdown2_vi = markdown2.__version_info__
+        if  markdown2_vi > (2, 4, 9):
+            # Create the filtering regexp.
+            # Allowed default is same as what hyper_re supports.
+
+            # pathed_schemes are terminated with ://
+            pathed_schemes =  [ 'http', 'https', 'ftp', 'ftps' ]
+            # non_pathed are terminated with a :
+            non_pathed_schemes = [ "mailto" ]
+
+            for disabled in _disable_url_schemes:
+                try:
+                    pathed_schemes.remove(disabled)
+                except ValueError:  # if disabled not in list
+                    pass
+                try:
+                    non_pathed_schemes.remove(disabled)
+                except ValueError:
+                    pass
+
+            re_list = []
+            for scheme in pathed_schemes:
+                re_list.append(r'(?:%s)://' % scheme)
+            for scheme in non_pathed_schemes:
+                re_list.append(r'(?:%s):' % scheme)
+
+            enabled_schemes = r"|".join(re_list)
+            class Markdown(markdown2.Markdown):
+                _safe_protocols = enabled_schemes
+        elif markdown2_vi == (2, 4, 9):
+            raise RuntimeError("Unsupported version - markdown2 v2.4.9\n")
+        else:
+            class Markdown(markdown2.Markdown):
+                # don't allow disabled protocols in links
+                _safe_protocols = re.compile('(?!' + ':|'.join([
+                    re.escape(s) for s in _disable_url_schemes])
                                          + ':)', re.IGNORECASE)
 
         def _extras(config):
@@ -1639,7 +1678,7 @@ class StringHTMLProperty(HTMLProperty):
          (:[\d]{1,5})?                     # port
          (/[\w\-$.+!*(),;:@&=?/~\\#%]*)?   # path etc.
         )|
-        (?P<email>[-+=%/\w\.]+@[\w\.\-]+)|
+        (?P<email>(?:mailto:)?[-+=%/\w\.]+@[\w\.\-]+)|
         (?P<item>(?P<class>[A-Za-z_]+)(\s*)(?P<id>\d+)(?P<fragment>\#[^][\#%^{}"<>\s]+)?)
     )''', re.X | re.I)
     protocol_re = re.compile('^(ht|f)tp(s?)://', re.I)

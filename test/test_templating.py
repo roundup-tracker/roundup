@@ -11,6 +11,8 @@ from .html_norm import NormalizingHtmlParser
 import pytest
 from .pytest_patcher import mark_class
 
+from markdown2 import __version_info__ as md2__version_info__
+
 if ReStructuredText:
     skip_rst = lambda func, *args, **kwargs: func
 else:
@@ -774,8 +776,12 @@ class MarkdownTests:
         self.assertEqual(p.markdown().strip(), u2s(u'<p>A string with &lt;br&gt; <em>embedded</em> \u00df</p>'))
 
     def test_string_markdown_link(self):
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A link <http://localhost>'))
-        self.assertEqual(p.markdown().strip(), u2s(u'<p>A link <a href="http://localhost">http://localhost</a></p>'))
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'A link <http://localhost>'))
+        m = p.markdown().strip()
+        m = self.mangleMarkdown2(m)
+
+        self.assertEqual( u2s(u'<p>A link <a href="http://localhost" rel="nofollow noopener">http://localhost</a></p>'), m)
 
     def test_string_markdown_link_item(self):
         """ The link formats for the different markdown engines changes.
@@ -783,29 +789,78 @@ class MarkdownTests:
             is different. So most tests check for a substring that indicates
             success rather than the entire returned string.
         """
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An issue1 link'))
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'An issue1 link'))
         self.assertIn( u2s(u'href="issue1"'), p.markdown().strip())
         # just verify that plain linking is working
         self.assertIn( u2s(u'href="issue1"'), p.plain(hyperlink=1))
 
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An [issue1](issue1) link'))
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'An [issue1](issue1) link'))
         self.assertIn( u2s(u'href="issue1"'), p.markdown().strip())
         # just verify that plain linking is working
         self.assertIn( u2s(u'href="issue1"'), p.plain(hyperlink=1))
 
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An [issue1](https://example.com/issue1) link'))
-        self.assertIn( u2s(u'href="https://example.com/issue1"'), p.markdown().strip())
+        p = StringHTMLProperty(
+            self.client, 'test', '1', None, 'test',
+            u2s(u'An [issue1](https://example.com/issue1) link'))
+        self.assertIn( u2s(u'href="https://example.com/issue1"'),
+                       p.markdown().strip())
 
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'An [issue1] (https://example.com/issue1) link'))
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'An [issu1](#example) link'))
+        self.assertIn( u2s(u'href="#example"'), p.markdown().strip())
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'An [issu1](/example) link'))
+        self.assertIn( u2s(u'href="/example"'), p.markdown().strip())
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'An [issu1](./example) link'))
+        self.assertIn( u2s(u'href="./example"'), p.markdown().strip())
+
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'An [issu1](../example) link'))
+        self.assertIn( u2s(u'href="../example"'), p.markdown().strip())
+
+        p = StringHTMLProperty(
+            self.client, 'test', '1', None, 'test',
+            u2s(u'A [wuarchive_ftp](ftp://www.wustl.gov/file) link'))
+        self.assertIn( u2s(u'href="ftp://www.wustl.gov/file"'),
+                       p.markdown().strip())
+
+        p = StringHTMLProperty(
+            self.client, 'test', '1', None, 'test',
+            u2s(u'An [issue1] (https://example.com/issue1) link'))
         self.assertIn( u2s(u'href="issue1"'), p.markdown().strip())
         if type(self) == MistuneTestCase:
             # mistune makes the https url into a real link
-            self.assertIn( u2s(u'href="https://example.com/issue1"'), p.markdown().strip())
+            self.assertIn( u2s(u'href="https://example.com/issue1"'),
+                           p.markdown().strip())
         else:
             # the other two engines leave the parenthesized url as is.
-            self.assertIn( u2s(u' (https://example.com/issue1) link'), p.markdown().strip())
+            self.assertIn( u2s(u' (https://example.com/issue1) link'),
+                           p.markdown().strip())
 
-    def test_string_markdown_link(self):
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'An [issu1](.../example) link'))
+        if (isinstance(self, Markdown2TestCase) and 
+           md2__version_info__ > (2, 4, 9)):
+            # markdown2 > 2.4.9 handles this differently
+            self.assertIn( u2s(u'href="#"'), p.markdown().strip())
+        else:
+            self.assertIn( u2s(u'href=".../example"'), p.markdown().strip())
+            
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'A [phone](tel:0016175555555) link'))
+        if (isinstance(self, Markdown2TestCase) and
+           md2__version_info__ > (2, 4, 9)):
+            self.assertIn(u2s(u'href="#"'), p.markdown().strip())
+        else:
+            self.assertIn( u2s(u'href="tel:0016175555555"'),
+                           p.markdown().strip())
+
+    def test_string_email_markdown_link(self):
         # markdown2 and markdown escape the email address
         try:
             from html import unescape as html_unescape
@@ -813,11 +868,29 @@ class MarkdownTests:
             from HTMLParser import HTMLParser
             html_unescape = HTMLParser().unescape
 
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A link <cmeerw@example.com>'))
+        p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
+                               u2s(u'A link <cmeerw@example.com>'))
         m = html_unescape(p.markdown().strip())
         m = self.mangleMarkdown2(m)
 
         self.assertEqual(m, u2s(u'<p>A link <a href="mailto:cmeerw@example.com">cmeerw@example.com</a></p>'))
+
+        p = StringHTMLProperty(
+            self.client, 'test', '1', None, 'test',
+            u2s(u'An bare email baduser@daemons.com link'))
+        m = self.mangleMarkdown2(html_unescape(p.markdown().strip()))
+        self.assertIn( u2s(u'href="mailto:baduser@daemons.com"'),
+                       m)
+        
+        p = StringHTMLProperty(
+            self.client, 'test', '1', None, 'test',
+            u2s(u'An [email_url](mailto:baduser@daemons.com) link'))
+        m = self.mangleMarkdown2(html_unescape(p.markdown().strip()))
+        
+        if isinstance(self, MistuneTestCase):
+            self.assertIn('<a href="mailto:baduser@daemons.com" rel="nofollow noopener">email_url</a>', m)            
+        else:
+            self.assertIn('<a href="mailto:baduser@daemons.com">email_url</a>', m)
 
     def test_string_markdown_javascript_link(self):
         # make sure we don't get a "javascript:" link
@@ -866,7 +939,7 @@ class MarkdownTests:
         if type(self) == MistuneTestCase:
             self.assertEqual(m, parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="lang-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
         elif type(self) == MarkdownTestCase:
-            self.assertEqual(m, parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="language-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
+            self.assertEqual(m.replace('class="python"','class="language-python"'), parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<pre><code class="language-python">line 1\nline 2\n</code></pre>\n<p>new &lt;/pre&gt; paragraph</p>'))
         else:
             expected_result = parser.normalize('<p>embedded code block &lt;pre&gt;</p>\n<div class="codehilite"><pre><span></span><code><span class="n">line</span> <span class="mi">1</span>\n<span class="n">line</span> <span class="mi">2</span>\n</code></pre></div>\n<p>new &lt;/pre&gt; paragraph</p>')
             self.assertEqual(m, expected_result)
