@@ -577,7 +577,7 @@ class IssueClass:
         # can't fiddle the recipients in the message ... worth testing
         # and/or fixing some day
         first = True
-        for sendto in sendto:
+        for to_addr in sendto:
             # create the message
             mailer = Mailer(self.db.config)
 
@@ -721,18 +721,18 @@ class IssueClass:
                 message.set_payload(body, message.get_charset())
 
             if crypt:
-                send_msg = self.encrypt_to(message, sendto)
+                send_msg = self.encrypt_to(message, to_addr)
             else:
                 send_msg = message
-            mailer.set_message_attributes(send_msg, sendto, subject, author)
+            mailer.set_message_attributes(send_msg, to_addr, subject, author)
             if crypt:
                 send_msg['Message-Id'] = message['Message-Id']
                 send_msg['Reply-To'] = message['Reply-To']
                 if message.get('In-Reply-To'):
                     send_msg['In-Reply-To'] = message['In-Reply-To']
 
-            if sendto:
-                mailer.smtp_send(sendto, send_msg.as_string())
+            if to_addr:
+                mailer.smtp_send(to_addr, send_msg.as_string())
             if first:
                 if crypt:
                     # send individual bcc mails, otherwise receivers can

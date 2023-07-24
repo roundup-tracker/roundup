@@ -25,6 +25,8 @@ Fixed:
 - issue2551283 - fail if version 2.4.9 of markdown2 is used, it broke
   [issue1](issue1) style links. Support markdown2 2.4.8 and earlier
   and 2.4.10 with its new schema filtering method. (John Rouillard)
+- multiple flake8 fixes (John Rouillard)
+- rename loop variable in 'for sendto in sendto:' (John Rouillard)
 
 Features:
 
