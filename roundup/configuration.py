@@ -652,6 +652,7 @@ class IntegerNumberGeqZeroOption(Option):
         except ValueError:
             raise OptionValueError(self, value, "Integer number required")
 
+
 class IntegerNumberGtZeroOption(Option):
 
     """Integer numbers greater than zero."""
@@ -667,6 +668,7 @@ class IntegerNumberGtZeroOption(Option):
             raise  # pass through subclass
         except ValueError:
             raise OptionValueError(self, value, "Integer number required")
+
 
 class OctalNumberOption(Option):
 
