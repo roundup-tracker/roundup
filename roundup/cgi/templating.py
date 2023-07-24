@@ -69,14 +69,14 @@ def _import_markdown2():
         # 2.4.10 uses a regexp string that it compiles.
 
         markdown2_vi = markdown2.__version_info__
-        if  markdown2_vi > (2, 4, 9):
+        if markdown2_vi > (2, 4, 9):
             # Create the filtering regexp.
             # Allowed default is same as what hyper_re supports.
 
             # pathed_schemes are terminated with ://
-            pathed_schemes =  [ 'http', 'https', 'ftp', 'ftps' ]
+            pathed_schemes = ['http', 'https', 'ftp', 'ftps']
             # non_pathed are terminated with a :
-            non_pathed_schemes = [ "mailto" ]
+            non_pathed_schemes = ["mailto"]
 
             for disabled in _disable_url_schemes:
                 try:
@@ -95,6 +95,7 @@ def _import_markdown2():
                 re_list.append(r'(?:%s):' % scheme)
 
             enabled_schemes = r"|".join(re_list)
+
             class Markdown(markdown2.Markdown):
                 _safe_protocols = enabled_schemes
         elif markdown2_vi == (2, 4, 9):
@@ -1895,7 +1896,7 @@ class StringHTMLProperty(HTMLProperty):
             # causing a KeyError. So see if we removed it (and entered
             # it into valid_schemes). If we didn't raise KeyError.
             try:
-                del(schemes[sch])
+                del (schemes[sch])
                 self.valid_schemes[sch] = True
             except KeyError:
                 if sch in self.valid_schemes:
