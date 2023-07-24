@@ -2213,10 +2213,13 @@ Problems? Testing your Python...
 
 .. note::
    The ``run_tests.py`` script is not packaged in Roundup's source
-   distribution anymore. You should install pytest using your
-   distributions package manger or using pip/pip2/pip3 to install
-   pytest for your python version. See the `administration guide`_
-   for details.
+   distribution anymore. You should install:
+    * pytest,
+    * requests, and
+    * mock
+   using your distributions package manger or using pip/pip2/pip3 to
+   install pytest for your python version. See the `administration
+   guide`_ for details.
 
    Remember to have a database user 'rounduptest' prepared (with
    password 'rounduptest'). This user
