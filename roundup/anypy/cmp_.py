@@ -100,7 +100,6 @@ def _test():
     assert not Comp(1) < Comp(0)
     assert not Comp(0) > Comp(0)
 
-
     assert Comp(0) <= Comp(1)
     assert Comp(1) >= Comp(0)
     assert not Comp(1) <= Comp(0)
