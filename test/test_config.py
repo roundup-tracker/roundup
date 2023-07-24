@@ -224,7 +224,7 @@ class ConfigTest(unittest.TestCase):
 
         self.startdir = os.getcwd()
 
-        self.dirname = os.getcwd() + '_test_config'
+        self.dirname = os.getcwd() + '/_test_config'
         os.mkdir(self.dirname)
 
         try:
