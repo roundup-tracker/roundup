@@ -3333,6 +3333,68 @@ This is a followup''')
         self.assertEqual(content,  '''This is a followup''')
         self.assertEqual(summary,  '''This is a followup''')
 
+    fourthquotingtest = '''Content-Type: text/plain;
+  charset="iso-8859-1"
+From: richard <richard@test.test>
+To: issue_tracker@your.tracker.email.domain.example
+Message-Id: <followup_dummy_id>
+In-Reply-To: <dummy_test_message_id>
+Subject: Re: [issue1] Testing...
+
+Blah blah wrote:
+> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
+>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
+>
+
+This is a followup
+
+> mumble mumble but
+> more mumble mumble
+
+I see your mubble and raise you a mumble.
+
+But I also have a full house which beats your
+>mumbler
+
+so I win.
+'''
+    def testEmailBodyUnchangedNewIsNo(self):
+        """verify that only the signature is stripped"""
+
+        mysig = "\n--\nmy sig\n\n"
+        self.instance.config.EMAIL_LEAVE_BODY_UNCHANGED = 'no'
+        # create the message, remove the prefix from subject
+        testmessage=self.fourthquotingtest.replace(" Re: [issue1]", "") + mysig
+        print(testmessage)
+        print("\n======\n")
+        nodeid = self._handle_mail(testmessage)
+
+        msgs = self.db.issue.get(nodeid, 'messages')
+        # validate content and summary
+        content = self.db.msg.get(msgs[0], 'content')
+        print(content)
+        self.assertIn(content, '''Blah blah wrote:
+> Blah bklaskdfj sdf asdf jlaskdf skj sdkfjl asdf
+>  skdjlkjsdfalsdkfjasdlfkj dlfksdfalksd fj
+>
+
+This is a followup
+
+> mumble mumble but
+> more mumble mumble
+
+I see your mubble and raise you a mumble.
+
+But I also have a full house which beats your
+>mumbler
+
+so I win.
+'''
+)
+
+        summary = self.db.msg.get(msgs[0], 'summary')
+        self.assertEqual(summary,  '''This is a followup''')
+
     def testEmailBodyUnchangedNewIsYes(self):
         mysig = "--\nmy sig\n\n"
         self.instance.config.EMAIL_LEAVE_BODY_UNCHANGED = 'yes'
