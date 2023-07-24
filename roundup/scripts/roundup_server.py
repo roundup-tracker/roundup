@@ -451,7 +451,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             env[h] = self.headers.get(h, None)
             # if header is MISSING
             if env[h] is None:
-                del(env[h])
+                del (env[h])
         env['SCRIPT_NAME'] = ''
         env['SERVER_NAME'] = self.server.server_name
         env['SERVER_PORT'] = str(self.server.server_port)
