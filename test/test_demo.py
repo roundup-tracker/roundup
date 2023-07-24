@@ -1,3 +1,4 @@
+import pytest
 import unittest
 import os, sys, shutil
 
@@ -22,6 +23,14 @@ def captured_output():
         yield sys.stdout, sys.stderr
     finally:
         sys.stdout, sys.stderr = old_out, old_err
+
+try:
+    import jinja2
+    skip_jinja2 = lambda func, *args, **kwargs: func
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_jinja2 = mark_class(pytest.mark.skip(
+        reason='Skipping Jinja2 tests: jinja2 library not available'))
 
 class TestDemo(unittest.TestCase):
     def setUp(self):
@@ -73,6 +82,7 @@ class TestDemo(unittest.TestCase):
     def testDemoMinimal(self):
         self.run_install_demo('../templates/minimal', db="sqlite")
 
+    @skip_jinja2
     def testDemoJinja(self):
         self.run_install_demo('jinja2', db="anydbm")
 
