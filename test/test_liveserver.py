@@ -8,7 +8,7 @@ from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
 from time import sleep
-from .test_postresql import skip_postgresql
+from .test_postgresql import skip_postgresql
 
 from wsgiref.validate import validator
 
