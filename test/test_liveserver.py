@@ -8,6 +8,7 @@ from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
 from time import sleep
+from .test_postresql import skip_postgresql
 
 from wsgiref.validate import validator
 
@@ -1227,6 +1228,7 @@ class TestFeatureFlagCacheTrackerOn(BaseTestCases, WsgiSetup):
             # doesn't support the max bytes to read argument.
             return RequestDispatcher(self.dirname, feature_flags=ff)
 
+@skip_postgresql
 class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
     """Class to run all test in BaseTestCases with the cache_tracker
        feature flag enabled when starting the wsgi server
