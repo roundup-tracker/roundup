@@ -567,7 +567,7 @@ class RestfulInstance(object):
                             'Multilink Traversal not allowed: %s' % p)
                     # Now we have the classname in cn and the prop name in pn.
                     if not self.db.security.hasPermission('View', uid, cn, pn):
-                        raise(Unauthorised
+                        raise (Unauthorised
                             ('User does not have permission on "%s.%s"'
                             % (cn, pn)))
                     try:
