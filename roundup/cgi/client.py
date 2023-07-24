@@ -531,9 +531,9 @@ class Client:
         # strip HTTP_PROXY issue2550925 in case
         # PROXY header is set.
         if 'HTTP_PROXY' in self.env:
-            del(self.env['HTTP_PROXY'])
+            del (self.env['HTTP_PROXY'])
         if 'HTTP_PROXY' in os.environ:
-            del(os.environ['HTTP_PROXY'])
+            del (os.environ['HTTP_PROXY'])
 
         xmlrpc_enabled = self.instance.config.WEB_ENABLE_XMLRPC
         rest_enabled = self.instance.config.WEB_ENABLE_REST
@@ -1127,7 +1127,7 @@ class Client:
             self.make_user_anonymous()
             raise LoginError(str(err))
 
-        return(token)
+        return (token)
 
     def determine_user(self, is_api=False):
         """Determine who the user is"""
@@ -2762,7 +2762,7 @@ class Client:
         """
         if value is None:
             try:
-                del(self.additional_headers[header])
+                del (self.additional_headers[header])
             except KeyError:
                 pass
         else:
@@ -2783,7 +2783,7 @@ class Client:
             headers['Content-Type'] = 'text/html; charset=utf-8'
 
         if response in [204, 304]:  # has no body so no content-type
-            del(headers['Content-Type'])
+            del (headers['Content-Type'])
 
         headers = list(headers.items())
 
