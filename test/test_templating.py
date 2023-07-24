@@ -11,7 +11,10 @@ from .html_norm import NormalizingHtmlParser
 import pytest
 from .pytest_patcher import mark_class
 
-from markdown2 import __version_info__ as md2__version_info__
+try:
+    from markdown2 import __version_info__ as md2__version_info__
+except ImportError:
+    md2__version_info__ = (0,0,0)
 
 if ReStructuredText:
     skip_rst = lambda func, *args, **kwargs: func
