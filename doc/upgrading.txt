@@ -126,6 +126,21 @@ details.
 
 .. _`information on configuring the API rate limits`: rest.html#rate-limiting-api-failed-logins
 
+Removal of cgi.py from Python (info)
+------------------------------------
+
+The ``cgi.py`` module will be `removed starting with Python 3.13
+<https://peps.python.org/pep-0594/#cgi>`_. Roundup now `vendors a copy
+<https://pypi.org/project/legacy-cgi/>`_ of ``cgi.py`` and makes it
+and its storage objects available by importing from::
+
+   from roundup.anypy.cgi_ import cgi
+   from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
+
+It is unlikey that you will care unless you have done some expert
+level Roundup customization. If you have, use one of the imports above
+if you plan on running on Python 3.13 (expected in 2024) or newer.
+
 .. index:: Upgrading; 2.2.0 to 2.3.0
 
 Migrating from 2.2.0 to 2.3.0

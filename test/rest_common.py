@@ -3,11 +3,11 @@ import unittest
 import os
 import shutil
 import errno
-import cgi
 
 from time import sleep
 from datetime import datetime, timedelta
 from roundup.test.tx_Source_detector import init as tx_Source_init
+from roundup.anypy.cgi_ import cgi
 
 try:
     from datetime import timezone

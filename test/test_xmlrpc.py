@@ -5,7 +5,7 @@
 #
 
 from __future__ import print_function
-import unittest, os, shutil, errno, sys, difflib, cgi, re
+import unittest, os, shutil, errno, sys, difflib, re
 
 from roundup.anypy import xmlrpc_
 MultiCall = xmlrpc_.client.MultiCall

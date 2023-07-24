@@ -27,6 +27,13 @@ Fixed:
   and 2.4.10 with its new schema filtering method. (John Rouillard)
 - multiple flake8 fixes (John Rouillard)
 - rename loop variable in 'for sendto in sendto:' (John Rouillard)
+- issue2551193 - Fix roundup for removal of cgi and cgitb standard
+  python modules (and FieldStorage/MiniFieldStorage). Replaced imports
+  from cgi to use roundup.anypy.cgi_ which will load the system cgi
+  unless it is missing. Then it will load roundup.anypy.vendored.cgi
+  and make *FieldStroage symbols available. Roundp uses its own
+  cgitb.py and not the system cgitb.py. It looks like it's the
+  precursor to the system cgitb.py. (John Rouillard)
 
 Features:
 

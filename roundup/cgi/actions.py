@@ -1,4 +1,3 @@
-import cgi
 import codecs
 import csv
 import re
@@ -8,6 +7,7 @@ from datetime import timedelta
 from roundup import hyperdb, token_r, date, password
 from roundup.actions import Action as BaseAction
 from roundup.anypy import urllib_
+from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
 from roundup.anypy.strings import StringIO
 from roundup.cgi import exceptions, templating

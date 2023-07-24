@@ -9,11 +9,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 from __future__ import print_function
-import unittest, os, shutil, errno, sys, difflib, cgi, re, io
+import unittest, os, shutil, errno, sys, difflib, re, io
 
 import pytest
 import copy
 
+from roundup.anypy.cgi_ import cgi
 from roundup.cgi import client, actions, exceptions
 from roundup.cgi.exceptions import FormError, NotFound, Redirect
 from roundup.exceptions import UsageError, Reject

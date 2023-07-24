@@ -4,7 +4,6 @@ __docformat__ = 'restructuredtext'
 
 import base64
 import binascii
-import cgi
 import codecs
 import email.utils
 import errno
@@ -25,6 +24,7 @@ except ImportError:
     class SysCallError(Exception):
         pass
 
+from roundup.anypy.cgi_ import cgi
 import roundup.anypy.email_  # noqa: F401  -- patches for email library code
 import roundup.anypy.random_ as random_   # quality of random checked below
 

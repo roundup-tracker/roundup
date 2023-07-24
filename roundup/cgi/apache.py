@@ -18,13 +18,13 @@
 # is included. Look for this url below. It is not tested, but
 # we assume it's safe and syntax it seems ok.
 
-import cgi
 import os
 import threading
 
 from mod_python import apache
 
 import roundup.instance
+from roundup.anypy.cgi_ import cgi
 from roundup.cgi import TranslationService
 
 

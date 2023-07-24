@@ -1791,7 +1791,7 @@ section this code adds a new endpoint `/data/@permission/Developer`
 that returns a list of users with the developer role::
 
     from roundup.rest import Routing, RestfulInstance
-    from cgi import MiniFieldStorage
+    from roundup.anypy.cgi_ import MiniFieldStorage
 
     class RestfulInstance(object):
 

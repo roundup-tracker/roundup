@@ -1,8 +1,8 @@
 from __future__ import print_function
 import unittest
 import time
-from cgi import FieldStorage, MiniFieldStorage
 
+from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
 from roundup.cgi.templating import *
 from .test_actions import MockNull, true
 from .html_norm import NormalizingHtmlParser

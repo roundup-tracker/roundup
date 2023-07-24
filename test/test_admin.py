@@ -6,7 +6,7 @@
 
 from __future__ import print_function
 import fileinput
-import unittest, os, shutil, errno, sys, difflib, cgi, re
+import unittest, os, shutil, errno, sys, difflib, re
 
 from roundup.admin import AdminTool
 

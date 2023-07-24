@@ -73,7 +73,7 @@ LOG = DevNull()
 # Set up the error handler
 # 
 try:
-    import traceback, cgi
+    import traceback
     from roundup.cgi import cgitb
 except:
     print("Content-Type: text/plain\n")

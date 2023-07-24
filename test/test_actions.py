@@ -1,6 +1,5 @@
 from __future__ import print_function
 import unittest, copy
-from cgi import FieldStorage, MiniFieldStorage
 
 from roundup import hyperdb
 from roundup.date import Date, Interval
@@ -9,6 +8,7 @@ from roundup.cgi.client import add_message
 from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError, FormError
 from roundup.exceptions import RateLimitExceeded, Reject
 
+from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
 from roundup.anypy.cmp_ import NoneAndDictComparable
 from time import sleep
 from datetime import datetime

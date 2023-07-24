@@ -20,7 +20,6 @@ __todo__ = """
 __docformat__ = 'restructuredtext'
 
 import calendar
-import cgi
 import csv
 import os.path
 import re
@@ -28,6 +27,7 @@ import textwrap
 
 from roundup import hyperdb, date, support
 from roundup.anypy import urllib_
+from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
 from roundup.anypy.strings import is_us, us2s, s2u, u2s, StringIO
 from roundup.cgi import TranslationService, ZTUtils
