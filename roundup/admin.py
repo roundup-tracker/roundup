@@ -1614,9 +1614,9 @@ Erase it? Y/N: """) % locals())  # noqa: E122
                             cl.index(str(item))
                         except IndexError:
                             print(_('no such item "%(class)s%(id)s"') % {
-                            'class': r.group(1),
-                            'id': item})
-                            
+                                'class': r.group(1),
+                                'id': item})
+
                 else:
                     cl = self.get_class(arg)  # Bad class raises UsageError
                     self.db.reindex(arg, show_progress=True)
@@ -2040,7 +2040,7 @@ Desc: %(description)s
                 ret = function(args[1:])
                 return ret
             except UsageError as message:  # noqa F841
-              return self.usageError_feedback(message, function)
+                return self.usageError_feedback(message, function)
 
         # make sure we have a tracker_home
         while not self.tracker_home:
@@ -2054,12 +2054,12 @@ Desc: %(description)s
             try:
                 return self.do_initialise(self.tracker_home, args)
             except UsageError as message:  # noqa: F841
-              return self.usageError_feedback(message, function)
+                return self.usageError_feedback(message, function)
         elif command == 'install':
             try:
                 return self.do_install(self.tracker_home, args)
             except UsageError as message:  # noqa: F841
-              return self.usageError_feedback(message, function)
+                return self.usageError_feedback(message, function)
 
         # get the tracker
         try:
