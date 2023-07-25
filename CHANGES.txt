@@ -34,6 +34,9 @@ Fixed:
   and make *FieldStroage symbols available. Roundp uses its own
   cgitb.py and not the system cgitb.py. It looks like it's the
   precursor to the system cgitb.py. (John Rouillard)
+- issue2551278 - datetime.datetime.utcnow deprecation. Replace
+  calls with equivalent that produces timezone aware dates rather than
+  naive dates. (John Rouillard)
 
 Features:
 

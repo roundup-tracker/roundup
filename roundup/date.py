@@ -24,6 +24,8 @@ import calendar
 import datetime
 import re
 
+from roundup.anypy.datetime_ import utcnow
+
 try:
     import pytz
 except ImportError:
@@ -376,7 +378,7 @@ class Date:
     def now(self):
         """ To be able to override for testing
         """
-        return datetime.datetime.utcnow()
+        return utcnow()
 
     def set(self, spec, offset=0, date_re=date_re,
             serialised_re=serialised_date_re, add_granularity=False):

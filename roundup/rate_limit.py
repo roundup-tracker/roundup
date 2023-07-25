@@ -6,6 +6,8 @@
 
 from datetime import timedelta, datetime
 
+from roundup.anypy.datetime_ import utcnow
+
 
 class RateLimit:  # pylint: disable=too-few-public-methods
     def __init__(self, count, period):
@@ -50,7 +52,7 @@ class Gcra:
         '''Determine if the item associated with the key should be
            rejected given the RateLimit limit.
         '''
-        now = datetime.utcnow()
+        now = utcnow()
         tat = max(self.get_tat(key), now)
         separation = (tat - now).total_seconds()
         max_interval = limit.period.total_seconds() - limit.inverse
@@ -88,7 +90,7 @@ class Gcra:
                                           )
 
         # status of current limit as of now
-        now = datetime.utcnow()
+        now = utcnow()
 
         current_count = int((limit.period - (tat - now)).total_seconds() /
                             limit.inverse)

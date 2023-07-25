@@ -1,13 +1,14 @@
 import pytest
 import unittest
-import os
 import shutil
 import errno
 
 from time import sleep
 from datetime import datetime, timedelta
-from roundup.test.tx_Source_detector import init as tx_Source_init
 from roundup.anypy.cgi_ import cgi
+from roundup.anypy.datetime_ import utcnow
+from roundup.test.tx_Source_detector import init as tx_Source_init
+
 
 try:
     from datetime import timezone
@@ -16,14 +17,15 @@ except ImportError:
     # python 2
     from datetime import tzinfo
     ZERO = timedelta(0)
+
     class UTC(tzinfo):
         """UTC"""
         def utcoffset(self, dt):
             return ZERO
-        
+
         def tzname(self, dt):
             return "UTC"
-        
+
         def dst(self, dt):
             return ZERO
 
@@ -34,13 +36,12 @@ from roundup.hyperdb import HyperdbValueError
 from roundup.exceptions import *
 from roundup import password, hyperdb
 from roundup.rest import RestfulInstance, calculate_etag
-from roundup.backends import list_backends
 from roundup.cgi import client
 from roundup.anypy.strings import b2s, s2b, us2u
 import random
 
 from roundup.backends.sessions_dbm import OneTimeKeys
-from roundup.anypy.dbm_ import anydbm, whichdb
+from roundup.anypy.dbm_ import whichdb
 
 from .db_test_base import setupTracker
 
@@ -56,10 +57,10 @@ try:
     skip_jwt = lambda func, *args, **kwargs: func
 except ImportError:
     from .pytest_patcher import mark_class
-    jwt=None 
+    jwt = None
     skip_jwt = mark_class(pytest.mark.skip(
         reason='Skipping JWT tests: jwt library not available'))
-    
+
 NEEDS_INSTANCE = 1
 
 
@@ -109,30 +110,31 @@ class TestCase():
 
         # add set of roles for testing jwt's.
         self.db.security.addRole(name="User:email",
-                        description="allow email by jwt")
+                                 description="allow email by jwt")
         # allow the jwt to access everybody's email addresses.
         # this makes it easier to differentiate between User and
         # User:email roles by accessing the /rest/data/user
         # endpoint
-        jwt_perms = self.db.security.addPermission(name='View',
-                       klass='user',
-                       properties=('id', 'realname', 'address', 'username'),
-                       description="Allow jwt access to email",
-                       props_only=False)
+        jwt_perms = self.db.security.addPermission(
+            name='View',
+            klass='user',
+            properties=('id', 'realname', 'address', 'username'),
+            description="Allow jwt access to email",
+            props_only=False)
         self.db.security.addPermissionToRole("User:email", jwt_perms)
         self.db.security.addPermissionToRole("User:email", "Rest Access")
 
         # add set of roles for testing jwt's.
         # this is like the user:email role, but it missing access to the rest endpoint.
         self.db.security.addRole(name="User:emailnorest",
-                        description="allow email by jwt")
-        jwt_perms = self.db.security.addPermission(name='View',
-                       klass='user',
-                       properties=('id', 'realname', 'address', 'username'),
-                       description="Allow jwt access to email but forget to allow rest",
-                       props_only=False)
+                                 description="allow email by jwt")
+        jwt_perms = self.db.security.addPermission(
+            name='View',
+            klass='user',
+            properties=('id', 'realname', 'address', 'username'),
+            description="Allow jwt access to email but forget to allow rest",
+            props_only=False)
         self.db.security.addPermissionToRole("User:emailnorest", jwt_perms)
-
 
         if jwt:
             # must be 32 chars in length minimum (I think this is at least
@@ -142,7 +144,7 @@ class TestCase():
             self.db.config['WEB_JWT_SECRET'] = secret
 
             # generate all timestamps in UTC.
-            base_datetime = datetime(1970,1,1, tzinfo=myutc)
+            base_datetime = datetime(1970, 1, 1, tzinfo=myutc)
 
             # A UTC timestamp for now.
             dt = datetime.now(myutc)
@@ -158,17 +160,16 @@ class TestCase():
 
             # claims match what cgi/client.py::determine_user
             # is looking for
-            claim= { 'sub': self.db.getuid(),
+            claim = {'sub': self.db.getuid(),
                      'iss': self.db.config.TRACKER_WEB,
                      'aud': self.db.config.TRACKER_WEB,
-                     'roles': [ 'User' ],
+                     'roles': ['User'],
                      'iat': now_ts,
-                     'exp': plus1min_ts,
-            }
+                     'exp': plus1min_ts}
 
             # in version 2.0.0 and newer jwt.encode returns string
             # not bytestring. So we have to skip b2s conversion
-            
+
             if version.parse(jwt.__version__) >= version.parse('2.0.0'):
                 tostr = lambda x: x
             else:
@@ -179,45 +180,53 @@ class TestCase():
             # generate invalid claim with expired timestamp
             self.claim['expired'] = copy(claim)
             self.claim['expired']['exp'] = expired_ts
-            self.jwt['expired'] = tostr(jwt.encode(self.claim['expired'], secret,
-                                             algorithm='HS256'))
-         
+            self.jwt['expired'] = tostr(jwt.encode(
+                self.claim['expired'], secret,
+                algorithm='HS256'))
+
             # generate valid claim with user role
             self.claim['user'] = copy(claim)
             self.claim['user']['exp'] = plus1min_ts
-            self.jwt['user'] = tostr(jwt.encode(self.claim['user'], secret,
-                                          algorithm='HS256'))
+            self.jwt['user'] = tostr(jwt.encode(
+                self.claim['user'], secret,
+                algorithm='HS256'))
             # generate invalid claim bad issuer
             self.claim['badiss'] = copy(claim)
             self.claim['badiss']['iss'] = "http://someissuer/bugs"
-            self.jwt['badiss'] = tostr(jwt.encode(self.claim['badiss'], secret,
-                                          algorithm='HS256'))
+            self.jwt['badiss'] = tostr(jwt.encode(
+                self.claim['badiss'], secret,
+                algorithm='HS256'))
             # generate invalid claim bad aud(ience)
             self.claim['badaud'] = copy(claim)
             self.claim['badaud']['aud'] = "http://someaudience/bugs"
-            self.jwt['badaud'] = tostr(jwt.encode(self.claim['badaud'], secret,
-                                          algorithm='HS256'))            
+            self.jwt['badaud'] = tostr(jwt.encode(
+                self.claim['badaud'], secret,
+                algorithm='HS256'))
             # generate invalid claim bad sub(ject)
             self.claim['badsub'] = copy(claim)
             self.claim['badsub']['sub'] = str("99")
-            self.jwt['badsub'] = tostr(jwt.encode(self.claim['badsub'], secret,
-                                          algorithm='HS256'))            
+            self.jwt['badsub'] = tostr(
+                jwt.encode(self.claim['badsub'], secret,
+                           algorithm='HS256'))
             # generate invalid claim bad roles
             self.claim['badroles'] = copy(claim)
-            self.claim['badroles']['roles'] = [ "badrole1", "badrole2" ]
-            self.jwt['badroles'] = tostr(jwt.encode(self.claim['badroles'], secret,
-                                          algorithm='HS256'))            
+            self.claim['badroles']['roles'] = ["badrole1", "badrole2"]
+            self.jwt['badroles'] = tostr(jwt.encode(
+                self.claim['badroles'], secret,
+                algorithm='HS256'))
             # generate valid claim with limited user:email role
             self.claim['user:email'] = copy(claim)
-            self.claim['user:email']['roles'] = [ "user:email" ]
-            self.jwt['user:email'] = tostr(jwt.encode(self.claim['user:email'], secret,
-                                          algorithm='HS256'))
+            self.claim['user:email']['roles'] = ["user:email"]
+            self.jwt['user:email'] = tostr(jwt.encode(
+                self.claim['user:email'], secret,
+                algorithm='HS256'))
 
             # generate valid claim with limited user:emailnorest role
             self.claim['user:emailnorest'] = copy(claim)
-            self.claim['user:emailnorest']['roles'] = [ "user:emailnorest" ]
-            self.jwt['user:emailnorest'] = tostr(jwt.encode(self.claim['user:emailnorest'], secret,
-                                          algorithm='HS256'))
+            self.claim['user:emailnorest']['roles'] = ["user:emailnorest"]
+            self.jwt['user:emailnorest'] = tostr(jwt.encode(
+                self.claim['user:emailnorest'], secret,
+                algorithm='HS256'))
 
         self.db.tx_Source = 'web'
 
@@ -271,7 +280,7 @@ class TestCase():
             if error.errno not in (errno.ENOENT, errno.ESRCH):
                 raise
 
-    def get_header (self, header, not_found=None):
+    def get_header(self, header, not_found=None):
         try:
             return self.headers[header.lower()]
         except (AttributeError, KeyError, TypeError):
@@ -305,13 +314,13 @@ class TestCase():
             title='foo1',
             status=self.db.status.lookup('open'),
             priority=self.db.priority.lookup('normal'),
-            nosy = [ "1", "2" ]
+            nosy=["1", "2"]
         )
         issue_open_norm = self.db.issue.create(
             title='foo2',
             status=self.db.status.lookup('open'),
             priority=self.db.priority.lookup('normal'),
-            assignedto = "3"
+            assignedto="3"
         )
         issue_open_crit = self.db.issue.create(
             title='foo5',
@@ -371,31 +380,31 @@ class TestCase():
         sort by status.name (not order)
         """
         base_path = self.db.config['TRACKER_WEB'] + 'rest/data/'
-        #self.maxDiff=None
+        # self.maxDiff=None
         self.create_sampledata()
         self.db.issue.set('2', status=self.db.status.lookup('closed'))
         self.db.issue.set('3', status=self.db.status.lookup('chatting'))
-        expected={'data':
-                   {'@total_size': 2,
-                    'collection': [
-                      { 'id': '2',
-                        'link': base_path + 'issue/2',
-                        'assignedto.issue': None,
-                        'status':
-                          { 'id': '10',
-                            'link': base_path + 'status/10'
+        expected = {'data':
+                    {'@total_size': 2,
+                     'collection': [
+                         {'id': '2',
+                          'link': base_path + 'issue/2',
+                          'assignedto.issue': None,
+                          'status':
+                          {'id': '10',
+                           'link': base_path + 'status/10'
                           }
-                      },
-                      { 'id': '1',
-                        'link': base_path + 'issue/1',
-                        'assignedto.issue': None,
-                        'status':
-                          { 'id': '9',
-                            'link': base_path + 'status/9'
+                         },
+                         {'id': '1',
+                          'link': base_path + 'issue/1',
+                          'assignedto.issue': None,
+                          'status':
+                          {'id': '9',
+                           'link': base_path + 'status/9'
                           }
-                      },
-                    ]}
-                 }
+                         },
+                     ]}
+        }
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('status.name', 'o'),
@@ -411,7 +420,7 @@ class TestCase():
         and a somewhat useful error message.
         """
         base_path = self.db.config['TRACKER_WEB'] + 'rest/data/'
-        #self.maxDiff=None
+        # self.maxDiff=None
         self.create_sampledata()
         self.db.issue.set('2', status=self.db.status.lookup('closed'))
         self.db.issue.set('3', status=self.db.status.lookup('chatting'))
@@ -471,22 +480,22 @@ class TestCase():
         """ Retrieve all issues with an exact title
         """
         base_path = self.db.config['TRACKER_WEB'] + 'rest/data/'
-        #self.maxDiff=None
+        # self.maxDiff=None
         self.create_sampledata()
         self.db.issue.set('2', title='This is an exact match')
         self.db.issue.set('3', title='This is an exact match')
         self.db.issue.set('1', title='This is AN exact match')
-        expected={'data':
-                   {'@total_size': 2,
-                    'collection': [
-                      { 'id': '2',
-                        'link': base_path + 'issue/2',
-                      },
-                      { 'id': '3',
-                        'link': base_path + 'issue/3',
-                      },
-                    ]}
-                 }
+        expected = {'data':
+                    {'@total_size': 2,
+                     'collection': [
+                         {'id': '2',
+                          'link': base_path + 'issue/2',
+                         },
+                         {'id': '3',
+                          'link': base_path + 'issue/3',
+                         },
+                     ]}
+        }
         form = cgi.FieldStorage()
         form.list = [
             cgi.MiniFieldStorage('title:', 'This is an exact match'),
@@ -502,7 +511,6 @@ class TestCase():
         self.create_sampledata()
         base_path = self.db.config['TRACKER_WEB'] + 'rest/data/issue/'
 
-
         # Check formating for issues status=open; @fields and verbose tests
         form = cgi.FieldStorage()
         form.list = [
@@ -511,13 +519,13 @@ class TestCase():
             cgi.MiniFieldStorage('@verbose', '2')
         ]
 
-        expected={'data':
-                   {'@total_size': 3,
-                    'collection': [ {
+        expected = {'data':
+                    {'@total_size': 3,
+                     'collection': [ {
                          'creator': {'id': '3',
                                      'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/3',
                                      'username': 'joe'},
-                        'status': {'id': '9',
+                         'status': {'id': '9',
                                     'name': 'open',
                                     'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/status/9'},
                          'id': '1',
@@ -1094,7 +1102,7 @@ class TestCase():
             # sqlite or anydbm. So don't need to exercise code.
             pass
         
-        start_time = datetime.utcnow()
+        start_time = utcnow()
         # don't set an accept header; json should be the default
         # use up all our allowed api calls
         for i in range(calls_per_interval):
@@ -1105,7 +1113,7 @@ class TestCase():
                             "/rest/data/user/%s/realname"%self.joeid,
                             self.empty_form)
  
-            loop_time = datetime.utcnow()
+            loop_time = utcnow()
             self.assertLess((loop_time-start_time).total_seconds(),
                             int(wait_time_str),
                     "Test system is too slow to complete test as configured")
@@ -1148,10 +1156,10 @@ class TestCase():
             wait_time_str)  # check as string
 
         print("Reset:", self.server.client.additional_headers["X-RateLimit-Reset"])
-        print("Now realtime pre-sleep:", datetime.utcnow())
+        print("Now realtime pre-sleep:", utcnow())
         # sleep as requested so we can do another login
         sleep(float(wait_time_str) + 0.1)
-        print("Now realtime post-sleep:", datetime.utcnow())
+        print("Now realtime post-sleep:", utcnow())
 
         # this should succeed
         self.server.client.additional_headers.clear()
@@ -1160,7 +1168,7 @@ class TestCase():
                             self.empty_form)
         print(results)
         print("Reset:", self.server.client.additional_headers["X-RateLimit-Reset-date"])
-        print("Now realtime:", datetime.utcnow())
+        print("Now realtime:", utcnow())
         print("Now ts header:", self.server.client.additional_headers["Now"])
         print("Now date header:", self.server.client.additional_headers["Now-date"])
 
