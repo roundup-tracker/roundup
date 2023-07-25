@@ -62,6 +62,13 @@ def find_in_file(filename, regexp):
     with open(filename) as f:
         contents = f.read()
 
+    try:
+        # handle text files with \r\n line endings
+        contents.index("\r")
+        contents = contents.replace("\r\n", "\n")
+    except ValueError:
+        pass
+
     m = re.search(regexp, contents, re.MULTILINE)
 
     if not m: return False

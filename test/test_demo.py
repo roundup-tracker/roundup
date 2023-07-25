@@ -50,7 +50,14 @@ class TestDemo(unittest.TestCase):
 
         # verify that db was set properly by reading config
         with open(self.home + "/config.ini", "r") as f:
-            config_lines = f.readlines()
+            config_lines = f.read().replace("\r\n", "\n")
+
+        try:
+            # handle text files with \r\n line endings
+            config_lines.index("\r")
+            config_lines = config_lines.replace("\r\n", "\n")
+        except ValueError:
+            pass
 
         self.assertIn("backend = %s\n"%db, config_lines)
 
@@ -88,7 +95,14 @@ class TestDemo(unittest.TestCase):
 
         # verify that template was set to jinja2 by reading config
         with open(self.home + "/config.ini", "r") as f:
-            config_lines = f.readlines()
+            config_lines = f.read()
+
+        try:
+            # handle text files with \r\n line endings
+            config_lines.index("\r")
+            config_lines = config_lines.replace("\r\n", "\n")
+        except ValueError:
+            pass
 
         self.assertIn("template_engine = jinja2\n", config_lines)
 
