@@ -54,7 +54,7 @@ class TestDemo(unittest.TestCase):
 
         try:
             # handle text files with \r\n line endings
-            config_lines.index("\r")
+            config_lines.index("\r", 0, 100)
             config_lines = config_lines.replace("\r\n", "\n")
         except ValueError:
             pass
@@ -99,7 +99,7 @@ class TestDemo(unittest.TestCase):
 
         try:
             # handle text files with \r\n line endings
-            config_lines.index("\r")
+            config_lines.index("\r", 0, 100)
             config_lines = config_lines.replace("\r\n", "\n")
         except ValueError:
             pass

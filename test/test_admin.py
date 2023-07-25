@@ -64,7 +64,7 @@ def find_in_file(filename, regexp):
 
     try:
         # handle text files with \r\n line endings
-        contents.index("\r")
+        contents.index("\r", 0, 100)
         contents = contents.replace("\r\n", "\n")
     except ValueError:
         pass
