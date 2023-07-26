@@ -521,6 +521,9 @@ Command help:
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
 
+        display_protected = self.settings['display_protected']
+        display_header =  self.settings['display_header']
+
         # decode the node designator
         for designator in args[0].split(','):
             try:
@@ -533,19 +536,22 @@ Command help:
 
             # display the values
             normal_props = sorted(cl.properties)
-            if self.settings['display_protected']:
+            if display_protected:
                 keys = sorted(cl.getprops())
             else:
                 keys = normal_props
 
-            if self.settings['display_header']:
+            if display_header:
                 status = "retired" if cl.is_retired(nodeid) else "active"
                 print('\n[%s (%s)]' % (designator, status))
             for key in keys:
                 value = cl.get(nodeid, key)
                 # prepend * for protected properties else just indent
                 # with space.
-                protected = "*" if key not in normal_props else ' '
+                if display_protected or display_header:
+                    protected = "*" if key not in normal_props else ' '
+                else:
+                    protected = ""
                 print(_('%(protected)s%(key)s: %(value)s') % locals())
 
     def do_export(self, args, export_files=True):

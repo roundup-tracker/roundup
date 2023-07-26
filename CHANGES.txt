@@ -37,6 +37,11 @@ Fixed:
 - issue2551278 - datetime.datetime.utcnow deprecation. Replace
   calls with equivalent that produces timezone aware dates rather than
   naive dates. (John Rouillard)
+- when using "roundup-admin display" indent the listing only if
+  headers or protected fields are requested. This makes the output
+  look like it did previously to 2.3.0 if the new features aren't
+  used.  Roundup-admin output was never meant to be machine parsed, but
+  don't break it unless required. (John Rouillard)
 
 Features:
 
