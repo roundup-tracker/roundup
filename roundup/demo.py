@@ -5,11 +5,11 @@
 from __future__ import print_function
 
 import errno
+import getopt
 import os
 import shutil
 import socket
 import sys
-import getopt
 
 try:
     import urlparse
