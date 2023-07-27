@@ -6,6 +6,21 @@
 
 from datetime import timedelta, datetime
 
+try:
+    # used by python 3.11 and newer use tz aware dates
+    from datetime import UTC
+    dt_min = datetime.min.replace(tzinfo=UTC)
+    # start of unix epoch
+    dt_epoch = datetime(1970, 1, 1, tzinfo=UTC)
+    fromisoformat = datetime.fromisoformat
+except ImportError:
+    # python 2.7 and older than 3.11 - use naive dates
+    dt_min = datetime.min
+    dt_epoch = datetime(1970, 1, 1)
+    def fromisoformat(date):
+        # only for naive dates
+        return datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")        
+
 from roundup.anypy.datetime_ import utcnow
 
 
@@ -28,7 +43,7 @@ class Gcra:
         if key in self.memory:
             return self.memory[key]
         else:
-            return datetime.min
+            return dt_min
 
     def set_tat(self, key, tat):
         self.memory[key] = tat
@@ -40,13 +55,13 @@ class Gcra:
         if key in self.memory:
             return self.memory[key].isoformat()
         else:
-            return datetime.min.isoformat()
+            return dt_min.isoformat()
 
     def set_tat_as_string(self, key, tat):
         # Take value as string and unmarshall:
         #  YYYY-MM-DDTHH:MM:SS.mmmmmm
         # to datetime
-        self.memory[key] = datetime.strptime(tat, "%Y-%m-%dT%H:%M:%S.%f")
+        self.memory[key] = fromisoformat(tat)
 
     def update(self, key, limit, testonly=False):
         '''Determine if the item associated with the key should be
@@ -100,7 +115,7 @@ class Gcra:
         seconds_to_tat = (tat - now).total_seconds()
         ret['X-RateLimit-Reset'] = str(max(seconds_to_tat, 0))
         ret['X-RateLimit-Reset-date'] = "%s" % tat
-        ret['Now'] = str((now - datetime(1970, 1, 1)).total_seconds())
+        ret['Now'] = str((now - dt_epoch).total_seconds())
         ret['Now-date'] = "%s" % now
 
         if self.update(key, limit, testonly=True):
