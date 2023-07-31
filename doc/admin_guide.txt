@@ -515,7 +515,7 @@ language described at:
 https://www.sqlite.org/fts5.html#full_text_query_syntax. This
 supports:
 
-* plain word search (joined with and similar to other search methods)
+* plain word search (joined by 'and', similar to other search methods)
 * phrase search with terms enclosed in quotes (``"``)
 * proximity search with varying distances using ``NEAR()``
 * boolean operations by grouping with parentheses and using ``AND``
