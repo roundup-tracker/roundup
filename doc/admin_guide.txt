@@ -823,7 +823,7 @@ headers can be passed to the ``-I`` option. These could be used in a
 detector or other tracker extensions, but only one header can be used
 by the tracker as an authentication header.
 
-To make the tracker honor the new variable changing the tracker
+To make the tracker honor the new variable, change the tracker's
 ``config.ini`` to read::
 
   [web]
