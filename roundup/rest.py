@@ -2092,6 +2092,24 @@ class RestfulInstance(object):
                 msg = _("Api rate limits exceeded. Please wait: %s seconds.") % retry_after
                 output = self.error_obj(429, msg, source="ApiRateLimiter")
 
+                # expose these headers to rest clients. Otherwise they can't
+                # respond to:
+                #   rate limiting (*RateLimit*, Retry-After)
+                #   obsolete API endpoint (Sunset)
+                #   options request to discover supported methods (Allow)
+                self.client.setHeader(
+                    "Access-Control-Expose-Headers",
+                    ", ".join([
+                        "X-RateLimit-Limit",
+                        "X-RateLimit-Remaining",
+                        "X-RateLimit-Reset",
+                        "X-RateLimit-Limit-Period",
+                        "Retry-After",
+                        "Sunset",
+                        "Allow",
+                    ])
+                )
+
                 return self.format_dispatch_output(
                     self.__default_accept_type,
                     output,
@@ -2126,6 +2144,75 @@ class RestfulInstance(object):
                     'Ignoring X-HTTP-Method-Override using %s request on %s',
                     method.upper(), uri)
 
+        # parse Accept header and get the content type
+        # Acceptable types ordered with preferred one first
+        # in list.
+        try:
+            accept_header = parse_accept_header(headers.get('Accept'))
+        except UsageError as e:
+            output = self.error_obj(406, _("Unable to parse Accept Header. %(error)s. "
+                      "Acceptable types: %(acceptable_types)s") % {
+                          'error': e.args[0],
+                          'acceptable_types': " ".join(sorted(self.__accepted_content_type.keys()))})
+            accept_header = []
+
+        if not accept_header:
+            accept_type = self.__default_accept_type
+        else:
+            accept_type = None
+        for part in accept_header:
+            if accept_type:
+                # we accepted the best match, stop searching for
+                # lower quality matches.
+                break
+            if part[0] in self.__accepted_content_type:
+                accept_type = self.__accepted_content_type[part[0]]
+                # Version order:
+                #  1) accept header version=X specifier
+                #     application/vnd.x.y; version=1
+                #  2) from type in accept-header type/subtype-vX
+                #     application/vnd.x.y-v1
+                #  3) from @apiver in query string to make browser
+                #     use easy
+                # This code handles 1 and 2. Set api_version to none
+                # to trigger @apiver parsing below
+                # Places that need the api_version info should
+                # use default if version = None
+                try:
+                    self.api_version = int(part[1]['version'])
+                except KeyError:
+                    self.api_version = None
+                except (ValueError, TypeError):
+                    # TypeError if int(None)
+                    msg = ("Unrecognized api version: %s. "
+                           "See /rest without specifying api version "
+                           "for supported versions." % (
+                               part[1]['version']))
+                    output = self.error_obj(400, msg)
+
+        # get the request format for response
+        # priority : extension from uri (/rest/data/issue.json),
+        #            header (Accept: application/json, application/xml)
+        #            default (application/json)
+        ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
+
+        # Check to see if the length of the extension is less than 6.
+        # this allows use of .vcard for a future use in downloading
+        # user info. It also allows passing through larger items like
+        # JWT that has a final component > 6 items. This method also
+        # allow detection of mistyped types like jon for json.
+        if ext_type and (len(ext_type) < 6):
+            # strip extension so uri make sense
+            # .../issue.json -> .../issue
+            uri = uri[:-(len(ext_type) + 1)]
+        else:
+            ext_type = None
+
+        # headers.get('Accept') is never empty if called here.
+        # accept_type will be set to json if there is no Accept header
+        # accept_type wil be empty only if there is an Accept header
+        # with invalid values.
+        data_type = ext_type or accept_type or headers.get('Accept') or "invalid"
         if method.upper() == 'OPTIONS':
             # add access-control-allow-* access-control-max-age to support
             # CORS preflight
