@@ -2042,9 +2042,6 @@ class RestfulInstance(object):
         output = None
 
         # Before we do anything has the user hit the rate limit.
-        # This should (but doesn't at the moment) bypass
-        # all other processing to minimize load of badly
-        # behaving client.
 
         # Get the limit here and not in the init() routine to allow
         # for a different rate limit per user.
@@ -2076,32 +2073,40 @@ class RestfulInstance(object):
             if reject:
                 for header, value in limitStatus.items():
                     self.client.setHeader(header, value)
-                    # User exceeded limits: tell humans how long to wait
-                    # Headers above will do the right thing for api
-                    # aware clients.
-                    try:
-                        retry_after = limitStatus['Retry-After']
-                    except KeyError:
-                        # handle race condition. If the time between
-                        # the call to grca.update and grca.status
-                        # is sufficient to reload the bucket by 1
-                        # item, Retry-After will be missing from
-                        # limitStatus. So report a 1 second delay back
-                        # to the client. We treat update as sole
-                        # source of truth for exceeded rate limits.
-                        retry_after = 1
-                        self.client.setHeader('Retry-After', '1')
+                # User exceeded limits: tell humans how long to wait
+                # Headers above will do the right thing for api
+                # aware clients.
+                try:
+                    retry_after = limitStatus['Retry-After']
+                except KeyError:
+                    # handle race condition. If the time between
+                    # the call to grca.update and grca.status
+                    # is sufficient to reload the bucket by 1
+                    # item, Retry-After will be missing from
+                    # limitStatus. So report a 1 second delay back
+                    # to the client. We treat update as sole
+                    # source of truth for exceeded rate limits.
+                    retry_after = 1
+                    self.client.setHeader('Retry-After', '1')
 
-                    msg = _("Api rate limits exceeded. Please wait: %s seconds.") % retry_after
-                    output = self.error_obj(429, msg, source="ApiRateLimiter")
-            else:
-                for header, value in limitStatus.items():
-                    # Retry-After will be 0 because
-                    # user still has quota available.
-                    # Don't put out the header.
-                    if header in ('Retry-After',):
-                        continue
-                    self.client.setHeader(header, value)
+                msg = _("Api rate limits exceeded. Please wait: %s seconds.") % retry_after
+                output = self.error_obj(429, msg, source="ApiRateLimiter")
+
+                return self.format_dispatch_output(
+                    self.__default_accept_type,
+                    output,
+                    True  # pretty print for this error case as a
+                          # human may read it
+                )
+
+
+            for header, value in limitStatus.items():
+                # Retry-After will be 0 because
+                # user still has quota available.
+                # Don't put out the header.
+                if header in ('Retry-After',):
+                    continue
+                self.client.setHeader(header, value)
 
         # if X-HTTP-Method-Override is set, follow the override method
         headers = self.client.request.headers
@@ -2120,76 +2125,6 @@ class RestfulInstance(object):
                 logger.info(
                     'Ignoring X-HTTP-Method-Override using %s request on %s',
                     method.upper(), uri)
-
-        # parse Accept header and get the content type
-        # Acceptable types ordered with preferred one first
-        # in list.
-        try:
-            accept_header = parse_accept_header(headers.get('Accept'))
-        except UsageError as e:
-            output = self.error_obj(406, _("Unable to parse Accept Header. %(error)s. "
-                      "Acceptable types: %(acceptable_types)s") % {
-                          'error': e.args[0],
-                          'acceptable_types': " ".join(sorted(self.__accepted_content_type.keys()))})
-            accept_header = []
-
-        if not accept_header:
-            accept_type = self.__default_accept_type
-        else:
-            accept_type = None
-        for part in accept_header:
-            if accept_type:
-                # we accepted the best match, stop searching for
-                # lower quality matches.
-                break
-            if part[0] in self.__accepted_content_type:
-                accept_type = self.__accepted_content_type[part[0]]
-                # Version order:
-                #  1) accept header version=X specifier
-                #     application/vnd.x.y; version=1
-                #  2) from type in accept-header type/subtype-vX
-                #     application/vnd.x.y-v1
-                #  3) from @apiver in query string to make browser
-                #     use easy
-                # This code handles 1 and 2. Set api_version to none
-                # to trigger @apiver parsing below
-                # Places that need the api_version info should
-                # use default if version = None
-                try:
-                    self.api_version = int(part[1]['version'])
-                except KeyError:
-                    self.api_version = None
-                except (ValueError, TypeError):
-                    # TypeError if int(None)
-                    msg = ("Unrecognized api version: %s. "
-                           "See /rest without specifying api version "
-                           "for supported versions." % (
-                               part[1]['version']))
-                    output = self.error_obj(400, msg)
-
-        # get the request format for response
-        # priority : extension from uri (/rest/data/issue.json),
-        #            header (Accept: application/json, application/xml)
-        #            default (application/json)
-        ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
-
-        # Check to see if the length of the extension is less than 6.
-        # this allows use of .vcard for a future use in downloading
-        # user info. It also allows passing through larger items like
-        # JWT that has a final component > 6 items. This method also
-        # allow detection of mistyped types like jon for json.
-        if ext_type and (len(ext_type) < 6):
-            # strip extension so uri make sense
-            # .../issue.json -> .../issue
-            uri = uri[:-(len(ext_type) + 1)]
-        else:
-            ext_type = None
-
-        # headers.get('Accept') is never empty if called here.
-        # accept_type will be set to json if there is no Accept header
-        # accept_type wil be empty only if there is an Accept header
-        # with invalid values.
-        data_type = ext_type or accept_type or headers.get('Accept') or "invalid"
 
         if method.upper() == 'OPTIONS':
             # add access-control-allow-* access-control-max-age to support
@@ -2349,15 +2284,18 @@ class RestfulInstance(object):
             output = self.error_obj(405, msg.args[0])
             self.client.setHeader("Allow", msg.args[1])
 
+        return self.format_dispatch_output(data_type, output, pretty_output)
+
+    def format_dispatch_output(self, accept_mime_type, output, pretty_print):
         # Format the content type
-        if data_type.lower() == "json":
+        if accept_mime_type.lower() == "json":
             self.client.setHeader("Content-Type", "application/json")
-            if pretty_output:
+            if pretty_print:
                 indent = 4
             else:
                 indent = None
             output = RoundupJSONEncoder(indent=indent).encode(output)
-        elif data_type.lower() == "xml" and dicttoxml:
+        elif accept_mime_type.lower() == "xml" and dicttoxml:
             self.client.setHeader("Content-Type", "application/xml")
             if 'error' in output:
                 # capture values in error with types unsupported
@@ -2390,7 +2328,7 @@ class RestfulInstance(object):
             # display acceptable output.
             self.client.response_code = 406
             output = ("Requested content type '%s' is not available.\n"
-                      "Acceptable types: %s" % (data_type,
+                      "Acceptable types: %s" % (accept_mime_type,
                       ", ".join(sorted(self.__accepted_content_type.keys()))))
 
         # Make output json end in a newline to
