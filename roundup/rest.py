@@ -2086,8 +2086,8 @@ class RestfulInstance(object):
                     # limitStatus. So report a 1 second delay back
                     # to the client. We treat update as sole
                     # source of truth for exceeded rate limits.
-                    retry_after = 1
-                    self.client.setHeader('Retry-After', '1')
+                    retry_after = '1'
+                    self.client.setHeader('Retry-After', retry_after)
 
                 msg = _("Api rate limits exceeded. Please wait: %s seconds.") % retry_after
                 output = self.error_obj(429, msg, source="ApiRateLimiter")
