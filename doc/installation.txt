@@ -1383,6 +1383,9 @@ If you want you can use a unix domain socket instead. Example:
 ``--bind unix:///var/run/roundup/tracker.sock`` would be used for the
 nginx configuration below.
 
+If you are customizing a docker continer to use gunicorn, see
+https://pythonspeed.com/articles/gunicorn-in-docker/.
+
 .. index:: pair: web interface; uWSGI
    single: wsgi; uWSGI
 
