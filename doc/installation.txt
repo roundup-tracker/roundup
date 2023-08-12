@@ -1654,7 +1654,7 @@ described on the wiki
 wiki also documents how to add `multi-factor (MFA)/one time
 keys/password using TOTP/HOTP
 <https://wiki.roundup-tracker.org/OneTimePasswords>`_. If you
-have a single sign on system, the `wiki page on using Shibboleth
+have a single sign on system see: the `wiki page on using Shibboleth
 <https://wiki.roundup-tracker.org/ShibbolethLogin>`_
 or `LDAP <https://wiki.roundup-tracker.org/LDAPLogin2_1_5_1>`_
 with Roundup. More customisation can be found under the
