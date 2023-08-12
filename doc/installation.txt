@@ -1697,7 +1697,15 @@ scheduled (cron) job to access email:
 
 However running cron in a container is problematic (running
 busybox crond as root vs. non-root, requiring setgrp privs
-etc). Patches for implementing email support are welcome.
+etc).
+
+Using the host's crontab with a command like::
+
+   docker exec roundup-tracker roundup-mailgw tracker \
+         mailbox /var/spool/mail/roundup
+
+might be a solution if you can mount a mail spool directory or use
+pop/imap. Patches for implementing better email support are welcome.
 
 If you want to use a MySQL backend, see `Docker-compose 
 Deployment`_ to deploy a Roundup container and a MySQL container
