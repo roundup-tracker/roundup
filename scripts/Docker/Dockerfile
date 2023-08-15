@@ -27,7 +27,7 @@ ARG source=local
 ARG pythonversion=3.11
 
 #FROM python:3-alpine
-FROM python@sha256:0a56f24afa1fc7f518aa690cb8c7be661225e40b157d9bb8c6ef402164d9faa7 as build
+FROM python@sha256:603975e62d85aa07578034d3d10ffa1983b7618a6abb6371cf51941be6b8842c as build
 
 # Inherit global values https://github.com/moby/moby/issues/37345
 ARG appdir
@@ -97,7 +97,8 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
     ./configure --prefix=/usr/local --with-python3 --disable-documentation && \
     make && make install && \
     pip uninstall --no-cache-dir -y sphinx && \
-    pip uninstall --no-cache-dir -y -r $CWD/sphinxdeps.txt
+    pip uninstall --no-cache-dir -y -r $CWD/sphinxdeps.txt && \
+    rm -rf /usr/local/share/doc/xapian-bindings
 
 # add requirements for pip here, e.g. Whoosh, gpg, zstd or other
 #   modules not installed in the base library.
@@ -157,7 +158,7 @@ RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
 # build a new smaller docker image for execution. Build image above
 # is 1G in size.
 # FROM python:3-alpine
-FROM python@sha256:0a56f24afa1fc7f518aa690cb8c7be661225e40b157d9bb8c6ef402164d9faa7
+FROM python@sha256:603975e62d85aa07578034d3d10ffa1983b7618a6abb6371cf51941be6b8842c
 
 # import from global
 ARG appdir
@@ -212,8 +213,7 @@ ARG pythonversion
 COPY --from=build /usr/local/lib/python${pythonversion}/site-packages /usr/local/lib/python${pythonversion}/site-packages/
 COPY --from=build /usr/local/bin/roundup* /usr/local/bin/
 COPY --from=build /usr/local/share /usr/local/share/
-COPY scripts/Docker/roundup_start .
-COPY scripts/Docker/roundup_healthcheck .
+COPY scripts/Docker/roundup_start scripts/Docker/roundup_healthcheck ./
 
 # Do not run roundup as root. This creates roundup user and group.
 ARG roundup_uid

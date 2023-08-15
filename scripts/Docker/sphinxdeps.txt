@@ -13,6 +13,11 @@ pyparsing
 requests
 six
 snowballstemmer
+sphinxcontrib-applehelp
+sphinxcontrib-devhelp
+sphinxcontrib-htmlhelp
+sphinxcontrib-jsmath
+sphinxcontrib-qthelp
 sphinxcontrib-serializinghtml
 sphinxcontrib-websupport
 urllib3
