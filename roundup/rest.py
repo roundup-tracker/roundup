@@ -2037,6 +2037,84 @@ class RestfulInstance(object):
             # disable rate limiting if either parameter is 0
             return None
 
+    def handle_apiRateLimitExceeded(self, apiRateLimit):
+        """Determine if the rate limit is exceeded.
+
+           If not exceeded, return False and the rate limit header values.
+           If exceeded, return error message and None
+        """
+        gcra = Gcra()
+        # unique key is an "ApiLimit-" prefix and the uid)
+        apiLimitKey = "ApiLimit-%s" % self.db.getuid()
+        otk = self.db.Otk
+        try:
+            val = otk.getall(apiLimitKey)
+            gcra.set_tat_as_string(apiLimitKey, val['tat'])
+        except KeyError:
+            # ignore if tat not set, it's 1970-1-1 by default.
+            pass
+        # see if rate limit exceeded and we need to reject the attempt
+        reject = gcra.update(apiLimitKey, apiRateLimit)
+
+        # Calculate a timestamp that will make OTK expire the
+        # unused entry 1 hour in the future
+        ts = otk.lifetime(3600)
+        otk.set(apiLimitKey,
+                tat=gcra.get_tat_as_string(apiLimitKey),
+                __timestamp=ts)
+        otk.commit()
+
+        limitStatus = gcra.status(apiLimitKey, apiRateLimit)
+        if not reject:
+            return (False, limitStatus)
+
+        for header, value in limitStatus.items():
+            self.client.setHeader(header, value)
+
+        # User exceeded limits: tell humans how long to wait
+        # Headers above will do the right thing for api
+        # aware clients.
+        try:
+            retry_after = limitStatus['Retry-After']
+        except KeyError:
+            # handle race condition. If the time between
+            # the call to grca.update and grca.status
+            # is sufficient to reload the bucket by 1
+            # item, Retry-After will be missing from
+            # limitStatus. So report a 1 second delay back
+            # to the client. We treat update as sole
+            # source of truth for exceeded rate limits.
+            retry_after = '1'
+            self.client.setHeader('Retry-After', retry_after)
+
+        msg = _("Api rate limits exceeded. Please wait: %s seconds.") % retry_after
+        output = self.error_obj(429, msg, source="ApiRateLimiter")
+
+        # expose these headers to rest clients. Otherwise they can't
+        # respond to:
+        #   rate limiting (*RateLimit*, Retry-After)
+        #   obsolete API endpoint (Sunset)
+        #   options request to discover supported methods (Allow)
+        self.client.setHeader(
+            "Access-Control-Expose-Headers",
+            ", ".join([
+                "X-RateLimit-Limit",
+                "X-RateLimit-Remaining",
+                "X-RateLimit-Reset",
+                "X-RateLimit-Limit-Period",
+                "Retry-After",
+                "Sunset",
+                "Allow",
+            ])
+        )
+
+        return (self.format_dispatch_output(
+            self.__default_accept_type,
+            output,
+            True  # pretty print for this error case as a
+            # human may read it
+        ), None)
+
     def dispatch(self, method, uri, input):
         """format and process the request"""
         output = None
@@ -2048,75 +2126,10 @@ class RestfulInstance(object):
         apiRateLimit = self.getRateLimit()
 
         if apiRateLimit:  # if None, disable rate limiting
-            gcra = Gcra()
-            # unique key is an "ApiLimit-" prefix and the uid)
-            apiLimitKey = "ApiLimit-%s" % self.db.getuid()
-            otk = self.db.Otk
-            try:
-                val = otk.getall(apiLimitKey)
-                gcra.set_tat_as_string(apiLimitKey, val['tat'])
-            except KeyError:
-                # ignore if tat not set, it's 1970-1-1 by default.
-                pass
-            # see if rate limit exceeded and we need to reject the attempt
-            reject = gcra.update(apiLimitKey, apiRateLimit)
-
-            # Calculate a timestamp that will make OTK expire the
-            # unused entry 1 hour in the future
-            ts = otk.lifetime(3600)
-            otk.set(apiLimitKey,
-                    tat=gcra.get_tat_as_string(apiLimitKey),
-                    __timestamp=ts)
-            otk.commit()
-
-            limitStatus = gcra.status(apiLimitKey, apiRateLimit)
-            if reject:
-                for header, value in limitStatus.items():
-                    self.client.setHeader(header, value)
-                # User exceeded limits: tell humans how long to wait
-                # Headers above will do the right thing for api
-                # aware clients.
-                try:
-                    retry_after = limitStatus['Retry-After']
-                except KeyError:
-                    # handle race condition. If the time between
-                    # the call to grca.update and grca.status
-                    # is sufficient to reload the bucket by 1
-                    # item, Retry-After will be missing from
-                    # limitStatus. So report a 1 second delay back
-                    # to the client. We treat update as sole
-                    # source of truth for exceeded rate limits.
-                    retry_after = '1'
-                    self.client.setHeader('Retry-After', retry_after)
-
-                msg = _("Api rate limits exceeded. Please wait: %s seconds.") % retry_after
-                output = self.error_obj(429, msg, source="ApiRateLimiter")
-
-                # expose these headers to rest clients. Otherwise they can't
-                # respond to:
-                #   rate limiting (*RateLimit*, Retry-After)
-                #   obsolete API endpoint (Sunset)
-                #   options request to discover supported methods (Allow)
-                self.client.setHeader(
-                    "Access-Control-Expose-Headers",
-                    ", ".join([
-                        "X-RateLimit-Limit",
-                        "X-RateLimit-Remaining",
-                        "X-RateLimit-Reset",
-                        "X-RateLimit-Limit-Period",
-                        "Retry-After",
-                        "Sunset",
-                        "Allow",
-                    ])
-                )
-
-                return self.format_dispatch_output(
-                    self.__default_accept_type,
-                    output,
-                    True  # pretty print for this error case as a
-                          # human may read it
-                )
-
+            LimitExceeded, limitStatus = self.handle_apiRateLimitExceeded(
+                apiRateLimit)
+            if LimitExceeded:
+                return LimitExceeded  # error message
 
             for header, value in limitStatus.items():
                 # Retry-After will be 0 because
@@ -2373,7 +2386,8 @@ class RestfulInstance(object):
 
         return self.format_dispatch_output(data_type, output, pretty_output)
 
-    def format_dispatch_output(self, accept_mime_type, output, pretty_print):
+    def format_dispatch_output(self, accept_mime_type, output,
+                               pretty_print=True):
         # Format the content type
         if accept_mime_type.lower() == "json":
             self.client.setHeader("Content-Type", "application/json")
