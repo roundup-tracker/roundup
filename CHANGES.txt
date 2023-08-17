@@ -42,6 +42,9 @@ Fixed:
   look like it did previously to 2.3.0 if the new features aren't
   used.  Roundup-admin output was never meant to be machine parsed, but
   don't break it unless required. (John Rouillard)
+- issue2551290 - pip install roundup Hangs on Windows 10
+  The install under windows goes into an infinite loop using pip or
+  source install. (John Rouillard)
 
 Features:
 
