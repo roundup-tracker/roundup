@@ -76,7 +76,7 @@ program you can run ``python demo.py`` instead.)
 1. ``python3 -m pip download roundup``
 2. ``tar -xzvf roundup-2.2.0.tar.gz``
 
-   * if you don't have a tar command, ``python3 -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz`` can be used.
+   * if you don't have a tar command, ``python3 -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.2.0.tar.gz`` can be used.
 
 3. ``cd roundup-2.2.0``
 4. ``python3 demo.py``
