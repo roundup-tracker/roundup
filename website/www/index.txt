@@ -184,7 +184,7 @@ Follow the source gratification mode with these steps (change the
 2. ``tar -xzvf roundup-2.3.0.tar.gz``
 
    * if you don't have a tar command (e.g windows), use:
-     ``python -c 'import tarfile; tarfile.open(sys.argv[1]).extractall();' roundup-2.3.0.tar.gz``
+     ``python -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.3.0.tar.gz``
 
 
 3. ``cd roundup-2.3.0``
