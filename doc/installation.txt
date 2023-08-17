@@ -280,7 +280,7 @@ pyjwt
   (v1.7.1, v2.0.1 tested). If you don't have it installed, JWT's
   are not supported.
 
-Windows Service
+pywin32 - Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
 
