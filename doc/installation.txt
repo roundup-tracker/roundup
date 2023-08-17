@@ -284,6 +284,10 @@ Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
 
+pyreadline3
+  When running roundup-admin on windows, installing pyreadline3_ will
+  allow history and editing on the command line.
+
 requests
   If you are using OAuth authentication with the roundup-mailgw
   mail gateway you must install the requests_ library.
@@ -2103,6 +2107,17 @@ Panel" is directly accessible from "Start".
 
 I do not believe this is possible to do in previous versions of Windows.
 
+Use pip to install pyreadline3 for roundup-admin line editing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you install pyreadline3_ using pip, roundup-admin will support
+command line editing and history.
+
+This will remove the dreaded::
+
+    Note: command history and editing not available
+
+warning when starting roundup-admin.
 
 Windows Server
 --------------
@@ -2187,7 +2202,6 @@ relevant settings.
 If you are using Apache as the webserver you might want to use it with
 mod_python instead to serve out Roundup. In that case see the mod_python
 instructions above for details.
-
 
 Sendmail smrsh
 --------------
@@ -2296,6 +2310,7 @@ the test.
 .. _Psycopg2: https://www.psycopg.org/
 .. _pyjwt: https://pypi.org/project/PyJWT/
 .. _pyopenssl: https://pypi.org/project/pyOpenSSL/
+.. _pyreadline3: https://pypi.org/project/pyreadline3/
 .. _pysqlite: https://pysqlite.org/
 .. _pytz: https://pypi.org/project/pytz/
 .. _pywin32: https://pypi.org/project/pywin32/
