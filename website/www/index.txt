@@ -90,9 +90,8 @@ Roundup is compatible with Python 2.7.12+ or 3.6+.
    2025, several Continuous Integration (CI) services are
    discontinuing their resources for testing with Python 2. It is
    recommended to utilize Python 3 for the deployment of new trackers,
-   while existing trackers should be upgraded to incorporate Python 3,
-   as detailed in the following link:
-   <docs/upgrading.html#python-3-support-info>.
+   while existing trackers should be `upgraded to use Python 3.
+   <docs/upgrading.html#python-3-support-info>`_
 
 Release Highlights
 ==================
