@@ -1858,7 +1858,7 @@ class Client:
         # mime type detection is performed in cgi.form_parser
 
         # everything not here is served as 'application/octet-stream'
-        whitelist = [
+        mime_type_allowlist = [
             'text/plain',
             'text/x-csrc',    # .c
             'text/x-chdr',    # .h
@@ -1878,7 +1878,7 @@ class Client:
         ]
 
         if self.instance.config['WEB_ALLOW_HTML_FILE']:
-            whitelist.append('text/html')
+            mime_type_allowlist.append('text/html')
 
         try:
             mime_type = klass.get(nodeid, 'type')
@@ -1888,7 +1888,7 @@ class Client:
         if not mime_type:
             mime_type = 'text/plain'
 
-        if mime_type not in whitelist:
+        if mime_type not in mime_type_allowlist:
             mime_type = 'application/octet-stream'
 
         # --/ mime-type security
