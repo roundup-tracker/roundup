@@ -818,7 +818,7 @@ header to the tracker using::
 
 note that the header is passed exactly as supplied by the upstream
 server. It is **not** prefixed with ``HTTP_`` like other headers since
-you are explicitly whitelisting the header. Multiple comma separated
+you are explicitly allowing the header. Multiple comma separated
 headers can be passed to the ``-I`` option. These could be used in a
 detector or other tracker extensions, but only one header can be used
 by the tracker as an authentication header.
