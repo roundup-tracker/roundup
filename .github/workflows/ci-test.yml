@@ -204,8 +204,17 @@ jobs:
           # 3.11 or newer.
           # Change distutils.sysconfig... to just sysconfig and SO
           # to EXT_SUFFIX to get valid value.
-          if [[ $PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-          case "$PYTHON_VERSION" in nightly|3.12*) echo skipping xapian build;; *) make && sudo make install; esac
+          if [[ $PYTHON_VERSION == "3."* ]]; then \
+            sed -i \
+              -e '/PYTHON3_SO=/s/distutils\.//g' \
+              -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' \
+              -e '/PYTHON3_CACHE_TAG=/s/imp;print(imp.get_tag())/sys;print(sys.implementation.cache_tag)/' \
+              -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\.get_tag()/sys.implementation.cache_tag/g' \
+              -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\b/importlib/' \
+            configure; \
+            ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; \
+        fi
+          case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Install pytest and other packages needed for running tests
         run: pip install flake8 mock pytest pytest-cov requests
