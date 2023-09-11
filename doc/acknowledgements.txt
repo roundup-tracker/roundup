@@ -28,7 +28,7 @@ Release Manager: John Rouillard
 
 Developer activity by changesets::
 
-  rouilj@ieee.org    636 *****************************************************
+  rouilj@ieee.org    722 ****************************************************
   rsc@runtux.com      14 *
 
 Other contributers

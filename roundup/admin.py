@@ -104,17 +104,24 @@ class AdminTool:
         self.db_uncommitted = False
         self.force = None
         self.settings = {
+            'display_header': False,
             'display_protected': False,
             'indexer_backend': "as set in config.ini",
             '_reopen_tracker': False,
-            'show_retired': False,
+            'show_retired': "no",
+            '_retired_val': False,
             'verbose': False,
             '_inttest': 3,
             '_floattest': 3.5,
         }
         self.settings_help = {
+            'display_header':
+            _("Have 'display designator[,designator*]' show header inside "
+              "         []'s before items. Includes retired/active status."),
+
             'display_protected':
-            _("Have 'display designator' show protected fields: creator. NYI"),
+            _("Have 'display designator' and 'specification class' show "
+              "protected fields: creator, id etc."),
 
             'indexer_backend':
             _("Set indexer to use when running 'reindex' NYI"),
@@ -122,7 +129,8 @@ class AdminTool:
             '_reopen_tracker':
             _("Force reopening of tracker when running each command."),
 
-            'show_retired': _("Show retired items in table, list etc. NYI"),
+            'show_retired': _("Show retired items in table, list etc. One of 'no', 'only', 'both'"),
+            '_retired_val': _("internal mapping for show_retired."),
             'verbose': _("Enable verbose output: tracing, descriptions..."),
 
             '_inttest': "Integer valued setting. For testing only.",
@@ -172,6 +180,8 @@ Options:
  -S <string>       -- when outputting lists of data, string-separate them
  -s                -- when outputting lists of data, space-separate them.
                       Same as '-S " "'.
+ -P pragma=value   -- Set a pragma on command line rather than interactively.
+                      Can be used multiple times.
  -V                -- be verbose when importing
  -v                -- report Roundup and Python versions (and quit)
 
@@ -511,6 +521,9 @@ Command help:
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
 
+        display_protected = self.settings['display_protected']
+        display_header =  self.settings['display_header']
+
         # decode the node designator
         for designator in args[0].split(','):
             try:
@@ -522,10 +535,24 @@ Command help:
             cl = self.get_class(classname)
 
             # display the values
-            keys = sorted(cl.properties)
+            normal_props = sorted(cl.properties)
+            if display_protected:
+                keys = sorted(cl.getprops())
+            else:
+                keys = normal_props
+
+            if display_header:
+                status = "retired" if cl.is_retired(nodeid) else "active"
+                print('\n[%s (%s)]' % (designator, status))
             for key in keys:
                 value = cl.get(nodeid, key)
-                print(_('%(key)s: %(value)s') % locals())
+                # prepend * for protected properties else just indent
+                # with space.
+                if display_protected or display_header:
+                    protected = "*" if key not in normal_props else ' '
+                else:
+                    protected = ""
+                print(_('%(protected)s%(key)s: %(value)s') % locals())
 
     def do_export(self, args, export_files=True):
         ''"""Usage: export [[-]class[,class]] export_dir
@@ -1285,6 +1312,9 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             raise UsageError(_('Too many arguments supplied'))
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
+
+        retired = self.settings['_retired_val']
+
         classname = args[0]
 
         # get the class
@@ -1300,7 +1330,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             if len(args) == 2:
                 # create a list of propnames since user specified propname
                 proplist = []
-                for nodeid in cl.list():
+                for nodeid in cl.getnodeids(retired=retired):
                     try:
                         proplist.append(cl.get(nodeid, propname))
                     except KeyError:
@@ -1310,9 +1340,9 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             else:
                 # create a list of index id's since user didn't specify
                 # otherwise
-                print(self.separator.join(cl.list()))
+                print(self.separator.join(cl.getnodeids(retired=retired)))
         else:
-            for nodeid in cl.list():
+            for nodeid in cl.getnodeids(retired=retired):
                 try:
                     value = cl.get(nodeid, propname)
                 except KeyError:
@@ -1479,6 +1509,15 @@ Erase it? Y/N: """) % locals())  # noqa: E122
          will show all settings and their current values. If verbose
          is enabled hidden settings and descriptions will be shown.
         """
+        """
+          The following are to be implemented:
+           exportfiles={true|false} - Not Implemented - If true
+                    (default) export/import db tables and files. If
+                    False, export/import just database tables, not
+                    files. Use for faster database migration.
+                    Replaces exporttables/importtables with
+                    exportfiles=false then export/import
+        """
 
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
@@ -1524,7 +1563,18 @@ Erase it? Y/N: """) % locals())  # noqa: E122
                     '%(value)s.') % {"setting": setting, "value": value})
             value = _val
         elif type(self.settings[setting]) is str:
-            pass
+            if setting == "show_retired":
+                if value not in ["no", "only", "both"]:
+                    raise UsageError(_(
+                        'Incorrect value for setting %(setting)s: '
+                        '%(value)s. Should be no, both, or only.') % {
+                            "setting": setting, "value": value})
+                if value == "both":
+                    self.settings['_retired_val'] = None
+                elif value == "only":  # numerical value not boolean
+                    self.settings['_retired_val'] = True
+                else:  # numerical value not boolean
+                    self.settings['_retired_val'] = False
         else:
             raise UsageError(_('Internal error: pragma can not handle '
                                'values of type: %s') %
@@ -1570,9 +1620,9 @@ Erase it? Y/N: """) % locals())  # noqa: E122
                             cl.index(str(item))
                         except IndexError:
                             print(_('no such item "%(class)s%(id)s"') % {
-                            'class': r.group(1),
-                            'id': item})
-                            
+                                'class': r.group(1),
+                                'id': item})
+
                 else:
                     cl = self.get_class(arg)  # Bad class raises UsageError
                     self.db.reindex(arg, show_progress=True)
@@ -1798,8 +1848,12 @@ Erase it? Y/N: """) % locals())  # noqa: E122
 
         # get the key property
         keyprop = cl.getkey()
-        for key in cl.properties:
-            value = cl.properties[key]
+        if self.settings['display_protected']:
+            properties = cl.getprops()
+        else:
+            properties = cl.properties
+        for key in properties:
+            value = properties[key]
             if keyprop == key:
                 sys.stdout.write(_('%(key)s: %(value)s (key property)\n') %
                                  locals())
@@ -1838,6 +1892,8 @@ Erase it? Y/N: """) % locals())  # noqa: E122
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
         classname = args[0]
+
+        retired = self.settings['_retired_val']
 
         # get the class
         cl = self.get_class(classname)
@@ -1879,7 +1935,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
             else:
                 # this is going to be slow
                 maxlen = len(spec)
-                for nodeid in cl.list():
+                for nodeid in cl.getnodeids(retired=retired):
                     curlen = len(str(cl.get(nodeid, spec)))
                     if curlen > maxlen:
                         maxlen = curlen
@@ -1890,7 +1946,7 @@ Erase it? Y/N: """) % locals())  # noqa: E122
                         for name, width in props]))
 
         # and the table data
-        for nodeid in cl.list():
+        for nodeid in cl.getnodeids(retired=retired):
             table_columns = []
             for name, width in props:
                 if name != 'id':
@@ -1990,7 +2046,7 @@ Desc: %(description)s
                 ret = function(args[1:])
                 return ret
             except UsageError as message:  # noqa F841
-              return self.usageError_feedback(message, function)
+                return self.usageError_feedback(message, function)
 
         # make sure we have a tracker_home
         while not self.tracker_home:
@@ -2004,12 +2060,12 @@ Desc: %(description)s
             try:
                 return self.do_initialise(self.tracker_home, args)
             except UsageError as message:  # noqa: F841
-              return self.usageError_feedback(message, function)
+                return self.usageError_feedback(message, function)
         elif command == 'install':
             try:
                 return self.do_install(self.tracker_home, args)
             except UsageError as message:  # noqa: F841
-              return self.usageError_feedback(message, function)
+                return self.usageError_feedback(message, function)
 
         # get the tracker
         try:
@@ -2020,6 +2076,8 @@ Desc: %(description)s
                     print("Reopening tracker")
                 tracker = roundup.instance.open(self.tracker_home)
                 self.tracker = tracker
+                self.settings['indexer_backend'] = self.tracker.config['INDEXER']
+
         except ValueError as message:  # noqa: F841
             self.tracker_home = ''
             print(_("Error: Couldn't open tracker: %(message)s") % locals())
@@ -2090,7 +2148,7 @@ Desc: %(description)s
 
     def main(self):
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hcdsS:vV')
+            opts, args = getopt.getopt(sys.argv[1:], 'i:u:hcdP:sS:vV')
         except getopt.GetoptError as e:
             self.usage(str(e))
             return 1
@@ -2136,6 +2194,8 @@ Desc: %(description)s
                 self.separator = ' '
             elif opt == '-d':
                 self.print_designator = 1
+            elif opt == '-P':
+                self.do_pragma([arg])
             elif opt == '-u':
                 login_opt = arg.split(':')
                 self.name = login_opt[0]

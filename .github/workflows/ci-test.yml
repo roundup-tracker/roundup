@@ -32,10 +32,6 @@ jobs:
   test:
     name: CI build test
 
-    # run the finalizer for coveralls even if one or more
-    # experimental matrix runs fail.
-    # continue-on-error: ${{ matrix.experimental }}
-
     #runs-on: ubuntu-latest
     # use below if running on multiple OS's.
     runs-on: ${{ matrix.os }}
@@ -61,13 +57,14 @@ jobs:
         os: [ubuntu-latest, ubuntu-20.04]
 
         # if the ones above fail. fail the build
-        experimental: [false]
+        experimental: [ false ]
 
         include:
             # example: if 3.12 fails the jobs still succeeds
-            - python-version: 3.12
+            - python-version: 3.12 
               os: ubuntu-22.04
-              experimental: [true]
+              experimental: true
+            
             # 3.6 not available on new 22.04 runners, so run on 20.04 ubuntu
             - python-version: 3.6
               os: ubuntu-20.04
@@ -75,6 +72,12 @@ jobs:
         exclude:
             # skip all python versions on 20.04 except explicitly included
             - os: ubuntu-20.04
+
+    # run the finalizer for coveralls even if one or more
+    # experimental matrix runs fail.
+    # moving it above strategy produces unexpected value false
+    # moving it below (here) produces unexpected value ''.
+    # continue-on-error: ${{ matrix.experimental }}
 
     env:
       # get colorized pytest output even without a controlling tty
@@ -90,11 +93,11 @@ jobs:
         # if: {{ false }}
           # continue running if step fails
         # continue-on-error: true
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
 
       # Setup version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0 # v4.6.1
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
@@ -254,7 +257,7 @@ jobs:
       - name: Upload coverage to Coveralls
         # python 2.7 and 3.6 versions of coverage can't produce lcov files.
         if: matrix.python-version != '2.7' && matrix.python-version != '3.6'
-        uses: coverallsapp/github-action@c7885c00cb7ec0b8f9f5ff3f53cddb980f7a4412 # master
+        uses: coverallsapp/github-action@3dfc5567390f6fa9267c0ee9c251e4c8c3f18949 # master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage.lcov
@@ -290,7 +293,7 @@ jobs:
     
     steps:
       - name: Coveralls Finished
-        uses: coverallsapp/github-action@c7885c00cb7ec0b8f9f5ff3f53cddb980f7a4412 # master
+        uses: coverallsapp/github-action@3dfc5567390f6fa9267c0ee9c251e4c8c3f18949 # master
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true

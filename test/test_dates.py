@@ -47,10 +47,14 @@ class DateTestCase(unittest.TestCase):
 
         self.old_gettext_ = i18n.gettext
         self.old_ngettext_ = i18n.ngettext
-        i18n.gettext = i18n.get_translation(language='C').gettext
-        i18n.degettext = i18n.get_translation(language='de').gettext
-        i18n.ngettext = i18n.get_translation(language='C').ngettext
-        i18n.dengettext = i18n.get_translation(language='de').ngettext
+        i18n.gettext = i18n.get_translation(
+            language='C', tracker_home=".").gettext
+        i18n.degettext = i18n.get_translation(
+            language='de', tracker_home=".").gettext
+        i18n.ngettext = i18n.get_translation(
+            language='C', tracker_home=".").ngettext
+        i18n.dengettext = i18n.get_translation(
+            language='de', tracker_home=".").ngettext
 
     def tearDown(self):
         i18n.gettext = self.old_gettext_

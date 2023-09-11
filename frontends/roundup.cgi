@@ -20,6 +20,7 @@
 from __future__ import print_function
 from roundup import version_check
 from roundup.i18n import _
+from roundup.anypy.html import html_escape
 from roundup.anypy.strings import s2b, StringIO
 import sys, time
 
@@ -72,7 +73,7 @@ LOG = DevNull()
 # Set up the error handler
 # 
 try:
-    import traceback, cgi
+    import traceback
     from roundup.cgi import cgitb
 except:
     print("Content-Type: text/plain\n")
@@ -181,7 +182,7 @@ def main(out, err):
                 request.send_response(404)
                 request.send_header('Content-Type', 'text/html')
                 request.end_headers()
-                out.write(s2b('Not found: %s'%cgi.escape(client.path)))
+                out.write(s2b('Not found: %s'%html_escape(client.path)))
 
     else:
         from roundup.anypy import urllib_
@@ -196,7 +197,7 @@ def main(out, err):
             w(s2b(_('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n')%{
                 'tracker_url': os.environ['SCRIPT_NAME']+'/'+
                                urllib_.quote(tracker),
-                'tracker_name': cgi.escape(tracker)}))
+                'tracker_name': html_escape(tracker)}))
         w(s2b(_('</ol></body></html>')))
 
 #

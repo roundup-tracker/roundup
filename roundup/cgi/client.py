@@ -4,7 +4,6 @@ __docformat__ = 'restructuredtext'
 
 import base64
 import binascii
-import cgi
 import codecs
 import email.utils
 import errno
@@ -25,6 +24,7 @@ except ImportError:
     class SysCallError(Exception):
         pass
 
+from roundup.anypy.cgi_ import cgi
 import roundup.anypy.email_  # noqa: F401  -- patches for email library code
 import roundup.anypy.random_ as random_   # quality of random checked below
 
@@ -43,8 +43,8 @@ from roundup.cgi.exceptions import (
     Redirect, SendFile, SendStaticFile, SeriousError)
 from roundup.cgi.form_parser import FormParser
 
-from roundup.exceptions import LoginError, Reject, RejectRaw, \
-                               Unauthorised, UsageError
+from roundup.exceptions import LoginError, RateLimitExceeded, Reject, \
+                               RejectRaw, Unauthorised, UsageError
 
 from roundup.mailer import Mailer, MessageSendError
 
@@ -531,9 +531,9 @@ class Client:
         # strip HTTP_PROXY issue2550925 in case
         # PROXY header is set.
         if 'HTTP_PROXY' in self.env:
-            del(self.env['HTTP_PROXY'])
+            del (self.env['HTTP_PROXY'])
         if 'HTTP_PROXY' in os.environ:
-            del(os.environ['HTTP_PROXY'])
+            del (os.environ['HTTP_PROXY'])
 
         xmlrpc_enabled = self.instance.config.WEB_ENABLE_XMLRPC
         rest_enabled = self.instance.config.WEB_ENABLE_REST
@@ -572,12 +572,20 @@ class Client:
             self.determine_language()
         # Open the database as the correct user.
         try:
-            self.determine_user()
+            self.determine_user(is_api="xmlrpc")
             self.db.tx_Source = "xmlrpc"
             self.db.i18n = self.translator
         except LoginError as msg:
             output = xmlrpc_.client.dumps(
                 xmlrpc_.client.Fault(401, "%s" % msg),
+                allow_none=True)
+            self.setHeader("Content-Type", "text/xml")
+            self.setHeader("Content-Length", str(len(output)))
+            self.write(s2b(output))
+            return
+        except RateLimitExceeded as msg:
+            output = xmlrpc_.client.dumps(
+                xmlrpc_.client.Fault(429, "%s" % msg),
                 allow_none=True)
             self.setHeader("Content-Type", "text/xml")
             self.setHeader("Content-Length", str(len(output)))
@@ -655,12 +663,18 @@ class Client:
         # Open the database as the correct user.
         # TODO: add everything to RestfulDispatcher
         try:
-            self.determine_user()
+            self.determine_user(is_api="rest")
             self.db.tx_Source = "rest"
             self.db.i18n = self.translator
         except LoginError as err:
             output = s2b("Invalid Login - %s" % str(err))
             self.reject_request(output, status=http_.client.UNAUTHORIZED)
+            return
+        except RateLimitExceeded as err:
+            output = s2b("%s" % str(err))
+            # PYTHON2:FIXME http_.client.TOO_MANY_REQUESTS missing
+            # python2 so use numeric code.
+            self.reject_request(output, status=429)
             return
 
         # verify Origin is allowed on all requests including GET.
@@ -854,6 +868,8 @@ class Client:
             except SysCallError:
                 # OpenSSL.SSL.SysCallError is similar to IOError above
                 pass
+            except RateLimitExceeded:
+                raise
 
         except SeriousError as message:
             self.write_html(str(message))
@@ -916,6 +932,9 @@ class Client:
                     raise NotFound(e)
         except FormError as e:
             self.add_error_message(self._('Form Error: ') + str(e))
+            self.write_html(self.renderContext())
+        except RateLimitExceeded as e:
+            self.add_error_message(str(e))
             self.write_html(self.renderContext())
         except IOError:
             # IOErrors here are due to the client disconnecting before
@@ -1108,9 +1127,9 @@ class Client:
             self.make_user_anonymous()
             raise LoginError(str(err))
 
-        return(token)
+        return (token)
 
-    def determine_user(self):
+    def determine_user(self, is_api=False):
         """Determine who the user is"""
         self.opendb('admin')
 
@@ -1171,8 +1190,8 @@ class Client:
                         # So we set the user to anonymous first.
                         self.make_user_anonymous()
                         login = self.get_action_class('login')(self)
-                        login.verifyLogin(username, password)
-                    except LoginError:
+                        login.verifyLogin(username, password, is_api=is_api)
+                    except (LoginError, RateLimitExceeded):
                         self.make_user_anonymous()
                         raise
                     user = username
@@ -1839,7 +1858,7 @@ class Client:
         # mime type detection is performed in cgi.form_parser
 
         # everything not here is served as 'application/octet-stream'
-        whitelist = [
+        mime_type_allowlist = [
             'text/plain',
             'text/x-csrc',    # .c
             'text/x-chdr',    # .h
@@ -1859,7 +1878,7 @@ class Client:
         ]
 
         if self.instance.config['WEB_ALLOW_HTML_FILE']:
-            whitelist.append('text/html')
+            mime_type_allowlist.append('text/html')
 
         try:
             mime_type = klass.get(nodeid, 'type')
@@ -1869,7 +1888,7 @@ class Client:
         if not mime_type:
             mime_type = 'text/plain'
 
-        if mime_type not in whitelist:
+        if mime_type not in mime_type_allowlist:
             mime_type = 'application/octet-stream'
 
         # --/ mime-type security
@@ -2743,7 +2762,7 @@ class Client:
         """
         if value is None:
             try:
-                del(self.additional_headers[header])
+                del (self.additional_headers[header])
             except KeyError:
                 pass
         else:
@@ -2764,7 +2783,7 @@ class Client:
             headers['Content-Type'] = 'text/html; charset=utf-8'
 
         if response in [204, 304]:  # has no body so no content-type
-            del(headers['Content-Type'])
+            del (headers['Content-Type'])
 
         headers = list(headers.items())
 

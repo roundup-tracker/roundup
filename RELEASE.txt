@@ -33,8 +33,10 @@ Roundup release checklist:
       CHANGES.txt (set date for version as well) 
       roundup/__init__.py
       website/www/index.txt (current stable version, release highlights)
-      website/www/conf.py  (update copyright, version from __init__.py)
-      scripts/Docker/Docker update value of org.opencontainers.image.version
+      website/www/conf.py  (update copyright, version auto-set from
+          roundup/__init__.py)
+      scripts/Docker/Dockerfile update value of
+          org.opencontainers.image.version
 3a. Update license end date in COPYING.txt
 3b. Update doc/acknowledgements.txt (add section for
     release, churn contributers etc.). (Use hg churn -c -r ####..####)
@@ -101,7 +103,7 @@ Roundup release checklist:
     added and removed files. Last release e.g. 1.5.1 where tip is what would
     become 1.6) E.G.
       
-      hg status --rev 2.0.0:tip | sed -ne 's/^A //p' | while read i ; \
+      hg status --rev 2.2.0:tip | sed -ne 's/^A //p' | while read i ; \
       do echo $i; grep "$i" roundup.egg-info/SOURCES.txt; done | \
       uniq -c | sort -rn
 
@@ -112,7 +114,7 @@ Roundup release checklist:
     (Note: files under website/ shouldn't be in the manifest.)
 10a: Check for removed files still in manifest:
 
-      hg status --rev 2.0.0:tip | sed -ne 's/^R //p' | while read i ; \
+      hg status --rev 2.2.0:tip | sed -ne 's/^R //p' | while read i ; \
       do echo $i; grep "$i" roundup.egg-info/SOURCES.txt; done | \
       uniq -c | sort -n
 
@@ -128,6 +130,26 @@ Roundup release checklist:
     with all available Python versions.
 11a. (TBD how to test wheel binary distribution before uploading.)
 
+11b. Generate GPG signature file
+
+       cd dist
+       gpg --detach-sign --armor -u 1F2DD0CB756A76D8 <filename>.tar.gz
+
+     you should be prompted to use the roundup release key. If not you
+     can add  --local=roundup-devel@lists.sourceforge.net.
+     This will create a file by the name <filename>.tar.gz.asc.
+
+     Move file to website/www/signature directory
+
+       mv <filename>.tar.gz.asc ../webite/www/signatures/.
+       hg add ../website/www/signature/<filename>.tar.gz.asc
+       # commiting the file will be done in step 12
+       cd ..
+
+    Add a link to the signature to doc/security.txt. Add a new link
+    to the start of the signature list in doc/security.txt (look for
+    the word multicol).
+
 12. Assuming all is well commit and tag the release in the version-control
     system.
       a) hg commit ... # commit any edits from steps 1-5
@@ -137,32 +159,11 @@ Roundup release checklist:
 
 13. Upload source distribution to PyPI - requires you sign up for a
     pypi account and be added as a maintainer to roundup. Ask existing
-    maintainer for access. You can do this two ways:
+    maintainer for access. Do this using twine (pip install twine).
 
-      python3 setup.py sdist upload --repository pypi
-
-    which rebuilds the source distribution tarball and uploads it.
-    This means that you have uploaded something that is not tested,
-    also it does not have a gpg signature. It should be the same as
-    the tarball you tested but....
-
-    A better way to do this is to use twine (pip install twine).
-    You need to sign the tarball. This can be done with:
-
-      cd dist
-      gpg --detach-sign --armor -u 1F2DD0CB756A76D8 <filename>.tgz
-      
-    you should be prompted to use the roundup release key. If not you
-    can add  --local=roundup-devel@lists.sourceforge.net.
-    This will create a file by the name <filename>.tgz.asc.
     The original directions used twine to upload the tarball and the
     signature, but as of May 2023, PyPI no longer accepts signature
-    files.
-
-    So we publish the signature as part of the website. Move the file
-    to the website/www/signatures directory. Commit the .asc signature
-    file to mercurial. Add a new list item at the start of the
-    signature list in doc/security.txt (look for the word multicol).
+    files. So we publish the signature as part of the website.
 
     Use twine to upload the distribution tarball. E.G.
 
@@ -177,6 +178,15 @@ Roundup release checklist:
     distributions (if created). Follow the directions for generating
     the gpg asc files and place the .whl.asc in the signature
     directory.
+
+    Another way to upload is to use:
+
+      python3 setup.py sdist upload --repository pypi
+
+    BUT this rebuilds the source distribution tarball and uploads it.
+    This means that you have uploaded something that is not tested.
+    Also the metadata in the file changes and will not match the GPG
+    signature you commited in step 12. So use twine.
 
 14. Refresh website.
       website/README.txt
@@ -205,9 +215,10 @@ Roundup release checklist:
 17a. install docker
 17b. run: (issues, how to release a version e.g. to update alpine for
            security issues. Currently thinking that release tag is
-	   rounduptracker/roundup:2.2.0-1, -2 etc? Then add a tag
+	   rounduptracker/roundup:2.2.0-1, -2 etc. Then add a tag
 	   rounduptracker/roundup:2.2.0 that moves to always tag
-	   the latest -N release??)
+	   the latest -N release. Also roundup:latest points to the
+	   newest -N for the newest roundup version.)
 
         docker build -t rounduptracker/roundup:2.2.0 \
            --build-arg="source=pypi" -f scripts/Docker/Dockerfile .
@@ -303,13 +314,14 @@ $ gpg --edit-key 411E354B5D1AF26125D621221F2DD0CB756A76D8
   > save
   [ saves both keys, will need the private key and passphrase ]
 
-EXPORT NEW KEY
-==============
+EXPORT NEW PUBLIC KEY
+=====================
 
 $ gpg --export -a roundup-devel@lists.sourceforge.net >> \
    tools/roundup.public.pgp.key
 
-then edit roundup.public.pgp.key keeping only the last key stat starts
+then edit roundup.public.pgp.key keeping only the last key that starts
 with: -----BEGIN PGP PUBLIC KEY BLOCK-----
 
-Commmit new key to mercurial.
+and add back the preamble that describes where to find doc for
+it. Commmit new key to mercurial.

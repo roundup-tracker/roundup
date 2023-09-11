@@ -6,7 +6,7 @@
 
 from __future__ import print_function
 import fileinput
-import unittest, os, shutil, errno, sys, difflib, cgi, re
+import unittest, os, shutil, errno, sys, difflib, re
 
 from roundup.admin import AdminTool
 
@@ -61,6 +61,13 @@ def find_in_file(filename, regexp):
     """
     with open(filename) as f:
         contents = f.read()
+
+    try:
+        # handle text files with \r\n line endings
+        contents.index("\r", 0, 100)
+        contents = contents.replace("\r\n", "\n")
+    except ValueError:
+        pass
 
     m = re.search(regexp, contents, re.MULTILINE)
 
@@ -1032,6 +1039,26 @@ class AdminTest(object):
         expected = 'Error: Internal error: pragma can not handle values of type: float'
         self.assertIn(expected, out)
 
+
+        # -----
+        inputs = iter(["pragma display_protected=yes",
+                       "display user1",
+                       "quit"])
+        AdminTool.my_input = lambda _self, _prompt: next(inputs)
+
+        self.install_init()
+        self.admin=AdminTool()
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        
+        print(ret)
+        expected = '\n*creation: '
+        self.assertIn(expected, out)
+
         # -----
         AdminTool.my_input = orig_input
 
@@ -1479,6 +1506,7 @@ Role "user":
                 'timezone: <roundup.hyperdb.String>',
                 'password: <roundup.hyperdb.Password>',
             ]
+
             
         with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, 'specification', 'user']
@@ -1487,6 +1515,25 @@ Role "user":
         outlist = out.getvalue().strip().split("\n")
         print(outlist)
         self.assertEqual(sorted(outlist), sorted(spec))
+
+        # -----
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'display_protected=1', 'specification', 'user']
+            ret = self.admin.main()
+
+        outlist = out.getvalue().strip().split('\n')
+        
+        protected = [ 'id: <roundup.hyperdb.String>',
+                      'creation: <roundup.hyperdb.Date>',
+                      'activity: <roundup.hyperdb.Date>',
+                      'creator: <roundup.hyperdb.Link to "user">',
+                      'actor: <roundup.hyperdb.Link to "user">']
+        print(outlist)
+        self.assertEqual(sorted(outlist), sorted(spec + protected))
 
     def testRetireRestore(self):
         ''' Note the tests will fail if you run this under pdb.
@@ -1572,7 +1619,64 @@ Role "user":
         expected="1: admin\n   2: anonymous\n   3: user1"
         self.assertEqual(out, expected)
 
+        # test show_retired pragma three cases:
+        # no - no retired items
+        # only - only retired items
+        # both - all items
 
+        # verify that user4 only is listed
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'show_retired=only', 'list', 'user']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        expected="4: user1"
+        self.assertEqual(out, expected)
+
+        # verify that all users are shown
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'show_retired=both', 'list', 'user']
+            ret = self.admin.main()
+        out_list = sorted(out.getvalue().strip().split("\n"))
+        print(out)
+        expected_list=sorted("1: admin\n   2: anonymous\n   3: user1\n   4: user1".split("\n"))
+        self.assertEqual(out_list, expected_list)
+
+        # verify that active users are shown
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'show_retired=no', 'list', 'user']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        expected="1: admin\n   2: anonymous\n   3: user1"
+        self.assertEqual(out, expected)
+
+        # test display headers for retired/active
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-P',
+                      'display_header=yes', 'display', 'user3,user4']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        self.assertIn("[user3 (active)]\n", out)
+        self.assertIn( "[user4 (retired)]\n", out)
+
+        # test that there are no headers
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'display', 'user3,user4']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print(out)
+        self.assertNotIn("user3", out)
+        self.assertNotIn("user4", out)
 
     def testTable(self):
         ''' Note the tests will fail if you run this under pdb.

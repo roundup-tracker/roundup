@@ -12,7 +12,55 @@ v2.7.2 or later are required to run newer releases of Roundup.
 Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
 python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 
-2023-xx-yy 2.3.0
+2024-XX-YY 2.4.0
+
+Fixed:
+
+- issue2551063 - Rest/Xmlrpc interfaces needs failed login protection.
+  Failed API login rate limiting with expiring lockout added. (John
+  Rouillard)
+- issue2551184 - improve i18n handling. Patch to test to make sure it
+  uses the test tracker's locale files and not other locale
+  files. (Marcus Priesch)
+- issue2551283 - fail if version 2.4.9 of markdown2 is used, it broke
+  [issue1](issue1) style links. Support markdown2 2.4.8 and earlier
+  and 2.4.10 with its new schema filtering method. (John Rouillard)
+- multiple flake8 fixes (John Rouillard)
+- rename loop variable in 'for sendto in sendto:' (John Rouillard)
+- issue2551193 - Fix roundup for removal of cgi and cgitb standard
+  python modules (and FieldStorage/MiniFieldStorage). Replaced imports
+  from cgi to use roundup.anypy.cgi_ which will load the system cgi
+  unless it is missing. Then it will load roundup.anypy.vendored.cgi
+  and make *FieldStroage symbols available. Roundp uses its own
+  cgitb.py and not the system cgitb.py. It looks like it's the
+  precursor to the system cgitb.py. (John Rouillard)
+- issue2551278 - datetime.datetime.utcnow deprecation. Replace
+  calls with equivalent that produces timezone aware dates rather than
+  naive dates. (John Rouillard)
+- when using "roundup-admin display" indent the listing only if
+  headers or protected fields are requested. This makes the output
+  look like it did previously to 2.3.0 if the new features aren't
+  used.  Roundup-admin output was never meant to be machine parsed, but
+  don't break it unless required. (John Rouillard)
+- issue2551290 - pip install roundup Hangs on Windows 10
+  The install under windows goes into an infinite loop using pip or
+  source install. (John Rouillard)
+- Document use of pyreadline3 to allow roundup-admin to have CLI editing
+  on windows. (John Rouillard)
+
+Features:
+
+- issue2551103 - add pragma 'display_protected' to roundup-admin. If
+  true, print protected attributes like id, activity, actor...
+  when using display or specification subcommands. (John Rouillard)
+- add -P pragma=value command line option to roundup-admin. Allows
+  setting pragmas when using non-interactive mode. (John Rouillard)
+- issue685275 - add pragma show_retired to control display of retired
+  items when using list/table. Add pragma display_header to print
+  headers for display command. Header displays designator and
+  retired/active status.
+
+2023-07-13 2.3.0
 
 Fixed:
 

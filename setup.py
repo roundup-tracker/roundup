@@ -87,13 +87,15 @@ def get_prefix():
     if prefix:
         return prefix
     else:
-        # get the platform lib path. Must start with / else infinite loop.
+        # start with the platform library
         plp = get_path('platlib')
         # nuke suffix that matches lib/* and return prefix
         head, tail = os.path.split(plp)
-        while tail not in ['lib', 'lib64' ] and head != '/':
+        old_head = None
+        while tail.lower() not in ['lib', 'lib64' ] and head != old_head:
+            old_head = head
             head, tail = os.path.split(head)
-        if head == '/':
+        if head == old_head:
             head = sys.prefix
         return head
 
@@ -198,8 +200,8 @@ def main():
           long_description_content_type='text/x-rst',
           url='https://www.roundup-tracker.org',
           download_url='https://pypi.org/project/roundup',
-          classifiers=[#'Development Status :: 5 - Production/Stable',
-                       'Development Status :: 4 - Beta',
+          classifiers=['Development Status :: 5 - Production/Stable',
+                       #'Development Status :: 4 - Beta',
                        #'Development Status :: 3 - Alpha',
                        'Environment :: Console',
                        'Environment :: Web Environment',

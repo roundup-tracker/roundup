@@ -1710,6 +1710,8 @@ class Class(hyperdb.Class):
         finally:
             if must_close:
                 db.close()
+
+        res.sort()
         return res
 
     num_re = re.compile(r'^\d+$')

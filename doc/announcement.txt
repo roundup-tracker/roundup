@@ -1,5 +1,5 @@
-I'm proud to release version 2.3.0b2 of the Roundup issue
-tracker.  This release is a bugfix and minor feature
+I'm proud to release version 2.3.0 of the Roundup issue
+tracker.  This release is a bugfix and feature
 release, so make sure to read `docs/upgrading.txt
 <https://www.roundup-tracker.org/docs/upgrading.html>`_ to
 bring your tracker up to date.
@@ -24,10 +24,11 @@ then unpack and test/install the tarball. Also::
 
 Among the notable improvements from the 2.2.0 release are:
 
-* Dockerfile demo mode implemented.
+* Dockerfile demo mode implemented. This allows quick evaluation as
+  well as the ability to spin up a configured tracker to customise.
 
 * SQLite backends can use WAL mode to reduce blocking between readers
-  and writers.
+  and writers improving concurrent use.
 
 * Redis can be used for session database with SQLite and dbm
   backends. Provides a major performance improvement.
@@ -38,13 +39,13 @@ Among the notable improvements from the 2.2.0 release are:
 * Postgres full text index can now be enabled.
 
 * Modifications to in-reply-to threading when there are multiple
-  matches.
+  matches resulting in more predictable handling of messages.
 
 * Many updates to documentation to make it scannable, useful and
   work on mobile.
 
 * Admin documentation includes a section on setting up Content
-  Security Policy (CSP)
+  Security Policy (CSP) to better secure your Roundup trackers.
 
 * REST now allows rate limiting headers to be accessed by client
   JavaScript.
@@ -52,7 +53,8 @@ Among the notable improvements from the 2.2.0 release are:
 * Default number of rounds for PBKDF2 updated to 2M to account for
   improvements in password crackers and CPU power.
 
-* Support PBKDF2 with SHA512 for password storage
+* Support PBKDF2 with SHA512 for password storage to improve
+  resistance to password crackers.
 
 * Deprecate SSHA password hash function.
 
@@ -60,13 +62,14 @@ Among the notable improvements from the 2.2.0 release are:
   incurred by reindexing.
 
 * roundup-admin can list available templates and their installed
-  locations.
+  locations. This is useful when installing via pip or in a docker
+  container as supporting files are not stored in the usual locations
+  like /usr/share/roundup.
 
-* Crash fixes in detector handling, configuration handling, fix for
-  sorting of multilinks.
+* Crash fixes in detector handling
 
 The file CHANGES.txt has a detailed list of feature additions and
-bug fixes (52) for each release. The most recent changes from
+bug fixes (53) for each release. The most recent changes from
 there are at the end of this announcement. Also see the
 information in doc/upgrading.txt.
 
@@ -148,7 +151,7 @@ and supports four database back-ends (anydbm, sqlite, mysql and postgresql).
 Recent Changes
 ==============
 
-From 2.2.0 to 2.3.0b2
+From 2.2.0 to 2.3.0
 
 Fixed:
 ------
@@ -207,7 +210,7 @@ Fixed:
   'Access-Control-Allow-Credentials' when not matching '*'. Fixes
   security issue with rest when using '*'.  (John Rouillard)
 - issue2551263: In REST response expose rate limiting, sunset, allow
-  HTTP headers to calling javascript.  (John Rouillard)
+  HTTP headers to calling JavaScript.  (John Rouillard)
 - issue2551257: When downloading an attached (user supplied file),
   make sure that an 'X-Content-Type-Options: nosniff' header is sent.
   (John Rouillard)
@@ -298,3 +301,6 @@ Features:
   reindex the first 1000 issues while reporting any missing issues
   in the range. Also completion progress is reported when indexing a
   specific class.
+- doc updates: add explanation for SQL code in 1.3.3->1.4.0 upgrade.
+  document schema table in rdbms backends and how to dump/extract
+  version from them. (John Rouillard)

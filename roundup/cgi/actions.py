@@ -1,4 +1,3 @@
-import cgi
 import codecs
 import csv
 import re
@@ -8,11 +7,12 @@ from datetime import timedelta
 from roundup import hyperdb, token_r, date, password
 from roundup.actions import Action as BaseAction
 from roundup.anypy import urllib_
+from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
 from roundup.anypy.strings import StringIO
 from roundup.cgi import exceptions, templating
 from roundup.cgi.timestamp import Timestamped
-from roundup.exceptions import Reject, RejectRaw
+from roundup.exceptions import RateLimitExceeded, Reject, RejectRaw
 from roundup.i18n import _
 from roundup.mailgw import uidFromAddress
 from roundup.rate_limit import Gcra, RateLimit
@@ -26,6 +26,8 @@ __all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction',
 
 
 class Action:
+    loginLimit = None
+
     def __init__(self, client):
         self.client = client
         self.form = client.form
@@ -37,8 +39,6 @@ class Action:
         self.base = client.base
         self.user = client.user
         self.context = templating.context(client)
-        self.loginLimit = RateLimit(client.db.config.WEB_LOGIN_ATTEMPTS_MIN,
-                                    timedelta(seconds=60))
 
     def handle(self):
         """Action handler procedure"""
@@ -149,7 +149,7 @@ class Action:
         if not allowed_pattern.match(parsed_url_tuple.fragment):
             raise ValueError(self._("Fragment component (%(url_fragment)s) in %(url)s is not properly escaped") % info)
 
-        return(urllib_.urlunparse(parsed_url_tuple))
+        return urllib_.urlunparse(parsed_url_tuple)
 
     name = ''
     permissionType = None
@@ -1298,36 +1298,6 @@ class LoginAction(Action):
                  redirect_url_tuple.fragment))
 
         try:
-            # Implement rate limiting of logins by login name.
-            # Use prefix to prevent key collisions maybe??
-            # set client.db.config.WEB_LOGIN_ATTEMPTS_MIN to 0
-            #  to disable
-            if self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN:  # if 0 - off
-                rlkey = "LOGIN-" + self.client.user
-                limit = self.loginLimit
-                gcra = Gcra()
-                otk = self.client.db.Otk
-                try:
-                    val = otk.getall(rlkey)
-                    gcra.set_tat_as_string(rlkey, val['tat'])
-                except KeyError:
-                    # ignore if tat not set, it's 1970-1-1 by default.
-                    pass
-                # see if rate limit exceeded and we need to reject the attempt
-                reject = gcra.update(rlkey, limit)
-
-                # Calculate a timestamp that will make OTK expire the
-                # unused entry 1 hour in the future
-                ts = otk.lifetime(3600)
-                otk.set(rlkey, tat=gcra.get_tat_as_string(rlkey),
-                        __timestamp=ts)
-                otk.commit()
-
-                if reject:
-                    # User exceeded limits: find out how long to wait
-                    status = gcra.status(rlkey, limit)
-                    raise Reject(_("Logins occurring too fast. Please wait: %s seconds.") % status['Retry-After'])
-
             self.verifyLogin(self.client.user, password)
         except exceptions.LoginError as err:
             self.client.make_user_anonymous()
@@ -1347,6 +1317,28 @@ class LoginAction(Action):
                 raise exceptions.Redirect(redirect_url)
             # if no __came_from, send back to base url with error
             return
+        except RateLimitExceeded as err:
+            self.client.make_user_anonymous()
+            for arg in err.args:
+                self.client.add_error_message(arg)
+
+            if '__came_from' in self.form:
+                #  usually web only. If API uses this they will get
+                #  confused as the 429 isn't returned. Without this
+                #  a web user will get redirected back to the home
+                # page rather than stay on the page where they tried
+                # to login.
+                # set a new error message
+                query['@error_message'] = err.args
+                redirect_url = urllib_.urlunparse(
+                    (redirect_url_tuple.scheme,
+                     redirect_url_tuple.netloc,
+                     redirect_url_tuple.path,
+                     redirect_url_tuple.params,
+                     urllib_.urlencode(list(sorted(query.items())), doseq=True),
+                     redirect_url_tuple.fragment))
+                raise exceptions.Redirect(redirect_url)
+            raise
 
         # now we're OK, re-open the database for real, using the user
         self.client.opendb(self.client.user)
@@ -1370,7 +1362,139 @@ class LoginAction(Action):
 
             raise exceptions.Redirect(redirect_url)
 
-    def verifyLogin(self, username, password):
+    def rateLimitLogin(self, username, is_api=False, update=True):
+        """Implement rate limiting of logins by login name.
+
+           username - username attempting to log in. May or may not
+                      be valid.
+           is_api - set to False for login via html page
+                    set to "xmlrpc" for xmlrpc api
+                    set to "rest" for rest api
+           update - if False will raise RateLimitExceeded without
+                    updating the stored value. Default is True
+                    which updates stored value. Used to deny access
+                    when user successfully logs in but the user
+                    doesn't have a valid attempt available.
+
+           Login rates for a user are split based on html vs api
+           login.
+
+           Set self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN to 0
+           to disable for web interface. Set
+           self.client.db.config.API_LOGIN_ATTEMPTS to 0
+           to disable for web interface.
+
+           By setting LoginAction.limitLogin, the admin can override
+           the HTML web page rate limiter if they need to change the
+           interval from 1 minute.
+        """
+        config = self.client.db.config
+
+        if not is_api:
+            # HTML web login. Period is fixed at 1 minute.
+            # Override by setting self.loginLimit. Yech.
+            allowed_attempts = config.WEB_LOGIN_ATTEMPTS_MIN
+            per_period = 60
+            rlkey = "LOGIN-" + username
+        else:
+            # api login. Both Rest and XMLRPC use this.
+            allowed_attempts = config.WEB_API_FAILED_LOGIN_LIMIT
+            per_period = config.WEB_API_FAILED_LOGIN_INTERVAL_IN_SEC
+            rlkey = "LOGIN-API" + username
+
+        if not allowed_attempts:  # if allowed_attempt == 0 - off
+            return
+
+        if self.loginLimit and not is_api:
+            # provide a way for user (via interfaces.py) to
+            # change the interval on the html login limit.
+            limit = self.loginLimit
+        else:
+            limit = RateLimit(allowed_attempts,
+                              timedelta(seconds=per_period))
+
+            gcra = Gcra()
+            otk = self.client.db.Otk
+
+            try:
+                val = otk.getall(rlkey)
+                gcra.set_tat_as_string(rlkey, val['tat'])
+            except KeyError:
+                # ignore if tat not set, tat is 1970-1-1 by default.
+                pass
+
+            # see if rate limit exceeded and we need to reject
+            # the attempt
+            reject = gcra.update(rlkey, limit)
+
+            # Calculate a timestamp that will make OTK expire the
+            # unused entry in twice the period defined for the
+            # rate limiter.
+            if update:
+                ts = otk.lifetime(per_period*2)
+                otk.set(rlkey, tat=gcra.get_tat_as_string(rlkey),
+                        __timestamp=ts)
+                otk.commit()
+
+            # User exceeded limits: find out how long to wait
+            limitStatus = gcra.status(rlkey, limit)
+
+            if not reject:
+                return
+
+            for header, value in limitStatus.items():
+                self.client.setHeader(header, value)
+
+            # User exceeded limits: tell humans how long to wait
+            # Headers above will do the right thing for api
+            # aware clients.
+            try:
+                retry_after = limitStatus['Retry-After']
+            except KeyError:
+                # handle race condition. If the time between
+                # the call to grca.update and grca.status
+                # is sufficient to reload the bucket by 1
+                # item, Retry-After will be missing from
+                # limitStatus. So report a 1 second delay back
+                # to the client. We treat update as sole
+                # source of truth for exceeded rate limits.
+                retry_after = 1
+                self.client.setHeader('Retry-After', '1')
+
+            # make rate limiting headers available to javascript
+            # even for non-api calls.
+            self.client.setHeader(
+                "Access-Control-Expose-Headers",
+                ", ".join([
+                    "X-RateLimit-Limit",
+                    "X-RateLimit-Remaining",
+                    "X-RateLimit-Reset",
+                    "X-RateLimit-Limit-Period",
+                    "Retry-After"
+                ])
+            )
+
+            raise RateLimitExceeded(_("Logins occurring too fast. Please wait: %s seconds.") % retry_after)
+
+    def verifyLogin(self, username, password, is_api=False):
+        """Authenticate the user with rate limits.
+
+           All logins (valid and failing) from a web page calling the
+           LoginAction method are rate limited to the config.ini
+           configured value in 1 minute. (Interval can be changed see
+           rateLimitLogin method.)
+
+           API logins are only rate limited if they fail. Successful
+           api logins are rate limited using the
+           api_calls_per_interval and api_interval_in_sec settings in
+           config.ini.
+
+           Once a user receives a rate limit notice, they must
+           wait the recommended time to try again as the account is
+           locked out for the recommended time. If a user tries to
+           log in while locked out, they will get a 429 rejection
+           even if the username and password are correct.
+        """
         # make sure the user exists
         try:
             # Note: lookup only searches non-retired items.
@@ -1381,10 +1505,24 @@ class LoginAction(Action):
             # delay caused by checking password only on valid
             # users.
             _discard = self.verifyPassword("2", password)          # noqa: F841
+
+            # limit logins to an acceptable rate. Do it for
+            # invalid usernames so attempts to break
+            # an invalid user will also be rate limited.
+            self.rateLimitLogin(username, is_api=is_api)
+
+            # this is not hit if rate limit is exceeded
             raise exceptions.LoginError(self._('Invalid login'))
+
+        # if we are rate limited and the user tries again,
+        # reject the login. update=false so we don't count
+        # a potentially valid login.
+        self.rateLimitLogin(username, is_api=is_api, update=False)
 
         # verify the password
         if not self.verifyPassword(self.client.userid, password):
+            self.rateLimitLogin(username, is_api=is_api)
+            # this is not hit if rate limit is exceeded
             raise exceptions.LoginError(self._('Invalid login'))
 
         # Determine whether the user has permission to log in.

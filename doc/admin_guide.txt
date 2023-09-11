@@ -515,7 +515,7 @@ language described at:
 https://www.sqlite.org/fts5.html#full_text_query_syntax. This
 supports:
 
-* plain word search (joined with and similar to other search methods)
+* plain word search (joined by 'and', similar to other search methods)
 * phrase search with terms enclosed in quotes (``"``)
 * proximity search with varying distances using ``NEAR()``
 * boolean operations by grouping with parentheses and using ``AND``
@@ -818,12 +818,12 @@ header to the tracker using::
 
 note that the header is passed exactly as supplied by the upstream
 server. It is **not** prefixed with ``HTTP_`` like other headers since
-you are explicitly whitelisting the header. Multiple comma separated
+you are explicitly allowing the header. Multiple comma separated
 headers can be passed to the ``-I`` option. These could be used in a
 detector or other tracker extensions, but only one header can be used
 by the tracker as an authentication header.
 
-To make the tracker honor the new variable changing the tracker
+To make the tracker honor the new variable, change the tracker's
 ``config.ini`` to read::
 
   [web]
@@ -1248,6 +1248,8 @@ The basic usage is::
   -S <string>       -- when outputting lists of data, string-separate them
   -s                -- when outputting lists of data, space-separate them.
                        Same as '-S " "'.
+  -P pragma=value   -- Set a pragma on command line rather than interactively.
+                       Can be used multiple times.
   -V                -- be verbose when importing
   -v                -- report Roundup and Python versions (and quit)
 

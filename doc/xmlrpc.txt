@@ -88,6 +88,18 @@ issues. Patches with tests to roundup to use defusedxml are welcome.
    be passed in cleartext unless the server is proxied behind
    another server (such as Apache or lighttpd) that provides SSL.
 
+Rate Limiting Failed Logins
+---------------------------
+
+See the `rest documentation
+<rest.html#rate-limiting-api-failed-logins>`_ for rate limiting failed
+logins on the API. There is no login rate limiting for the standalone
+roundup-xmlrpc-server. Login rate limiting is only for the `/xmlrpc``
+endpoint when the Roundup server is used.
+
+The XML-RPC uses the same method as the REST API.
+Rate limiting is shared between the XMLRPC and REST APIs.
+
 Client API
 ==========
 The server currently implements seven methods/commands. Each method

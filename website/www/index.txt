@@ -69,26 +69,29 @@ Roundup Issue Tracker
      </a>
    </div>
 
-Roundup is a simple-to-use and -install issue-tracking system with
-command-line, web, REST, XML-RPC and e-mail interfaces.  It is based
-on the winning design from Ka-Ping Yee in the Software Carpentry
-"Track" design competition.
+Roundup is an issue-tracking system that boasts a user-friendly
+interface and easy installation process. It offers a range of
+interfaces, including command-line, web, REST, XML-RPC, and e-mail,
+making it a versatile solution for issue tracking. The system is based
+on the award-winning design by Ka-Ping Yee, which emerged victorious
+in the Software Carpentry “Track” design competition.
 
-It is designed to be customised so you can "track your issues your
-way".
+Roundup is highly customizable, allowing users to tailor the system to
+their specific needs and preferences.
 
-The current stable version of Roundup is 2.3.0b2. It is a bug fix and
-feature release for the 2.2.0 release.
+The latest stable version of Roundup is 2.3.0, which includes bug
+fixes and additional features compared to the previous 2.2.0 release.
 
-It runs with Python 2.7.12+ or 3.6+.
+Roundup is compatible with Python 2.7.12+ or 3.6+.
 
 .. admonition:: Python 2 Support
 
-   Although the original plan was to support Python 2 until 2025,
-   CI resources for testing with Python 2 are being phased out by a
-   number of CI services. Python 3 should be used to deploy new
-   trackers and older trackers should be `upgraded to use Python 3
-   <docs/upgrading.html#python-3-support-info>`_.
+   Despite the initial intention to provide support for Python 2 until
+   2025, several Continuous Integration (CI) services are
+   discontinuing their resources for testing with Python 2. It is
+   recommended to utilize Python 3 for the deployment of new trackers,
+   while existing trackers should be `upgraded to use Python 3.
+   <docs/upgrading.html#python-3-support-info>`_
 
 Release Highlights
 ==================
@@ -110,7 +113,7 @@ Some improvements from the 2.2.0 release are:
 * Postgres full text index can now be enabled.
 
 * Modifications to in-reply-to threading when there are multiple
-  matches results in more predictable handling of messages.
+  matches resulting in more predictable handling of messages.
 
 * Many updates to documentation to make it scannable, useful and
   work on mobile.
@@ -137,9 +140,10 @@ Some improvements from the 2.2.0 release are:
   container as supporting files are not stored in the usual locations
   like /usr/share/roundup.
 
-* Crash fixes in detector handling and configuration handling. 
+* Crash fixes in detector handling, configuration handling, fix for
+  sorting of multilinks.
 
-More info on the 51 changes can be found in the `change notes`_.
+More info on the 53 changes can be found in the `change notes`_.
 
 Roundup Use Cases
 =================
@@ -161,7 +165,7 @@ other :doc:`documentation <docs>`. Roundup has been deployed for:
 * thing management using the `GTD methodology <https://gettingthingsdone.com/>`_.
 
 ...and so on. It's been designed with :doc:`flexibility
-<docs/customizing>` in mind - it's not just another bug
+<docs/customizing>` in mind - it's not merely another bug
 tracker.
 
 
@@ -179,7 +183,7 @@ Follow the source gratification mode with these steps (change the
 2. ``tar -xzvf roundup-2.3.0.tar.gz``
 
    * if you don't have a tar command (e.g windows), use:
-     ``python -c 'import tarfile; tarfile.open(sys.argv[1]).extractall();' roundup-2.3.0.tar.gz``
+     ``python -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.3.0.tar.gz``
 
 
 3. ``cd roundup-2.3.0``

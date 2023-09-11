@@ -92,6 +92,57 @@ Contents:
 
 .. index:: Upgrading; 2.2.0 to 2.3.0
 
+Migrating from 2.3.0 to 2.4.0
+=============================
+
+Update your ``config.ini`` (required)
+-------------------------------------
+
+Upgrade tracker's config.ini file. Use::
+
+  roundup-admin -i /path/to/tracker updateconfig newconfig.ini
+
+to generate a new ini file preserving all your settings.
+You can then merge any local comments from the tracker's
+``config.ini`` to ``newconfig.ini`` and replace
+``config.ini`` with ``newconfig.ini``.
+
+``updateconfig`` will tell you if it is changing old default
+values or if a value must be changed manually.
+
+This will insert the bad API login rate limiting settings.
+
+Bad Login Rate Limiting and Locking (info)
+------------------------------------------
+
+Brute force logins have been rate limited in the HTML web interface
+for a while. This was not the case with the API interfaces.
+
+This release introduces rate limiting for invalid REST or XMLRPC API
+logins.  As with the web interface, users who have hit the rate limit
+have their accounts locked until after the recommended delay time has
+passed.  See `information on configuring the API rate limits`_ for
+details.
+
+.. _`information on configuring the API rate limits`: rest.html#rate-limiting-api-failed-logins
+
+Removal of cgi.py from Python (info)
+------------------------------------
+
+The ``cgi.py`` module will be `removed starting with Python 3.13
+<https://peps.python.org/pep-0594/#cgi>`_. Roundup now `vendors a copy
+<https://pypi.org/project/legacy-cgi/>`_ of ``cgi.py`` and makes it
+and its storage objects available by importing from::
+
+   from roundup.anypy.cgi_ import cgi
+   from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
+
+It is unlikey that you will care unless you have done some expert
+level Roundup customization. If you have, use one of the imports above
+if you plan on running on Python 3.13 (expected in 2024) or newer.
+
+.. index:: Upgrading; 2.2.0 to 2.3.0
+
 Migrating from 2.2.0 to 2.3.0
 =============================
 

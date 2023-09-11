@@ -206,6 +206,16 @@ test suite. Use it by running::
 once over the whole test suite. Then subsequent calls will analyze the
 changed files/functions and run tests that cover those changes.
 
+To run some tests (test_liveserver.py, test_indexer.py, ...) you need
+to have some additional modules installed. These include:
+
+  * requests
+  * mock
+  
+If you are working with a docker container that is set up to execute
+Python application and not for development, you will need to install
+pytest.
+
 Internationalization Notes
 --------------------------
 

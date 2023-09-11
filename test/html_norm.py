@@ -40,7 +40,7 @@ class NormalizingHtmlParser(HTMLParser):
 
     Note that using this rewrites all attributes parsed by HTMLParser
     into attr="value" form even though HTMLParser accepts other
-    attribute specifiction forms.
+    attribute specification forms.
     """
 
     debug = False  # set to true to enable more verbose output
@@ -63,7 +63,7 @@ class NormalizingHtmlParser(HTMLParser):
             if self.debug: print("     attr:", attr)
             self.current_normalized_string += ' %s="%s"' % attr
 
-        self.current_normalized_string += ">"
+        self.current_normalized_string += ">\n"
 
         if tag == 'pre':
             self.preserve_data = True
@@ -83,25 +83,10 @@ class NormalizingHtmlParser(HTMLParser):
             data = " ".join(data.strip().split())
 
         if data:
-            self.current_normalized_string += "\n%s" % data
+            self.current_normalized_string += "%s" % data
 
     def handle_comment(self, data):
         print("Comment  :", data)
-
-    def handle_entityref(self, name):
-        c = chr(name2codepoint[name])
-        if self.debug: print("Named ent:", c)
-
-        self.current_normalized_string += "%s" % c
-
-    def handle_charref(self, name):
-        if name.startswith('x'):
-            c = chr(int(name[1:], 16))
-        else:
-            c = chr(int(name))
-        if self.debug: print("Num ent  :", c)
-
-        self.current_normalized_string += "%s" % c
 
     def handle_decl(self, data):
         print("Decl     :", data)

@@ -1,3 +1,4 @@
+import pytest
 import unittest
 import os, sys, shutil
 
@@ -23,6 +24,14 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
+try:
+    import jinja2
+    skip_jinja2 = lambda func, *args, **kwargs: func
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_jinja2 = mark_class(pytest.mark.skip(
+        reason='Skipping Jinja2 tests: jinja2 library not available'))
+
 class TestDemo(unittest.TestCase):
     def setUp(self):
         self.home = os.path.abspath('_test_demo')
@@ -41,7 +50,14 @@ class TestDemo(unittest.TestCase):
 
         # verify that db was set properly by reading config
         with open(self.home + "/config.ini", "r") as f:
-            config_lines = f.readlines()
+            config_lines = f.read().replace("\r\n", "\n")
+
+        try:
+            # handle text files with \r\n line endings
+            config_lines.index("\r", 0, 100)
+            config_lines = config_lines.replace("\r\n", "\n")
+        except ValueError:
+            pass
 
         self.assertIn("backend = %s\n"%db, config_lines)
 
@@ -73,12 +89,20 @@ class TestDemo(unittest.TestCase):
     def testDemoMinimal(self):
         self.run_install_demo('../templates/minimal', db="sqlite")
 
+    @skip_jinja2
     def testDemoJinja(self):
         self.run_install_demo('jinja2', db="anydbm")
 
         # verify that template was set to jinja2 by reading config
         with open(self.home + "/config.ini", "r") as f:
-            config_lines = f.readlines()
+            config_lines = f.read()
+
+        try:
+            # handle text files with \r\n line endings
+            config_lines.index("\r", 0, 100)
+            config_lines = config_lines.replace("\r\n", "\n")
+        except ValueError:
+            pass
 
         self.assertIn("template_engine = jinja2\n", config_lines)
 

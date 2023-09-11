@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import unittest, os, shutil, errno, sys, difflib, cgi, re
+import unittest, os, shutil, errno, sys, difflib, re
 from hashlib import sha1
 from mock import Mock
 

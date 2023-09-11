@@ -24,7 +24,8 @@ except ImportError:
     # python2 and deplricated in 3
     from base64 import encodestring as base64_encode
 
-import logging, cgi
+import logging
+from roundup.anypy.cgi_ import cgi
 from . import gpgmelib
 from email import message_from_string
 

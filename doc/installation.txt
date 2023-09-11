@@ -76,7 +76,7 @@ program you can run ``python demo.py`` instead.)
 1. ``python3 -m pip download roundup``
 2. ``tar -xzvf roundup-2.2.0.tar.gz``
 
-   * if you don't have a tar command, ``python3 -c 'import tarfile, sys; tarfile.open(sys.argv[1]).extractall();' roundup-2.2.0.tar.gz`` can be used.
+   * if you don't have a tar command, ``python3 -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.2.0.tar.gz`` can be used.
 
 3. ``cd roundup-2.2.0``
 4. ``python3 demo.py``
@@ -258,7 +258,7 @@ docutils
 markdown, markdown2 or mistune
   To use markdown rendering you need to have the markdown_,
   markdown2_ (2.4.9 known to be broken, 2.3.3 known to work),
-  or mistune_ (v0.8.4 tested) package installed.
+  or mistune_ (v0.8.4 tested; python3 only) package installed.
 
 zstd, brotli
   To have roundup compress the returned data using one of these
@@ -280,9 +280,13 @@ pyjwt
   (v1.7.1, v2.0.1 tested). If you don't have it installed, JWT's
   are not supported.
 
-Windows Service
+pywin32 - Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
+
+pyreadline3
+  When running roundup-admin on windows, installing pyreadline3_ will
+  allow history and editing on the command line.
 
 requests
   If you are using OAuth authentication with the roundup-mailgw
@@ -1383,6 +1387,9 @@ If you want you can use a unix domain socket instead. Example:
 ``--bind unix:///var/run/roundup/tracker.sock`` would be used for the
 nginx configuration below.
 
+If you are customizing a docker continer to use gunicorn, see
+https://pythonspeed.com/articles/gunicorn-in-docker/.
+
 .. index:: pair: web interface; uWSGI
    single: wsgi; uWSGI
 
@@ -1651,7 +1658,7 @@ described on the wiki
 wiki also documents how to add `multi-factor (MFA)/one time
 keys/password using TOTP/HOTP
 <https://wiki.roundup-tracker.org/OneTimePasswords>`_. If you
-have a single sign on system, the `wiki page on using Shibboleth
+have a single sign on system see: the `wiki page on using Shibboleth
 <https://wiki.roundup-tracker.org/ShibbolethLogin>`_
 or `LDAP <https://wiki.roundup-tracker.org/LDAPLogin2_1_5_1>`_
 with Roundup. More customisation can be found under the
@@ -1694,7 +1701,15 @@ scheduled (cron) job to access email:
 
 However running cron in a container is problematic (running
 busybox crond as root vs. non-root, requiring setgrp privs
-etc). Patches for implementing email support are welcome.
+etc).
+
+Using the host's crontab with a command like::
+
+   docker exec roundup-tracker roundup-mailgw tracker \
+         mailbox /var/spool/mail/roundup
+
+might be a solution if you can mount a mail spool directory or use
+pop/imap. Patches for implementing better email support are welcome.
 
 If you want to use a MySQL backend, see `Docker-compose 
 Deployment`_ to deploy a Roundup container and a MySQL container
@@ -2009,7 +2024,7 @@ tags when 2.3.0 is released will be:
    security guarantees that using a sha256 sum does.
 
 In addition to the release tags, there may be one or more
-development tags available. All tags will start with `devel`. For
+development tags available. All tags will include `devel`. For
 example: ``rounduptracker/roundup:2.3.0b1-devel``,
 ``rounduptracker/roundup:devel``
 
@@ -2092,6 +2107,17 @@ Panel" is directly accessible from "Start".
 
 I do not believe this is possible to do in previous versions of Windows.
 
+Use pip to install pyreadline3 for roundup-admin line editing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you install pyreadline3_ using pip, roundup-admin will support
+command line editing and history.
+
+This will remove the dreaded::
+
+    Note: command history and editing not available
+
+warning when starting roundup-admin.
 
 Windows Server
 --------------
@@ -2177,7 +2203,6 @@ If you are using Apache as the webserver you might want to use it with
 mod_python instead to serve out Roundup. In that case see the mod_python
 instructions above for details.
 
-
 Sendmail smrsh
 --------------
 
@@ -2213,10 +2238,15 @@ Problems? Testing your Python...
 
 .. note::
    The ``run_tests.py`` script is not packaged in Roundup's source
-   distribution anymore. You should install pytest using your
-   distributions package manger or using pip/pip2/pip3 to install
-   pytest for your python version. See the `administration guide`_
-   for details.
+   distribution anymore. You should install:
+
+   * pytest,
+   * requests, and
+   * mock
+
+   using your distributions package manger or using pip/pip2/pip3 to
+   install pytest etc. for your Python version. See the
+   `administration guide`_ for details.
 
    Remember to have a database user 'rounduptest' prepared (with
    password 'rounduptest'). This user
@@ -2280,6 +2310,7 @@ the test.
 .. _Psycopg2: https://www.psycopg.org/
 .. _pyjwt: https://pypi.org/project/PyJWT/
 .. _pyopenssl: https://pypi.org/project/pyOpenSSL/
+.. _pyreadline3: https://pypi.org/project/pyreadline3/
 .. _pysqlite: https://pysqlite.org/
 .. _pytz: https://pypi.org/project/pytz/
 .. _pywin32: https://pypi.org/project/pywin32/

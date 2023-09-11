@@ -20,10 +20,10 @@ Introduction
 
 After the last 1.6.0 Release, a REST-API developed in 2015 during a
 Google Summer of Code (GSOC) by Chau Nguyen, supervised by Ezio
-Melotti was integrated. The code was updated by Ralf Schlatterbeck
-and John Rouillard to fix some shortcomings and provide the necessary
-functions for a single page web application, e.g. etag support,
-pagination, field embedding among others.
+Melotti was integrated. The code was updated by Ralf Schlatterbeck and
+John Rouillard to address some limitations and incorporate essential
+features for a single page web application, such as etag support,
+pagination, and field embedding, among others.
 
 Enabling the REST API
 =====================
@@ -77,17 +77,52 @@ that is not hosted at the same origin as Roundup, you must permit
 the origin using the ``allowed_api_origins`` setting in
 ``config.ini``.
 
+Rate Limiting API Failed Logins
+-------------------------------
+
+To make brute force password guessing harder, the REST API has an
+invalid login rate limiter. This feature restricts the number of
+failed login attempts made with an invalid user or
+password. Successful login attempts are limited by the normal API rate
+limiter. The rate limiter is a GCRA leaky bucket variant, which is
+shared by all API (REST/XMLRPC) endpoints. However it is important to
+note that the rate limiter for the HTML/web interface is not shared by
+the API failed login rate limiter.
+
+It is configured through the settings in config.ini. By setting the
+value of ``api_failed_login_limit`` to a non-zero value, the limiter
+is enabled.  Setting it to 0 will disables the limiter (although this
+is not recommended).  If a user fails to log in more than
+``api_failed_login_limit`` times in
+``api_failed_login_interval_in_sec`` seconds, a 429 HTTP error will be
+returned. The error message also tells the user how long to wait
+before trying to log in again.
+
+When a 429 error is returned, the associated account will be
+temporarily locked until sufficient time has elapsed to generate an
+additional login token. This time period is determined by the values
+of the ``api_failed_login_interval_in_sec`` and ``api_failed_login_limit``
+parameters. Any login attempts made during this lockout period will be
+unsuccessful, even if the correct password is provided. This
+effectively prevents brute force attacks from attempting more than one
+password every
+``api_failed_login_interval_in_sec/api_failed_login_limit`` seconds on average.
+
+The system's default settings permit a maximum of four login attempts,
+after which the user will experience a delay of 2.5 minutes (150
+seconds). Currently, there is no established procedure for resetting
+the rate limiter.
+
 Rate Limiting the API
 ---------------------
 
-This is a work in progress. This version of roundup includes Rate
-Limiting for the API (which is different from rate limiting login
-attempts on the web interface).
+Roundup includes Rate Limiting for the API, which is distinct from
+rate limiting login attempts on the web interface.
 
-It is enabled by setting the ``api_calls_per_interval`` and
-``api_interval_in_sec`` configuration parameters in the ``[web]``
-section of ``config.ini``. The settings are documented in the
-config.ini file.
+This feature can be enabled by setting the ``api_calls_per_interval``
+and ``api_interval_in_sec`` configuration parameters in the ``[web]``
+section of the ``config.ini`` file. Details for these settings are
+documented in the same file.
 
 If ``api_calls_per_interval = 60`` and ``api_interval_in_sec = 60``
 the user can make 60 calls in a minute. They can use them all up in the
@@ -102,16 +137,19 @@ values that permit one call per second on average: 1/1, 60/60,
 3600/3600, but they all have a different maximum burst rates: 1/sec,
 60/sec and 3600/sec.
 
-A single page app may make 20 or 30 calls to populate the page (e.g. a
-list of open issues). Then wait a few seconds for the user to select
-an issue. When displaying the issue, it needs another 20 or calls to
-populate status dropdowns, pull the first 10 messages in the issue
-etc. Controlling the burst rate as well as the average rate is a
-tuning exercise left for the tracker admin.
+In practice, a single page app may require 20 or 30 API calls to
+populate the page with data, followed by a few seconds of waiting for
+the user to select an issue. When displaying the issue, another 20 or
+more calls may be needed to populate status dropdowns, retrieve the
+first 10 messages in the issue, and so on. Therefore, controlling both
+the burst rate and the average rate is a tuning exercise that is left
+to the tracker admin.
 
-Also the rate limit is a little lossy. Under heavy load, it is
-possible for it to miscount allowing more than burst count. Errors of
-up to 10% have been seen on slower hardware.
+It is worth noting that the rate limit feature may be slightly lossy,
+meaning that under heavy load, it may miscount and allow more than the
+burst count. On slower hardware, errors of up to 10% have been
+observed. Using redis, PostgreSQL, or MySQL for storing ephemeral data
+minimizes the loss.
 
 Client API
 ==========
@@ -1758,7 +1796,7 @@ section this code adds a new endpoint `/data/@permission/Developer`
 that returns a list of users with the developer role::
 
     from roundup.rest import Routing, RestfulInstance
-    from cgi import MiniFieldStorage
+    from roundup.anypy.cgi_ import MiniFieldStorage
 
     class RestfulInstance(object):
 

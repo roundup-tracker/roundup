@@ -16,7 +16,6 @@ Code generator for TALInterpreter intermediate code.
 """
 
 import re
-import cgi
 
 from . import TALDefs
 
@@ -25,6 +24,7 @@ from .TALDefs import I18NError, METALError, TALError
 from .TALDefs import parseSubstitution
 from .TranslationContext import TranslationContext, DEFAULT_DOMAIN
 
+from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
 
 I18N_REPLACE = 1
