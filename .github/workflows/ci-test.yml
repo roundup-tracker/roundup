@@ -210,7 +210,7 @@ jobs:
               -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\.get_tag()/sys.implementation.cache_tag/g' \
               -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\b/importlib/g' \
             configure; \
-            diff -u configure.FCS configure; \
+            diff -u configure.FCS configure || true; \
             ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; \
           fi
           case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
