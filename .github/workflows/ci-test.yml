@@ -189,7 +189,11 @@ jobs:
           # older python and newest on newer.
           if [[ $PYTHON_VERSION == "2."* ]]; then pip install sphinx==1.8.5; fi
           if [[ $PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
-          XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER
+          if [[ $PYTHON_VERSION == '3.12'* ]] ; then \
+              XAPIAN_VER=1.4.22; \
+          else
+              XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER; \
+          fi
           cd /tmp
           curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
           tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
@@ -200,7 +204,8 @@ jobs:
           # 3.11 or newer.
           # Change distutils.sysconfig... to just sysconfig and SO
           # to EXT_SUFFIX to get valid value.
-          if [[ $PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
+          if [[ $PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure
+        --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
           case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Install pytest and other packages needed for running tests
