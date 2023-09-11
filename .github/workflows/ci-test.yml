@@ -213,7 +213,7 @@ jobs:
               -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\b/importlib/' \
             configure; \
             ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; \
-        fi
+          fi
           case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Install pytest and other packages needed for running tests
