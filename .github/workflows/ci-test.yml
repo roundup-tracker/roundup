@@ -184,16 +184,13 @@ jobs:
 
       - name: Install xapian
         run: |
+          set -xv
           sudo apt-get install libxapian-dev
           # Sphinx required to build the xapian python bindings. Use 1.8.5 on
           # older python and newest on newer.
           if [[ $PYTHON_VERSION == "2."* ]]; then pip install sphinx==1.8.5; fi
           if [[ $PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
-          if [[ $PYTHON_VERSION == '3.12'* ]] ; then \
-              XAPIAN_VER=1.4.22; \
-          else
-              XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER; \
-          fi
+          XAPIAN_VER=$(dpkg -l libxapian-dev | tail -n 1 | awk '{print $3}' | cut -d '-' -f 1); echo $XAPIAN_VER;
           cd /tmp
           curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
           tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
@@ -205,6 +202,7 @@ jobs:
           # Change distutils.sysconfig... to just sysconfig and SO
           # to EXT_SUFFIX to get valid value.
           if [[ $PYTHON_VERSION == "3."* ]]; then \
+            cp configure configure.FCS; \
             sed -i \
               -e '/PYTHON3_SO=/s/distutils\.//g' \
               -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' \
@@ -212,6 +210,7 @@ jobs:
               -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\.get_tag()/sys.implementation.cache_tag/g' \
               -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\b/importlib/' \
             configure; \
+            diff -u configure.FCS configure; \
             ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; \
           fi
           case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
