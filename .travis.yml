@@ -80,14 +80,14 @@ before_install:
   - tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
   - cd xapian-bindings-$XAPIAN_VER/
   - echo $TRAVIS_PYTHON_VERSION
-  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python --disable-documentation; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then ./configure --prefix=$VIRTUAL_ENV --with-python --enable-documentation=no; fi
   # edit the configure script. distutils.sysconfig.get_config_vars('SO')
   #  doesn't work for 3.11 or newer.
   # Change distutils.sysconfig... to just sysconfig and SO to EXT_SUFFIX
   # to get valid value.
-  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --enable-documentation=no; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "nightly" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --enable-documentation=no; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == "pypy3" ]]; then sed -i -e '/PYTHON3_SO=/s/distutils\.//g' -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure; ./configure --prefix=$VIRTUAL_ENV --with-python3 --enable-documentation=no; fi
   - case "$TRAVIS_PYTHON_VERSION" in disable) echo skipping xapian build;; *) make && make install; esac
 
   - PATH=$VIRTUAL_ENV/bin:$PATH
