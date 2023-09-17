@@ -196,6 +196,7 @@ def main():
           description="A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
             " customisable.",
+          license="OSI Approved: MIT License, Zope Public License, Python Software Foundation License",
           long_description=long_description,
           long_description_content_type='text/x-rst',
           url='https://www.roundup-tracker.org',
@@ -213,6 +214,7 @@ def main():
                        'License :: OSI Approved',
                        'License :: OSI Approved :: MIT License',
                        'License :: OSI Approved :: Zope Public License',
+                       'License :: OSI Approved :: Python Software Foundation License',
                        'Operating System :: MacOS :: MacOS X',
                        'Operating System :: Microsoft :: Windows',
                        'Operating System :: POSIX',
