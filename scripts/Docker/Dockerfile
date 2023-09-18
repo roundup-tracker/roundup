@@ -74,7 +74,7 @@ SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ARG VERBOSE
 
 RUN [ -z "${VERBOSE}" ] || set -xv; \
-    CWD=$PWD && \
+    CWD="$PWD" && \
     upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
 	list --outdated | awk 'NR > 2 {print $1}'); \
     if [ -n "$upgrades" ]; then \
@@ -82,7 +82,7 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
         python -m pip --no-cache --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
-        echo Nothing to pip update; \
+        echo "Nothing to pip update"; \
     fi; \
     ls -l /usr/local/lib/python3.11/site-packages; \
     VER=$(apk list -I 'xapian-core-dev' | \
@@ -90,14 +90,14 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
     cd /tmp && \
     wget -q "https://oligarchy.co.uk/xapian/$VER/xapian-bindings-$VER.tar.xz" && \
     tar -Jxvf "xapian-bindings-$VER.tar.xz" && \
-    cd xapian-bindings-$VER/ && \
+    cd "xapian-bindings-$VER/" && \
     pip --no-cache-dir install sphinx && \
     sed -i -e '/PYTHON3_SO=/s/distutils\.//g' \
            -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure && \
     ./configure --prefix=/usr/local --with-python3 --disable-documentation && \
     make && make install && \
     pip uninstall --no-cache-dir -y sphinx && \
-    pip uninstall --no-cache-dir -y -r $CWD/sphinxdeps.txt && \
+    pip uninstall --no-cache-dir -y -r "$CWD/sphinxdeps.txt" && \
     rm -rf /usr/local/share/doc/xapian-bindings
 
 # add requirements for pip here, e.g. Whoosh, gpg, zstd or other
@@ -129,7 +129,7 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
         "pypi"*) \
             version_spec=$( printf "%s" "$source" | \
 				sed -ne 's/^pypi\([~=!<>].*\)/\1/p'); \
-            pip install --no-cache-dir roundup${version_spec}; \
+            pip install --no-cache-dir "roundup${version_spec}"; \
             cp -ril /usr/local/lib/"python${pythonversion}"/site-packages/usr/local/share/* \
                /usr/local/share;; \
         "pip_local") \
@@ -137,14 +137,14 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
 		pip -V && \
 		pip install --no-cache-dir . ;; \
 	"pip_sdist") \
-	    dist=$(ls install/dist | sed -ne '/roundup-[0-9].*\.tar\.gz$/p' | tail -n 1); \
+	    dist=$(find install/dist | sed -ne '/roundup-[0-9].*\.tar\.gz$/p' | tail -n 1); \
 	    if [ -z "$dist" ] ; then \
 		printf "Unable to find a source distribution file in dist\n"; \
 		printf "Exiting\n"; \
 		exit 1; \
             fi; \
             printf "Building with distribution: %s\n" "$dist"; \
-            pip install --no-cache-dir install/dist/$dist;; \
+            pip install --no-cache-dir "install/dist/$dist";; \
         *) \
             echo "invalid value for source: $source"; \
 	    echo "must be local, pypi, pip_local or pip_sdist"; \
@@ -192,7 +192,7 @@ RUN apk --no-cache upgrade; \
         python -m pip --no-cache --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
-        echo Nothing to pip update; \
+        echo "Nothing to pip update"; \
     fi
 
 ARG source
