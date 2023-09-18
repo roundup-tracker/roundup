@@ -4,7 +4,11 @@
 # If they are, start the server otherwise run roundup-admin
 # for installation and initialization.
 
-# "$@" should be a set of tracker=directory pairs.
+# "$@" should be one of the recognized keywords or arguments for
+# roundup-server including one or more tracker tracker=directory pairs.
+
+# exit on errors
+set -eo pipefail
 
 if ! [ -z "$SHELL_DEBUG" ]; then
     set -xv
