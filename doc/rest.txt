@@ -222,7 +222,8 @@ Versioning
 
 Currently there is only one version of the API. Versions are simple
 integers. The current version is ``1``. Version selection is
-implemented in the server using one of three methods:
+implemented in the server using one of four methods (in priority
+order, highest first):
 
    1. Explicit version param in accept header:
       ``application/json; version=1``
@@ -230,7 +231,12 @@ implemented in the server using one of three methods:
    2. Version suffix in vendor accept header:
       ``application/vnd.json.test-v1+json``
 
-   3. Adding version specifier in query string: ``@apiver=1``
+   3. Adding ``@apiver: 1`` in the input data wrapper (for POST, PUT)
+
+   4. Adding version specifier in query string: ``@apiver=1`` (for GET).
+
+The highest priority version method will be used if multiple
+methods are used.
 
 If an explicit version is not provided, the server default is used.
 The server default is reported by querying the ``/rest/`` endpoint as
