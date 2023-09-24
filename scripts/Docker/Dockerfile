@@ -8,24 +8,32 @@
 #    docker run --rm -v /.../issue.tracker:/usr/src/app/tracker \
 #           -p 9017:8080 roundup-app:latest
 
+# arguments expected to be useful on command line. Lower case names.
+
+# Source of roundup code:
+# 'local' directory using setup.py,
+# 'pypi[...]' to install latest final or version specified release
+#   from PyPI, E.G. pypi=2.4; pypi<2.3 etc. All pip version specifiers
+#   are allowed.
+# 'pip_local' local directory using pip to install, or
+# 'pip_sdist' to install dist/newest_version-tarball
+ARG source=local
+
+# Internal settings that are for advanced users to override.
+
 # parameterize the sha256 sum to pin version of python:3-alpine
+# Must use the same version in both build stages.
 ARG SHA256=5d769f990397afbb2aca24b0655e404c0f2806d268f454b052e81e39d87abf42
 
-# Global vars for all build stages
+# Set to any non-empy value to enable shell debugging for troubleshooting
 ARG VERBOSE=
 
 # application directory
 ARG appdir=/usr/src/app
 
-# support roundup install from 'local' directory,
-# 'pypi' to install latest final or version specified release
-#   from PyPI,
-# 'pip_local' local directory using pip to install, or
-# 'pip_sdist' to install dist/newest_version-tarball
-ARG source=local
-
-# Python version as a.b Used for installation directory and
-# COPY from install dir in second stage.
+# Python version as a.b Used as path component for 
+# installation directory and COPY from install dir
+# in second build stage.
 ARG pythonversion=3.11
 
 #FROM python:3-alpine via SHA256 sum
@@ -119,7 +127,7 @@ COPY frontends install/frontends/
 COPY locale install/locale/
 COPY roundup install/roundup/
 COPY share install/share/
-# dist is optional so include README.txt so we don't get an error
+# dist/* might not exist, so include README.txt so we don't get an error
 COPY README.txt dist/* install/dist/
 
 # verify source has one of two valid values then
