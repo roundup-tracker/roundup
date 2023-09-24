@@ -95,7 +95,11 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
     cd "xapian-bindings-$VER/" && \
     pip --no-cache-dir install sphinx && \
     sed -i -e '/PYTHON3_SO=/s/distutils\.//g' \
-           -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure && \
+           -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' \
+           -e '/PYTHON3_CACHE_TAG=/s/imp;print(imp.get_tag())/sys;print(sys.implementation.cache_tag)/' \
+           -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\.get_tag()/sys.implementation.cache_tag/g' \
+           -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\b/importlib/g' \
+           configure && \
     ./configure --prefix=/usr/local --with-python3 --disable-documentation && \
     make && make install && \
     pip uninstall --no-cache-dir -y sphinx && \
