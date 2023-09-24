@@ -686,7 +686,7 @@ You must never:
 **Remove the user class**
   This class is the only *required* class in Roundup.
 
-**Remove the "username", "address", "password" or "realname" user properties**
+**Remove the "username", "address", "password", "roles" or "realname" user properties**
   Various parts of Roundup require these properties. Don't remove them.
 
 **Change the type of a property**
