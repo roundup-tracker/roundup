@@ -8,6 +8,8 @@
 #    docker run --rm -v /.../issue.tracker:/usr/src/app/tracker \
 #           -p 9017:8080 roundup-app:latest
 
+# parameterize the sha256 sum to pin version of python:3-alpine
+ARG SHA256=5d769f990397afbb2aca24b0655e404c0f2806d268f454b052e81e39d87abf42
 
 # Global vars for all build stages
 ARG VERBOSE=
@@ -26,8 +28,8 @@ ARG source=local
 # COPY from install dir in second stage.
 ARG pythonversion=3.11
 
-#FROM python:3-alpine
-FROM python@sha256:603975e62d85aa07578034d3d10ffa1983b7618a6abb6371cf51941be6b8842c as build
+#FROM python:3-alpine via SHA256 sum
+FROM python@sha256:$SHA256 as build 
 
 # Inherit global values https://github.com/moby/moby/issues/37345
 ARG appdir
@@ -158,7 +160,7 @@ RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
 # build a new smaller docker image for execution. Build image above
 # is 1G in size.
 # FROM python:3-alpine
-FROM python@sha256:603975e62d85aa07578034d3d10ffa1983b7618a6abb6371cf51941be6b8842c
+FROM python@sha256:$SHA256
 
 # import from global
 ARG appdir
