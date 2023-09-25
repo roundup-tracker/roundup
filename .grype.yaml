@@ -1,0 +1,4 @@
+ignore:
+  - vulnerability: CVE-2018-20225
+    fix-state: not-fixed
+    
