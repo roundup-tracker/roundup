@@ -1,5 +1,3 @@
 ignore:
-  - vlnerability: CVE-2018-20225
-    fix-state: not-fixed
+  - vulnerability: CVE-2018-20225
   - vulnerability: CVE-2018-20225-pip
-  fix-state: not-fixed
