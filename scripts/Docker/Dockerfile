@@ -51,6 +51,7 @@ RUN apk --no-cache upgrade
 # Can't use apk to add python packages as it installs 3.9 python version.
 #        g++ installs cc1plus needed by pip install
 RUN apk --no-cache add \
+    file \
     g++ \
     gcc \
     gpgme-dev \
