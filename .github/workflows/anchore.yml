@@ -42,8 +42,6 @@ jobs:
       run: docker pull python:3-alpine; docker build . --file scripts/Docker/Dockerfile --tag localbuild/testimage:latest
     - name: List the Docker image
       run: docker image ls
-    - name: copy grype.yaml into $home
-      run: cp .grype.yaml $HOME/
     - name: Run the Anchore scan action itself with GitHub Advanced Security code scanning integration enabled
       uses: anchore/scan-action@24fd7c9060f3c96848dd1929fac8d796fb5ae4b4 # v3.3.6
       id: scan
