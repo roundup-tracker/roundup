@@ -1754,6 +1754,7 @@ You can build a docker container in one of 4 modes defined by the
   by some Python users.
 
 ``--build-arg="source=pip_sdist"``
+  Disabled.
   This is meant for maintainer/developer use. It installs using
   pip from a source distribution (sdist) tarball built by
   following the RELEASE.txt. It is meant for testing

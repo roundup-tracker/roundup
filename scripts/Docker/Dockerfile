@@ -129,7 +129,7 @@ COPY locale install/locale/
 COPY roundup install/roundup/
 COPY share install/share/
 # dist/* might not exist, so include README.txt so we don't get an error
-COPY README.txt dist/* install/dist/
+#COPY README.txt dist/* install/dist/
 
 # verify source has one of two valid values then
 # install in python3 standard directories from local copy
@@ -152,17 +152,18 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
 		pip -V && \
 		pip install --no-cache-dir . ;; \
 	"pip_sdist") \
+	    printf "\n\npip_sdist disabled\n\n" && exit 1 ; \
 	    dist=$(find install/dist | sed -ne '/roundup-[0-9].*\.tar\.gz$/p' | tail -n 1); \
 	    if [ -z "$dist" ] ; then \
-		printf "Unable to find a source distribution file in dist\n"; \
-		printf "Exiting\n"; \
+		printf "\n\nUnable to find a source distribution file in dist\n"; \
+		printf "Exiting\n\n"; \
 		exit 1; \
             fi; \
             printf "Building with distribution: %s\n" "$dist"; \
             pip install --no-cache-dir "install/dist/$dist";; \
         *) \
-            echo "invalid value for source: $source"; \
-	    echo "must be local, pypi, pip_local or pip_sdist"; \
+            printf "\n\ninvalid value for source: $source\n"; \
+	    printf "must be local, pypi, pip_local or pip_sdist\n\n"; \
             exit 1;; \
     esac
 
