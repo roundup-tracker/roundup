@@ -47,6 +47,9 @@ Fixed:
   source install. (John Rouillard)
 - Document use of pyreadline3 to allow roundup-admin to have CLI editing
   on windows. (John Rouillard)
+- issue2551293 - remove schema_hook from Tracker instance. Looks like
+  it was an obsolete hook used for testing. Never documented and not
+  accessible from schema.py.
 
 Features:
 
