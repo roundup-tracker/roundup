@@ -105,6 +105,7 @@ def main():
     packages = [
         'roundup',
         'roundup.anypy',
+        'roundup.anypy.vendored',
         'roundup.cgi',
         'roundup.cgi.PageTemplates',
         'roundup.cgi.TAL',
