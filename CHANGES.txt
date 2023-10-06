@@ -50,6 +50,10 @@ Fixed:
 - issue2551293 - remove schema_hook from Tracker instance. Looks like
   it was an obsolete hook used for testing. Never documented and not
   accessible from schema.py.
+- Fix roundup-admin security command. Lowercase its optional
+  argument. Roles are indexed by lower case role name. So 'security
+  User' and 'security user' should generate the same output. (John
+  Rouillard from issue on mailing list by Chuck Cunningham)
 
 Features:
 

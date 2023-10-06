@@ -1715,7 +1715,8 @@ Erase it? Y/N: """) % locals())  # noqa: E122
         if len(args) == 1:
             role = args[0]
             try:
-                roles = [(args[0], self.db.security.role[args[0]])]
+                roles = [(args[0].lower(),
+                          self.db.security.role[args[0].lower()])]
             except KeyError:
                 sys.stdout.write(_('No such Role "%(role)s"\n') % locals())
                 return 1
