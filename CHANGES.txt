@@ -54,6 +54,8 @@ Fixed:
   argument. Roles are indexed by lower case role name. So 'security
   User' and 'security user' should generate the same output. (John
   Rouillard from issue on mailing list by Chuck Cunningham)
+- make roundup-server exit more quickly on ^C. This seems to be
+  limited to windows.
 
 Features:
 
