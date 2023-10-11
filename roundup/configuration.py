@@ -1026,7 +1026,7 @@ SETTINGS = (
             "mail -> domain is added."),
         (MailAddressOption, "dispatcher_email", "roundup-admin",
             "The 'dispatcher' is a role that can get notified\n"
-            "of new items to the database.\n"
+            "when errors occur while sending email to a user.\n"
             "It is used by the ERROR_MESSAGES_TO config setting.\n"
             "If no domain is specified then the config item\n"
             "mail -> domain is added."),

@@ -144,10 +144,10 @@ Section **main**
   below is used.
 
  dispatcher_email -- ``roundup-admin``
-  The 'dispatcher' is a role that can get notified of new items to the
-  database. It is used by the ERROR_MESSAGES_TO config setting. If the
-  email address doesn't contain an ``@`` part, the MAIL_DOMAIN defined
-  below is used.
+  The 'dispatcher' is a role that can get notified when errors occur
+  while sending email to a user. It is used by the ERROR_MESSAGES_TO config
+  setting. If the email address doesn't contain an ``@`` part, the
+  MAIL_DOMAIN defined below is used.
 
  email_from_tag -- default *blank*
   Additional text to include in the "name" part of the From: address used
