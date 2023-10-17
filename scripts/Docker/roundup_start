@@ -15,6 +15,7 @@ if ! [ -z "$SHELL_DEBUG" ]; then
 fi
 
 trap exit INT
+trap "echo 'Exiting on pipefail'" ERR
 
 do_exit=0
 
@@ -38,7 +39,10 @@ for tracker_spec in "$@"; do
 	# if it's a request to start in demo/shell mode:
 	case "$tracker" in
 	    demo)
-		version=$(roundup-admin -v | grep 2.2.0)
+		# if grep does not find 2.2.0 it exits non-zero and
+		# because of "-eo pipefail" the script exits. So || true
+		# so pipeline exits true.
+		version=$(roundup-admin -v | grep '2\.2\.0' || true)
 		if [ -n "$version" ]; then
 		    printf "\nRoundup version: %s does not support docker demo mode\n" "$version"
 		    printf "Try building with a version newer than 2.2.0.\n"
