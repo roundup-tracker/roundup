@@ -56,6 +56,9 @@ Fixed:
   Rouillard from issue on mailing list by Chuck Cunningham)
 - make roundup-server exit more quickly on ^C. This seems to be
   limited to windows. (John Rouillard)
+- Fix error handling so failure during import of a non-user item
+  doesn't cause a second traceback. (Found by Norbert Schlemmer, fix
+  John Rouillard)
 
 Features:
 
