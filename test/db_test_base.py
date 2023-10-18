@@ -3059,6 +3059,9 @@ class DBTest(commonDBTest):
 
             # This is needed, otherwise journals won't be there for anydbm
             self.db.commit()
+
+            self.assertEqual(self.db.user.lookup("duplicate"), active_dupe_id)
+
         finally:
             shutil.rmtree('_test_export')
 
