@@ -23,7 +23,7 @@ ARG source=local
 
 # parameterize the sha256 sum to pin version of python:3-alpine
 # Must use the same version in both build stages.
-ARG SHA256=5d769f990397afbb2aca24b0655e404c0f2806d268f454b052e81e39d87abf42
+ARG SHA256=ae35274f417fc81ba6ee1fc84206e8517f28117566ee6a04a64f004c1409bdac
 
 # Set to any non-empy value to enable shell debugging for troubleshooting
 ARG VERBOSE=
@@ -34,7 +34,7 @@ ARG appdir=/usr/src/app
 # Python version as a.b Used as path component for 
 # installation directory and COPY from install dir
 # in second build stage.
-ARG pythonversion=3.11
+ARG pythonversion=3.12
 
 #FROM python:3-alpine via SHA256 sum
 FROM python@sha256:$SHA256 as build 
@@ -83,6 +83,7 @@ ENV PIP_ROOT_USER_ACTION=ignore
 
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ARG VERBOSE
+ARG pythonversion
 
 RUN [ -z "${VERBOSE}" ] || set -xv; \
     CWD="$PWD" && \
@@ -95,7 +96,7 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
     else \
         echo "Nothing to pip update"; \
     fi; \
-    ls -l /usr/local/lib/python3.11/site-packages; \
+    ls -l /usr/local/lib/python${pythonversion}/site-packages; \
     VER=$(apk list -I 'xapian-core-dev' | \
           sed 's/^xapian-core-dev-\([0-9.]*\)-.*/\1/') && \
     cd /tmp && \
