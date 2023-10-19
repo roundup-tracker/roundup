@@ -165,7 +165,7 @@ script:
   - PATH=$VIRTUAL_ENV/bin:$PATH
   - export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib:$LD_LIBRARY_PATH
   - python -c "import sys; print('python version ', sys.version)"
-  - set -xv; if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
+  - if [[ "$TRAVIS_PYTHON_VERSION" != "2."* ]]; then
     python -m pytest -r a \
       --durations=20 \
       -W default \
@@ -183,7 +183,7 @@ script:
 
 after_success:
   # from https://docs.codecov.com/docs/codecov-uploader#integrity-checking-the-uploader
-  - curl https://keybase.io/codecovsecurity/pgp_keys.asc |
+  - curl https://keybase.io/codecovsecurity/pgp_keys.asc | \
     gpg --no-default-keyring --keyring trustedkeys.gpg --import # One-time step
   - curl -Os https://uploader.codecov.io/latest/linux/codecov
   - curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
