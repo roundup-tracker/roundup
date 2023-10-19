@@ -16,6 +16,24 @@ ideas and everything else that helped!
 
 .. _`Announcement with changelog for current release.`: announcement.html
 
+2.4
+---
+
+2.4.0
+~~~~~
+
+Maintainer:  John Rouillard
+
+Release Manager: John Rouillard
+
+Developer activity by changesets::
+
+  TBD
+
+Other contributers
+
+Norbert Schlemmer
+
 2.3
 ---
 

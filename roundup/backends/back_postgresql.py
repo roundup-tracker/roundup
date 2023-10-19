@@ -152,11 +152,24 @@ class Database(rdbms_common.Database):
         holds the value for the type of db. It is used by indexer to
         identify the database type so it can import the correct indexer
         module when using native text search mode.
+
+      import_savepoint_count:
+        count the number of savepoints that have been created during
+        import. Once the limit of savepoints is reached, a commit is
+        done and this is reset to 0.
+
     """
 
     arg = '%s'
 
     dbtype = "postgres"
+
+    import_savepoint_count = 0
+
+    # Value is set from roundup-admin using db.config["RDBMS_SAVEPOINT_LIMIT"]
+    # or to the default of 10_000 at runtime. Use 0 here to trigger
+    # initialization.
+    savepoint_limit = 0
 
     # used by some code to switch styles of query
     implements_intersect = 1
@@ -218,19 +231,48 @@ class Database(rdbms_common.Database):
            of operation in exception handler because
            postgres requires a rollback in case of error
            generating exception.  Used with
-           restore_connecion_on_error to handle uniqueness
+           restore_connection_on_error to handle uniqueness
            conflict in import_table().
+
+           Savepoints take memory resources. Postgres keeps all
+           savepoints (rather than overwriting) until a
+           commit(). Commit every ~10,000 savepoints to prevent
+           running out of memory on import.
+
+           NOTE: a commit outside of this method will not reset the
+           import_savepoint_count. This can result in an unneeded
+           commit on a new cursor (that has no savepoints) as there is
+           no way to find out if there is a savepoint or how many
+           savepoints are opened on a db connection/cursor.
+
+           Because an import is a one shot deal and not part of a long
+           running daemon (e.g. the roundup-server), I am not too
+           worried about it. It will just slow the import down a tad.
         """
-        # Savepoints take resources. Postgres keeps all
-        # savepoints (rather than overwriting) until a
-        # commit(). If an import fails because of a resource
-        # issue with savepoints, uncomment this line. I
-        # expect it will slow down the import but it should
-        # eliminate any issue with stored savepoints and
-        # resource use.
-        #
-        # self.sql('RELEASE SAVEPOINT %s' % savepoint)
+
         self.sql('SAVEPOINT %s' % savepoint)
+
+        self.import_savepoint_count += 1
+
+        if not self.savepoint_limit:
+            if "RDBMS_SAVEPOINT_LIMIT" in self.config.keys():
+                # note this config option is created on the fly
+                # by admin.py::do_import. It is never listed in
+                # config.ini.
+                self.savepoint_limit = self.config["RDBMS_SAVEPOINT_LIMIT"]
+            else:
+                self.savepoint_limit = 10000
+
+        if self.import_savepoint_count > self.savepoint_limit:
+            # track savepoints and commit every 10000 (or user value)
+            # so we don't run postgres out of memory.  An import of a
+            # customer's tracker ran out of memory after importing
+            # ~23000 items with: psycopg2.errors.OutOfMemory: out of
+            # shared memory HINT: You might need to increase
+            # max_locks_per_transaction.
+
+            self.commit()
+            self.import_savepoint_count = 0
 
     def restore_connection_on_error(self, savepoint="importing"):
         """Postgres leaves a connection/cursor in an unusable state

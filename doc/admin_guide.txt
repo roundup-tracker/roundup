@@ -962,6 +962,16 @@ Migrating Backends
    move the new tracker home into its place.
 9. Restart web and email frontends.
 
+If you are importing into PostgreSQL, it autocommits the data every
+10000 objects/rows by default. This can slow down importing, but it
+prevents an out of memory error caused by using a savepoint for each
+object. You can control the commit frequency by using::
+
+  pragma savepoint_limit=20000
+
+to set a higher or lower number in roundup-admin. In this example a
+commit will be done every 20,000 objects/rows. The pragma can also be
+set on the roundup-admin command line as described below.
 
 Moving a Tracker
 ----------------

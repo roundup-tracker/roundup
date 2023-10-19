@@ -59,6 +59,9 @@ Fixed:
 - Fix error handling so failure during import of a non-user item
   doesn't cause a second traceback. (Found by Norbert Schlemmer, fix
   John Rouillard)
+- Handle out of memory error when importing large trackers in
+  PostgreSQL. (Found by Norbert Schlemmer, extensive testing by
+  Norbert, fix John Rouillard)
 
 Features:
 

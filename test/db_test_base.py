@@ -3061,6 +3061,7 @@ class DBTest(commonDBTest):
             self.db.commit()
 
             self.assertEqual(self.db.user.lookup("duplicate"), active_dupe_id)
+            self.assertEqual(self.db.user.is_retired(retired_dupe_id), True)
 
         finally:
             shutil.rmtree('_test_export')
@@ -3151,12 +3152,25 @@ class DBTest(commonDBTest):
                 self.assertRaises(csv.Error, tool.do_import, ['_test_export'])
 
             self.nukeAndCreate()
+
+            # make sure we have an empty db
+            with self.assertRaises(IndexError) as e:
+                # users 1 and 2 always are created on schema load.
+                # so don't use them.
+                self.db.user.getnode("5").values()
+
             self.db.config.CSV_FIELD_SIZE = 3200
             tool = roundup.admin.AdminTool()
             tool.tracker_home = home
             tool.db = self.db
+            # Force import code to commit when more than 5
+            # savepoints have been created.
+            tool.settings['savepoint_limit'] = 5
             tool.verbose = False
             tool.do_import(['_test_export'])
+
+            # verify the data is loaded.
+            self.db.user.getnode("5").values()
         finally:
             roundup.admin.sys = sys
             shutil.rmtree('_test_export')
