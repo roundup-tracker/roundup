@@ -62,6 +62,9 @@ Fixed:
 - Handle out of memory error when importing large trackers in
   PostgreSQL. (Found by Norbert Schlemmer, extensive testing by
   Norbert, fix John Rouillard)
+- use unittest.mock rather than mock for
+  test/test_hyperdbvals.py. (found by Ralf Schlatterbeck. Fix John
+  Rouillard)
 
 Features:
 
