@@ -433,7 +433,7 @@ class RestfulInstance(object):
         self.db = db
         self.translator = client.translator
         # record start time for statistics reporting
-        self.start = time.time()
+        self.start = client.start
         # disable stat reporting by default enable with @stats=True
         # query param
         self.report_stats = False
