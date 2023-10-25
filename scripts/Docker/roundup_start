@@ -78,11 +78,11 @@ for tracker_spec in "$@"; do
 			anydbm|sqlite)
 			    backend="$arg";;
 			postgres|mysql)
-			    printf "demo mode only supports sqlite or anydbm backends, not $1. Exiting."
+			    printf "demo mode only supports sqlite or anydbm backends, not %s. Exiting." "$1"
 			    exit 1;;
 			nuke)
 			    nuke="$arg";;
-		    *) printf "Unknown argument $1.\n"
+		    *) printf "Unknown argument %s.\n" "$1"
 		       printf "Usage: demo [template] [db]\n"
 		       printf "  template: one of "
 		       printf "classic devel jinja2 minimal responsive\n"
