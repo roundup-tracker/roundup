@@ -179,7 +179,7 @@ parameters.\n" "$directory"
     # we have a valid config.ini so init database if not done
     # if we get errors, the db directory should be missing
     # and we print an error.
-    if [ $do_exit == 0 -a ! -e "$directory/db" ]; then
+    if [ $do_exit = 0 -a ! -e "$directory/db" ]; then
 	printf "Initializing tracker %s\n" "$tracker"
         if ! roundup-admin -i "$directory" init; then
            # something went wrong.
@@ -193,7 +193,7 @@ parameters.\n" "$directory"
 done   # for "$@"
 
 # if any config.ini needs editing don't start up.
-if [ $do_exit == 0 ]; then
+if [ $do_exit = 0 ]; then
    # make roundup-server process pid 1 with exec
    exec roundup-server -n 0.0.0.0 "$@"
 fi
