@@ -29,7 +29,7 @@ for tracker_spec in "$@"; do
     # IFS== set a=b doesn't just assign $1 and $2 in busybox ash
     # it also clobbers '$@'. 'printf mumble | read' starts read in a
     # subshell so vars are not available in parent.
-    IFS="=" read tracker directory <<- EOE
+    IFS="=" read -r tracker directory <<- EOE
 	$tracker_spec
 	EOE
     # ^ is a tab for use with <<-
