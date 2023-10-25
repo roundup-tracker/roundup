@@ -120,11 +120,11 @@ for tracker_spec in "$@"; do
 		    exec roundup-demo \
 			 -B 0.0.0.0 \
 			 -p 8080 \
-			 -b $backend \
-			 --urlport $PORT_8080 \
-			 -t $template \
+			 -b "$backend" \
+			 --urlport "$PORT_8080" \
+			 -t "$template" \
 			 tracker/demo \
-			 $nuke
+			 "$nuke"
 		fi
 		;;
 	    shell)
