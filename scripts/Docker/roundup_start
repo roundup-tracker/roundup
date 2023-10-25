@@ -7,15 +7,20 @@
 # "$@" should be one of the recognized keywords or arguments for
 # roundup-server including one or more tracker tracker=directory pairs.
 
-# exit on errors
-set -eo pipefail
+# exit on errors; POSIX (e.g. dash as on ubuntu) doesn't support
+# pipefail. So setting it will fail. Allow that to happen then
+# set exit on error so the script will still run.
+set -o pipefail
+# not supported by POSIX shell, but then neither is pipefail.
+trap "echo 'Exiting on pipefail'" ERR
+
+set -e
 
 if ! [ -z "$SHELL_DEBUG" ]; then
     set -xv
 fi
 
 trap exit INT
-trap "echo 'Exiting on pipefail'" ERR
 
 do_exit=0
 
