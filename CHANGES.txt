@@ -65,6 +65,8 @@ Fixed:
 - use unittest.mock rather than mock for
   test/test_hyperdbvals.py. (found by Ralf Schlatterbeck. Fix John
   Rouillard)
+- disable proxy with wget in roundup_healthcheck. (Norbert SCHLEMMER
+  Noschvie on github.com)
 
 Features:
 
