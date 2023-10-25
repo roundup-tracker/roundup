@@ -16,7 +16,7 @@ trap "echo 'Exiting on pipefail'" ERR
 
 set -e
 
-if ! [ -z "$SHELL_DEBUG" ]; then
+if [ -n "$SHELL_DEBUG" ]; then
     set -xv
 fi
 
