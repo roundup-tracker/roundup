@@ -102,7 +102,7 @@ for tracker_spec in "$@"; do
 		# run demo make sure to set bind address -B to 0.0.0.0
 		# otherwise we can never make it out of the docker container.
 		# use -p to force port to match the exported docker port.
-		if [ -f tracker/demo/config.ini -a -z "$nuke" ]; then
+		if [ -f tracker/demo/config.ini ] && [ -z "$nuke" ]; then
 		    if [ "$demoArgs" -ne 0 ]; then
 			printf "Error: backend and template arguments to demo "
 			printf "are invalid if a tracker\nis configured and "
@@ -179,7 +179,7 @@ parameters.\n" "$directory"
     # we have a valid config.ini so init database if not done
     # if we get errors, the db directory should be missing
     # and we print an error.
-    if [ $do_exit = 0 -a ! -e "$directory/db" ]; then
+    if [ $do_exit = 0 ] && ! [ -e "$directory/db" ]; then
 	printf "Initializing tracker %s\n" "$tracker"
         if ! roundup-admin -i "$directory" init; then
            # something went wrong.
