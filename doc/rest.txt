@@ -311,14 +311,14 @@ Response Formats
 
 The default response format is json.
 
-If you add the ``dicttoxml.py`` module you can request XML formatted
+If you add the ``dicttoxml2.py`` module you can request XML formatted
 data using the header ``Accept: application/xml`` in your
 request. Both output formats are similar in structure.
 
-``dicttoxml.py`` should be installed in the Python install directory,
-or the file can be added to the Roundup installation directory long
-ide ``rest.py``. It can also be enabled on a per tracker basis by
-adding ``dicttoxml.py`` to the lib directory in your tracker home (you
+``dicttoxml2.py`` should be installed in the Python install directory,
+or the file can be added to the Roundup installation directory along
+side ``rest.py``. It can also be enabled on a per tracker basis by
+adding ``dicttoxml2.py`` to the lib directory in your tracker home (you
 may need to create the directory). Then this can be added to
 `interfaces.py`_ to enable xml::
 
@@ -334,13 +334,17 @@ The rest interface accepts the http accept header and can include
 way to specify alternate acceptable response formats.
 
 To make testing from the browser easier, you can also append the
-extension `.json` or `.xml` to the path component of the url. This
+extension ``.json`` or ``.xml`` to the path component of the url. This
 will force json or xml (if supported) output. If you use an extension
 it takes priority over any accept headers.
 
 The rest interface returns status 406 if you use an unrecognized
 extension.  You will also get a 406 status if none of the entries in
 the accept header are available or if the accept header is invalid.
+
+Note: ``dicttoxml2.py`` is an updated version of ``dicttoxml.py``. If
+you are still using Python 2.7 or 3.6, you should use
+``dicttoxml.py``.
 
 
 General Guidelines

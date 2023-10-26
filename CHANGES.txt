@@ -67,6 +67,10 @@ Fixed:
   Rouillard)
 - disable proxy with wget in roundup_healthcheck. (Norbert SCHLEMMER
   Noschvie on github.com)
+- support dicttoxml2.py for Roundup running on 3.7 and
+  newer. dicttoxml uses a type alias: collection.Iterator that is
+  dropped in Python 3.10. (found by Norbert SCHLEMMER, fix John
+  Rouillard)
 
 Features:
 

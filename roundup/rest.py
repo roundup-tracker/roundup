@@ -35,15 +35,23 @@ from roundup.rate_limit import RateLimit, Gcra
 logger = logging.getLogger('roundup.rest')
 
 try:
-    # if dicttoxml installed in roundup directory, use it
-    from roundup.dicttoxml import dicttoxml
+    # if dicttoxml2 (or dicttoxml for Python <= 3.6)
+    # is installed in roundup directory, use it
+    from roundup.dicttoxml2 import dicttoxml
 except ImportError:
     try:
         # else look in sys.path
-        from dicttoxml import dicttoxml
+        from dicttoxml2 import dicttoxml
     except ImportError:
-        # else not supported
-        dicttoxml = None
+        try:
+            from roundup.dicttoxml import dicttoxml
+        except ImportError:
+            try:
+                # else look in sys.path
+                from dicttoxml import dicttoxml
+            except ImportError:
+                # else not supported
+                dicttoxml = None
 
 # Py3 compatible basestring
 try:
