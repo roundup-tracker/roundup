@@ -71,6 +71,8 @@ Fixed:
   newer. dicttoxml uses a type alias: collection.Iterator that is
   dropped in Python 3.10. (found by Norbert SCHLEMMER, fix John
   Rouillard)
+- fix repeated password id with user.item.html in all templates except
+  jinja2. (John Rouillard)
 
 Features:
 
