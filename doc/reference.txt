@@ -1561,8 +1561,17 @@ directories are not on the Python system path when interfaces.py is
 evaluated. You need to add library directories explictly by
 modifying sys.path.
 
+Interfaces.py allows you to interact with any part of Roundup's
+internals. These internals are not as stable as defined interfaces
+(e.g. extensions. detectors, schema). So the code in interfaces.py is
+more likely to need modification when upgrading from version to
+version.  While the developers attempt to keep the examples working,
+it may make more sense to change the internals to make the code
+clearer, add more features etc.
+
 See `Changing How the Core Code Works
-<customizing.html#changing-how-the-core-code-works>`_ for examples.
+<customizing.html#changing-how-the-core-code-works>`_ for examples
+of using interfaces.py.
 
 Database Content
 ================
