@@ -1058,6 +1058,9 @@ Command help:
         # default value is 10000, only go through this if default
         # is different.
         if self.settings['savepoint_limit'] != 10000:
+            # create a new option on the fly in the config under the
+            # rdbms section. It is used by the postgresql backend's
+            # checkpoint_data method.
             self.db.config.add_option(Option(self.db.config,
                                              "rdbms", "savepoint_limit"))
             self.db.config.options["RDBMS_SAVEPOINT_LIMIT"].set(
