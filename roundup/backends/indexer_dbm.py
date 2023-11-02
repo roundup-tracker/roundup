@@ -250,7 +250,9 @@ class Indexer(IndexerBase):
 
         # First write the much simpler filename/fileid dictionaries
         dbfil = {'WORDS': None, 'FILES': self.files, 'FILEIDS': self.fileids}
-        open(self.indexdb+'-', 'wb').write(zlib.compress(marshal.dumps(dbfil)))
+        marshal_fh = open(self.indexdb+'-', 'wb')
+        marshal_fh.write(zlib.compress(marshal.dumps(dbfil)))
+        marshal_fh.close()
 
         # The hard part is splitting the word dictionary up, of course
         letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#_"

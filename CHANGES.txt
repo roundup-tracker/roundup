@@ -73,6 +73,7 @@ Fixed:
   Rouillard)
 - fix repeated password id with user.item.html in all templates except
   jinja2. (John Rouillard)
+- fix unclosed file when saving index in indexer_dbm.py. (John Rouillard)
 
 Features:
 

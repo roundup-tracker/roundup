@@ -104,6 +104,30 @@ class IndexerTest(anydbmOpener, unittest.TestCase):
         self.assertSeqEqual(self.dex.find(['blah', 'hello']), [])
         self.assertSeqEqual(self.dex.find([]), [])
 
+    def test_save_load(self):
+
+        # only run for anydbm test
+        if ( not type(self) is IndexerTest ):
+            pytest.skip("test_save_load tested only for anydbm backend")
+
+        self.dex.add_text(('test', '1', 'foo'), 'b the hello world')
+        self.assertSeqEqual(self.dex.find(['hello']), [('test', '1', 'foo')])
+        self.dex.save_index()
+
+        # reopen saved db.
+        from roundup.backends.indexer_dbm import Indexer
+        self.dex = Indexer(db)
+
+        # verify index is unloaded
+        self.assertEqual(self.dex.index_loaded(), False)
+
+        # add also calls load_index(), so it should load the first item.
+        self.dex.add_text(('test', '2', 'foo'), 'b the olleh world')
+
+        # note find also does a load_index() if not loaded.
+        self.assertSeqEqual(self.dex.find(['hello']), [('test', '1', 'foo')])
+        self.assertSeqEqual(self.dex.find(['olleh']), [('test', '2', 'foo')])
+
     def test_change(self):
         self.dex.add_text(('test', '1', 'foo'), 'a the hello world')
         self.dex.add_text(('test', '2', 'foo'), 'blah blah the world')
