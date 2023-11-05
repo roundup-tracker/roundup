@@ -1167,6 +1167,12 @@ ERROR: -c is not available because roundup couldn't import
         httpd.serve_forever()
     except KeyboardInterrupt:
         print('Keyboard Interrupt: exiting')
+        try:
+            httpd.socket.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            # forced shutdown can throw an error.
+            # we don't care as we are going away.
+            pass
         httpd.socket.close()
 
 

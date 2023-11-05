@@ -3301,11 +3301,12 @@ class Class(hyperdb.Class):
             logger.info('Attempting to handle import exception '
                         'for id %s: %s' % (newid, e))
 
-            keyname = self.db.user.getkey()
+            classdb = self.db.getclass(self.classname)
+            keyname = classdb.getkey()
             if has_node or not keyname:  # Not an integrity error
                 raise
             self.db.restore_connection_on_error()
-            activeid = self.db.user.lookup(d[keyname])
+            activeid = classdb.lookup(d[keyname])
             self.db.sql(retired_sql, (-1, activeid))  # clear the active node
             # this can only happen on an addnode, so retry
             try:

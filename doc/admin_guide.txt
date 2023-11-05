@@ -962,6 +962,16 @@ Migrating Backends
    move the new tracker home into its place.
 9. Restart web and email frontends.
 
+If you are importing into PostgreSQL, it autocommits the data every
+10000 objects/rows by default. This can slow down importing, but it
+prevents an out of memory error caused by using a savepoint for each
+object. You can control the commit frequency by using::
+
+  pragma savepoint_limit=20000
+
+to set a higher or lower number in roundup-admin. In this example a
+commit will be done every 20,000 objects/rows. The pragma can also be
+set on the roundup-admin command line as described below.
 
 Moving a Tracker
 ----------------
@@ -1474,6 +1484,73 @@ Also the tautological::
 
 Remember the roundup commands that accept multiple designators accept
 them ',' separated so using '-dc' is almost always required.
+
+A Note on Import and Export
+---------------------------
+
+This is a little in the weeds, but I have noticed this and was asked
+about it so I am documenting it for the future.
+
+Running ``roundup-admin`` with ``-V`` to get additional info when
+importing/exporting the tracker generates three types of messages.
+
+For example::
+
+   $ roundup-admin -i tracker -V export ./myExport
+   Exporting priority - 5
+   Exporting Journal for priority
+   Exporting status - 1
+   Exporting Journal for status
+   [...]
+
+
+   $ roundup-admin -i tracker -V import ./myExport
+   Importing priority - 7
+   setting priority 8
+   Importing status - 8
+   setting status 9
+   [...]
+
+Note the numbers for status. Exported ends up at 1, Imported ends up
+at 8 and setting chooses 9. These numbers are derived differently and
+used differently. You can't directly compare them.
+
+``Exporting issue - XXX``:
+
+   ``XXX`` is the id number of the node being exported/processed from
+   the database. The order is determined by sorting by the key of the
+   class (as set by sortkey). If the class key is 'id', then it's a
+   string sort so '9' comes before '1009'. You might notice if the
+   export is slow the numbers jumping around.
+
+   It does not usually end up as the total number of nodes
+   exported. However if it crashes, you know what node it was
+   processing at the time.
+
+   In the example above, the status node with id 1 was the last one
+   when sorted alphabetically by name.
+
+``Importing <class> - XXX``:
+
+    ``XXX`` is the number of the node (not the node id) being
+    imported/currently processed at line XXX+1 in the file. It is an
+    incrementing number starting at 0 and never jumps around. Value 0
+    is consumed when reading the header and not displayed. The final
+    value is the same as the number of objects and one less then the
+    number of lines in the file. If it crashes, you were processing
+    the line at XXX+1.
+
+``setting <class> XXX``:
+
+    ``XXX`` in the setting line should always be one more than the
+    number of imported objects. The setting value is the id for the
+    next created object of that type. So in theory the Importing
+    number should be one less than the setting number.
+
+    However under certain circumstances, Roundup can skip an id
+    number. This can lead to a difference of more than 1 between the
+    Importing and setting numbers. It's not a problem. However setting
+    can (and must) always be higher than the Importing number.
 
 
 .. _`customisation documentation`: customizing.html

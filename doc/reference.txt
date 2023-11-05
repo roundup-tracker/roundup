@@ -144,10 +144,10 @@ Section **main**
   below is used.
 
  dispatcher_email -- ``roundup-admin``
-  The 'dispatcher' is a role that can get notified of new items to the
-  database. It is used by the ERROR_MESSAGES_TO config setting. If the
-  email address doesn't contain an ``@`` part, the MAIL_DOMAIN defined
-  below is used.
+  The 'dispatcher' is a role that can get notified when errors occur
+  while sending email to a user. It is used by the ERROR_MESSAGES_TO config
+  setting. If the email address doesn't contain an ``@`` part, the
+  MAIL_DOMAIN defined below is used.
 
  email_from_tag -- default *blank*
   Additional text to include in the "name" part of the From: address used
@@ -686,7 +686,7 @@ You must never:
 **Remove the user class**
   This class is the only *required* class in Roundup.
 
-**Remove the "username", "address", "password" or "realname" user properties**
+**Remove the "username", "address", "password", "roles" or "realname" user properties**
   Various parts of Roundup require these properties. Don't remove them.
 
 **Change the type of a property**
@@ -1561,8 +1561,17 @@ directories are not on the Python system path when interfaces.py is
 evaluated. You need to add library directories explictly by
 modifying sys.path.
 
+Interfaces.py allows you to interact with any part of Roundup's
+internals. These internals are not as stable as defined interfaces
+(e.g. extensions. detectors, schema). So the code in interfaces.py is
+more likely to need modification when upgrading from version to
+version.  While the developers attempt to keep the examples working,
+it may make more sense to change the internals to make the code
+clearer, add more features etc.
+
 See `Changing How the Core Code Works
-<customizing.html#changing-how-the-core-code-works>`_ for examples.
+<customizing.html#changing-how-the-core-code-works>`_ for examples
+of using interfaces.py.
 
 Database Content
 ================

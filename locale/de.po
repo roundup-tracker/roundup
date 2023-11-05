@@ -4362,7 +4362,7 @@ msgstr ""
 
 #: ../share/roundup/templates/classic/html/keyword.item.html:51
 msgid "Continue adding keywords."
-msgstr ""
+msgstr "Fügen Sie weitere Schlüsselwörter hinzu."
 
 #: ../share/roundup/templates/classic/html/msg.index.html:3
 #: ../share/roundup/templates/devel/html/msg.index.html:3

@@ -35,8 +35,9 @@ import sys
 from roundup import date, hyperdb, init, password, token_r
 from roundup import __version__ as roundup_version
 import roundup.instance
-from roundup.configuration import (CoreConfig, NoConfigError, OptionUnsetError,
-                                   OptionValueError, ParsingOptionError, UserConfig)
+from roundup.configuration import (CoreConfig, NoConfigError, Option,
+                                   OptionUnsetError, OptionValueError,
+                                   ParsingOptionError, UserConfig)
 from roundup.i18n import _, get_translation
 from roundup.exceptions import UsageError
 from roundup.anypy.my_input import my_input
@@ -108,6 +109,7 @@ class AdminTool:
             'display_protected': False,
             'indexer_backend': "as set in config.ini",
             '_reopen_tracker': False,
+            'savepoint_limit': 10000,
             'show_retired': "no",
             '_retired_val': False,
             'verbose': False,
@@ -116,25 +118,29 @@ class AdminTool:
         }
         self.settings_help = {
             'display_header':
-            _("Have 'display designator[,designator*]' show header inside "
-              "         []'s before items. Includes retired/active status."),
+            _("Have 'display designator[,designator*]' show header inside\n"
+              "      []'s before items. Includes retired/active status.\n"),
 
             'display_protected':
-            _("Have 'display designator' and 'specification class' show "
-              "protected fields: creator, id etc."),
+            _("Have 'display designator' and 'specification class' show\n"
+              "      protected fields: creator, id etc.\n"),
 
             'indexer_backend':
-            _("Set indexer to use when running 'reindex' NYI"),
+            _("Set indexer to use when running 'reindex' NYI\n"),
 
             '_reopen_tracker':
-            _("Force reopening of tracker when running each command."),
+            _("Force reopening of tracker when running each command.\n"),
 
-            'show_retired': _("Show retired items in table, list etc. One of 'no', 'only', 'both'"),
-            '_retired_val': _("internal mapping for show_retired."),
-            'verbose': _("Enable verbose output: tracing, descriptions..."),
+            'savepoint_limit':
+            _("set the number of rows imported before a database commit is\n"
+              "      done. Used only for imports on PostgreSQL.\n"),
+            'show_retired': _("Show retired items in table, list etc. "
+            "One of 'no', 'only', 'both'\n"),
+            '_retired_val': _("internal mapping for show_retired.\n"),
+            'verbose': _("Enable verbose output: tracing, descriptions...\n"),
 
-            '_inttest': "Integer valued setting. For testing only.",
-            '_floattest': "Float valued setting. For testing only.",
+            '_inttest': "Integer valued setting. For testing only.\n",
+            '_floattest': "Float valued setting. For testing only.\n",
         }
 
     def get_class(self, classname):
@@ -1049,6 +1055,17 @@ Command help:
         if hasattr(csv, 'field_size_limit'):
             csv.field_size_limit(self.db.config.CSV_FIELD_SIZE)
 
+        # default value is 10000, only go through this if default
+        # is different.
+        if self.settings['savepoint_limit'] != 10000:
+            # create a new option on the fly in the config under the
+            # rdbms section. It is used by the postgresql backend's
+            # checkpoint_data method.
+            self.db.config.add_option(Option(self.db.config,
+                                             "rdbms", "savepoint_limit"))
+            self.db.config.options["RDBMS_SAVEPOINT_LIMIT"].set(
+                self.settings['savepoint_limit'])
+
         # directory to import from
         dir = args[0]
 
@@ -1715,7 +1732,8 @@ Erase it? Y/N: """) % locals())  # noqa: E122
         if len(args) == 1:
             role = args[0]
             try:
-                roles = [(args[0], self.db.security.role[args[0]])]
+                roles = [(args[0].lower(),
+                          self.db.security.role[args[0].lower()])]
             except KeyError:
                 sys.stdout.write(_('No such Role "%(role)s"\n') % locals())
                 return 1

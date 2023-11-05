@@ -4,9 +4,19 @@
 # If they are, start the server otherwise run roundup-admin
 # for installation and initialization.
 
-# "$@" should be a set of tracker=directory pairs.
+# "$@" should be one of the recognized keywords or arguments for
+# roundup-server including one or more tracker tracker=directory pairs.
 
-if ! [ -z "$SHELL_DEBUG" ]; then
+# exit on errors; POSIX (e.g. dash as on ubuntu) doesn't support
+# pipefail. So setting it will fail. Allow that to happen then
+# set exit on error so the script will still run.
+set -o pipefail
+# not supported by POSIX shell, but then neither is pipefail.
+trap "echo 'Exiting on pipefail'" ERR
+
+set -e
+
+if [ -n "$SHELL_DEBUG" ]; then
     set -xv
 fi
 
@@ -24,7 +34,7 @@ for tracker_spec in "$@"; do
     # IFS== set a=b doesn't just assign $1 and $2 in busybox ash
     # it also clobbers '$@'. 'printf mumble | read' starts read in a
     # subshell so vars are not available in parent.
-    IFS="=" read tracker directory <<- EOE
+    IFS="=" read -r tracker directory <<- EOE
 	$tracker_spec
 	EOE
     # ^ is a tab for use with <<-
@@ -34,7 +44,10 @@ for tracker_spec in "$@"; do
 	# if it's a request to start in demo/shell mode:
 	case "$tracker" in
 	    demo)
-		version=$(roundup-admin -v | grep 2.2.0)
+		# if grep does not find 2.2.0 it exits non-zero and
+		# because of "-eo pipefail" the script exits. So || true
+		# so pipeline exits true.
+		version=$(roundup-admin -v | grep '2\.2\.0' || true)
 		if [ -n "$version" ]; then
 		    printf "\nRoundup version: %s does not support docker demo mode\n" "$version"
 		    printf "Try building with a version newer than 2.2.0.\n"
@@ -70,11 +83,11 @@ for tracker_spec in "$@"; do
 			anydbm|sqlite)
 			    backend="$arg";;
 			postgres|mysql)
-			    printf "demo mode only supports sqlite or anydbm backends, not $1. Exiting."
+			    printf "demo mode only supports sqlite or anydbm backends, not %s. Exiting." "$1"
 			    exit 1;;
 			nuke)
 			    nuke="$arg";;
-		    *) printf "Unknown argument $1.\n"
+		    *) printf "Unknown argument %s.\n" "$1"
 		       printf "Usage: demo [template] [db]\n"
 		       printf "  template: one of "
 		       printf "classic devel jinja2 minimal responsive\n"
@@ -89,7 +102,7 @@ for tracker_spec in "$@"; do
 		# run demo make sure to set bind address -B to 0.0.0.0
 		# otherwise we can never make it out of the docker container.
 		# use -p to force port to match the exported docker port.
-		if [ -f tracker/demo/config.ini -a -z "$nuke" ]; then
+		if [ -f tracker/demo/config.ini ] && [ -z "$nuke" ]; then
 		    if [ "$demoArgs" -ne 0 ]; then
 			printf "Error: backend and template arguments to demo "
 			printf "are invalid if a tracker\nis configured and "
@@ -112,11 +125,11 @@ for tracker_spec in "$@"; do
 		    exec roundup-demo \
 			 -B 0.0.0.0 \
 			 -p 8080 \
-			 -b $backend \
-			 --urlport $PORT_8080 \
-			 -t $template \
+			 -b "$backend" \
+			 --urlport "$PORT_8080" \
+			 -t "$template" \
 			 tracker/demo \
-			 $nuke
+			 "$nuke"
 		fi
 		;;
 	    shell)
@@ -166,7 +179,7 @@ parameters.\n" "$directory"
     # we have a valid config.ini so init database if not done
     # if we get errors, the db directory should be missing
     # and we print an error.
-    if [ $do_exit == 0 -a ! -e "$directory/db" ]; then
+    if [ $do_exit = 0 ] && ! [ -e "$directory/db" ]; then
 	printf "Initializing tracker %s\n" "$tracker"
         if ! roundup-admin -i "$directory" init; then
            # something went wrong.
@@ -180,7 +193,7 @@ parameters.\n" "$directory"
 done   # for "$@"
 
 # if any config.ini needs editing don't start up.
-if [ $do_exit == 0 ]; then
+if [ $do_exit = 0 ]; then
    # make roundup-server process pid 1 with exec
    exec roundup-server -n 0.0.0.0 "$@"
 fi

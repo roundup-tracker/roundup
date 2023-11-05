@@ -52,8 +52,11 @@ LOCALE_DIRS = [
 # locale root is prefix/share/locale.
 if os.name == "nt":
     _mo_path = [".."] * 4 + ["share", "locale"]
+    root_prefix_chars = 3   # remove c:\ or other drive letter
 else:
     _mo_path = [".."] * 5 + ["share", "locale"]
+    root_prefix_chars = 1   # remove /
+
 _mo_path = os.path.normpath(os.path.join(msgfmt.__file__, *_mo_path))
 if _mo_path not in LOCALE_DIRS:
     LOCALE_DIRS.append(_mo_path)
@@ -67,18 +70,18 @@ path = __file__
 for _N in 1, 2:
     path = os.path.dirname(path)
     # path is /usr/local/lib/python3.10/site-packages
-_ldir = os.path.join(path, sys.prefix[1:], 'share', 'locale')
+_ldir = os.path.join(path, sys.prefix[root_prefix_chars:], 'share', 'locale')
 if os.path.isdir(_ldir):
     LOCALE_DIRS.append(_ldir)
 # try other places locale files are hidden on install
-_ldir = os.path.join(path, sys.prefix[1:], 'local', 'share', 'locale')
+_ldir = os.path.join(path, sys.prefix[root_prefix_chars:], 'local', 'share', 'locale')
 if os.path.isdir(_ldir):
     LOCALE_DIRS.append(_ldir)
 try:
-    _ldir = os.path.join(path, sys.base_prefix[1:], 'local', 'share', 'locale')
+    _ldir = os.path.join(path, sys.base_prefix[root_prefix_chars:], 'local', 'share', 'locale')
     if os.path.isdir(_ldir):
         LOCALE_DIRS.append(_ldir)
-    _ldir = os.path.join(path, sys.base_prefix[1:], 'share', 'locale')
+    _ldir = os.path.join(path, sys.base_prefix[root_prefix_chars:], 'share', 'locale')
     if os.path.isdir(_ldir):
         LOCALE_DIRS.append(_ldir)
 except AttributeError:

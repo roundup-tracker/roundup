@@ -10,7 +10,11 @@
 
 import unittest, os, shutil, errno, sys, difflib, re
 from hashlib import sha1
-from mock import Mock
+try:
+   from unittest.mock import Mock
+except ImportError:
+   # python 2.7
+   from mock import Mock
 
 from roundup import init, instance, password, hyperdb, date
 

@@ -1164,7 +1164,77 @@ class AdminTest(object):
         self.assertTrue(expected[0] in out)
         self.assertTrue("Back ends:" in out)
 
-    def testSecurity(self):
+    def testSecurityListOne(self):
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            # make sure UsEr returns result for user. Roles are
+            # lower cased interally
+            sys.argv=['main', '-i', self.dirname, 'security', "user" ]
+            ret = self.admin.main()
+
+            result = """Role "user":
+ User may access the web interface (Web Access)
+ User may use the email interface (Email Access)
+ User may access the rest interface (Rest Access)
+ User may access the xmlrpc interface (Xmlrpc Access)
+ User is allowed to access issue (View for "issue" only)
+ User is allowed to edit issue (Edit for "issue" only)
+ User is allowed to create issue (Create for "issue" only)
+ User is allowed to access file (View for "file" only)
+ User is allowed to edit file (Edit for "file" only)
+ User is allowed to create file (Create for "file" only)
+ User is allowed to access msg (View for "msg" only)
+ User is allowed to edit msg (Edit for "msg" only)
+ User is allowed to create msg (Create for "msg" only)
+ User is allowed to access keyword (View for "keyword" only)
+ User is allowed to edit keyword (Edit for "keyword" only)
+ User is allowed to create keyword (Create for "keyword" only)
+ User is allowed to access priority (View for "priority" only)
+ User is allowed to access status (View for "status" only)
+  (View for "user": ('id', 'organisation', 'phone', 'realname', 'timezone', 'username') only)
+ User is allowed to view their own user details (View for "user" only)
+ User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
+ User is allowed to view their own and public queries (View for "query" only)
+  (Search for "query" only)
+ User is allowed to edit their queries (Edit for "query" only)
+ User is allowed to retire their queries (Retire for "query" only)
+ User is allowed to restore their queries (Restore for "query" only)
+ User is allowed to create queries (Create for "query" only)
+"""
+        print(out.getvalue())
+
+        self.assertEqual(result, out.getvalue())
+        self.assertEqual(ret, 0)
+
+
+        # test 2 all role names are lower case, make sure
+        # any role name is correctly lower cased
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'security', "UsEr" ]
+            ret = self.admin.main()
+
+        print(out.getvalue())
+
+        self.assertEqual(result, out.getvalue())
+        self.assertEqual(ret, 0)
+
+        # test 3 Check error if role does not exist
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'security', "NoSuch Role" ]
+            ret = self.admin.main()
+
+        result='No such Role "NoSuch Role"\n'
+        print('>', out.getvalue())
+
+        self.assertEqual(result, out.getvalue())
+        self.assertEqual(ret, 1)
+
+
+    def testSecurityListAll(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws
             up the stdout strings with (pdb) prefixed to the line.

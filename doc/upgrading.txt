@@ -112,6 +112,29 @@ values or if a value must be changed manually.
 
 This will insert the bad API login rate limiting settings.
 
+Fix duplicate id for confirm password in user.item.html (optional)
+------------------------------------------------------------------
+
+The TAL macro ``user_confirm_input`` at the end of ``html/page.html``
+for all templates except ``jinja2`` sets the ``id`` of the ``Confirm
+password`` input the same as the ``Login Password`` input. This
+creates an HTML error. Two items must not have the same id.
+
+However browsers ignore the error and things still work.  If you were
+to use css or javascript to target the ``password`` id, it would not
+work as expected.
+
+To fix this, change the line near the end of your tracker's
+``html/page.html`` from::
+
+ tal:attributes="id name; name string:@confirm@$name; readonly not:edit_ok" value="">
+
+to::
+
+ tal:attributes="id string:confirm_$name; name string:@confirm@$name; readonly not:edit_ok" value="">
+
+This will change the id to ``confirm_password``.
+
 Bad Login Rate Limiting and Locking (info)
 ------------------------------------------
 
@@ -140,6 +163,20 @@ and its storage objects available by importing from::
 It is unlikey that you will care unless you have done some expert
 level Roundup customization. If you have, use one of the imports above
 if you plan on running on Python 3.13 (expected in 2024) or newer.
+
+Fixing PostgreSQL Out of Memory Errors when Importing Tracker (info)
+--------------------------------------------------------------------
+
+Importing a tracker into PostgreSQL can run out of memory with the
+error::
+
+   psycopg2.errors.OutOfMemory: out of shared memory
+   HINT:  You might need to increase max_locks_per_transaction.
+
+before changing your PostgreSQL configuration, try changing the pragma
+``savepoint_limit`` to a lower value. By default it is set to
+``10000``. In some cases this may be too high. See the `administration
+guide`_ for further details.
 
 .. index:: Upgrading; 2.2.0 to 2.3.0
 

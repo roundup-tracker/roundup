@@ -236,7 +236,7 @@ Roundup release checklist:
 
      Also can scan (optionally) using trivy:
 
-        docker run --rm --volume \
+        docker run -it --rm --volume \
 	/var/run/docker.sock:/var/run/docker.sock \
           --name trivy aquasec/trivy:latest image rounduptracker/roundup:2.2.0
 

@@ -222,7 +222,8 @@ Versioning
 
 Currently there is only one version of the API. Versions are simple
 integers. The current version is ``1``. Version selection is
-implemented in the server using one of three methods:
+implemented in the server using one of four methods (in priority
+order, highest first):
 
    1. Explicit version param in accept header:
       ``application/json; version=1``
@@ -230,7 +231,12 @@ implemented in the server using one of three methods:
    2. Version suffix in vendor accept header:
       ``application/vnd.json.test-v1+json``
 
-   3. Adding version specifier in query string: ``@apiver=1``
+   3. Adding ``@apiver: 1`` in the input data wrapper (for POST, PUT)
+
+   4. Adding version specifier in query string: ``@apiver=1`` (for GET).
+
+The highest priority version method will be used if multiple
+methods are used.
 
 If an explicit version is not provided, the server default is used.
 The server default is reported by querying the ``/rest/`` endpoint as
@@ -305,14 +311,14 @@ Response Formats
 
 The default response format is json.
 
-If you add the ``dicttoxml.py`` module you can request XML formatted
+If you add the ``dicttoxml2.py`` module you can request XML formatted
 data using the header ``Accept: application/xml`` in your
 request. Both output formats are similar in structure.
 
-``dicttoxml.py`` should be installed in the Python install directory,
-or the file can be added to the Roundup installation directory long
-ide ``rest.py``. It can also be enabled on a per tracker basis by
-adding ``dicttoxml.py`` to the lib directory in your tracker home (you
+``dicttoxml2.py`` should be installed in the Python install directory,
+or the file can be added to the Roundup installation directory along
+side ``rest.py``. It can also be enabled on a per tracker basis by
+adding ``dicttoxml2.py`` to the lib directory in your tracker home (you
 may need to create the directory). Then this can be added to
 `interfaces.py`_ to enable xml::
 
@@ -328,13 +334,19 @@ The rest interface accepts the http accept header and can include
 way to specify alternate acceptable response formats.
 
 To make testing from the browser easier, you can also append the
-extension `.json` or `.xml` to the path component of the url. This
+extension ``.json`` or ``.xml`` to the path component of the url. This
 will force json or xml (if supported) output. If you use an extension
-it takes priority over any accept headers.
+it takes priority over any accept headers. Note the extension does not
+work for the ``/rest`` or ``/rest/data`` paths. In these cases it
+returs a 404 error. Adding the header ``Accept: application/xml``
+allows these paths to return xml data.
 
 The rest interface returns status 406 if you use an unrecognized
 extension.  You will also get a 406 status if none of the entries in
 the accept header are available or if the accept header is invalid.
+
+Note: ``dicttoxml2.py`` is an updated version of ``dicttoxml.py``. If
+you are still using Python 2.7 or 3.6, you can use ``dicttoxml.py``.
 
 
 General Guidelines

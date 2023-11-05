@@ -61,10 +61,6 @@ class Tracker:
         """
         self.tracker_home = tracker_home
         self.optimize = optimize
-        # if set, call schema_hook after executing schema.py will get
-        # same variables (in particular db) as schema.py main purpose is
-        # for regression tests
-        self.schema_hook = None
         self.config = configuration.CoreConfig(tracker_home)
         self.actions = {}
         self.cgi_actions = {}
@@ -119,15 +115,11 @@ class Tracker:
         if self.optimize:
             # execute preloaded schema object
             self._exec(self.schema, env)
-            if isinstance(self.schema_hook, Callable):
-                self.schema_hook(**env)
             # use preloaded detectors
             detectors = self.detectors
         else:
             # execute the schema file
             self._execfile('schema.py', env)
-            if isinstance(self.schema_hook, Callable):
-                self.schema_hook(**env)
             # reload extensions and detectors
             for extension in self.get_extensions('extensions'):
                 extension(self)

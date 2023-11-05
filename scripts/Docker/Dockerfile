@@ -8,26 +8,36 @@
 #    docker run --rm -v /.../issue.tracker:/usr/src/app/tracker \
 #           -p 9017:8080 roundup-app:latest
 
+# arguments expected to be useful on command line. Lower case names.
 
-# Global vars for all build stages
+# Source of roundup code:
+# 'local' directory using setup.py,
+# 'pypi[...]' to install latest final or version specified release
+#   from PyPI, E.G. pypi=2.4; pypi<2.3 etc. All pip version specifiers
+#   are allowed.
+# 'pip_local' local directory using pip to install, or
+# 'pip_sdist' to install dist/newest_version-tarball
+ARG source=local
+
+# Internal settings that are for advanced users to override.
+
+# parameterize the sha256 sum to pin version of python:3-alpine
+# Must use the same version in both build stages.
+ARG SHA256=a5d1738d6abbdff3e81c10b7f86923ebcb340ca536e21e8c5ee7d938d263dba1
+
+# Set to any non-empy value to enable shell debugging for troubleshooting
 ARG VERBOSE=
 
 # application directory
 ARG appdir=/usr/src/app
 
-# support roundup install from 'local' directory,
-# 'pypi' to install latest final or version specified release
-#   from PyPI,
-# 'pip_local' local directory using pip to install, or
-# 'pip_sdist' to install dist/newest_version-tarball
-ARG source=local
+# Python version as a.b Used as path component for 
+# installation directory and COPY from install dir
+# in second build stage.
+ARG pythonversion=3.12
 
-# Python version as a.b Used for installation directory and
-# COPY from install dir in second stage.
-ARG pythonversion=3.11
-
-#FROM python:3-alpine
-FROM python@sha256:603975e62d85aa07578034d3d10ffa1983b7618a6abb6371cf51941be6b8842c as build
+#FROM python:3-alpine via SHA256 sum
+FROM python@sha256:$SHA256 as build 
 
 # Inherit global values https://github.com/moby/moby/issues/37345
 ARG appdir
@@ -41,6 +51,7 @@ RUN apk --no-cache upgrade
 # Can't use apk to add python packages as it installs 3.9 python version.
 #        g++ installs cc1plus needed by pip install
 RUN apk --no-cache add \
+    file \
     g++ \
     gcc \
     gpgme-dev \
@@ -72,9 +83,10 @@ ENV PIP_ROOT_USER_ACTION=ignore
 
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ARG VERBOSE
+ARG pythonversion
 
 RUN [ -z "${VERBOSE}" ] || set -xv; \
-    CWD=$PWD && \
+    CWD="$PWD" && \
     upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
 	list --outdated | awk 'NR > 2 {print $1}'); \
     if [ -n "$upgrades" ]; then \
@@ -82,22 +94,26 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
         python -m pip --no-cache --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
-        echo Nothing to pip update; \
+        echo "Nothing to pip update"; \
     fi; \
-    ls -l /usr/local/lib/python3.11/site-packages; \
+    ls -l /usr/local/lib/python${pythonversion}/site-packages; \
     VER=$(apk list -I 'xapian-core-dev' | \
           sed 's/^xapian-core-dev-\([0-9.]*\)-.*/\1/') && \
     cd /tmp && \
     wget -q "https://oligarchy.co.uk/xapian/$VER/xapian-bindings-$VER.tar.xz" && \
     tar -Jxvf "xapian-bindings-$VER.tar.xz" && \
-    cd xapian-bindings-$VER/ && \
+    cd "xapian-bindings-$VER/" && \
     pip --no-cache-dir install sphinx && \
     sed -i -e '/PYTHON3_SO=/s/distutils\.//g' \
-           -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' configure && \
+           -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' \
+           -e '/PYTHON3_CACHE_TAG=/s/imp;print(imp.get_tag())/sys;print(sys.implementation.cache_tag)/' \
+           -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\.get_tag()/sys.implementation.cache_tag/g' \
+           -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\b/importlib/g' \
+           configure && \
     ./configure --prefix=/usr/local --with-python3 --disable-documentation && \
     make && make install && \
     pip uninstall --no-cache-dir -y sphinx && \
-    pip uninstall --no-cache-dir -y -r $CWD/sphinxdeps.txt && \
+    pip uninstall --no-cache-dir -y -r "$CWD/sphinxdeps.txt" && \
     rm -rf /usr/local/share/doc/xapian-bindings
 
 # add requirements for pip here, e.g. Whoosh, gpg, zstd or other
@@ -113,8 +129,8 @@ COPY frontends install/frontends/
 COPY locale install/locale/
 COPY roundup install/roundup/
 COPY share install/share/
-# dist is optional so include README.txt so we don't get an error
-COPY README.txt dist/* install/dist/
+# dist/* might not exist, so include README.txt so we don't get an error
+#COPY README.txt dist/* install/dist/
 
 # verify source has one of two valid values then
 # install in python3 standard directories from local copy
@@ -129,7 +145,7 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
         "pypi"*) \
             version_spec=$( printf "%s" "$source" | \
 				sed -ne 's/^pypi\([~=!<>].*\)/\1/p'); \
-            pip install --no-cache-dir roundup${version_spec}; \
+            pip install --no-cache-dir "roundup${version_spec}"; \
             cp -ril /usr/local/lib/"python${pythonversion}"/site-packages/usr/local/share/* \
                /usr/local/share;; \
         "pip_local") \
@@ -137,17 +153,18 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
 		pip -V && \
 		pip install --no-cache-dir . ;; \
 	"pip_sdist") \
-	    dist=$(ls install/dist | sed -ne '/roundup-[0-9].*\.tar\.gz$/p' | tail -n 1); \
+	    printf "\n\npip_sdist disabled\n\n" && exit 1 ; \
+	    dist=$(find install/dist | sed -ne '/roundup-[0-9].*\.tar\.gz$/p' | tail -n 1); \
 	    if [ -z "$dist" ] ; then \
-		printf "Unable to find a source distribution file in dist\n"; \
-		printf "Exiting\n"; \
+		printf "\n\nUnable to find a source distribution file in dist\n"; \
+		printf "Exiting\n\n"; \
 		exit 1; \
             fi; \
             printf "Building with distribution: %s\n" "$dist"; \
-            pip install --no-cache-dir install/dist/$dist;; \
+            pip install --no-cache-dir "install/dist/$dist";; \
         *) \
-            echo "invalid value for source: $source"; \
-	    echo "must be local, pypi, pip_local or pip_sdist"; \
+            printf "\n\ninvalid value for source: $source\n"; \
+	    printf "must be local, pypi, pip_local or pip_sdist\n\n"; \
             exit 1;; \
     esac
 
@@ -158,7 +175,7 @@ RUN if [ -n "$pip_mod" ]; then pip install --no-cache-dir ${pip_mod}; fi
 # build a new smaller docker image for execution. Build image above
 # is 1G in size.
 # FROM python:3-alpine
-FROM python@sha256:603975e62d85aa07578034d3d10ffa1983b7618a6abb6371cf51941be6b8842c
+FROM python@sha256:$SHA256
 
 # import from global
 ARG appdir
@@ -192,7 +209,7 @@ RUN apk --no-cache upgrade; \
         python -m pip --no-cache --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
-        echo Nothing to pip update; \
+        echo "Nothing to pip update"; \
     fi
 
 ARG source

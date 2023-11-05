@@ -47,6 +47,33 @@ Fixed:
   source install. (John Rouillard)
 - Document use of pyreadline3 to allow roundup-admin to have CLI editing
   on windows. (John Rouillard)
+- issue2551293 - remove schema_hook from Tracker instance. Looks like
+  it was an obsolete hook used for testing. Never documented and not
+  accessible from schema.py.
+- Fix roundup-admin security command. Lowercase its optional
+  argument. Roles are indexed by lower case role name. So 'security
+  User' and 'security user' should generate the same output. (John
+  Rouillard from issue on mailing list by Chuck Cunningham)
+- make roundup-server exit more quickly on ^C. This seems to be
+  limited to windows. (John Rouillard)
+- Fix error handling so failure during import of a non-user item
+  doesn't cause a second traceback. (Found by Norbert Schlemmer, fix
+  John Rouillard)
+- Handle out of memory error when importing large trackers in
+  PostgreSQL. (Found by Norbert Schlemmer, extensive testing by
+  Norbert, fix John Rouillard)
+- use unittest.mock rather than mock for
+  test/test_hyperdbvals.py. (found by Ralf Schlatterbeck. Fix John
+  Rouillard)
+- disable proxy with wget in roundup_healthcheck. (Norbert SCHLEMMER
+  Noschvie on github.com)
+- support dicttoxml2.py for Roundup running on 3.7 and
+  newer. dicttoxml uses a type alias: collection.Iterator that is
+  dropped in Python 3.10. (found by Norbert SCHLEMMER, fix John
+  Rouillard)
+- fix repeated password id with user.item.html in all templates except
+  jinja2. (John Rouillard)
+- fix unclosed file when saving index in indexer_dbm.py. (John Rouillard)
 
 Features:
 

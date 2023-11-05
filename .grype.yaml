@@ -1,0 +1,3 @@
+ignore:
+  - vulnerability: CVE-2018-20225
+  - vulnerability: CVE-2018-20225-pip
