@@ -135,6 +135,24 @@ to::
 
 This will change the id to ``confirm_password``.
 
+Merge changes from devel template task.index.html (optional)
+------------------------------------------------------------
+
+The devel template's ``task.index.html`` has some fields that are not
+defined in the schema. It looks like it was originally copied from the
+``bug.index.html``. If the task index is requested without specifying
+the columns/fields, the template will crash trying to display
+``severity`` and other fields that don't exist in the task schema.
+
+In normal use, the left hand menu for tasks always specifies valid
+columns so you may not see this issue. However if you remove the
+``@columns`` query parameter, you can see the error.
+
+The removed columns are: severity, versions, keywords, dependencies.
+
+It is also missing the ``solves`` field which is added to match the
+schema.
+
 Bad Login Rate Limiting and Locking (info)
 ------------------------------------------
 

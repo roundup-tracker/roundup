@@ -74,6 +74,8 @@ Fixed:
 - fix repeated password id with user.item.html in all templates except
   jinja2. (John Rouillard)
 - fix unclosed file when saving index in indexer_dbm.py. (John Rouillard)
+- fix task index in devel tracker so it doesn't cause a crash if all
+  fields are selected. (John Rouillard)
 
 Features:
 
