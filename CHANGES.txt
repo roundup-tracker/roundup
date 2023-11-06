@@ -69,13 +69,18 @@ Fixed:
   Noschvie on github.com)
 - support dicttoxml2.py for Roundup running on 3.7 and
   newer. dicttoxml uses a type alias: collection.Iterator that is
-  dropped in Python 3.10. (found by Norbert SCHLEMMER, fix John
+  dropped in Python 3.10. (found by Norbert Schlemmer, fix John
   Rouillard)
 - fix repeated password id with user.item.html in all templates except
   jinja2. (John Rouillard)
 - fix unclosed file when saving index in indexer_dbm.py. (John Rouillard)
 - fix task index in devel tracker so it doesn't cause a crash if all
   fields are selected. (John Rouillard)
+- fix windows install. When using pip share directory is installed in
+  a directory tree under the lib directory. Fix it so that Lib/share
+  is used to install the share tree. The lets Roundup find tracker
+  templates and translation files. (Found by Simon Eigeldinger, fix
+  John Rouillard)
 
 Features:
 

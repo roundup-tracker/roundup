@@ -87,6 +87,18 @@ def get_prefix():
     if prefix:
         return prefix
     else:
+        if sys.platform.startswith('win'):
+            # on windows, using pip to install and
+            # prefixing data file paths with c:\path\a\b\...
+            # results in treatment as a relative path.
+            # The result is files are buried under:
+            # platlib\path\a\b\...\share\ and not findable by
+            # Roundup. So return no prefix which places the files at
+            # platlib\share\{doc,locale,roundup} where roundup can
+            # find templates/translations etc.
+            # sigh....
+            return ""
+
         # start with the platform library
         plp = get_path('platlib')
         # nuke suffix that matches lib/* and return prefix
