@@ -176,8 +176,13 @@ class Database(rdbms_common.Database):
 
     def sql_open_connection(self):
         db = connection_dict(self.config, 'database')
-        logging.getLogger('roundup.hyperdb').info(
-            'open database %r' % db['database'])
+        # database option always present: log it if not null
+        if db['database']:
+            logging.getLogger('roundup.hyperdb').info(
+                'open database %r' % db['database'])
+        if 'service' in db:  # only log if used
+            logging.getLogger('roundup.hyperdb').info(
+                'open database via service %r' % db['service'])
         try:
             conn = psycopg2.connect(**db)
         except psycopg2.OperationalError as message:

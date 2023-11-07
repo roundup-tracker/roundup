@@ -112,8 +112,8 @@ def connection_dict(config, dbnamestr=None):
     d = {}
     if dbnamestr:
         d[dbnamestr] = config.RDBMS_NAME
-    for name in ('host', 'port', 'password', 'user', 'read_default_group',
-                 'read_default_file'):
+    for name in ('host', 'port', 'password', 'user', 'service',
+                 'read_default_group', 'read_default_file'):
         cvar = 'RDBMS_'+name.upper()
         if config[cvar] is not None:
             d[name] = config[cvar]

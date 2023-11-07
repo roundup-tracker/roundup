@@ -1451,6 +1451,10 @@ always passes, so setting it less than 1 is not recommended."""),
         (SecretNullableOption, 'password', 'roundup',
             "Database user password.",
             ['MYSQL_DBPASSWORD']),
+        (NullableOption, 'service', '',
+            "Name of the PostgreSQL connection service for this Roundup\n"
+            "instance. Only used in Postgresql connections. You need to set\n"
+            "up a pg_service.conf file usable by psql use this option."),
         (NullableOption, 'read_default_file', '~/.my.cnf',
             "Name of the MySQL defaults file.\n"
             "Only used in MySQL connections."),

@@ -293,6 +293,19 @@ Section **rdbms**
  password -- ``roundup``
   Database user password.
 
+ service -- default *blank*
+  Use to define the Connection Service for your PostgreSQL connection
+  when using a system-wide pg_service.conf or ~/.pg_service.conf as
+  discussed in
+  https://www.postgresql.org/docs/current/libpq-pgservice.html.
+
+  Setting this to the name of the service allows different trackers to
+  connect to different services when running multiple trackers under
+  one Roundup server. If you are only running one tracker, you can set
+  the PGSERVICE environment variable. Note that other settings
+  specified in this file (rdbms: user, password, port, host, (db)name)
+  will override the corresponding connection service setting.
+
  read_default_file -- ``~/.my.cnf``
   Name of the MySQL defaults file. Only used in MySQL connections.
 

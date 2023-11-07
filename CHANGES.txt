@@ -92,7 +92,11 @@ Features:
 - issue685275 - add pragma show_retired to control display of retired
   items when using list/table. Add pragma display_header to print
   headers for display command. Header displays designator and
-  retired/active status.
+  retired/active status. (John Rouillard)
+- support config.ini rdbms option 'service'. Allow use of a
+  PostgreSQL connection service file for configuring database on a
+  per-tracker basis. Also replaces use of PGSERVICE env variable for
+  single instance trackers. (From ML question by ivanov. John Rouillard)
 
 2023-07-13 2.3.0
 
