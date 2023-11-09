@@ -138,6 +138,12 @@ Instant gratification demo - Roundup Issue Tracker
     template = cli_args.template or DEFAULT_TEMPLATE
     backend = cli_args.backend_db or cli_backend or DEFAULT_BACKEND
 
+    if not tracker_home:
+        home = my_input(
+            _('Enter directory path to create demo tracker [%s]: ') % home)
+        if not home:
+            home = DEFAULT_HOME
+
     # if there is no tracker in home, force nuke
     try:
         instance.open(home)
@@ -151,12 +157,6 @@ Instant gratification demo - Roundup Issue Tracker
         # FIXME: i'd like to have an option to abort the tracker creation
         #   say, by entering a single dot.  but i cannot think of
         #   appropriate prompt for that.
-        if not tracker_home:
-            home = my_input(
-                _('Enter directory path to create demo tracker [%s]: ') % home)
-            if not home:
-                home = DEFAULT_HOME
-
         if not cli_args.template in templates:
             template = my_input(
             _('Enter tracker template to use (one of (%(template_list)s)) [%(default_template)s]: ') %

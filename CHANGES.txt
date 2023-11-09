@@ -81,6 +81,8 @@ Fixed:
   is used to install the share tree. The lets Roundup find tracker
   templates and translation files. (Found by Simon Eigeldinger, fix
   John Rouillard)
+- fix roundup-demo, interactive mode would nuke an existing tracker.
+  (Found Tonu Mikk, fix John Rouillard)
 
 Features:
 
