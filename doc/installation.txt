@@ -613,6 +613,15 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   Installed SQLite should be the latest version available (3.3.8 is known
   to work, 3.1.3 is known to have problems).
 
+  Installation of Roundup 2.2.0 or newer requires that the installed
+  SQLite supports FTS5. FTS5 was supported in release 3.9.0 in October
+  2015. However some vendors choose not to include it. You can check
+  your SQLite by using the command line::
+
+     echo 'pragma compile_options' | sqlite3 | grep FTS5
+
+  it should output ``ENABLE_FTS5`` if FTS5 is supported.
+
   Roundup supports using `SQLite's full text search capability
   <admin_guide.html#sqlite-details>`_. This
   can improve searching if you are not installing another indexer like
