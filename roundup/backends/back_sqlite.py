@@ -252,8 +252,21 @@ class Database(rdbms_common.Database):
         pass
 
     def _add_fts5_table(self):
-        self.sql('CREATE virtual TABLE __fts USING fts5(_class, '
+        try:
+            self.sql('CREATE virtual TABLE __fts USING fts5(_class, '
                  '_itemid, _prop, _textblob)')
+        except sqlite.OperationalError:
+            available_options = self.cursor.execute(
+                'pragma compile_options;').fetchall()
+            if 'ENABLE_FTS5' in [opt['compile_options'] for opt 
+                                     in available_options]:
+                # sqlite supports FTS5 something else has gone wrong
+                raise
+            else:
+                # report a useful error message
+                raise  NotImplementedError(
+                    "This version of SQLite was not built with support "
+                    "for FTS5. SQLite version: %s" % sqlite.sqlite_version)
 
     def fix_version_6_tables(self):
         # note sqlite has no limit on column size so v6 fixes
