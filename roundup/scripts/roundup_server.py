@@ -475,7 +475,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             # config option to control its use.
             # Made available for extensions if the user trusts it.
             # E.g. you may wish to disable recaptcha validation extension
-            # if the ip of the client matches 172.16.0.0.
+            # if the ip of the client matches 198.51.100.X
             env['HTTP_X_FORWARDED_FOR'] = xff
         xfp = self.headers.get('X-Forwarded-Proto', None)
         if xfp:
