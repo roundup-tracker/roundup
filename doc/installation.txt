@@ -850,7 +850,7 @@ These notes were developed on a Microsoft Azure VM running Ubuntu
 -  the tracker ``mytracker`` is installed in the ``trackers`` folder of
    home directory of a user called ``admin``. Thus, the absolute path to
    the tracker home directory is ``/home/admin/trackers/mytracker``.
--  the server has a static public IP address of 11.11.11.101
+-  the server has a static public IP address of 198.51.100.25
 
 Install mod-wsgi
 ~~~~~~~~~~~~~~~~
@@ -898,7 +898,7 @@ method.
    up content on localhost port 8000. You can then direct a browser on
    the server itself to ``http://localhost:8000/`` or on another machine at
    the server's domain name or ip address followed by colon then 8000
-   (e.g. ``http://11.11.11.101:8000/``). If successful, you should see a
+   (e.g. ``http://198.51.100.25:8000/``). If successful, you should see a
    Malt Whiskey image.
 
 Package manager install of mod_wsgi
@@ -935,7 +935,7 @@ To run the tracker on Port 8000 as a foreground process
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 1. Change the ``tracker.web`` url in ``config.ini`` to port 8000 at the
-   server domain name or ip address (e.g. ``http://11.11.11.101:8000/``).
+   server domain name or ip address (e.g. ``http://198.51.100.25:8000/``).
 2. Open port 8000 for TCP on the server if you didn't already do so.
 3. ``cd`` to your tracker home directory, then run
    ``mod_wsgi-express start-server wsgi.py``.
@@ -966,7 +966,7 @@ To run mod_wsgi on PORT 80
 ''''''''''''''''''''''''''
 
 1. Change the ``tracker.web`` url in ``config.ini`` to the server url
-   with no port designator. E.g. ``http://11.11.11.101``.
+   with no port designator. E.g. ``http://198.51.100.25``.
 2. Open port 80 on the server for TCP traffic if it isn't open already.
 3. Stop the system instance of Apache to make sure it isn't holding on
    to port 80 run: ``sudo service apache2 stop``.
