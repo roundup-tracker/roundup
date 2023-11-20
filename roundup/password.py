@@ -395,7 +395,10 @@ class Password(JournalPassword):
     1
     """
 
-    deprecated_schemes = ["SSHA", "SHA", "MD5", "crypt", "plaintext"]
+    deprecated_schemes = ["SSHA", "SHA", "MD5", "plaintext"]
+    if crypt:
+        # place just before plaintext if crypt is available
+        deprecated_schemes.insert(-1, "crypt")
     experimental_schemes = ["PBKDF2S5"]
     known_schemes = ["PBKDF2"] + experimental_schemes + \
         deprecated_schemes
