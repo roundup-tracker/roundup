@@ -84,14 +84,63 @@ class TestDemo(unittest.TestCase):
         self.assertIn("Keyboard Interrupt: exiting", output.split('\n'))
 
     def testDemoClassic(self):
-        self.run_install_demo("classic")
+        with captured_output() as (out, err):
+            self.run_install_demo("classic")
+        self.assertIn("http://localhost:8917/demo/", out.getvalue())
+
+        # verify the default anydbm db is created
+        db_file = self.home + "/db/nodes.user"
+        self.assertTrue(os.path.isfile(db_file),
+                        "expected db file %s does not exist" % db_file)
+
+         # verify requested template was used
+        with open(self.home + "/TEMPLATE-INFO.txt", "r") as f:
+            info_lines = f.read()
+
+        try:
+            # handle text files with \r\n line endings
+            info_lines.index("\r", 0, 100)
+            info_lines = info_lines.replace("\r\n", "\n")
+        except ValueError:
+            pass
+
+        self.assertIn("Name: classic-_test_demo\n", info_lines)
 
     def testDemoMinimal(self):
-        self.run_install_demo('../templates/minimal', db="sqlite")
+        # test explicit path to template as others test template
+        # search path.
+        with captured_output() as (out, err):
+            self.run_install_demo('../templates/minimal', db="sqlite")
+        self.assertIn("http://localhost:8917/demo/", out.getvalue())
+
+        # verify the requested sqlite db file is created
+        db_file = self.home + "/db/db"
+        self.assertTrue(os.path.isfile(db_file),
+                        "expected db file %s does not exist" % db_file)
+
+        # verify requested template was used
+        with open(self.home + "/TEMPLATE-INFO.txt", "r") as f:
+            info_lines = f.read()
+
+        try:
+            # handle text files with \r\n line endings
+            info_lines.index("\r", 0, 100)
+            info_lines = info_lines.replace("\r\n", "\n")
+        except ValueError:
+            pass
+
+        self.assertIn("Name: minimal-_test_demo\n", info_lines)
 
     @skip_jinja2
     def testDemoJinja(self):
-        self.run_install_demo('jinja2', db="anydbm")
+        with captured_output() as (out, err):
+            self.run_install_demo('jinja2', db="anydbm")
+        self.assertIn("http://localhost:8917/demo/", out.getvalue())
+
+        # verify the requested anydbm db file is created
+        db_file = self.home + "/db/nodes.user"
+        self.assertTrue(os.path.isfile(db_file),
+                        "expected db file %s does not exist" % db_file)
 
         # verify that template was set to jinja2 by reading config
         with open(self.home + "/config.ini", "r") as f:
