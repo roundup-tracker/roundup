@@ -97,8 +97,12 @@ class RawToHyperdbTest(unittest.TestCase):
         self.assertTrue(isinstance(val, password.Password))
         val = self._test('password', '{plaintext}a string')
         self.assertTrue(isinstance(val, password.Password))
-        val = self._test('password', '{crypt}a string')
-        self.assertTrue(isinstance(val, password.Password))
+        try:
+           import crypt
+           val = self._test('password', '{crypt}a string')
+           self.assertTrue(isinstance(val, password.Password))
+        except ImportError:
+           pass
         s = sha1(b'a string').hexdigest()
         val = self._test('password', '{SHA}'+s)
         self.assertTrue(isinstance(val, password.Password))
