@@ -1919,6 +1919,15 @@ Once you have initialized your tracker, any arguments placed at the
 end of the ``docker run`` command are passed to the ``roundup-server``.
 These arguments **replace** the default arguments of ``issues=tracker``.
 
+Brief Help
+~~~~~~~~~~
+
+You can get help running the docker image::
+
+    docker run -it \
+        -v $PWD/tracker:/usr/src/app/tracker \
+        roundup-app:latest help
+
 Invoking a Shell
 ~~~~~~~~~~~~~~~~
 

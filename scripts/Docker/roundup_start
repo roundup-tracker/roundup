@@ -142,6 +142,52 @@ for tracker_spec in "$@"; do
 	    admin)
 	       shift
 	       exec roundup-admin "$@";;
+
+            help)
+		sed -e 's/^\t\t//' <<EOH
+		Example Usage:
+		   docker run --rm -it -p 127.0.0.1:8917:8080 \\
+		          -v $PWD:/usr/src/app/tracker \\              
+		          --name roundup_demo docker/image ...
+
+		where ... is:
+
+		   help - this output
+
+		   demo ... - run a demo tracker with optional arguments
+		           tracker home is in '/usr/src/app/tracker/demo'
+		           directory.
+
+		   admin ... - start roundup-admin shell or execute following
+		           arguments. Use '-i tracker/demo' to set tracker
+		           home.
+
+		   shell - start a unix shell for advanced config
+
+		   roundup-server(1) arguments - at minimum one or more
+		          tracker=tracker_home/directory
+                      specifications. See documentation for details.
+
+		   if no arguments are supplied, it will start the guided
+		      install sequence. See documentation for details.
+
+		demo Mode Arguments:
+
+		   one optional template name:
+		       classic, devel, jinja2, minimal, responsive
+
+		   one optional database backend:
+		       sqlite, anydbm
+
+		   the term 'nuke' to destroy demo tracker and start over
+
+		Other docker CLI Arguments:
+		
+		--env SHELL_DEBUG=1  - enable debug output from startup script
+
+EOH
+		exit 0
+		;;
 	    *)
 		# we just continue. Allow setting CMD to:
 		#    -i index_template issue=tracker
