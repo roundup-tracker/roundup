@@ -129,7 +129,7 @@ for tracker_spec in "$@"; do
 			 --urlport "$PORT_8080" \
 			 -t "$template" \
 			 tracker/demo \
-			 "$nuke"
+			 $nuke
 		fi
 		;;
 	    shell)
