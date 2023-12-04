@@ -434,6 +434,7 @@ command line (``roundup-admin`` for example).
 Change the default hashing scheme by adding the following lines to
 |the interfaces.py file|_ in your tracker home::
 
+  from roundup.password import Password
   ## Use PBDKF2S5 (PBKDF2-SHA512) for passwords. Re-hash old PBDFK2
   # Force password with scheme PBKDF2 (SHA1) to get re-hashed
   Password.deprecated_schemes.insert(0, Password.known_schemes[0])
