@@ -104,7 +104,7 @@ To give Roundup a try, just download (directions above), unpack and run::
 then open the url printed by the demo app.
 
 Release info and download page:
-     https://pypi.org/project/roundup
+     https://pypi.org/project/roundup/
 Source and documentation is available at the website:
      https://www.roundup-tracker.org/
 Mailing lists - the place to ask questions:

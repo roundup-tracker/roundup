@@ -717,7 +717,7 @@ See:
 
 More information about ISS setup may be found at:
 
-   https://docs.microsoft.com/en-us/iis/
+   https://learn.microsoft.com/en-us/iis/
 
 Copy the ``share/roundup/cgi-bin/roundup-cgi``
 (``frontends/roundup.cgi`` in source tree) file to your web
