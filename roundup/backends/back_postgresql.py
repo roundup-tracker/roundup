@@ -50,7 +50,8 @@ def connection_dict(config, dbnamestr=None):
 
 def db_create(config):
     """Clear all database contents and drop database itself"""
-    command = "CREATE DATABASE \"%s\" WITH ENCODING='UNICODE'" % config.RDBMS_NAME
+    command = ("CREATE DATABASE \"%s\" WITH ENCODING='UNICODE'" % 
+               get_database_name(config))
     if config.RDBMS_TEMPLATE:
         command = command + " TEMPLATE=%s" % config.RDBMS_TEMPLATE
     logging.getLogger('roundup.hyperdb').info(command)
@@ -59,13 +60,61 @@ def db_create(config):
 
 def db_nuke(config):
     """Clear all database contents and drop database itself"""
-    command = 'DROP DATABASE "%s"' % config.RDBMS_NAME
+    command = 'DROP DATABASE "%s"' % get_database_name(config)
+
     logging.getLogger('roundup.hyperdb').info(command)
     db_command(config, command)
 
     if os.path.exists(config.DATABASE):
         shutil.rmtree(config.DATABASE)
 
+
+def get_database_name(config):
+    '''Get database name using config.RDBMS_NAME or config.RDBMS_SERVICE.
+
+       If database specifed using RDBMS_SERVICE does not exist,
+       the error message is parsed for the database name. This
+       will fail if the error message changes. The alternative is
+       to try to find and parse the .pg_service .ini style file on
+       unix/windows. This is less palatable.
+
+       If the database specified using RDBMS_SERVICE does exist, (i.e. we
+       are doing a nuke operation), use psycopg.extenstion.ConnectionInfo
+       to get the dbname. This requires psycopg2 > 2.8 from 2018.
+    '''
+
+    if config.RDBMS_NAME:
+        return config.RDBMS_NAME
+
+    template1 = connection_dict(config)
+    try:
+        conn = psycopg2.connect(**template1)
+    except psycopg2.OperationalError as message:
+        import re
+        # extract db name from error:
+        #  'connection to server at "127.0.0.1", port 5432 failed: \
+        #   FATAL:  database "rounduptest" does not exist\n'
+        # ugh.
+        #
+        # Database name is any character sequence not including a " or
+        # whitespace. Arguably both are allowed by:
+        # 
+        #  https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
+        #
+        # with suitable quoting but ... really.
+        search = re.search(
+            'FATAL:\s+database\s+"([^"\s]*)"\s+does\s+not\s+exist',
+            message.args[0])
+        if search:
+            dbname = search.groups()[0]
+            return dbname
+
+        raise hyperdb.DatabaseError(
+            "Unable to determine database from service: %s" % message)
+
+    dbname = psycopg2.extensions.ConnectionInfo(conn).dbname
+    conn.close()
+    return dbname
 
 def db_command(config, command, database='postgres'):
     '''Perform some sort of database-level command. Retry 10 times if we
@@ -93,7 +142,7 @@ def db_command(config, command, database='postgres'):
                 return
     finally:
         conn.close()
-    raise RuntimeError('10 attempts to create database failed')
+    raise RuntimeError('10 attempts to create database failed when running: %s' % commandb)
 
 
 def pg_command(cursor, command):
