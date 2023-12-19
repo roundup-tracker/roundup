@@ -381,7 +381,7 @@ class Database(rdbms_common.Database):
 
     def fix_version_3_tables(self):
         rdbms_common.Database.fix_version_3_tables(self)
-        self.sql('''CREATE INDEX words_both_idx ON public.__words
+        self.sql('''CREATE INDEX words_both_idx ON __words
             USING btree (_word, _textid)''')
 
     def _add_fts_table(self):
