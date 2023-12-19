@@ -79,7 +79,7 @@ def get_database_name(config):
        unix/windows. This is less palatable.
 
        If the database specified using RDBMS_SERVICE does exist, (i.e. we
-       are doing a nuke operation), use psycopg.extenstion.ConnectionInfo
+       are doing a nuke operation), use psycopg.extensions.ConnectionInfo
        to get the dbname. This requires psycopg2 > 2.8 from 2018.
     '''
 
