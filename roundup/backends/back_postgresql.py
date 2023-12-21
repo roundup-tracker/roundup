@@ -142,7 +142,7 @@ def db_command(config, command, database='postgres'):
                 return
     finally:
         conn.close()
-    raise RuntimeError('10 attempts to create database failed when running: %s' % commandb)
+    raise RuntimeError('10 attempts to create database failed when running: %s' % command)
 
 
 def pg_command(cursor, command):
