@@ -103,7 +103,7 @@ def get_database_name(config):
         #
         # with suitable quoting but ... really.
         search = re.search(
-            'FATAL:\s+database\s+"([^"\s]*)"\s+does\s+not\s+exist',
+            r'FATAL:\s+database\s+"([^"\s]*)"\s+does\s+not\s+exist',
             message.args[0])
         if search:
             dbname = search.groups()[0]
