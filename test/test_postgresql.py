@@ -15,12 +15,13 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
+import os
 import unittest
-
 import pytest
+
 from roundup.hyperdb import DatabaseError
 from roundup.backends import get_backend, have_backend
-from roundup.backends.back_postgresql import db_command, db_schema_split
+from roundup.backends.back_postgresql import db_command, get_database_schema_names
 
 from .db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 from .db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
@@ -90,7 +91,7 @@ class postgresqlSchemaOpener:
         config.RDBMS_NAME=cls.RDBMS_NAME
         config.RDBMS_USER=cls.RDBMS_USER
 
-        database, schema = db_schema_split(config.RDBMS_NAME)
+        database, schema = get_database_schema_names(config)
 
         try:
             cls.nuke_database()
@@ -118,6 +119,75 @@ class postgresqlSchemaOpener:
     def nuke_database(self):
         # clear out the database - easiest way is to nuke and re-create it
         self.module.db_nuke(config)
+
+@skip_postgresql
+class postgresqlServiceOpener:
+    """Test finding db and schema using pg_service.conf file."""
+    
+    PG_SERVICE="test/pg_service.conf"  # look at the shipped pg_service file.
+
+    # default use db; overridden in test for schema
+    RDBMS_SERVICE="roundup_test_db"
+        
+    if have_backend('postgresql'):
+        module = get_backend('postgresql')
+
+    def setup_class(cls):
+        # nuke the schema for the class. Handles the case
+        # where an aborted test run (^C during setUp for example)
+        # leaves the database in an unusable, partly configured state.
+        config.RDBMS_NAME=""
+        config.RDBMS_USER=""
+        config.RDBMS_PASSWORD=""
+        config.RDBMS_SERVICE=cls.RDBMS_SERVICE
+        os.environ['PGSERVICEFILE'] = cls.PG_SERVICE
+
+        # this is bad. but short of creating a new opener it works.
+        if cls.RDBMS_SERVICE == "roundup_test_schema_bad":
+            return
+
+        database, schema = get_database_schema_names(config)
+
+        try:
+            cls.nuke_database()
+        except Exception as m:
+            # ignore failure to nuke the database if it doesn't exist.
+            if str(m.args[0]) == (
+                    'database "%s" does not exist' % database) \
+                    and not schema:
+                pass
+            # ignore failure to nuke the schema if it doesn't exist.
+            elif str(m.args[0]) == (
+                    'schema "%s" does not exist' % schema) and schema:
+                pass
+            else:
+                raise
+
+    def setUp(self):
+        # make sure to override the rdbms settings.
+        # before every test.
+        config.RDBMS_NAME=""
+        config.RDBMS_USER=""
+        config.RDBMS_PASSWORD=""
+        config.RDBMS_SERVICE=self.RDBMS_SERVICE
+
+        os.environ['PGSERVICEFILE'] = self.PG_SERVICE
+
+    def tearDown(self):
+        # this is bad. but short of creating a new opener it works.
+        if self.RDBMS_SERVICE != "roundup_test_schema_bad":
+            self.nuke_database()
+        config.RDBMS_NAME="rounduptest"
+        config.RDBMS_USER="rounduptest"
+        config.RDBMS_PASSWORD="rounduptest"
+        config.RDBMS_SERVICE=""
+        del(os.environ['PGSERVICEFILE'])
+
+    @classmethod
+    def nuke_database(self):
+        # clear out the database - easiest way is to nuke and re-create it
+        self.module.db_nuke(config)
+
 
 @skip_postgresql
 class postgresqlPrecreatedSchemaDbOpener:
@@ -361,6 +431,69 @@ class postgresqlROTestSchema(postgresqlSchemaOpener, ROTest,
         ROTest.tearDown(self)
         postgresqlSchemaOpener.tearDown(self)
 
+@skip_postgresql
+class postgresqlServiceTest(postgresqlServiceOpener, ROTest,
+                              unittest.TestCase):
+    """Test using pg_service.conf using the db to make sure connection
+       happens properly.
+
+       Reuses ROTest because it's a short test.
+    """
+    def setUp(self):
+        postgresqlServiceOpener.setUp(self)
+        ROTest.setUp(self)
+
+    def tearDown(self):
+        ROTest.tearDown(self)
+        postgresqlServiceOpener.tearDown(self)
+
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlServiceSchema(postgresqlServiceOpener, ROTest,
+                              unittest.TestCase):
+    """Test using pg_service.conf using a schema to make sure connection
+       happens properly.
+
+       Reuses ROTest because it's a short test.
+    """
+
+    RDBMS_SERVICE="roundup_test_schema"
+    def setUp(self):
+        postgresqlServiceOpener.setUp(self)
+        ROTest.setUp(self)
+
+    def tearDown(self):
+        ROTest.tearDown(self)
+        postgresqlServiceOpener.tearDown(self)
+
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlServiceSchemaBad(postgresqlServiceOpener, unittest.TestCase):
+    """Test using pg_service.conf with incorrectly defined schema. Check
+       error message. No need for database.
+
+       FIXME: postgresqlServiceOpener.{setUp,tearDown} are written to behave
+              differently if cls.RDBMS_SERVICE="roundup_test_schema_bad".
+
+              I wanted the test, but I couldn't figure out a different
+              way to do this without creating a new opener and I didn't
+              want to 8-).
+    """
+
+    RDBMS_SERVICE="roundup_test_schema_bad"
+    def setUp(self):
+        postgresqlServiceOpener.setUp(self)
+
+    def tearDown(self):
+        postgresqlServiceOpener.tearDown(self)
+
+    def test_bad_Schema_in_pg_service(self):
+         with self.assertRaises(ValueError) as m:
+            get_database_schema_names(config)
+
+         print(m.exception.args[0])
+         self.assertEqual(m.exception.args[0],
+                          'Unable to get schema for service: "roundup_test_schema_bad" from options: "-c search_path="')
 
 @skip_postgresql
 class postgresqlConcurrencyTest(postgresqlOpener, ConcurrentDBTest,

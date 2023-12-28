@@ -48,15 +48,15 @@ def connection_dict(config, dbnamestr=None):
         del d['read_default_file']
     return d
 
-def db_schema_split(database_name):
+def _db_schema_split(database_name):
     ''' Split database_name into database and schema parts'''
     if '.' in database_name:
         return database_name.split ('.')
-    return [database_name, '']
+    return (database_name, '')
 
 def db_create(config):
     """Clear all database contents and drop database itself"""
-    db_name, schema_name = db_schema_split(config.RDBMS_NAME)
+    db_name, schema_name = get_database_schema_names(config)
     if not schema_name:
         command = "CREATE DATABASE \"%s\" WITH ENCODING='UNICODE'" % db_name
         if config.RDBMS_TEMPLATE:
@@ -64,13 +64,14 @@ def db_create(config):
         logging.getLogger('roundup.hyperdb').info(command)
         db_command(config, command)
     else:
-        command = "CREATE SCHEMA \"%s\" AUTHORIZATION \"%s\"" % (schema_name, config.RDBMS_USER)
+        command = "CREATE SCHEMA \"%s\" AUTHORIZATION \"%s\"" % (
+            schema_name, get_database_user_name(config))
         logging.getLogger('roundup.hyperdb').info(command)
         db_command(config, command, db_name)
 
 def db_nuke(config):
     """Drop the database (and all its contents) or the schema."""
-    db_name, schema_name = db_schema_split(config.RDBMS_NAME)
+    db_name, schema_name = get_database_schema_names(config)
     if not schema_name:
         command = 'DROP DATABASE "%s"'% db_name
         logging.getLogger('roundup.hyperdb').info(command)
@@ -82,28 +83,32 @@ def db_nuke(config):
     if os.path.exists(config.DATABASE):
         shutil.rmtree(config.DATABASE)
 
-def get_database_name(config):
-    '''Get database name using config.RDBMS_NAME or config.RDBMS_SERVICE.
+def get_database_schema_names(config):
+    '''Get database and schema names using config.RDBMS_NAME or service
+       defined by config.RDBMS_SERVICE.
 
-       If database specifed using RDBMS_SERVICE does not exist,
-       the error message is parsed for the database name. This
-       will fail if the error message changes. The alternative is
-       to try to find and parse the .pg_service .ini style file on
-       unix/windows. This is less palatable.
+       If database specifed using RDBMS_SERVICE does not exist, the
+       error message is parsed for the database name. This database
+       can then be created by calling code. Parsing will fail if the
+       error message changes. The alternative is to try to find and
+       parse the .pg_service .ini style file on unix/windows. This is
+       less palatable.
 
-       If the database specified using RDBMS_SERVICE does exist, (i.e. we
-       are doing a nuke operation), use psycopg.extensions.ConnectionInfo
-       to get the dbname. This requires psycopg2 > 2.8 from 2018.
+       If the database specified using RDBMS_SERVICE exists, (e.g. we
+       are doing a nuke operation), use
+       psycopg.extensions.ConnectionInfo to get the dbname. Also parse
+       the search_path options setting to get the schema. Only the
+       first element of the search_path is returned.  This requires
+       psycopg2 > 2.8 from 2018.
     '''
 
     if config.RDBMS_NAME:
-        return config.RDBMS_NAME
+        return _db_schema_split(config.RDBMS_NAME)
 
     template1 = connection_dict(config)
     try:
         conn = psycopg2.connect(**template1)
     except psycopg2.OperationalError as message:
-        import re
         # extract db name from error:
         #  'connection to server at "127.0.0.1", port 5432 failed: \
         #   FATAL:  database "rounduptest" does not exist\n'
@@ -120,14 +125,71 @@ def get_database_name(config):
             message.args[0])
         if search:
             dbname = search.groups()[0]
-            return dbname
+            # To use a schema, the db has to have been precreated.
+            # So return '' for schema if database does not exist.
+            return (dbname, '')
 
         raise hyperdb.DatabaseError(
             "Unable to determine database from service: %s" % message)
 
     dbname = psycopg2.extensions.ConnectionInfo(conn).dbname
+    schema = ''
+    options = psycopg2.extensions.ConnectionInfo(conn).options
     conn.close()
-    return dbname
+
+    # Assume schema is first word in the search_path spec.
+    # , (for multiple items in path) and whitespace (for another option)
+    # end the schema name.
+    m = re.search(r'search_path=([^,\s]*)', options)
+    if m:
+        schema = m.group(1)
+        if not schema:
+            raise ValueError('Unable to get schema for service: "%s" from options: "%s"' % (template1['service'], options))
+
+    return (dbname, schema)
+
+def get_database_user_name(config):
+    '''Get database username using config.RDBMS_USER or return
+       user from connection created using config.RDBMS_SERVICE.
+
+       If the database specified using RDBMS_SERVICE does exist, (i.e. we
+       are doing a nuke operation), use psycopg.extensions.ConnectionInfo
+       to get the user. This requires psycopg2 > 2.8 from 2018.
+    '''
+    if config.RDBMS_USER:
+        return config.RDBMS_USER
+
+    template1 = connection_dict(config)
+    try:
+        conn = psycopg2.connect(**template1)
+    except psycopg2.OperationalError as message:
+        # extract db name from error:
+        #  'connection to server at "127.0.0.1", port 5432 failed: \
+        #   FATAL:  database "rounduptest" does not exist\n'
+        # ugh.
+        #
+        # Database name is any character sequence not including a " or
+        # whitespace. Arguably both are allowed by:
+        # 
+        #  https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
+        #
+        # with suitable quoting but ... really.
+        search = re.search(
+            r'FATAL:\s+database\s+"([^"\s]*)"\s+does\s+not\s+exist',
+            message.args[0])
+        if search:
+            dbname = search.groups()[0]
+            # To have a user, the db has to exist already.
+            # so return '' for user.
+            return ''
+
+        raise hyperdb.DatabaseError(
+            "Unable to determine database from service: %s" % message)
+
+    user = psycopg2.extensions.ConnectionInfo(conn).user
+    conn.close()
+
+    return user
 
 def db_command(config, command, database='postgres'):
     '''Perform some sort of database-level command. Retry 10 times if we
@@ -138,15 +200,13 @@ def db_command(config, command, database='postgres'):
     Compare to issue2550543.
     '''
     template1 = connection_dict(config, 'database')
-    db_name, schema_name = db_schema_split(template1['database'])
     template1['database'] = database
 
     try:
         conn = psycopg2.connect(**template1)
     except psycopg2.OperationalError as message:
-        if not schema_name:
-            if re.search(r'database ".+" does not exist', str(message)):
-                return db_command(config, command, database='template1')
+        if re.search(r'database ".+" does not exist', str(message)):
+            return db_command(config, command, database='template1')
         raise hyperdb.DatabaseError(message)
 
     conn.set_isolation_level(0)
@@ -186,7 +246,7 @@ def pg_command(cursor, command, args=()):
 def db_exists(config):
     """Check if database or schema already exists"""
     db = connection_dict(config, 'database')
-    db_name, schema_name = db_schema_split(db['database'])
+    db_name, schema_name = get_database_schema_names(config)
     if schema_name:
         db['database'] = db_name
     try:
@@ -253,7 +313,7 @@ class Database(rdbms_common.Database):
 
     def sql_open_connection(self):
         db = connection_dict(self.config, 'database')
-        db_name, schema_name = db_schema_split (db['database'])
+        db_name, schema_name = get_database_schema_names(self.config)
         if schema_name:
             db['database'] = db_name
 

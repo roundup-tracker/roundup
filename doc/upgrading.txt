@@ -163,11 +163,31 @@ keyword to ``roundup_database.roundup_schema`` will create
 and use the ``roundup_schema`` in the pre-created
 ``roundup_database``.
 
-Also there is a new configuration keyword in the rdbms section of
-``config.ini``. The ``service`` keyword allows you to define the
-service name for Postgres that will be looked up in the Postgres
-`Connection Service File`_. Setting service to `roundup` with the
-following in the service file::
+Also there is a new configuration keyword in the rdbms
+section of ``config.ini``. The ``service`` keyword allows
+you to define the service name for Postgres that will be
+looked up in the `Connection Service File`_. Any of the
+methods of specifying the file including by using the
+``PGSERVICEFILE`` environment variable are supported.
+
+This is similar to the existing support for MySQL
+option/config files and groups.
+
+If you use services, any settings for the same properties
+(user, name, password ...) that are in the tracker's
+``config.ini`` will override the service settings. So you
+want to leave the ``config.ini`` settings blank. E.G.::
+
+  [rdbms]
+  name = 
+  host =
+  port = 
+  user =
+  password =
+  service =  roundup_roundup
+
+Setting ``service`` to ``roundup_roundup`` with
+the following in the service file::
 
    [roundup_roundup]
    host=127.0.0.1
@@ -176,13 +196,21 @@ following in the service file::
    password=roundup
    dbname=roundup
 
-would use the roundup database with the specified credentials.
+would use the roundup database with the specified
+credentials. It is possible to define a service that
+connects to a specific schema using::
 
-It is possible to define a service that connects to a specific
-schema. However this will require a little fiddling to get things
-working. A future enhancement may make using a schema via this
-mechanism easier. See https://issues.roundup-tracker.org/issue2551299
-for details.
+  options=-c search_path=roundup_service_dev
+
+Note that the first schema specified after ``search_path=``
+is created and populated. The schema name
+(``roundup_service_dev``) must be terminated by: a comma,
+whitespace or end of line.
+
+You can use the command ``psql "service=db_service_name"``
+to verify the settings in the connection file. Inside of
+``psql`` you can verify the ``search_path`` using ``show
+search_path;``.
 
 .. _`Connection Service File`: https://www.postgresql.org/docs/current/libpq-pgservice.html
 
