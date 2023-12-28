@@ -20,6 +20,7 @@ import unittest
 import pytest
 from roundup.hyperdb import DatabaseError
 from roundup.backends import get_backend, have_backend
+from roundup.backends.back_postgresql import db_command, db_schema_split
 
 from .db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 from .db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
@@ -52,10 +53,15 @@ class postgresqlOpener:
         # where an aborted test run (^C during setUp for example)
         # leaves the database in an unusable, partly configured state.
         try:
-            cls.nuke_database(cls)
-        except:
-            # ignore failure to nuke the database.
-            pass
+            cls.nuke_database()
+        except Exception as m:
+            # ignore failure to nuke the database if it doesn't exist.
+            # otherwise abort
+            if str(m.args[0]) == (
+                    'database "%s" does not exist' % config.RDBMS_NAME):
+                pass
+            else:
+                raise
 
     def setUp(self):
         pass
@@ -63,32 +69,95 @@ class postgresqlOpener:
     def tearDown(self):
         self.nuke_database()
 
+    @classmethod
     def nuke_database(self):
         # clear out the database - easiest way is to nuke and re-create it
         self.module.db_nuke(config)
 
-
 @skip_postgresql
-class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
+class postgresqlSchemaOpener:
+
+    RDBMS_NAME="rounduptest_schema.rounduptest"
+    RDBMS_USER="rounduptest_schema"
+        
+    if have_backend('postgresql'):
+        module = get_backend('postgresql')
+
+    def setup_class(cls):
+        # nuke the schema for the class. Handles the case
+        # where an aborted test run (^C during setUp for example)
+        # leaves the database in an unusable, partly configured state.
+        config.RDBMS_NAME=cls.RDBMS_NAME
+        config.RDBMS_USER=cls.RDBMS_USER
+
+        database, schema = db_schema_split(config.RDBMS_NAME)
+
+        try:
+            cls.nuke_database()
+        except Exception as m:
+            # ignore failure to nuke the database if it doesn't exist.
+            # otherwise abort
+            if str(m.args[0]) == (
+                    'schema "%s" does not exist' % schema):
+                pass
+            else:
+                raise
+
     def setUp(self):
-        # set for manual integration testing of 'native-fts'
-        # It is unset in tearDown so it doesn't leak into other tests.
-        #  FIXME extract test methods in DBTest that hit the indexer
-        #    into a new class (DBTestIndexer). Add DBTestIndexer
-        #    to this class.
-        #    Then create a new class in this file:
-        #        postgresqlDBTestIndexerNative_FTS
-        #    that imports from DBestIndexer to test native-fts.
-        # config['INDEXER'] = 'native-fts'
-        postgresqlOpener.setUp(self)
-        DBTest.setUp(self)
+        # make sure to override the rdbms settings.
+        # before every test.
+        config.RDBMS_NAME=self.RDBMS_NAME
+        config.RDBMS_USER=self.RDBMS_USER
 
     def tearDown(self):
-        # clean up config to prevent leak if native-fts is tested
-        config['INDEXER'] = ''
-        DBTest.tearDown(self)
-        postgresqlOpener.tearDown(self)
+        self.nuke_database()
+        config.RDBMS_NAME="rounduptest"
+        config.RDBMS_USER="rounduptest"
 
+    @classmethod
+    def nuke_database(self):
+        # clear out the database - easiest way is to nuke and re-create it
+        self.module.db_nuke(config)
+
+@skip_postgresql
+class postgresqlPrecreatedSchemaDbOpener:
+    """Open the db where the user has only schema create rights.
+       The test tries to nuke the db and should result in an exception.
+
+       RDBMS_NAME should not have the .schema on it as we want to
+       operate on the db itself with db_nuke.
+    """
+
+    RDBMS_NAME="rounduptest_schema"
+    RDBMS_USER="rounduptest_schema"
+        
+    if have_backend('postgresql'):
+        module = get_backend('postgresql')
+
+    def setup_class(cls):
+        # nuke the schema for the class. Handles the case
+        # where an aborted test run (^C during setUp for example)
+        # leaves the database in an unusable, partly configured state.
+        config.RDBMS_NAME=cls.RDBMS_NAME
+        config.RDBMS_USER=cls.RDBMS_USER
+
+    def setUp(self):
+        # make sure to override the rdbms settings.
+        # before every test.
+        config.RDBMS_NAME=self.RDBMS_NAME
+        config.RDBMS_USER=self.RDBMS_USER
+
+    def tearDown(self):
+        config.RDBMS_NAME="rounduptest"
+        config.RDBMS_USER="rounduptest"
+
+    @classmethod
+    def nuke_database(self):
+        # clear out the database - easiest way is to nuke and re-create it
+        self.module.db_nuke(config)
+
+@skip_postgresql
+class postgresqlAdditionalDBTest():
     def testUpgrade_6_to_7(self):
 
         # load the database
@@ -225,6 +294,52 @@ class postgresqlDBTest(postgresqlOpener, DBTest, unittest.TestCase):
         self.assertEqual(self.db.database_schema['version'], 8)
 
 @skip_postgresql
+class postgresqlDBTest(postgresqlOpener, DBTest,
+                       postgresqlAdditionalDBTest, unittest.TestCase):
+    def setUp(self):
+        # set for manual integration testing of 'native-fts'
+        # It is unset in tearDown so it doesn't leak into other tests.
+        #  FIXME extract test methods in DBTest that hit the indexer
+        #    into a new class (DBTestIndexer). Add DBTestIndexer
+        #    to this class.
+        #    Then create a new class in this file:
+        #        postgresqlDBTestIndexerNative_FTS
+        #    that imports from DBestIndexer to test native-fts.
+        # config['INDEXER'] = 'native-fts'
+        postgresqlOpener.setUp(self)
+        DBTest.setUp(self)
+
+    def tearDown(self):
+        # clean up config to prevent leak if native-fts is tested
+        config['INDEXER'] = ''
+        DBTest.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlDBTestSchema(postgresqlSchemaOpener, DBTest,
+                             postgresqlAdditionalDBTest, unittest.TestCase):
+    def setUp(self):
+        # set for manual integration testing of 'native-fts'
+        # It is unset in tearDown so it doesn't leak into other tests.
+        #  FIXME extract test methods in DBTest that hit the indexer
+        #    into a new class (DBTestIndexer). Add DBTestIndexer
+        #    to this class.
+        #    Then create a new class in this file:
+        #        postgresqlDBTestIndexerNative_FTS
+        #    that imports from DBestIndexer to test native-fts.
+        # config['INDEXER'] = 'native-fts'
+        postgresqlSchemaOpener.setUp(self)
+        DBTest.setUp(self)
+
+    def tearDown(self):
+        # clean up config to prevent leak if native-fts is tested
+        config['INDEXER'] = ''
+        DBTest.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
+
+
+@skip_postgresql
 class postgresqlROTest(postgresqlOpener, ROTest, unittest.TestCase):
     def setUp(self):
         postgresqlOpener.setUp(self)
@@ -233,6 +348,18 @@ class postgresqlROTest(postgresqlOpener, ROTest, unittest.TestCase):
     def tearDown(self):
         ROTest.tearDown(self)
         postgresqlOpener.tearDown(self)
+
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlROTestSchema(postgresqlSchemaOpener, ROTest,
+                             unittest.TestCase):
+    def setUp(self):
+        postgresqlSchemaOpener.setUp(self)
+        ROTest.setUp(self)
+
+    def tearDown(self):
+        ROTest.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
 
 
 @skip_postgresql
@@ -247,29 +374,23 @@ class postgresqlConcurrencyTest(postgresqlOpener, ConcurrentDBTest,
         ConcurrentDBTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
-
 @skip_postgresql
-class postgresqlJournalTest(postgresqlOpener, ClassicInitBase,
-                            unittest.TestCase):
+@pytest.mark.pg_schema
+class postgresqlConcurrencyTestSchema(postgresqlSchemaOpener, ConcurrentDBTest,
+                                      unittest.TestCase):
     backend = 'postgresql'
     def setUp(self):
-        postgresqlOpener.setUp(self)
-        ClassicInitBase.setUp(self)
-        self.tracker = setupTracker(self.dirname, self.backend)
-        db = self.tracker.open('admin')
-        self.id = db.issue.create(title='initial value')
-        db.commit()
-        db.close()
+        postgresqlSchemaOpener.setUp(self)
+        ConcurrentDBTest.setUp(self)
 
     def tearDown(self):
-        try:
-            self.db1.close()
-            self.db2.close()
-        except psycopg2.InterfaceError as exc:
-            if 'connection already closed' in str(exc): pass
-            else: raise
-        ClassicInitBase.tearDown(self)
-        postgresqlOpener.tearDown(self)
+        ConcurrentDBTest.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
+
+
+
+@skip_postgresql
+class postgresqlAdditionalJournalTest():
 
     def _test_journal(self, expected_journal):
         id  = self.id
@@ -308,6 +429,56 @@ class postgresqlJournalTest(postgresqlOpener, ClassicInitBase,
         exc = self.module.TransactionRollbackError
         self.assertRaises(exc, self._test_journal, [])
 
+@skip_postgresql
+class postgresqlJournalTest(postgresqlOpener, ClassicInitBase,
+                            postgresqlAdditionalJournalTest,
+                            unittest.TestCase):
+    backend = 'postgresql'
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        ClassicInitBase.setUp(self)
+        self.tracker = setupTracker(self.dirname, self.backend)
+        db = self.tracker.open('admin')
+        self.id = db.issue.create(title='initial value')
+        db.commit()
+        db.close()
+
+    def tearDown(self):
+        try:
+            self.db1.close()
+            self.db2.close()
+        except psycopg2.InterfaceError as exc:
+            if 'connection already closed' in str(exc): pass
+            else: raise
+        ClassicInitBase.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
+
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlJournalTestSchema(postgresqlSchemaOpener, ClassicInitBase,
+                                  postgresqlAdditionalJournalTest,
+                                  unittest.TestCase):
+    backend = 'postgresql'
+    def setUp(self):
+        postgresqlSchemaOpener.setUp(self)
+        ClassicInitBase.setUp(self)
+        self.tracker = setupTracker(self.dirname, self.backend)
+        db = self.tracker.open('admin')
+        self.id = db.issue.create(title='initial value')
+        db.commit()
+        db.close()
+
+    def tearDown(self):
+        try:
+            self.db1.close()
+            self.db2.close()
+        except psycopg2.InterfaceError as exc:
+            if 'connection already closed' in str(exc): pass
+            else: raise
+        ClassicInitBase.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
+
 
 @skip_postgresql
 class postgresqlHTMLItemTest(postgresqlOpener, HTMLItemTest,
@@ -323,6 +494,20 @@ class postgresqlHTMLItemTest(postgresqlOpener, HTMLItemTest,
 
 
 @skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlHTMLItemTestSchema(postgresqlSchemaOpener, HTMLItemTest,
+                             unittest.TestCase):
+    backend = 'postgresql'
+    def setUp(self):
+        postgresqlSchemaOpener.setUp(self)
+        HTMLItemTest.setUp(self)
+
+    def tearDown(self):
+        HTMLItemTest.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
+
+
+@skip_postgresql
 class postgresqlFilterCacheTest(postgresqlOpener, FilterCacheTest,
                                 unittest.TestCase):
     backend = 'postgresql'
@@ -334,6 +519,19 @@ class postgresqlFilterCacheTest(postgresqlOpener, FilterCacheTest,
         FilterCacheTest.tearDown(self)
         postgresqlOpener.tearDown(self)
 
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlFilterCacheTestSchema(postgresqlSchemaOpener, FilterCacheTest,
+                                unittest.TestCase):
+    backend = 'postgresql'
+    def setUp(self):
+        postgresqlSchemaOpener.setUp(self)
+        FilterCacheTest.setUp(self)
+
+    def tearDown(self):
+        FilterCacheTest.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
+
 
 @skip_postgresql
 class postgresqlSchemaTest(postgresqlOpener, SchemaTest, unittest.TestCase):
@@ -344,6 +542,19 @@ class postgresqlSchemaTest(postgresqlOpener, SchemaTest, unittest.TestCase):
     def tearDown(self):
         SchemaTest.tearDown(self)
         postgresqlOpener.tearDown(self)
+
+
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlSchemaTestSchema(postgresqlSchemaOpener, SchemaTest,
+                                 unittest.TestCase):
+    def setUp(self):
+        postgresqlSchemaOpener.setUp(self)
+        SchemaTest.setUp(self)
+
+    def tearDown(self):
+        SchemaTest.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
 
 
 @skip_postgresql
@@ -359,6 +570,20 @@ class postgresqlClassicInitTest(postgresqlOpener, ClassicInitTest,
         postgresqlOpener.tearDown(self)
 
 
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlClassicInitTestSchema(postgresqlSchemaOpener, ClassicInitTest,
+                                      unittest.TestCase):
+    backend = 'postgresql'
+    def setUp(self):
+        postgresqlSchemaOpener.setUp(self)
+        ClassicInitTest.setUp(self)
+
+    def tearDown(self):
+        ClassicInitTest.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
+
+
 from .session_common import SessionTest
 @skip_postgresql
 class postgresqlSessionTest(postgresqlOpener, SessionTest, unittest.TestCase):
@@ -370,6 +595,21 @@ class postgresqlSessionTest(postgresqlOpener, SessionTest, unittest.TestCase):
     def tearDown(self):
         SessionTest.tearDown(self)
         postgresqlOpener.tearDown(self)
+
+
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlSessionTestSchema(postgresqlSchemaOpener, SessionTest,
+                                  unittest.TestCase):
+    s2b = lambda x,y : y
+
+    def setUp(self):
+        postgresqlSchemaOpener.setUp(self)
+        SessionTest.setUp(self)
+    def tearDown(self):
+        SessionTest.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
+
 
 @skip_postgresql
 class postgresqlSpecialActionTestCase(postgresqlOpener, SpecialActionTest,
@@ -384,7 +624,60 @@ class postgresqlSpecialActionTestCase(postgresqlOpener, SpecialActionTest,
         postgresqlOpener.tearDown(self)
 
 @skip_postgresql
-class postgresqlRestTest (RestTestCase, unittest.TestCase):
+@pytest.mark.pg_schema
+class postgresqlSpecialActionTestCaseSchema(postgresqlSchemaOpener,
+                                            SpecialActionTest,
+                                            unittest.TestCase):
     backend = 'postgresql'
+    def setUp(self):
+        postgresqlSchemaOpener.setUp(self)
+        SpecialActionTest.setUp(self)
+
+    def tearDown(self):
+        SpecialActionTest.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
+
+@skip_postgresql
+class postgresqlRestTest (postgresqlOpener, RestTestCase, unittest.TestCase):
+    backend = 'postgresql'
+    def setUp(self):
+        postgresqlOpener.setUp(self)
+        RestTestCase.setUp(self)
+
+    def tearDown(self):
+        RestTestCase.tearDown(self)
+        postgresqlOpener.tearDown(self)
+
+
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlRestTestSchema(postgresqlSchemaOpener, RestTestCase,
+                          unittest.TestCase):
+    backend = 'postgresql'
+    def setUp(self):
+        postgresqlSchemaOpener.setUp(self)
+        RestTestCase.setUp(self)
+
+    def tearDown(self):
+        RestTestCase.tearDown(self)
+        postgresqlSchemaOpener.tearDown(self)
+
+
+@skip_postgresql
+@pytest.mark.pg_schema
+class postgresqlDbDropFailureTestSchema(postgresqlPrecreatedSchemaDbOpener,
+                               unittest.TestCase):
+
+    def test_drop(self):
+        """Verify that the schema test database can not be dropped."""
+
+        with self.assertRaises(RuntimeError) as m:
+            self.module.db_nuke(config)
+
+
+        self.assertEqual(m.exception.args[0],
+                         'must be owner of database rounduptest_schema')
+
+
 
 # vim: set et sts=4 sw=4 :

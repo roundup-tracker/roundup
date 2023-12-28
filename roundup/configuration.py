@@ -1435,7 +1435,9 @@ always passes, so setting it less than 1 is not recommended."""),
         (DatabaseBackend, 'backend', NODEFAULT,
             "Database backend."),
         (Option, 'name', 'roundup',
-            "Name of the database to use.",
+            "Name of the database to use. For Postgresql, this can\n"
+            "be database.schema to use a specific schema within\n"
+            "a Postgres database.",
             ['MYSQL_DBNAME']),
         (NullableOption, 'host', 'localhost',
             "Database server host.",

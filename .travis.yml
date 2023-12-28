@@ -155,6 +155,8 @@ before_script:
   - sudo service postgresql restart; sleep 30
   # set up postgresql database
   - psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
+  - psql -c "CREATE ROLE rounduptest_schema LOGIN PASSWORD 'rounduptest';" -U postgres
+   - psql -c "CREATE DATABASE rounduptest_schema;GRANT CREATE ON DATABASE rounduptest_schema TO rounduptest_schema;" -U postgres
 
   # build the .mo translation files and install them into a tree
   # (locale/locale under roundup directory root) 

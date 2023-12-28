@@ -104,6 +104,9 @@ Features:
   configuring database on a per-tracker basis. Also replaces use of
   PGSERVICE env variable for single instance trackers. (From ML
   question by ivanov. John Rouillard)
+- issue2550852 - support for specifying a PostgreSQL schema to use for
+  the Roundup database. (Patch by Stuart McGraw; slight modifications,
+  tests, docs: John Rouillard).
 
 2023-07-13 2.3.0
 

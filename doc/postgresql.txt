@@ -27,30 +27,95 @@ suggest that you install into a python virtual environment.
 .. _PostgreSQL: https://www.postgresql.org/
 
 
+Preparing the Database
+======================
+
+Roundup can use Postgres in one of two ways:
+
+  1. Roundup creates and uses a database
+  2. Roundup uses a pre-created database and creates and uses a schema
+     under the database.
+
+In the examples below, replace ``roundupuser``, ``rounduppw`` and
+``roundupdb`` with suitable values.
+
+This assumes that you are running Postgres on the same machine with
+Roundup. Using a remote database, setting up SSL/TLS and other
+authentication methods is beyond the scope of this
+documentation. However examples are welcome on the wiki or mailing
+list.
+
+Creating a Role/User
+--------------------
+
+For case 1 create a user using::
+
+  psql -c "CREATE ROLE roundupuser WITH CREATEDB LOGIN PASSWORD 'rounduppw';" -U postgres
+
+After running ``roundup-admin init`` to create your databases, you can
+remove the CREATEDB permission using::
+
+  psql -c "ALTER ROLE roundupuser NOCREATEDB;"
+
+If needed (e.g. you want to deploy a new tracker) you can use ``ALTER
+ROLE`` with ``CREATEDB`` to add the permission back.
+
+For case 2 you need to create the user:: 
+
+  psql -c "CREATE ROLE roundupuser LOGIN PASSWORD 'rounduppw';" -U postgres
+
+This psql command connects as the postgres database superuser. You may
+need to run this under sudo as the postgres user or provide a password
+to become an admin on the postgres db process.
+
+
+Creating a Database
+-------------------
+
+For case 1, roundup will create the database on demand using the
+``roundup_admin init`` command. So there is nothing to do here.
+
+For case 2, run::
+
+   psql -c "CREATE DATABASE roundupdb;GRANT CREATE ON DATABASE roundupdb TO roundupuser;" -U postgres
+
+This creates the database and allows the roundup user to create a new
+schema when running ``roundup_admin init``.
+
+
 Running the PostgreSQL unit tests
 =================================
 
 The user that you're running the tests as will need to be able to access
 the postgresql database on the local machine and create and drop
-databases. See the config values in 'test/db_test_base.py' 
+databases and schemas. See the config values in 'test/db_test_base.py' 
 about which database connection, name and user will be used.
 
-At this time the following command will setup the user::
+At this time the following commands will setup the users and required
+databases::
 
   sudo -u postgres psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
 
-Note ``rounduptest`` is a well known account, so you should
-remove/disable the account after testing and set up a suitable
-production account. You need to remove any database owned by
-``rounduptest`` first. So something like this should work::
+  sudo -u postgres psql -c "CREATE ROLE rounduptest_schema LOGIN PASSWORD 'rounduptest';" -U postgres
+  sudo -u postgres psql -c "CREATE DATABASE rounduptest_schema;GRANT CREATE ON DATABASE rounduptest_schema TO rounduptest_schema;" -U postgres
+
+Note ``rounduptest`` and ``rounduptest_schema`` are well known
+accounts, so you should remove/disable the accounts after testing and
+set up a suitable production account. You need to remove any database
+owned by ``rounduptest`` first. To clean everything up, something like
+this should work::
 
 
   sudo -u postgres psql -c "DROP DATABASE rounduptest;" -U postgres
   sudo -u postgres psql -c "DROP ROLE rounduptest;" -U postgres
+  sudo -u postgres psql -c "DROP DATABASE rounduptest_schema;" -U postgres
+  sudo -u postgres psql -c "DROP ROLE rounduptest_schema;" -U postgres
 
 If the ``rounduptest`` database is left in a broken state
 (e.g. because of a crash during testing) dropping the database and
-restarting the tests should fix it.
+restarting the tests should fix it. If you have issues while running
+the schema test, you can drop the ``rounduptest` schema in the
+``rounduptest_schema`` database.
    
 Credit
 ======

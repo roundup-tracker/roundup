@@ -153,6 +153,39 @@ The removed columns are: severity, versions, keywords, dependencies.
 It is also missing the ``solves`` field which is added to match the
 schema.
 
+New PostgreSQL Settings (optional)
+----------------------------------
+
+With this release, you can specify a Postgresql database
+schema to use. By default Roundup creates a database when
+using ``roundup-admin init``. Setting the rdbms ``name``
+keyword to ``roundup_database.roundup_schema`` will create
+and use the ``roundup_schema`` in the pre-created
+``roundup_database``.
+
+Also there is a new configuration keyword in the rdbms section of
+``config.ini``. The ``service`` keyword allows you to define the
+service name for Postgres that will be looked up in the Postgres
+`Connection Service File`_. Setting service to `roundup` with the
+following in the service file::
+
+   [roundup_roundup]
+   host=127.0.0.1
+   port=5432
+   user=roundup
+   password=roundup
+   dbname=roundup
+
+would use the roundup database with the specified credentials.
+
+It is possible to define a service that connects to a specific
+schema. However this will require a little fiddling to get things
+working. A future enhancement may make using a schema via this
+mechanism easier. See https://issues.roundup-tracker.org/issue2551299
+for details.
+
+.. _`Connection Service File`: https://www.postgresql.org/docs/current/libpq-pgservice.html
+
 Bad Login Rate Limiting and Locking (info)
 ------------------------------------------
 

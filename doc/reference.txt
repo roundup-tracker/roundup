@@ -277,7 +277,9 @@ Section **rdbms**
   The database backend such as anydbm, sqlite, mysql or postgres.
 
  name -- ``roundup``
-  Name of the database to use.
+  Name of the database to use. For Postgresql, this can
+  be database.schema to use a specific schema within
+  a Postgres database.
 
  host -- ``localhost``
   Database server host.
