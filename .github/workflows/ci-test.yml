@@ -154,7 +154,8 @@ jobs:
           # set up postgresql database
           sudo -u postgres psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
           sudo -u postgres psql -c "CREATE ROLE rounduptest_schema LOGIN PASSWORD 'rounduptest';" -U postgres
-          sudo -u postgres psql -c "CREATE DATABASE rounduptest_schema;GRANT CREATE ON DATABASE rounduptest_schema TO rounduptest_schema;" -U postgres
+          sudo -u postgres psql -c "CREATE DATABASE rounduptest_schema;" -U postgres
+          sudo -u postgres psql -c "GRANT CREATE ON DATABASE rounduptest_schema TO rounduptest_schema;" -U postgres
 
       - name: install redis
         run: |
