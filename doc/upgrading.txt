@@ -709,6 +709,14 @@ to login without a password, set the ``login_empty_passwords`` setting
 in the ``web`` section of ``config.ini`` to ``yes``. In
 general this should be left at its default value of ``no``.
 
+Verify that SQLite supports FTS5 (required)
+-------------------------------------------
+
+If you use SQLite as your backend, it *must* support FTS5.  See the
+`FTS5 testing steps`_ for how to verify this.
+
+.. _FTS5 testing steps: installation.html#fts5-testing
+
 Check allowed_api_origins setting (optional)
 --------------------------------------------
 
