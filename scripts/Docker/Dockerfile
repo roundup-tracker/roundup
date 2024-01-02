@@ -132,9 +132,16 @@ COPY share install/share/
 # dist/* might not exist, so include README.txt so we don't get an error
 #COPY README.txt dist/* install/dist/
 
-# verify source has one of two valid values then
-# install in python3 standard directories from local copy
-# or install in python3 standard directories from pypi using pip
+# verify source has one of four valid values then
+# install in python3 standard directories from:
+#  * local copy using setup.py
+#  * pypi using pip
+#  * local files using pip
+#  * pip using a pre-existing sdist built in original source tree: disabled
+#  *    copy from dist/* fails if dist directory is missing breaking the
+#       Distfile. COPY used to ignore missing files if at least one
+#       existing file was copied 8-(.
+
 # import from global/command line
 ARG source
 
