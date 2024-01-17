@@ -977,6 +977,19 @@ class RegExpOption(Option):
                 value = value.decode("utf-8")
         return re.compile(value, self.flags)
 
+class LogLevelOption(Option):
+
+    """A log level, one of none, debug, info, warning, error, critical"""
+
+    values = "none debug info warning error critical".split ()
+    class_description = "Allowed values: %s" % (', '.join (values))
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in self.values:
+            return _val
+        else:
+            raise OptionValueError(self, value, self.class_description)
 
 try:
     import jinja2                                           # noqa: F401
@@ -1257,6 +1270,8 @@ and will yield an error message."""),
             """Whether to enable i18n for the rest endpoint. Enable it if
 you want to enable translation based on browsers lang
 (if enabled), trackers lang (if set) or environment."""),
+        (LogLevelOption, 'rest_logging', 'none',
+            "Log-Level for REST errors."),
         (IntegerNumberGeqZeroOption, 'api_calls_per_interval', "0",
          "Limit API calls per api_interval_in_sec seconds to\n"
          "this number.\n"

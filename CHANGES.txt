@@ -107,6 +107,9 @@ Features:
 - issue2550852 - support for specifying a PostgreSQL schema to use for
   the Roundup database. (Patch by Stuart McGraw; slight modifications,
   tests, docs: John Rouillard).
+- issue2551274: add configurable logging for REST API when something
+  fails, we now log status code and error message.
+  (Ralf Schlatterbeck)
 
 2023-07-13 2.3.0
 

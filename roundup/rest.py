@@ -107,6 +107,10 @@ def _data_decorator(func):
         # decorate it
         self.client.response_code = code
         if code >= 400:  # any error require error format
+            logmethod = getattr(logger, self.db.config.WEB_REST_LOGGING, None)
+            if logmethod:
+                logmethod("statuscode: %s" % code)
+                logmethod('message: "%s"' % data)
             result = {
                 'error': {
                     'status': code,
