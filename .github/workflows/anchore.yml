@@ -37,21 +37,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout the code
-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Build the Docker image
       run: docker pull python:3-alpine; docker build . --file scripts/Docker/Dockerfile --tag localbuild/testimage:latest
     - name: List the Docker image
       run: docker image ls
     - name: Run the Anchore scan action itself with GitHub Advanced Security code scanning integration enabled
-      uses: anchore/scan-action@24fd7c9060f3c96848dd1929fac8d796fb5ae4b4 # v3.3.6
+      uses: anchore/scan-action@c35e932c2a7c572bfdb1c3dbcdadb2d4fc62418d # 3.6.1
       id: scan
       with:
         image: "localbuild/testimage:latest"
         fail-build: true
     - name: Upload Anchore Scan Report
       if: always()
-      uses: github/codeql-action/upload-sarif@cdcdbb579706841c47f7063dda365e292e5cad7a
-  # v2.13.4
+      uses: github/codeql-action/upload-sarif@65c74964a9ed8c44ed9f19d4bbc5757a6a8e9ab9 # v2.16.1
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
     - name: Inspect action SARIF report
