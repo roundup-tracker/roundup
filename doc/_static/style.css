@@ -478,6 +478,8 @@ div.file_insert { /* use to insert COPYING into license.txt */
     padding-inline: 0.5em;
 }
 
+table.valign-top tbody td { vertical-align: top; }
+
 /* consider highlighting header element that is a target */
 /*
 :target > :is(h1,h2,h3,h4,h5,h6) {
