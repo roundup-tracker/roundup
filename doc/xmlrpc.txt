@@ -94,7 +94,7 @@ Rate Limiting Failed Logins
 See the `rest documentation
 <rest.html#rate-limiting-api-failed-logins>`_ for rate limiting failed
 logins on the API. There is no login rate limiting for the standalone
-roundup-xmlrpc-server. Login rate limiting is only for the `/xmlrpc``
+roundup-xmlrpc-server. Login rate limiting is only for the ``/xmlrpc``
 endpoint when the Roundup server is used.
 
 The XML-RPC uses the same method as the REST API.
@@ -107,53 +107,54 @@ requires that the user provide a username and password in the HTTP
 authorization header in order to authenticate the request against the
 tracker.
 
-======= ====================================================================
-Command Description
-======= ====================================================================
-schema
+.. table::
+   :class: valign-top
 
-        Fetch tracker schema.
+   ======= ===================================================================
+   Command  Description
+   ======= ===================================================================
+   schema  Fetch tracker schema.
 
-list    arguments: *classname, [property_name]*
+   list    arguments: *classname, [property_name]*
 
-        List all elements of a given ``classname``. If ``property_name`` is
-        specified, that is the property that will be displayed for each
-        element. If ``property_name`` is not specified the default label
-        property will be used.
+	   List all elements of a given ``classname``. If ``property_name``
+	   is specified, that is the property that will be displayed for each
+	   element. If ``property_name`` is not specified the default label
+	   property will be used.
 
-display arguments: *designator, [property_1, ..., property_N]*
+   display arguments: *designator, [property_1, ..., property_N]*
 
-        Display a single item in the tracker as specified by ``designator``
-        (e.g. issue20 or user5). The default is to display all properties
-        for the item. Alternatively, a list of properties to display can be
-        specified.
+	   Display a single item in the tracker as specified by ``designator``
+	   (e.g. issue20 or user5). The default is to display all properties
+	   for the item. Alternatively, a list of properties to display can
+	   be specified.
 
-create  arguments: *classname, arg_1 ... arg_N*
+   create  arguments: *classname, arg_1 ... arg_N*
 
-        Create a new instance of ``classname`` with ``arg_1`` through
-        ``arg_N`` as the values of the new instance. The arguments are
-        name=value pairs (e.g. ``status='3'``).
+	   Create a new instance of ``classname`` with ``arg_1`` through
+	   ``arg_N`` as the values of the new instance. The arguments are
+	   name=value pairs (e.g. ``status='3'``).
 
-set     arguments: *designator, arg_1 ... arg_N*
+   set     arguments: *designator, arg_1 ... arg_N*
 
-        Set the values of an existing item in the tracker as specified by
-        ``designator``. The new values are specified in ``arg_1`` through
-        ``arg_N``. The arguments are name=value pairs (e.g. ``status='3'``).
+	   Set the values of an existing item in the tracker as specified by
+	   ``designator``. The new values are specified in ``arg_1`` through
+	   ``arg_N``. The arguments are name=value pairs (e.g. ``status='3'``).
 
-lookup  arguments: *classname, key_value*
+   lookup  arguments: *classname, key_value*
 
-        looks up the key_value for the given class. The class needs to
-        have a key and the user needs search permission on the key
-        attribute and id for the given classname.
+	   looks up the key_value for the given class. The class needs to
+	   have a key and the user needs search permission on the key
+	   attribute and id for the given classname.
 
-filter  arguments: *classname, list or None, attributes*
-        
-        ``list`` is a list of ids to filter. It can be set to None to run
-        filter over all values (requires ``allow_none=True`` when
-        instantiating the ServerProxy). The ``attributes`` are given as a 
-        dictionary of name value pairs to search for. See also
-        :ref:`query-tracker`.
-======= ====================================================================
+   filter  arguments: *classname, list or None, attributes*
+
+	   ``list`` is a list of ids to filter. It can be set to None to
+	   run filter over all values (requires ``allow_none=True`` when
+	   instantiating the ServerProxy). The ``attributes`` are given 
+	   as a dictionary of name value pairs to search for. See also
+	   :ref:`query-tracker`.
+   ======= ===================================================================
 
 Sample Python Client
 ====================
