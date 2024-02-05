@@ -532,6 +532,7 @@ parameters. Using: https://.../rest/data/issue you can search using:
 .. list-table:: Query Parameters Examples
   :header-rows: 1
   :widths: 20 20 80
+  :class: valign-top
 
   * - Query parameter
     - Field type
@@ -645,6 +646,7 @@ leading `@` to make the parameters distinguishable from field names.)
 .. list-table:: Query Parameters Examples
   :header-rows: 1
   :widths: 20 80
+  :class: valign-top
 
   * - Query parameter
     - Explanation
@@ -908,6 +910,7 @@ This table lists other supported parameters:
 .. list-table:: Query Parameters Examples
   :header-rows: 1
   :widths: 20 80
+  :class: valign-top
 
   * - Query parameter
     - Explanation
