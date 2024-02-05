@@ -705,6 +705,7 @@ operation on ``https://.../rest/data/issue``.
 .. list-table:: Query Parameters Examples
   :header-rows: 1
   :widths: 20 80
+  :class: valign-top
 
   * - Query parameter
     - Explanation
@@ -717,7 +718,7 @@ operation on ``https://.../rest/data/issue``.
   * - ``@verbose=2``
     - each item in the collection includes the "label" property in
       addition to "id" property and a link for the item.
-      This is useful as documented below in "Searches and selection"_.
+      This is useful as documented below in `Searches and selection`_.
   * - ``@verbose=3``
     - will display the content property of messages and files. Note
       warnings about this below. Using this for collections is

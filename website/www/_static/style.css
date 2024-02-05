@@ -565,3 +565,4 @@ div#contact table td {
   padding: 1pt 1em;
 }
 
+table.valign-top tbody td { vertical-align: top; }
