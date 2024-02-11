@@ -41,6 +41,12 @@ a web server. To reset demo instance::
 
    python demo.py nuke
 
+For details see the "For the Really Impatient" section of the
+installation document at:
+
+   https://roundup-tracker.org/docs/installation.html#for-the-really-impatient
+
+for details on running demo mode or using the docker demo mode.
 
 Tracker Home
 ------------
@@ -50,6 +56,12 @@ directory where all your tracker data is stored. This directory is
 created every time when new tracker is initialized and includes
 tracker configuration, database, template, schema and extensions.
 
+Using Roundup
+=============
+
+Please see the user's guide at: 
+
+  https://roundup-tracker.org/docs/installation.html#for-the-really-impatient
 
 Installation
 ============
@@ -72,15 +84,14 @@ Upgrading
 
 Please see "doc/upgrading.txt".
 
-
 Security Issues
 ===============
 
 Please see "doc/security.txt" for directions on reporting security issues.
 
 
-Usage and Other Information
-===========================
+Other Information
+=================
 
 Start with the index.txt file in the "doc" directory. These
 documentation files are written in reStructedText, which can be
