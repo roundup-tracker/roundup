@@ -3393,13 +3393,12 @@ request.
 =========== ============================================================
 Variable    Holds
 =========== ============================================================
-form        the CGI form as a cgi.FieldStorage
-env         the CGI environment variables
 base        the base URL for this tracker
-user        a HTMLUser instance for this user
 classname   the current classname (possibly None)
+env         the CGI environment variables
+form        the current CGI form variables in a cgi.FieldStorage
 template    the current template (suffix, also possibly None)
-form        the current CGI form variables in a FieldStorage
+user        a HTMLUser instance for this user
 =========== ============================================================
 
 **Index page specific variables (indexing arguments)**
@@ -3408,14 +3407,14 @@ form        the current CGI form variables in a FieldStorage
 Variable    Holds
 =========== ============================================================
 columns     dictionary of the columns to display in an index page
-show        a convenience access to columns - request/show/colname will
-            be true if the columns should be displayed, false otherwise
-sort        index sort columns [(direction, column name)]
-group       index grouping properties [(direction, column name)]
 filter      properties to filter the index on
 filterspec  values to filter the index on (property=value, eg
             ``priority=1`` or ``messages.author=42``
+group       index grouping properties [(direction, column name)]
 search_text text to perform a full-text search on for an index
+show        a convenience access to columns - request/show/colname will
+            be true if the columns should be displayed, false otherwise
+sort        index sort columns [(direction, column name)]
 =========== ============================================================
 
 There are several methods available on the request variable:
@@ -3423,15 +3422,15 @@ There are several methods available on the request variable:
 =============== ========================================================
 Method          Description
 =============== ========================================================
-description     render a description of the request - handle for the
-                page title
-indexargs_form  render the current index args as form elements
-indexargs_url   render the current index args as a URL
 base_javascript render some javascript that is used by other components
                 of the templating
 batch           run the current index args through a filter and return a
                 list of items (see `hyperdb item wrapper`_, and
                 `batching`_)
+description     render a description of the request - handle for the
+                page title
+indexargs_form  render the current index args as form elements
+indexargs_url   render the current index args as a URL
 =============== ========================================================
 
 The form variable
