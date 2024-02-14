@@ -1812,17 +1812,26 @@ Changes to the Web User Interface
 Adding action links to the index page
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Add a column to the ``item.index.html`` template.
+Add a column to the ``item.index.html`` template.  In that column add
+a form to trigger the action. Note: the form must use the POST method
+for security.
 
 Resolving the issue::
 
-  <a tal:attributes="href
-     string:issue${i/id}?:status=resolved&:action=edit">resolve</a>
+    <form method="POST" tal:attributes="action string:issue${i/id}">
+      <button tal:replace="structure
+        python:context.submit(label='resolve', action='edit')" />
+      <input type="hidden" name="status" value="resolved">
+    </form>
 
 "Take" the issue::
 
-  <a tal:attributes="href
-     string:issue${i/id}?:assignedto=${request/user/id}&:action=edit">take</a>
+    <form method="POST" tal:attributes="action string:issue${i/id}">
+      <button tal:replace="structure
+        python:context.submit(label='take', action='edit')" />
+      <input type="hidden" name="assignedto"
+        tal:attributes="value request/user/id">
+    </form>
 
 ... and so on.
 
