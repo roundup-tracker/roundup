@@ -182,6 +182,26 @@ roundup will write each email message that it sends to that file
 instead to the internet.  This environment variable is independent of
 the python -O flag.
 
+Documentation Notes
+-------------------
+
+All docs are written using sphinx. Use pip or your package manager to
+install sphinx. In addition you will need to install a couple of
+sphinx extensions to process the files. A requirement's file can be
+found in docs/requirement.pip or website/www/requirements.pip. You can
+install these requirements using ``python -m pip install -r
+<path_to_requirements_file>``.
+
+The extensions sphinx-sitemap generates a sitemap when building for
+the website. The sphinx-tabs extension generates tabs for displaying
+code examples in both TAL and Jinja2.
+
+To build the documentation distributed with a Roundup release, run
+``python setup.py build_doc`` at the root of the source tree. To build
+docs for the website, see the ``updating www.roundup-tracker.org``
+section of ``website/README.txt`` or TL;DR ``cd website/www; make
+html``.
+
 Testing Notes
 -------------
 

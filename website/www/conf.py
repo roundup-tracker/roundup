@@ -43,7 +43,10 @@ finally:
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx_sitemap']
+extensions = ['sphinx_sitemap', 'sphinx_tabs.tabs']
+
+sphinx_tabs_valid_builders = ['linkcheck']
+sphinx_tabs_disable_tab_closing = True
 
 # for sitemap default: "{lang}{version}subdir/{link}"
 sitemap_url_scheme = "{link}"

@@ -1864,12 +1864,22 @@ To edit the status of all items in the item index view, edit the
 ``issue.index.html``:
 
 1. add a form around the listing table (separate from the existing
-   index-page form), so at the top it reads::
+   index-page form), so at the top it reads:
 
-    <form method="POST" tal:attributes="action request/classname">
-     <table class="list">
+   .. tabs::
 
-   and at the bottom of that table::
+      .. code-tab:: html TAL
+
+        <form method="POST" tal:attributes="action request/classname">
+        <table class="list">
+
+      .. code-tab:: html Jinja2
+
+         <form method="POST" action='issue{{ context.id }}' class='form-inline'>
+         <table class="list">
+
+
+   and at the bottom of that table add::
 
      </table>
     </form
@@ -1877,30 +1887,59 @@ To edit the status of all items in the item index view, edit the
    making sure you match the ``</table>`` from the list table, not the
    navigation table or the subsequent form table.
 
-2. in the display for the issue property, change::
+2. in the display for the issue property, change:
 
-    <td tal:condition="request/show/status"
-        tal:content="python:i.status.plain() or default">&nbsp;</td>
+   .. tabs::
 
-   to::
+      .. code-tab:: html TAL
 
-    <td tal:condition="request/show/status"
-        tal:content="structure i/status/field">&nbsp;</td>
+         <td tal:condition="request/show/status"
+            tal:content="python:i.status.plain() or default">&nbsp;</td>
 
+      .. code-tab:: html Jinja2
+
+         {% if request.show.status %}
+         <td>{{ issue.status.plain()|u }}</td>
+         {% endif %}
+
+   to:
+
+   .. tabs::
+
+      .. code-tab:: html TAL
+
+         <td tal:condition="request/show/status"
+            tal:content="structure i/status/field">&nbsp;</td>
+
+      .. code-tab:: html Jinja2
+
+         {% if request.show.status %}
+         <td>{{ issue.status.menu()|u|safe }}</td>
+         {% endif %}
+         <!-- untested -->
+ 
    this will result in an edit field for the status property.
 
 3. after the ``tal:block`` which lists the index items (marked by
-   ``tal:repeat="i batch"``) add a new table row::
+   ``tal:repeat="i batch"``) add a new table row:
 
-    <tr>
-     <td tal:attributes="colspan python:len(request.columns)">
-      <input name="@csrf" type="hidden"		
-           tal:attributes="value python:utils.anti_csrf_nonce()">
-      <input type="submit" value=" Save Changes ">
-      <input type="hidden" name="@action" value="edit">
-      <tal:block replace="structure request/indexargs_form" />
-     </td>
-    </tr>
+   .. tabs::
+
+      .. code-tab:: html TAL
+
+	 <tr>
+	  <td tal:attributes="colspan python:len(request.columns)">
+	   <input name="@csrf" type="hidden"		
+		tal:attributes="value python:utils.anti_csrf_nonce()">
+	   <input type="submit" value=" Save Changes ">
+	   <input type="hidden" name="@action" value="edit">
+	   <tal:block replace="structure request/indexargs_form" />
+	  </td>
+	 </tr>
+
+      .. code-tab:: html Jinja2
+
+         To Be Written
 
    which gives us a submit button, indicates that we are performing an
    edit on any changed statuses, and provides a defense against cross
