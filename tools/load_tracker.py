@@ -80,6 +80,7 @@ try:
             status = random.choice(statuses)
         else:
             status = resolved_id
+        db.journaltag = db.user.get(random.choice(users), 'username')
         db.issue.create(
             title=random.choice(titles),
             priority=random.choice(priorities),
