@@ -219,7 +219,7 @@ jobs:
           case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Install pytest and other packages needed for running tests
-        run: pip install flake8 mock pytest pytest-cov requests
+        run: pip install flake8 mock pytest pytest-cov requests sphinx-tabs
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
@@ -258,6 +258,9 @@ jobs:
             pytest -v -r a --durations=20 test/ --cov=roundup
           fi
 
+      - name: Build docs
+        run: python ./setup.py build_doc
+        
       - name: Upload coverage to Codecov
         # see: https://github.com/codecov/codecov-action#usage
         uses: codecov/codecov-action@4fe8c5f003fae66aa5ebb77cfd3e7bfbbda0b6b0 # v3.1.5

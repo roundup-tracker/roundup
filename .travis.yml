@@ -182,6 +182,7 @@ script:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
     python -m pytest -v -r a --maxfail=5 test/ --cov=roundup;
     fi
+  - python -m pip install sphinx-tabs
   - ./setup.py build_doc
 
 after_success:
