@@ -12,17 +12,22 @@ We maintain the following mailing lists:
 
 .. rst-class:: linkspacing
 
-=================== ==========================
-roundup-users_      archives `[SourceForge]`__
-roundup-devel_      archives `[SourceForge]`__
-roundup-checkins_   archives `[SourceForge]`__
-=================== ==========================
+=================== ========================== ===============================
+List Name/Signup    Archive link               Purpose
+=================== ========================== ===============================
+roundup-users_      archives `[SourceForge]`__ how to use Roundup
+roundup-devel_      archives `[SourceForge]`__ develop new Roundup releases
+roundup-checkins_   archives `[SourceForge]`__ automated check-in messages
+=================== ========================== ===============================
 
-These lists are moderated to protect them against spam. 
+These lists are open-access, but moderated to protect them against spam.
+The email address is
+``<the list name from above>@lists.sourceforge.net``.
+
 Please sign up if you intend to mail repeatedly.
 
-You may talk to Roundup developers directly via IRC irc://irc.oftc.net/roundup
-using IRC client or through WebChat_ interface.
+You may talk to Roundup developers directly using the `WebChat IRC`_
+interface. You can also use an IRC client: irc://irc.oftc.net/roundup.
 
 
 .. _roundup-users: https://sourceforge.net/projects/roundup/lists/roundup-users
@@ -35,4 +40,4 @@ using IRC client or through WebChat_ interface.
 
 .. __: https://sourceforge.net/p/roundup/mailman/roundup-checkins/
 
-.. _WebChat: https://webchat.oftc.net/?randomnick=1&channels=roundup&prompt=1
+.. _WebChat IRC: https://webchat.oftc.net/?randomnick=1&channels=roundup&prompt=1
