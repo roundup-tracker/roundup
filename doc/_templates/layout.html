@@ -1,3 +1,7 @@
+{% set script_files = ['_static/jquery.js', '_static/doctools.js',
+                       '_static/language_data.js',
+                       '_static/searchtools.js',
+                       '_static/sphinx_highlight.js'] %}
 {#
     _templates/layout.html
     ~~~~~~~~~~~~~~~~~~~~~~
@@ -165,6 +169,10 @@
   <body>
     <div class="header"><div class="label">Roundup</div>
       {%- if pagename != "search" %}
+        <script id="documentation_options" data-url_root="{{ url_root }}"
+	      src="{{ pathto('_static/documentation_options.js', 1) }}">
+        </script>
+
         <div id="searchbox" style="display: none">
           <form class="search" action="{{ pathto('search') }}" method="get">
             <input type="text" name="q" size="18" />
@@ -182,11 +190,11 @@
       </div>
     </div>
 {%- block content %}
-    <div class="content">
+    <main id="main" role="main" class="content">
        {{ relbar('related-top') }}
        {% block body %} {% endblock %}
        {{ relbar('related-bottom') }}
-    </div>
+    </main>
   {%- endblock %}
 {%- block footer %}
     <div class="footer">

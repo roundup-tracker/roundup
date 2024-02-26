@@ -1,3 +1,7 @@
+{% set script_files = ['_static/jquery.js', '_static/doctools.js',
+                       '_static/language_data.js',
+                       '_static/searchtools.js',
+                       '_static/sphinx_highlight.js'] %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -108,7 +112,7 @@
         <a title="{{ _('Index') }}" href="{{ pathto('genindex') }}">
 	  Index</a>
 	</nav>
-	<main id="main" tabindex="-1">
+	<main id="main" role="main" tabindex="-1">
        {% block body %} {% endblock %}
 	</main>
     </div>
@@ -148,6 +152,9 @@
     <script data-goatcounter="https://stats.rouilj.dynamic-dns.net/count"
 	    integrity="sha384-QGgNMMRFTi8ul5kHJ+vXysPe8gySvSA/Y3rpXZiRLzKPIw8CWY+a3ObKmQsyDr+a"
             async="" src="{{ pathto('_static/goatcounter_count.v3.js', 1) }}">
+    </script>
+    <script id="documentation_options" data-url_root="{{ url_root }}"
+	    src="{{ pathto('_static/documentation_options.js', 1) }}">
     </script>
     {%- if pagename != 'search' %}
     {%- for scriptfile in script_files %}
