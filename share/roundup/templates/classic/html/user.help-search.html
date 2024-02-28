@@ -20,12 +20,14 @@ qs request/env/QUERY_STRING;
 qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])"
 >
     <pre tal:content="request/env/QUERY_STRING" tal:condition=false />
-    <form method="GET" name="itemSynopsis"
+    <form method="get" name="itemSynopsis"
       target="list"
       tal:attributes="action request/classname"
       tal:define="
       property request/form/property/value;
-   cols python:request.columns or 'id username address realname roles'.split();
+   props python:('properties' in request.form and request.form['properties'].value.split(',')) or [];
+   cols python:request.columns or props or 
+        'id username address realname roles'.split();
    sort_on request/sort | nothing;
    sort_desc python:sort_on and request.sort[0][0] == '-';
    sort_on python:sort_on and request.sort[0][1] or 'lastname';
@@ -68,7 +70,7 @@ qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])
     <input type="hidden" name="@action" value="search">
     <input type="submit" value="Search" i18n:attributes="value">
     <input type="reset">
-    <input type="hidden" value="username,realname,phone,organisation,roles" name="properties">
+    <input type="hidden" tal:attributes="value python:','.join(cols)" name="properties">
     <input type="text" name="@pagesize" id="sp-pagesize" value="25" size="2">
     <label for="sp-pagesize" i18n:translate="">Pagesize</label>
   </td>
