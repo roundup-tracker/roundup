@@ -3516,8 +3516,8 @@ The "user" entry has a number of methods available for information:
 =============== =========================================================
 Method          Description
 =============== =========================================================
-first           True if the current item is the first in the sequence.
-last            True if the current item is the last in the sequence.
+start           True if the current item is the first in the sequence.
+end             True if the current item is the last in the sequence.
 even            True if the current item is an even item in the sequence.
 odd             True if the current item is an odd item in the sequence.
 number          Current position in the sequence, starting from 1.
@@ -3528,6 +3528,18 @@ roman           Current position in the sequence as lowercase roman
                 numerals.
 Roman           Same as roman(), except uppercase.
 =============== =========================================================
+
+For example, this will print a comma after each element except the
+last::
+
+   <span>
+     <tal:x tal:repeat="field
+          python:request.form['properties'].value.split(',')">
+       <tal:x tal:replace="field"></tal:x>
+       <tal:x tal:condition="python:not repeat['field'].end"
+          tal:content="string:,"></tal:x>
+     </tal:x>
+   </span>
 
 .. _templating utilities:
 
