@@ -214,6 +214,19 @@ search_path;``.
 
 .. _`Connection Service File`: https://www.postgresql.org/docs/current/libpq-pgservice.html
 
+Update for user.help-search.html (optional)
+-------------------------------------------
+
+There is a bug in the template used as a search helper for the user
+fields (e.g. the nosy list). The ``properties`` url query argument was
+ignored. You can not select the displayed fields using the
+``properties`` argument. This is fixed in 2.4.0. You can probably just
+copy the ``user.help-search.html`` from the classic tracker template.
+
+If you have modified that template, you can follow the analysis in
+`issue2551320 <https://issues.roundup-tracker.org/issue2551320>`_
+to fix your template.
+
 Bad Login Rate Limiting and Locking (info)
 ------------------------------------------
 
