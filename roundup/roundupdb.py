@@ -137,7 +137,7 @@ class Database(object):
             # Try to make error message less cryptic to the user.
             if str(e) == 'node with key "%s" exists' % username:
                 raise ValueError(
-                    _("Username '%s' already exists." % username))
+                    _("Username '%s' already exists.") % username)
             else:
                 raise
 

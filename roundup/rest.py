@@ -1110,7 +1110,7 @@ class RestfulInstance(object):
         try:
             data = node.__getattr__(attr_name)
         except AttributeError:
-            raise UsageError(_("Invalid attribute %s" % attr_name))
+            raise UsageError(_("Invalid attribute %s") % attr_name)
         result = {
             'id': item_id,
             'type': str(type(data)),

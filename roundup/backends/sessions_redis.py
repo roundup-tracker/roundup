@@ -76,8 +76,8 @@ class BasicDatabase(SessionCommon):
             if default != self._marker:
                 return default
             raise KeyError(_('Key %(key)s not found in %(name)s '
-                             'database.' % {"name": self.name,
-                                            "key": escape(infoid)}))
+                             'database.') % {"name": self.name,
+                                            "key": escape(infoid)})
         return self.todict(v)[value]
 
     def getall(self, infoid):
@@ -95,8 +95,8 @@ class BasicDatabase(SessionCommon):
             # If so, we get a misleading error, but anydbm does the
             # same so....
             raise KeyError(_('Key %(key)s not found in %(name)s '
-                             'database.' % {"name": self.name,
-                                            "key": escape(infoid)}))
+                             'database.') % {"name": self.name,
+                                            "key": escape(infoid)})
 
         ''' def set_no_tranaction(self, infoid, **newvalues):
         """ this is missing transaction and may be affected by
@@ -190,8 +190,8 @@ class BasicDatabase(SessionCommon):
                     break
                 except redis.exceptions.WatchError:
                     self.log_info(
-                        _('Key %(key)s changed in %(name)s db' %
-                          {"key": escape(infoid), "name": self.name})
+                        _('Key %(key)s changed in %(name)s db') %
+                          {"key": escape(infoid), "name": self.name}
                     )
             else:
                 try:

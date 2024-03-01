@@ -629,8 +629,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
 
         if not self.config.RDBMS_ALLOW_ALTER:
             raise DatabaseError(_(
-                'ALTER operation disallowed: %(old)r -> %(new)r.' % {
-                    'old': old_spec, 'new': new_spec}))
+                'ALTER operation disallowed: %(old)r -> %(new)r.') % {
+                    'old': old_spec, 'new': new_spec})
 
         logger = logging.getLogger('roundup.hyperdb.backend')
         logger.info('update_class %s' % spec.classname)
@@ -864,8 +864,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
 
         if not self.config.RDBMS_ALLOW_CREATE:
-            raise DatabaseError(_('CREATE operation disallowed: "%s".' %
-                                  spec.classname))
+            raise DatabaseError(_('CREATE operation disallowed: "%s".') %
+                                  spec.classname)
 
         cols, mls = self.create_class_table(spec)
         self.create_journal_table(spec)
@@ -881,7 +881,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
 
         if not self.config.RDBMS_ALLOW_DROP:
-            raise DatabaseError(_('DROP operation disallowed: "%s".' % cn))
+            raise DatabaseError(_('DROP operation disallowed: "%s".') % cn)
 
         properties = spec[1]
         # figure the multilinks
@@ -925,7 +925,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         cn = cl.classname
         if cn in self.classes:
-            raise ValueError(_('Class "%s" already defined.' % cn))
+            raise ValueError(_('Class "%s" already defined.') % cn)
         self.classes[cn] = cl
 
         # add default Edit and View permissions

@@ -548,8 +548,8 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
 
 def error():
     exc_type, exc_value = sys.exc_info()[:2]
-    return _('Error: %(type)s: %(value)s' % {'type': exc_type,
-                                             'value': exc_value})
+    return _('Error: %(type)s: %(value)s') % {'type': exc_type,
+                                             'value': exc_value}
 
 
 def setgid(group):
@@ -840,11 +840,11 @@ class ServerConfig(configuration.Config):
                 raise socket.error(_(
                     "Unable to bind to port %(port)s, "
                     "access not allowed, "
-                    "errno: %(errno)s %(msg)s" % {
+                    "errno: %(errno)s %(msg)s") % {
                         "port": self["PORT"],
                         "errno": e.args[0],
                         "msg": e.args[1]}
-                ))
+                )
 
             raise
         # change user and/or group
