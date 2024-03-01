@@ -25,14 +25,15 @@ import os.path
 import re
 import textwrap
 
-from roundup import hyperdb, date, support
+from roundup import date, hyperdb, support
 from roundup.anypy import urllib_
 from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
-from roundup.anypy.strings import is_us, us2s, s2u, u2s, StringIO
+from roundup.anypy.strings import StringIO, is_us, s2u, u2s, us2s
 from roundup.cgi import TranslationService, ZTUtils
 from roundup.cgi.timestamp import pack_timestamp
 from roundup.exceptions import RoundupException
+
 from .KeywordsExpr import render_keywords_expression_editor
 
 try:
@@ -58,8 +59,9 @@ _disable_url_schemes = ['javascript', 'data']
 
 def _import_markdown2():
     try:
-        import markdown2
         import re
+
+        import markdown2
 
         # Note: version 2.4.9 does not work with Roundup as it breaks
         # [issue1](issue1) formatted links.
@@ -186,7 +188,7 @@ def _import_markdown():
 def _import_mistune():
     try:
         import mistune
-        from mistune import Renderer, escape_link, escape
+        from mistune import Renderer, escape, escape_link
 
         mistune._scheme_blacklist = [s + ':' for s in _disable_url_schemes]
 
