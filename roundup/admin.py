@@ -877,12 +877,13 @@ Command help:
 
             # get the class
             cl = self.get_class(classname)
-            prop_obj = properties[propname]
             try:
                 if not (self.separator or self.print_designator):
                     print(cl.get(nodeid, propname))
                     continue
 
+                properties = cl.getprops()
+                prop_obj = properties[propname]
                 if not (isinstance(prop_obj,
                                    (hyperdb.Link, hyperdb.Multilink))):
                     raise UsageError(_(

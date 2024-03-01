@@ -48,7 +48,7 @@ def s2u(s, errors='strict'):
     if _py3:
         return s
     else:
-        return unicode(s, 'utf-8', errors)  # noqa: 821
+        return unicode(s, 'utf-8', errors)  # noqa: F821
 
 
 def u2s(u):
@@ -64,10 +64,10 @@ def us2u(s, errors='strict'):
     if _py3:
         return s
     else:
-        if isinstance(s, unicode):    # noqa: 821
+        if isinstance(s, unicode):    # noqa: F821
             return s
         else:
-            return unicode(s, 'utf-8', errors)    # noqa: 821
+            return unicode(s, 'utf-8', errors)    # noqa: F821
 
 
 def us2s(u):
@@ -75,7 +75,7 @@ def us2s(u):
     if _py3:
         return u
     else:
-        if isinstance(u, unicode):    # noqa: 821
+        if isinstance(u, unicode):    # noqa: F821
             return u.encode('utf-8')
         else:
             return u
@@ -88,7 +88,7 @@ def uany2s(u):
     if _py3:
         return str(u)
     else:
-        if isinstance(u, unicode):    # noqa: 821
+        if isinstance(u, unicode):    # noqa: F821
             return u.encode('utf-8')
         else:
             return str(u)
@@ -99,7 +99,7 @@ def is_us(s):
     if _py3:
         return isinstance(s, str)
     else:
-        return isinstance(s, str) or isinstance(s, unicode)  # noqa: 821
+        return isinstance(s, str) or isinstance(s, unicode)  # noqa: F821
 
 
 def uchr(c):
@@ -107,7 +107,7 @@ def uchr(c):
     if _py3:
         return chr(c)
     else:
-        return unichr(c)  # noqa: 821
+        return unichr(c)  # noqa: F821
 
 # CSV files used for export and import represent strings in the style
 # used by repr in Python 2; this means that each byte of the UTF-8
