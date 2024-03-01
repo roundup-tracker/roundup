@@ -1503,7 +1503,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 class _HTMLUser(_HTMLItem):
     """Add ability to check for permissions on users.
     """
-    _marker = []
+    _marker = ('_HTMLUserMarker')
 
     def hasPermission(self, permission, classname=_marker,
                       property=None, itemid=None):
@@ -2200,7 +2200,7 @@ class BooleanHTMLProperty(HTMLProperty):
 
 class DateHTMLProperty(HTMLProperty):
 
-    _marker = []
+    _marker = ('HTMLPropertyMarker')
 
     def __init__(self, client, classname, nodeid, prop, name, value,
                  anonymous=0, offset=None):
