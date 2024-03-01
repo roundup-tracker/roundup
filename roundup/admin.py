@@ -22,7 +22,6 @@
 from __future__ import print_function
 
 __docformat__ = 'restructuredtext'
-
 import csv
 import getopt
 import getpass
@@ -878,6 +877,7 @@ Command help:
 
             # get the class
             cl = self.get_class(classname)
+            prop_obj = properties[propname]
             try:
                 if not (self.separator or self.print_designator):
                     print(cl.get(nodeid, propname))
@@ -1548,7 +1548,6 @@ Erase it? Y/N: """) % locals())
             raise UsageError(_('Internal error: pragma can not handle '
                                'values of type: %s') %
                              type(self.settings[setting]).__name__)
-
         self.settings[setting] = value
 
     designator_re = re.compile('([A-Za-z]+)([0-9]+)$')
