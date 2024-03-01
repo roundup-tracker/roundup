@@ -7,25 +7,12 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {%- if 'name="description"' not in metatags %}
-      <meta name="description"
-        content="Page {{ pagename }} in documentation on the Roundup issue tracker, version {{ release|e }}.">
-    {%- endif %}
-    {{ metatags }}
     {%- if builder != 'htmlhelp' %}
       {%- set titlesuffix = docstitle|e %}
       {%- set titlesuffix = " - " + titlesuffix %}
     {%- endif %}
     <title>{{ title|striptags }}{{ titlesuffix }}</title>
-    {%- if builder == 'web' %}
-    <link rel="stylesheet" href="{{ pathto('index') }}?do=stylesheet{%
-      if in_admin_panel %}&admin=yes{% endif %}" type="text/css" />
-    {%- for link, type, title in page_links %}
-    <link rel="alternate" type="{{ type|e(true) }}" title="{{ title|e(true) }}" href="{{ link|e(true) }}" />
-    {%- endfor %}
-    {%- else %}
-    <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
-    {%- endif %}
+
     {%- if builder != 'htmlhelp' %}
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -40,6 +27,23 @@
     <script type="text/javascript" src="{{ pathto(scriptfile, 1) }}"></script>
     {%- endfor %}
     <script type="text/javascript">$('#searchbox').show(0);</script>
+    {%- endif %}
+
+    {%- if builder == 'web' %}
+    <link rel="stylesheet" href="{{ pathto('index') }}?do=stylesheet{%
+      if in_admin_panel %}&admin=yes{% endif %}" type="text/css" />
+    {%- for link, type, title in page_links %}
+    <link rel="alternate" type="{{ type|e(true) }}" title="{{ title|e(true) }}" href="{{ link|e(true) }}" />
+    {%- endfor %}
+    {%- else %}
+    <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
+    {%- endif %}
+    <!-- https://github.com/sphinx-doc/sphinx/issues/11699 means a
+         duplicate viewport tag -->
+    {{ metatags }}
+    {%- if 'name="description"' not in metatags %}
+      <meta name="description"
+        content="Page {{ pagename }} in documentation on the Roundup issue tracker, version {{ release|e }}.">
     {%- endif %}
     {%- if pageurl %}
     <link rel="canonical" href="{{ pageurl|e }}" />
