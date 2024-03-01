@@ -194,6 +194,18 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
+                      'title="bar foo bar"', 'assignedto=admin',
+                      'superseder=1,2']
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '3')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, 'get', 'assignedto',
                       'issue2' ]
             ret = self.admin.main()
@@ -206,6 +218,32 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-d',
+                      'get', 'assignedto',
+                      'issue2' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, 'user2')
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-d', '-S', ':',
+                      'get', 'assignedto',
+                      'issue2' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, 'user2')
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, 'get', 'superseder',
                       'issue2' ]
             ret = self.admin.main()
@@ -214,6 +252,57 @@ class AdminTest(object):
         out = out.getvalue().strip()
         err = err.getvalue().strip()
         self.assertEqual(out, "['1']")
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'get', 'superseder',
+                      'issue3' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, "['1', '2']")
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-d',
+                      'get', 'superseder',
+                      'issue3' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, "issue1\nissue2")
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c', '-d',
+                      'get', 'superseder',
+                      'issue3' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, "issue1,issue2")
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-d',
+                      'get', 'title',
+                      'issue3' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out.split('\n')[0], "Error: property title is not of type Multilink or Link so -d flag does not apply.")
         self.assertEqual(len(err), 0)
 
         self.admin=AdminTool()
@@ -250,6 +339,20 @@ class AdminTest(object):
         self.assertEqual(ret, 1)
         out = out.getvalue().strip()
         err = err.getvalue().strip()
+        self.assertEqual(out.index(expected_err), 0)
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'get', 'title', 'issue500']
+            ret = self.admin.main()
+
+        expected_err = 'Error: no such issue node "500"'
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        print(out)
         self.assertEqual(out.index(expected_err), 0)
         self.assertEqual(len(err), 0)
 
@@ -304,6 +407,88 @@ class AdminTest(object):
         self.assertTrue(os.path.isfile(self.dirname + "/schema.py"))
         config=CoreConfig(self.dirname)
         self.assertEqual(config['MAIL_DEBUG'], self.dirname + "/SendMail.LOG")
+
+    def testList(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'list', 'user',
+                      'username' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '1: admin\n   2: anonymous')
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'list', 'user' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '1,2')
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'list', 'user', 'username' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, 'admin,anonymous')
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'list', 'user', 'roles' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, 'Admin,Anonymous')
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'list', 'user',
+                      'foo' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out.split('\n')[0],
+                         'Error: user has no property "foo"')
+
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'list', 'user',
+                      'bar' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out.split('\n')[0],
+                         'Error: user has no property "bar"')
 
     def testFind(self):
         ''' Note the tests will fail if you run this under pdb.
@@ -373,6 +558,34 @@ class AdminTest(object):
         # out can be "['2', '1']" or "['1', '2']"
         # so eval to real list so Equal can do a list compare
         self.assertEqual(sorted(eval(out)), ['1', '2'])
+
+        # Reopen the db closed by previous filter call
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' 1,2 should return all entries that have assignedto
+                either admin or anonymous
+            '''
+            sys.argv=['main', '-i', self.dirname, '-c', '-d',
+                      'find', 'issue', 'assignedto=admin,anonymous']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "issue1,issue2")
+
+        # Reopen the db closed by previous filter call
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' 1,2 should return all entries that have assignedto
+                either admin or anonymous
+            '''
+            sys.argv=['main', '-i', self.dirname, '-S', ':',
+                      'find', 'issue', 'assignedto=admin,anonymous']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "1:2")
 
     def testGenconfigUpdate(self):
         ''' Note the tests will fail if you run this under pdb.
@@ -822,6 +1035,20 @@ class AdminTest(object):
         print(err.getvalue().strip())
         self.assertEqual(out, "issue1:issue2")
 
+        # Reopen the db closed by previous filter call
+        # 
+        # case: transitive property invalid match
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname,
+                      '-d', 'filter', 'issue',
+                      'assignedto.username=A']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print("me: " + out)
+        print(err.getvalue().strip())
+        self.assertEqual(out, "['issue1', 'issue2']")
+
     def testPragma_reopen_tracker(self):
         """test that _reopen_tracker works.
         """
@@ -942,7 +1169,7 @@ class AdminTest(object):
         self.assertIn(expected, out)
         expected = 'Error: Argument must be setting=value, was given: arg.'
         self.assertIn(expected, out)
-        expected = 'Error: Unknown setting foo.'
+        expected = 'Error: Unknown setting foo. Try "pragma list".'
         self.assertIn(expected, out)
 
         # -----
