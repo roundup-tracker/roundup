@@ -88,13 +88,13 @@ try:
     _ldir = os.path.join(path, sys.base_prefix[root_prefix_chars:], 'share', 'locale')
     if os.path.isdir(_ldir):
         LOCALE_DIRS.append(_ldir)
-
-    # make -C locale local_install - locale directory in roundup source tree
-    _ldir = os.path.join(path, 'locale', 'locale')
-    if os.path.isdir(_ldir):
-        LOCALE_DIRS.append(_ldir)
 except AttributeError:
     pass  # no base_prefix on 2.7
+
+# make -C locale local_install - locale directory in roundup source tree
+_ldir = os.path.join(path, 'locale', 'locale')
+if os.path.isdir(_ldir):
+    LOCALE_DIRS.append(_ldir)
 del _ldir
 
 # Roundup text domain
