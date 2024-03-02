@@ -62,9 +62,7 @@ def u2s(u):
 
 def us2u(s, errors='strict'):
     """Convert a string or Unicode string to a Unicode string."""
-    if _py3:
-        return s
-    elif isinstance(s, unicode):    # noqa: F821
+    if _py3 or isinstance(s, unicode):    # noqa: F821
         return s
     else:
         return unicode(s, 'utf-8', errors)    # noqa: F821
@@ -148,7 +146,7 @@ def eval_import(s):
                 # int ('issue', 5002L, "status") rather than as a
                 # string.  This was a bug that existed and was fixed
                 # before or with v1.2.0
-                import re
+                import re  # noqa: PLC0415
                 v = ast.literal_eval(re.sub(r', ([0-9]+)L,', r', \1,', s))
 
             if isinstance(v, str):
@@ -166,10 +164,9 @@ def eval_import(s):
             else:
                 return v
         else:
-                return ast.literal_eval(s)
+            return ast.literal_eval(s)
 
     except (ValueError, SyntaxError) as e:
         raise ValueError(
             ("Error %(exception)s trying to parse value '%(value)s'") %
-            { 'exception': e, 'value': s})
-
+            {'exception': e, 'value': s})
