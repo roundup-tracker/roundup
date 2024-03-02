@@ -5,8 +5,8 @@
 # Actions used in REST and XMLRPC APIs
 #
 
-from roundup.exceptions import Unauthorised
 from roundup import hyperdb
+from roundup.exceptions import Unauthorised
 
 
 class Action:
