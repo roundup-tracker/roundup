@@ -119,6 +119,20 @@ sqlite`` and get a working Roundup server. This will start
 the server using the ``sqlite`` backend. The code is in the
 ``roundup`` subdirectory.
 
+To test internationalization in your environment, you have to
+process the locale sub-directory into a form that roundup's
+i18n code will recognize. To do this use:
+
+  make -C locale local_install
+
+which will compile the ``.po`` source files into binary
+``.mo`` files and install them under
+``locale/locale/<LANGUAGE_CODE>/LC_MESSAGES/roundup.mo``. For
+German this will be
+``locale/locale/de/LC_MESSAGES/roundup.mo``.  You will need
+``msgfmt`` from the the GNU gettext tools to be installed on
+your system.
+
 Submitting Changes
 ------------------
 

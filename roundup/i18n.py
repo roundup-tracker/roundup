@@ -67,21 +67,30 @@ del _mo_path
 # os.prefix should be /usr, /usr/local or root of virtualenv
 #    strip leading / to make os.path.join work right.
 path = __file__
-for _N in 1, 2:
+
+for _N in 1, 2:  # remove roundup/i18n.py from path
     path = os.path.dirname(path)
     # path is /usr/local/lib/python3.10/site-packages
+
 _ldir = os.path.join(path, sys.prefix[root_prefix_chars:], 'share', 'locale')
 if os.path.isdir(_ldir):
     LOCALE_DIRS.append(_ldir)
+
 # try other places locale files are hidden on install
 _ldir = os.path.join(path, sys.prefix[root_prefix_chars:], 'local', 'share', 'locale')
 if os.path.isdir(_ldir):
     LOCALE_DIRS.append(_ldir)
+
 try:
     _ldir = os.path.join(path, sys.base_prefix[root_prefix_chars:], 'local', 'share', 'locale')
     if os.path.isdir(_ldir):
         LOCALE_DIRS.append(_ldir)
     _ldir = os.path.join(path, sys.base_prefix[root_prefix_chars:], 'share', 'locale')
+    if os.path.isdir(_ldir):
+        LOCALE_DIRS.append(_ldir)
+
+    # make -C locale local_install - locale directory in roundup source tree
+    _ldir = os.path.join(path, 'locale', 'locale')
     if os.path.isdir(_ldir):
         LOCALE_DIRS.append(_ldir)
 except AttributeError:
