@@ -159,26 +159,20 @@ def get_mofile(languages, localedir, domain=None):
     for locale in languages:
         if locale == "C":
             break
-        if domain:
-            basename = os.path.join(localedir, locale, "LC_MESSAGES", domain)
-        else:
-            basename = os.path.join(localedir, locale)
+        basename = os.path.join(localedir, locale, "LC_MESSAGES", domain) if \
+            domain else os.path.join(localedir, locale)
         # look for message catalog files, check timestamps
         mofile = basename + ".mo"
-        if os.path.isfile(mofile):
-            motime = os.path.getmtime(mofile)
-        else:
-            motime = 0
+        motime = os.path.getmtime(mofile) if os.path.isfile(mofile) else 0
         pofile = basename + ".po"
-        if os.path.isfile(pofile):
-            potime = os.path.getmtime(pofile)
-        else:
-            potime = 0
+        potime = os.path.getmtime(pofile) if os.path.isfile(pofile) else 0
+
         # see what we've found
         if motime < potime:
             # compile
             mo = msgfmt.Msgfmt(pofile).get()
-            open(mofile, 'wb').write(mo)
+            with open(mofile, 'wb') as m:
+                m.write(mo)
         elif motime == 0:
             # no files found - proceed to the next locale name
             continue
@@ -202,17 +196,17 @@ def get_translation(language=None, tracker_home=None,
     """
     mofiles = []
     # locale directory paths
-    if tracker_home is None:
-        tracker_locale = None
-    else:
-        tracker_locale = os.path.join(tracker_home, "locale")
+    tracker_locale = os.path.join(tracker_home, "locale") if \
+        tracker_home is not None else None
+
     # get the list of locales
     locales = find_locales(language)
     # add mofiles found in the tracker, then in the system locale directory
     if tracker_locale:
         mofiles.append(get_mofile(locales, tracker_locale))
-    for system_locale in LOCALE_DIRS:
-        mofiles.append(get_mofile(locales, system_locale, DOMAIN))
+    mofiles += [get_mofile(locales, system_locale, DOMAIN)
+               for system_locale in LOCALE_DIRS]
+
     # we want to fall back to english unless english is selected language
     if "en" not in locales:
         locales = find_locales("en")
@@ -226,19 +220,18 @@ def get_translation(language=None, tracker_home=None,
     translator = None
     for mofile in mofiles:
         try:
-            mo = open(mofile, "rb")
-            if translator is None:
-                translator = translation_class(mo)
-                # the .mo file this translator loaded from
-                translator._file = mofile
-            else:
-                # note: current implementation of gettext_module
-                #   always adds fallback to the end of the fallback chain.
-                fallback = translation_class(mo)
-                fallback._file = mofile
-                translator.add_fallback(fallback)
-            mo.close()
-        except IOError:
+            with open(mofile, "rb") as mo:
+                if translator is None:
+                    translator = translation_class(mo)
+                    # the .mo file this translator loaded from
+                    translator._file = mofile
+                else:
+                    # note: current implementation of gettext_module
+                    #   always adds fallback to the end of the fallback chain.
+                    fallback = translation_class(mo)
+                    fallback._file = mofile
+                    translator.add_fallback(fallback)
+        except IOError:  # noqa: PERF203
             # ignore unreadable .mo files
             pass
     if translator is None:
