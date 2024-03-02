@@ -1,5 +1,6 @@
 try:
-    None < 0
+    # will raise TypeError under python 3
+    None < 0  # noqa: PLR0133, B015
 
     def NoneAndDictComparable(v):
         return v
@@ -7,11 +8,11 @@ except TypeError:
     # comparator to allow comparisons against None and dict
     # comparisons (these were allowed in Python 2, but aren't allowed
     # in Python 3 any more)
-    class NoneAndDictComparable(object):
+    class NoneAndDictComparable(object):   # noqa: PLW1641
         def __init__(self, value):
             self.value = value
 
-        def __cmp__(self, other):
+        def __cmp__(self, other):  # noqa: PLW3201, PLR0911
             if not isinstance(other, self.__class__):
                 raise TypeError('not comparable')
 
@@ -24,7 +25,7 @@ except TypeError:
             elif other.value is None:
                 return 1
 
-            elif type(self.value) == tuple and type(other.value) == tuple:
+            elif type(self.value) is tuple and type(other.value) is tuple:
                 for lhs, rhs in zip(self.value, other.value):
                     lhsCmp = NoneAndDictComparable(lhs)
                     rhsCmp = NoneAndDictComparable(rhs)
@@ -34,7 +35,7 @@ except TypeError:
 
                 return len(self.value) - len(other.value)
 
-            elif type(self.value) == dict and type(other.value) == dict:
+            elif type(self.value) is dict and type(other.value) is dict:
                 diff = len(self.value) - len(other.value)
                 if diff == 0:
                     lhsItems = tuple(sorted(self.value.items(),
@@ -71,6 +72,7 @@ except TypeError:
 
 
 def _test():
+    # ruff: noqa: S101, B011, PLC0415, PLR2004
     import sys
     _py3 = sys.version_info[0] > 2
 
