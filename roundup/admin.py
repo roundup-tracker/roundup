@@ -1498,18 +1498,18 @@ Erase it? Y/N: """) % locals())
                 raise UsageError(_(
                     'Argument must be setting=value, was given: %s.') %
                                  args[0])
-            else:
-                print(_("Current settings and values "
-                        "(NYI - not yet implemented):"))
-                is_verbose = self.settings['verbose']
-                for key in sorted(self.settings.keys()):
-                    if key.startswith('_') and not is_verbose:
-                        continue
-                    print("   %s=%s" % (key, self.settings[key]))
-                    if is_verbose:
-                        print("      %s" % self.settings_help[key])
 
-                return
+            print(_("Current settings and values "
+                    "(NYI - not yet implemented):"))
+            is_verbose = self.settings['verbose']
+            for key in sorted(self.settings.keys()):
+                if key.startswith('_') and not is_verbose:
+                    continue
+                print("   %s=%s" % (key, self.settings[key]))
+                if is_verbose:
+                    print("      %s" % self.settings_help[key])
+
+            return
 
         if setting not in self.settings:
             raise UsageError(_('Unknown setting %s. Try "pragma list".')
@@ -1720,8 +1720,8 @@ Erase it? Y/N: """) % locals())
                         for p in permission.properties:
                             if p in class_props:
                                 continue
-                            else:
-                                bad_props.append(p)
+
+                            bad_props.append(p)
                         if bad_props:
                             sys.stdout.write(_(
                                 '\n  **Invalid properties for %(class)s: '
@@ -2012,8 +2012,7 @@ Desc: %(description)s
 
         if command in ['genconfig', 'templates']:
             try:
-                ret = function(args[1:])
-                return ret
+                return function(args[1:])
             except UsageError as message:
                 return self.usageError_feedback(message, function)
 
@@ -2135,7 +2134,7 @@ Desc: %(description)s
         self.print_designator = 0
         self.verbose = 0
         for opt, arg in opts:
-            if opt == '-h':
+            if opt == '-h':  # noqa: RET505 - allow elif after returns
                 self.usage()
                 return 0
             elif opt == '-v':
