@@ -17,6 +17,23 @@ class StringsTest(unittest.TestCase):
         val = eval_import("('issue', 2345L, 'status')")
         self.assertSequenceEqual(val, ('issue', 2345, 'status'))
 
+        # eval a tuple e.g. date representation
+        val = eval_import("(2022, 9, 6, 3, 58, 4.776, 0, 0, 0)")
+        self.assertSequenceEqual(val, (2022, 9, 6, 3, 58, 4.776, 0, 0, 0))
+
+        # eval a boolean
+        val = eval_import("False")
+        self.assertEqual(val, False)
+        val = eval_import("True")
+        self.assertEqual(val, True)
+
+        # check syntax error
+        for testcase in ['true', '(2004, 10, 20', "2000, 10, 22)",
+                         "test'", '"test']:
+            with self.assertRaises(ValueError) as m:
+                val = eval_import(testcase)
+            print(m.exception)
+
         # python3 export with id as number
         val = eval_import("('issue', 2345, 'status')")
         self.assertSequenceEqual(val, ('issue', 2345, 'status'))

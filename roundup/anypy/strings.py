@@ -4,8 +4,9 @@
 # few places, generally for interacting with external modules
 # requiring that type to be used.
 
-import sys
+import ast
 import io
+import sys
 
 _py3 = sys.version_info[0] > 2
 
@@ -63,22 +64,20 @@ def us2u(s, errors='strict'):
     """Convert a string or Unicode string to a Unicode string."""
     if _py3:
         return s
+    elif isinstance(s, unicode):    # noqa: F821
+        return s
     else:
-        if isinstance(s, unicode):    # noqa: F821
-            return s
-        else:
-            return unicode(s, 'utf-8', errors)    # noqa: F821
+        return unicode(s, 'utf-8', errors)    # noqa: F821
 
 
 def us2s(u):
     """Convert a string or Unicode string to the internal string format."""
     if _py3:
         return u
+    elif isinstance(u, unicode):    # noqa: F821
+        return u.encode('utf-8')
     else:
-        if isinstance(u, unicode):    # noqa: F821
-            return u.encode('utf-8')
-        else:
-            return u
+        return u
 
 
 def uany2s(u):
@@ -87,11 +86,10 @@ def uany2s(u):
     Objects that are not Unicode strings are passed to str()."""
     if _py3:
         return str(u)
+    elif isinstance(u, unicode):    # noqa: F821
+        return u.encode('utf-8')
     else:
-        if isinstance(u, unicode):    # noqa: F821
-            return u.encode('utf-8')
-        else:
-            return str(u)
+        return str(u)
 
 
 def is_us(s):
@@ -99,7 +97,7 @@ def is_us(s):
     if _py3:
         return isinstance(s, str)
     else:
-        return isinstance(s, str) or isinstance(s, unicode)  # noqa: F821
+        return isinstance(s, (str, unicode))  # noqa: F821
 
 
 def uchr(c):
@@ -141,28 +139,37 @@ def repr_export(v):
 
 def eval_import(s):
     """Evaluate a Python-2-style value imported from a CSV file."""
-    if _py3:
-        try:
-            v = eval(s)
-        except SyntaxError:
-            # handle case where link operation reports id a long int
-            # ('issue', 5002L, "status") rather than as a string.
-            # This was a bug that existed and was fixed before or with v1.2.0
-            import re
-            v = eval(re.sub(r', ([0-9]+)L,', r', \1,', s))
+    try:
+        if _py3:
+            try:
+                v = ast.literal_eval(s)
+            except SyntaxError:
+                # handle case where link operation reports id a long
+                # int ('issue', 5002L, "status") rather than as a
+                # string.  This was a bug that existed and was fixed
+                # before or with v1.2.0
+                import re
+                v = ast.literal_eval(re.sub(r', ([0-9]+)L,', r', \1,', s))
 
-        if isinstance(v, str):
-            return v.encode('iso-8859-1').decode('utf-8')
-        elif isinstance(v, dict):
-            v_mod = {}
-            for key, value in v.items():
-                if isinstance(key, str):
-                    key = key.encode('iso-8859-1').decode('utf-8')
-                if isinstance(value, str):
-                    value = value.encode('iso-8859-1').decode('utf-8')
-                v_mod[key] = value
-            return v_mod
+            if isinstance(v, str):
+                return v.encode('iso-8859-1').decode('utf-8')
+            elif isinstance(v, dict):
+                v_mod = {}
+                # ruff: noqa: PLW2901
+                for key, value in v.items():
+                    if isinstance(key, str):
+                        key = key.encode('iso-8859-1').decode('utf-8')
+                    if isinstance(value, str):
+                        value = value.encode('iso-8859-1').decode('utf-8')
+                    v_mod[key] = value
+                return v_mod
+            else:
+                return v
         else:
-            return v
-    else:
-        return eval(s)
+                return ast.literal_eval(s)
+
+    except (ValueError, SyntaxError) as e:
+        raise ValueError(
+            ("Error %(exception)s trying to parse value '%(value)s'") %
+            { 'exception': e, 'value': s})
+
