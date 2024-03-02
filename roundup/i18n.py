@@ -204,8 +204,8 @@ def get_translation(language=None, tracker_home=None,
     # add mofiles found in the tracker, then in the system locale directory
     if tracker_locale:
         mofiles.append(get_mofile(locales, tracker_locale))
-    mofiles += [get_mofile(locales, system_locale, DOMAIN)
-               for system_locale in LOCALE_DIRS]
+    mofiles.extend([get_mofile(locales, system_locale, DOMAIN)
+               for system_locale in LOCALE_DIRS])
 
     # we want to fall back to english unless english is selected language
     if "en" not in locales:
@@ -213,8 +213,8 @@ def get_translation(language=None, tracker_home=None,
         # add mofiles found in the tracker, then in the system locale directory
         if tracker_locale:
             mofiles.append(get_mofile(locales, tracker_locale))
-        for system_locale in LOCALE_DIRS:
-            mofiles.append(get_mofile(locales, system_locale, DOMAIN))
+        mofiles.extend([get_mofile(locales, system_locale, DOMAIN)
+                         for system_locale in LOCALE_DIRS])
     # filter out elements that are not found
     mofiles = filter(None, mofiles)
     translator = None
