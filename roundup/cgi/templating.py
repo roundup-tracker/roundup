@@ -288,7 +288,7 @@ class Unauthorised(RoundupException):
 
 class LoaderBase:
     """ Base for engine-specific template Loader class."""
-    def __init__(self, dir):
+    def __init__(self, template_dir):
         # loaders are given the template directory as a first argument
         pass
 
@@ -317,13 +317,13 @@ class LoaderBase:
 class TALLoaderBase(LoaderBase):
     """ Common methods for the legacy TAL loaders."""
 
-    def __init__(self, dir):
-        self.dir = dir
+    def __init__(self, template_dir):
+        self.template_dir = template_dir
 
     def _find(self, name):
         """ Find template, return full path and filename of the
             template if it is found, None otherwise."""
-        realsrc = os.path.realpath(self.dir)
+        realsrc = os.path.realpath(self.template_dir)
         for extension in ['', '.html', '.xml']:
             f = name + extension
             src = os.path.join(realsrc, f)
@@ -338,7 +338,7 @@ class TALLoaderBase(LoaderBase):
 
     def precompile(self):
         """ Precompile templates in load directory by loading them """
-        for filename in os.listdir(self.dir):
+        for filename in os.listdir(self.template_dir):
             # skip subdirs
             if os.path.isdir(filename):
                 continue
@@ -392,7 +392,7 @@ class TemplateBase:
     content_type = 'text/html'
 
 
-def get_loader(dir, template_engine):
+def get_loader(template_dir, template_engine):
 
     # Support for multiple engines using fallback mechanizm
     # meaning that if first engine can't find template, we
@@ -411,7 +411,7 @@ def get_loader(dir, template_engine):
             from .engine_zopetal import Loader
         else:
             raise Exception('Unknown template engine "%s"' % engine_name)
-        ml.add_loader(Loader(dir))
+        ml.add_loader(Loader(template_dir))
 
     if len(engines) == 1:
         return ml.loaders[0]
@@ -3110,18 +3110,18 @@ class HTMLRequest(HTMLInputMixin):
             cls = self.client.db.getclass(self.classname)
         for f, d in zip_longest(fields, dirs):
             if f.startswith('-'):
-                dir, propname = '-', f[1:]
+                direction, propname = '-', f[1:]
             elif d:
-                dir, propname = '-', f
+                direction, propname = '-', f
             else:
-                dir, propname = '+', f
+                direction, propname = '+', f
             # if no classname, just append the propname unchecked.
             # this may be valid for some actions that bypass classes.
             if self.classname and cls.get_transitive_prop(propname) is None:
                 self.client.add_error_message("Unknown %s property %s" % (
                     name, propname))
             else:
-                var.append((dir, propname))
+                var.append((direction, propname))
 
     def _form_has_key(self, name):
         try:
@@ -3297,16 +3297,16 @@ env: %(env)s
             add(sc+'columns', ','.join(self.columns))
         if sort:
             val = []
-            for dir, attr in self.sort:
-                if dir == '-':
+            for direction, attr in self.sort:
+                if direction == '-':
                     val.append('-'+attr)
                 else:
                     val.append(attr)
             add(sc+'sort', ','.join(val))
         if group:
             val = []
-            for dir, attr in self.group:
-                if dir == '-':
+            for direction, attr in self.group:
+                if direction == '-':
                     val.append('-'+attr)
                 else:
                     val.append(attr)
@@ -3362,16 +3362,16 @@ env: %(env)s
             l.append(sc+'columns=%s' % (','.join(self.columns)))
         if self.sort and 'sort' not in specials:
             val = []
-            for dir, attr in self.sort:
-                if dir == '-':
+            for direction, attr in self.sort:
+                if direction == '-':
                     val.append('-'+attr)
                 else:
                     val.append(attr)
             l.append(sc+'sort=%s' % (','.join(val)))
         if self.group and 'group' not in specials:
             val = []
-            for dir, attr in self.group:
-                if dir == '-':
+            for direction, attr in self.group:
+                if direction == '-':
                     val.append('-'+attr)
                 else:
                     val.append(attr)

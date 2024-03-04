@@ -17,8 +17,8 @@ from roundup.cgi.TAL import TALInterpreter
 class Loader(TALLoaderBase):
     templates = {}
 
-    def __init__(self, dir):
-        self.dir = dir
+    def __init__(self, template_dir):
+        self.template_dir = template_dir
 
     def load(self, tplname):
         # find the source
