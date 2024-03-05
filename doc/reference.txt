@@ -49,24 +49,27 @@ Trackers have the following structure:
    single: tracker; structure html directory
    single: tracker; structure lib directory
 
-=================== ========================================================
-Tracker File        Description
-=================== ========================================================
-config.ini          Holds the basic `tracker configuration`_
-schema.py           Holds the `tracker schema`_
-initial_data.py     Holds any data to be entered into the database when the
-                    tracker is initialised (optional)
-interfaces.py       Allows `modifying the core of Roundup`_ (optional)
-db/                 Holds the tracker's database
-db/files/           Holds the tracker's upload files and messages
-db/backend_name     Names the database back-end for the tracker (obsolete).
-                    Use the ``backend`` setting in the ``[rdbms]``
-		    section of ``config.ini`` instead.
-detectors/          `Auditors and reactors`_ for this tracker
-extensions/         Additional `actions`_ and `templating utilities`_
-html/               Web interface templates, images and style sheets
-lib/                optional common imports for detectors and extensions
-=================== ======================================================== 
+.. table::
+  :class: valign-top
+
+  =================== ========================================================
+  Tracker File        Description
+  =================== ========================================================
+  config.ini          Holds the basic `tracker configuration`_
+  schema.py           Holds the `tracker schema`_
+  initial_data.py     Holds any data to be entered into the database when the
+		      tracker is initialised (optional)
+  interfaces.py       Allows `modifying the core of Roundup`_ (optional)
+  db/                 Holds the tracker's database
+  db/files/           Holds the tracker's upload files and messages
+  db/backend_name     Names the database back-end for the tracker (obsolete).
+		      Use the ``backend`` setting in the ``[rdbms]``
+		      section of ``config.ini`` instead.
+  detectors/          `Auditors and reactors`_ for this tracker
+  extensions/         Additional `actions`_ and `templating utilities`_
+  html/               Web interface templates, images and style sheets
+  lib/                optional common imports for detectors and extensions
+  =================== ======================================================== 
 
 
 .. index:: config.ini
@@ -3002,104 +3005,107 @@ from the CGI form.
 
 There are several methods available on these wrapper objects:
 
-=========== =============================================================
-Method      Description
-=========== =============================================================
-properties  return a `hyperdb property wrapper`_ for all of this class's
-            properties that are searchable by the user. You can use
-            the argument cansearch=False to get all properties.
-list        lists all of the active (not retired) items in the class.
-csv         return the items of this class as a chunk of CSV text.
-propnames   lists the names of the properties of this class.
-filter      lists of items from this class, filtered and sorted. Two
-            options are available for sorting:
+.. table::
+  :class: valign-top
 
-            1. by the current *request* filterspec/filter/sort/group args
-            2. by the "filterspec", "sort" and "group" keyword args.
-               "filterspec" is ``{propname: value(s)}``. "sort" and
-               "group" are an optionally empty list ``[(dir, prop)]``
-               where dir is '+', '-' or None
-               and prop is a prop name or None.
+  =========== =============================================================
+  Method      Description
+  =========== =============================================================
+  properties  return a `hyperdb property wrapper`_ for all of this class's
+	      properties that are searchable by the user. You can use
+	      the argument cansearch=False to get all properties.
+  list        lists all of the active (not retired) items in the class.
+  csv         return the items of this class as a chunk of CSV text.
+  propnames   lists the names of the properties of this class.
+  filter      lists of items from this class, filtered and sorted. Two
+	      options are available for sorting:
 
-               The propname in filterspec and prop in a sort/group spec
-               may be transitive, i.e., it may contain properties of
-               the form link.link.link.name.
+	      1. by the current *request* filterspec/filter/sort/group args
+	      2. by the "filterspec", "sort" and "group" keyword args.
+		 "filterspec" is ``{propname: value(s)}``. "sort" and
+		 "group" are an optionally empty list ``[(dir, prop)]``
+		 where dir is '+', '-' or None
+		 and prop is a prop name or None.
 
-            eg. All issues with a priority of "1" with messages added in
-            the last week, sorted by activity date:
-            ``issue.filter(filterspec={"priority": "1",
-            'messages.creation' : '.-1w;'}, sort=[('activity', '+')])``
+		 The propname in filterspec and prop in a sort/group spec
+		 may be transitive, i.e., it may contain properties of
+		 the form link.link.link.name.
 
-            Note that when searching for Link and Multilink values, the
-            special value '-1' searches for empty Link or Multilink
-            values. For both, Links and Multilinks, multiple values
-            given in a filter call are combined with 'OR' by default.
-            For Multilinks a postfix expression syntax using negative ID
-            numbers (as strings) as operators is supported. Each
-            non-negative number (or '-1') is pushed on an operand stack.
-            A negative number pops the required number of arguments from
-            the stack, applies the operator, and pushes the result. The
-            following operators are supported:
+	      eg. All issues with a priority of "1" with messages added in
+	      the last week, sorted by activity date:
+	      ``issue.filter(filterspec={"priority": "1",
+	      'messages.creation' : '.-1w;'}, sort=[('activity', '+')])``
 
-	    - '-2' stands for 'NOT' and takes one argument
-	    - '-3' stands for 'AND' and takes two arguments
-	    - '-4' stands for 'OR' and takes two arguments
+	      Note that when searching for Link and Multilink values, the
+	      special value '-1' searches for empty Link or Multilink
+	      values. For both, Links and Multilinks, multiple values
+	      given in a filter call are combined with 'OR' by default.
+	      For Multilinks a postfix expression syntax using negative ID
+	      numbers (as strings) as operators is supported. Each
+	      non-negative number (or '-1') is pushed on an operand stack.
+	      A negative number pops the required number of arguments from
+	      the stack, applies the operator, and pushes the result. The
+	      following operators are supported:
 
-	    Note that this special handling of ID arguments is applied only
-	    when a negative number smaller than -1 is encountered as an ID
-	    in the filter call. Otherwise the implicit OR default
-            applies.
-	    Examples of using Multilink expressions would be
+	      - '-2' stands for 'NOT' and takes one argument
+	      - '-3' stands for 'AND' and takes two arguments
+	      - '-4' stands for 'OR' and takes two arguments
 
-	    - '1', '2', '-4', '3', '4', '-4', '-3'
-	      would search for IDs (1 or 2) and (3 or 4)
-	    - '-1' '-2' would search for all non-empty Multilinks
+	      Note that this special handling of ID arguments is applied only
+	      when a negative number smaller than -1 is encountered as an ID
+	      in the filter call. Otherwise the implicit OR default
+	      applies.
+	      Examples of using Multilink expressions would be
 
-filter_sql  **Only in SQL backends**
+	      - '1', '2', '-4', '3', '4', '-4', '-3'
+		would search for IDs (1 or 2) and (3 or 4)
+	      - '-1' '-2' would search for all non-empty Multilinks
 
-            Lists the items that match the SQL provided. The SQL is a
-            complete "select" statement.
+  filter_sql  **Only in SQL backends**
 
-            The SQL select must include the item id as the first column.
+	      Lists the items that match the SQL provided. The SQL is a
+	      complete "select" statement.
 
-            This function **does not** filter out retired items, add
-            on a where clause "__retired__ <> 1" if you don't want
-            retired nodes.
+	      The SQL select must include the item id as the first column.
 
-classhelp   display a link to a javascript popup containing this class'
-            "help" template.
+	      This function **does not** filter out retired items, add
+	      on a where clause "__retired__ <> 1" if you don't want
+	      retired nodes.
 
-            This generates a link to a popup window which displays the
-            properties indicated by "properties" of the class named by
-            "classname". The "properties" should be a comma-separated list
-            (eg. 'id,name,description'). Properties defaults to all the
-            properties of a class (excluding id, creator, created and
-            activity).
+  classhelp   display a link to a javascript popup containing this class'
+	      "help" template.
 
-            You may optionally override the "label" displayed, the "width",
-            the "height", the number of items per page ("pagesize") and
-            the field on which the list is sorted ("sort").
+	      This generates a link to a popup window which displays the
+	      properties indicated by "properties" of the class named by
+	      "classname". The "properties" should be a comma-separated list
+	      (eg. 'id,name,description'). Properties defaults to all the
+	      properties of a class (excluding id, creator, created and
+	      activity).
 
-            With the "filter" arg it is possible to specify a filter for
-            which items are supposed to be displayed. It has to be of
-            the format "<field>=<values>;<field>=<values>;...".
+	      You may optionally override the "label" displayed, the "width",
+	      the "height", the number of items per page ("pagesize") and
+	      the field on which the list is sorted ("sort").
 
-            The popup window will be resizable and scrollable.
+	      With the "filter" arg it is possible to specify a filter for
+	      which items are supposed to be displayed. It has to be of
+	      the format "<field>=<values>;<field>=<values>;...".
 
-            If the "property" arg is given, it's passed through to the
-            javascript help_window function. This allows updating of a
-            property in the calling HTML page.
+	      The popup window will be resizable and scrollable.
 
-            If the "form" arg is given, it's passed through to the
-            javascript help_window function - it's the name of the form
-            the "property" belongs to.
+	      If the "property" arg is given, it's passed through to the
+	      javascript help_window function. This allows updating of a
+	      property in the calling HTML page.
 
-submit      generate a submit button (and action and @csrf hidden elements)
-renderWith  render this class with the given template.
-history     returns 'New node - no history' :)
-is_edit_ok  is the user allowed to Edit the current class?
-is_view_ok  is the user allowed to View the current class?
-=========== =============================================================
+	      If the "form" arg is given, it's passed through to the
+	      javascript help_window function - it's the name of the form
+	      the "property" belongs to.
+
+  submit      generate a submit button (and action and @csrf hidden elements)
+  renderWith  render this class with the given template.
+  history     returns 'New node - no history' :)
+  is_edit_ok  is the user allowed to Edit the current class?
+  is_view_ok  is the user allowed to View the current class?
+  =========== =============================================================
 
 Note that if you have a property of the same name as one of the above
 methods, you'll need to access it using a python "item access"
@@ -3124,46 +3130,49 @@ from the CGI form.
 
 There are several methods available on these wrapper objects:
 
-=============== ========================================================
-Method          Description
-=============== ========================================================
-submit          generate a submit button (and action and @csrf hidden elements)
-journal         return the journal of the current item (**not
-                implemented**)
-history         render the journal of the current item as
-                HTML. By default properties marked as "quiet" (see 
-		`design documentation`_) are not shown unless the
-		function is called with the showall=True parameter.
-		Properties that are not Viewable to the user are not
-		shown.
-renderQueryForm specific to the "query" class - render the search form
-                for the query
-hasPermission   specific to the "user" class - determine whether the
-                user has a Permission. The signature is::
+.. table::
+  :class: valign-top
 
-                    hasPermission(self, permission, [classname=],
-                        [property=], [itemid=])
+  =============== ========================================================
+  Method          Description
+  =============== ========================================================
+  submit          generate a submit button (and action and @csrf hidden elements)
+  journal         return the journal of the current item (**not
+		  implemented**)
+  history         render the journal of the current item as
+		  HTML. By default properties marked as "quiet" (see 
+		  `design documentation`_) are not shown unless the
+		  function is called with the showall=True parameter.
+		  Properties that are not Viewable to the user are not
+		  shown.
+  renderQueryForm specific to the "query" class - render the search form
+		  for the query
+  hasPermission   specific to the "user" class - determine whether the
+		  user has a Permission. The signature is::
 
-                where the classname defaults to the current context.
-hasRole         specific to the "user" class - determine whether the
-                user has a Role. The signature is::
+		      hasPermission(self, permission, [classname=],
+			  [property=], [itemid=])
 
-                    hasRole(self, rolename)
+		  where the classname defaults to the current context.
+  hasRole         specific to the "user" class - determine whether the
+		  user has a Role. The signature is::
 
-is_edit_ok      is the user allowed to Edit the current item?
-is_view_ok      is the user allowed to View the current item?
-is_retired      is the item retired?
-download_url    generate a url-quoted link for download of FileClass
-                item contents (ie. file<id>/<name>)
-copy_url        generate a url-quoted link for creating a copy
-                of this item.  By default, the copy will acquire
-                all properties of the current item except for
-                ``messages`` and ``files``.  This can be overridden
-                by passing ``exclude`` argument which contains a list
-                (or any iterable) of property names that shall not be
-                copied.  Database-driven properties like ``id`` or
-                ``activity`` cannot be copied.
-=============== ========================================================
+		      hasRole(self, rolename)
+
+  is_edit_ok      is the user allowed to Edit the current item?
+  is_view_ok      is the user allowed to View the current item?
+  is_retired      is the item retired?
+  download_url    generate a url-quoted link for download of FileClass
+		  item contents (ie. file<id>/<name>)
+  copy_url        generate a url-quoted link for creating a copy
+		  of this item.  By default, the copy will acquire
+		  all properties of the current item except for
+		  ``messages`` and ``files``.  This can be overridden
+		  by passing ``exclude`` argument which contains a list
+		  (or any iterable) of property names that shall not be
+		  copied.  Database-driven properties like ``id`` or
+		  ``activity`` cannot be copied.
+  =============== ========================================================
 
 Note that if you have a property of the same name as one of the above
 methods, you'll need to access it using a python "item access"
@@ -3192,177 +3201,183 @@ value may be either:
 
 The property wrapper has some useful attributes:
 
-=============== ========================================================
-Attribute       Description
-=============== ========================================================
-_name           the name of the property
-_value          the value of the property if any - this is the actual
-                value retrieved from the hyperdb for this property
-=============== ========================================================
+.. table::
+  :class: valign-top
+
+  =============== ========================================================
+  Attribute       Description
+  =============== ========================================================
+  _name           the name of the property
+  _value          the value of the property if any - this is the actual
+		  value retrieved from the hyperdb for this property
+  =============== ========================================================
 
 There are several methods available on these wrapper objects:
 
-=========== ================================================================
-Method      Description
-=========== ================================================================
-plain       render a "plain" representation of the property. This method
-            may take two arguments:
+.. table::
+  :class: valign-top
 
-            escape
-             If true, escape the text so it is HTML safe (default: no). The
-             reason this defaults to off is that text is usually escaped
-             at a later stage by the TAL commands, unless the "structure"
-             option is used in the template. The following ``tal:content``
-             expressions are all equivalent::
- 
-              "structure python:msg.content.plain(escape=1)"
-              "python:msg.content.plain()"
-              "msg/content/plain"
-              "msg/content"
+  =========== ================================================================
+  Method      Description
+  =========== ================================================================
+  plain       render a "plain" representation of the property. This method
+	      may take two arguments:
 
-             Usually you'll only want to use the escape option in a
-             complex expression.
+	      escape
+	       If true, escape the text so it is HTML safe (default: no). The
+	       reason this defaults to off is that text is usually escaped
+	       at a later stage by the TAL commands, unless the "structure"
+	       option is used in the template. The following ``tal:content``
+	       expressions are all equivalent::
 
-            hyperlink
-             If true, turn URLs, email addresses and hyperdb item
-             designators in the text into hyperlinks (default: no). Note
-             that you'll need to use the "structure" TAL option if you
-             want to use this ``tal:content`` expression::
-  
-              "structure python:msg.content.plain(hyperlink=1)"
+		"structure python:msg.content.plain(escape=1)"
+		"python:msg.content.plain()"
+		"msg/content/plain"
+		"msg/content"
 
-             The text is automatically HTML-escaped before the hyperlinking
-             transformation done in the plain() method.
+	       Usually you'll only want to use the escape option in a
+	       complex expression.
 
-hyperlinked The same as msg.content.plain(hyperlink=1), but nicer::
+	      hyperlink
+	       If true, turn URLs, email addresses and hyperdb item
+	       designators in the text into hyperlinks (default: no). Note
+	       that you'll need to use the "structure" TAL option if you
+	       want to use this ``tal:content`` expression::
 
-              "structure msg/content/hyperlinked"
+		"structure python:msg.content.plain(hyperlink=1)"
 
-field       render an appropriate form edit field for the property - for
-            most types this is a text entry box, but for Booleans it's a
-            tri-state yes/no/neither selection. This method may take some
-            arguments:
+	       The text is automatically HTML-escaped before the hyperlinking
+	       transformation done in the plain() method.
 
-            size
-              Sets the width in characters of the edit field
+  hyperlinked The same as msg.content.plain(hyperlink=1), but nicer::
 
-            format (Date properties only)
-              Sets the format of the date in the field - uses the same
-              format string argument as supplied to the ``pretty`` method
-              below.
+		"structure msg/content/hyperlinked"
 
-            popcal (Date properties only)
-              Include the Javascript-based popup calendar for date
-              selection. Defaults to on.
+  field       render an appropriate form edit field for the property - for
+	      most types this is a text entry box, but for Booleans it's a
+	      tri-state yes/no/neither selection. This method may take some
+	      arguments:
 
-stext       only on String properties - render the value of the property
-            as StructuredText (requires the StructureText module to be
-            installed separately)
-multiline   only on String properties - render a multiline form edit
-            field for the property
-email       only on String properties - render the value of the property
-            as an obscured email address
-url_quote   only on String properties. It quotes any characters in the
-            string so it is safe to use in a url. E.G. a space is
-            replaced with %20.
-confirm     only on Password properties - render a second form edit field
-            for the property, used for confirmation that the user typed
-            the password correctly. Generates a field with name
-            "name:confirm".
-now         only on Date properties - return the current date as a new
-            property
-reldate     only on Date properties - render the interval between the date
-            and now
-local       only on Date properties - return this date as a new property
-            with some timezone offset, for example::
-            
-                python:context.creation.local(10)
+	      size
+		Sets the width in characters of the edit field
 
-            will render the date with a +10 hour offset.
-pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
-            Mar 2004"). Takes an optional format argument, for example::
+	      format (Date properties only)
+		Sets the format of the date in the field - uses the same
+		format string argument as supplied to the ``pretty`` method
+		below.
 
-                python:context.activity.pretty('%Y-%m-%d')
+	      popcal (Date properties only)
+		Include the Javascript-based popup calendar for date
+		selection. Defaults to on.
 
-            Will format as "2004-03-19" instead.
+  stext       only on String properties - render the value of the property
+	      as StructuredText (requires the StructureText module to be
+	      installed separately)
+  multiline   only on String properties - render a multiline form edit
+	      field for the property
+  email       only on String properties - render the value of the property
+	      as an obscured email address
+  url_quote   only on String properties. It quotes any characters in the
+	      string so it is safe to use in a url. E.G. a space is
+	      replaced with %20.
+  confirm     only on Password properties - render a second form edit field
+	      for the property, used for confirmation that the user typed
+	      the password correctly. Generates a field with name
+	      "name:confirm".
+  now         only on Date properties - return the current date as a new
+	      property
+  reldate     only on Date properties - render the interval between the date
+	      and now
+  local       only on Date properties - return this date as a new property
+	      with some timezone offset, for example::
 
-            Interval properties - render the interval in a pretty
-            format (eg. "yesterday"). The format arguments are those used
-            in the standard ``strftime`` call (see the `Python Library
-            Reference: time module`__)
+		  python:context.creation.local(10)
 
-            Number properties - takes a printf style format argument
-            (default: '%0.3f') and formats the number accordingly.
-            If the value can't be converted, '' is returned if the
-            value is ``None`` otherwise it is converted to a string.
-popcal      Generate a link to a popup calendar which may be used to
-            edit the date field, for example::
+	      will render the date with a +10 hour offset.
+  pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
+	      Mar 2004"). Takes an optional format argument, for example::
 
-              <span tal:replace="structure context/due/popcal" />
+		  python:context.activity.pretty('%Y-%m-%d')
 
-            you still need to include the ``field`` for the property, so
-            typically you'd have::
+	      Will format as "2004-03-19" instead.
 
-              <span tal:replace="structure context/due/field" />
-              <span tal:replace="structure context/due/popcal" />
+	      Interval properties - render the interval in a pretty
+	      format (eg. "yesterday"). The format arguments are those used
+	      in the standard ``strftime`` call (see the `Python Library
+	      Reference: time module`__)
 
-menu        only on Link and Multilink properties - render a form select
-            list for this property. Takes a number of optional arguments
+	      Number properties - takes a printf style format argument
+	      (default: '%0.3f') and formats the number accordingly.
+	      If the value can't be converted, '' is returned if the
+	      value is ``None`` otherwise it is converted to a string.
+  popcal      Generate a link to a popup calendar which may be used to
+	      edit the date field, for example::
 
-            size
-               is used to limit the length of the list labels
-            height
-               is used to set the <select> tag's "size" attribute
-            showid
-               includes the item ids in the list labels
-            additional
-               lists properties which should be included in the label
-            sort_on
-                indicates the property to sort the list on as (direction,
-                (direction, property) where direction is '+' or '-'. A
-                single string with the direction prepended may be used.
-                For example: ('-', 'order'), '+name'.
-            value
-                gives a default value to preselect in the menu
+		<span tal:replace="structure context/due/popcal" />
 
-            The remaining keyword arguments are used as conditions for
-            filtering the items in the list - they're passed as the
-            "filterspec" argument to a Class.filter() call. For example::
+	      you still need to include the ``field`` for the property, so
+	      typically you'd have::
 
-             <span tal:replace="structure context/status/menu" />
+		<span tal:replace="structure context/due/field" />
+		<span tal:replace="structure context/due/popcal" />
 
-             <span tal:replace="python:context.status.menu(order='+name",
-                                   value='chatting', 
-                                   filterspec={'status': '1,2,3,4'}" />
+  menu        only on Link and Multilink properties - render a form select
+	      list for this property. Takes a number of optional arguments
 
-sorted      only on Multilink properties - produce a list of the linked
-            items sorted by some property, for example::
-            
-                python:context.files.sorted('creation')
+	      size
+		 is used to limit the length of the list labels
+	      height
+		 is used to set the <select> tag's "size" attribute
+	      showid
+		 includes the item ids in the list labels
+	      additional
+		 lists properties which should be included in the label
+	      sort_on
+		  indicates the property to sort the list on as (direction,
+		  (direction, property) where direction is '+' or '-'. A
+		  single string with the direction prepended may be used.
+		  For example: ('-', 'order'), '+name'.
+	      value
+		  gives a default value to preselect in the menu
 
-            Will list the files by upload date. While::
+	      The remaining keyword arguments are used as conditions for
+	      filtering the items in the list - they're passed as the
+	      "filterspec" argument to a Class.filter() call. For example::
 
-               python:context.files.sorted('creation', reverse=True)
+	       <span tal:replace="structure context/status/menu" />
 
-            Will list the files by upload date in reverse order from
-            the prior example. If the property can be unset, you can
-            use the ``NoneFirst`` parameter to sort the None/Unset
-            values at the front or the end of the list. For example::
-            
-                python:context.files.sorted('creation', NoneFirst=True)
-            
-            will sort files by creation date with files missing a
-            creation date at the start of the list. The default for
-            ``NoneFirst`` is False so these files will sort at the end
-            by default. (Note creation date is never unset, but you
-            get the idea.) If you combine NoneFirst with
-            ``reverse=True`` the meaning of NoneFirst is inverted:
-	    True sorts None/unset at the end and False sorts at the
-	    beginning.
-reverse     only on Multilink properties - produce a list of the linked
-            items in reverse order
-isset       returns True if the property has been set to a value
-=========== ================================================================
+	       <span tal:replace="python:context.status.menu(order='+name",
+				     value='chatting', 
+				     filterspec={'status': '1,2,3,4'}" />
+
+  sorted      only on Multilink properties - produce a list of the linked
+	      items sorted by some property, for example::
+
+		  python:context.files.sorted('creation')
+
+	      Will list the files by upload date. While::
+
+		 python:context.files.sorted('creation', reverse=True)
+
+	      Will list the files by upload date in reverse order from
+	      the prior example. If the property can be unset, you can
+	      use the ``NoneFirst`` parameter to sort the None/Unset
+	      values at the front or the end of the list. For example::
+
+		  python:context.files.sorted('creation', NoneFirst=True)
+
+	      will sort files by creation date with files missing a
+	      creation date at the start of the list. The default for
+	      ``NoneFirst`` is False so these files will sort at the end
+	      by default. (Note creation date is never unset, but you
+	      get the idea.) If you combine NoneFirst with
+	      ``reverse=True`` the meaning of NoneFirst is inverted:
+	      True sorts None/unset at the end and False sorts at the
+	      beginning.
+  reverse     only on Multilink properties - produce a list of the linked
+	      items in reverse order
+  isset       returns True if the property has been set to a value
+  =========== ================================================================
 
 __ https://docs.python.org/2/library/time.html
 
@@ -3390,48 +3405,67 @@ request.
 
 .. taken from ``roundup.cgi.templating.HTMLRequest`` docstring
 
-=========== ============================================================
-Variable    Holds
-=========== ============================================================
-base        the base URL for this tracker
-classname   the current classname (possibly None)
-env         the CGI environment variables
-form        the current CGI form variables in a cgi.FieldStorage
-template    the current template (suffix, also possibly None)
-user        a HTMLUser instance for this user
-=========== ============================================================
+.. table::
+  :class: valign-top
+
+  =========== ============================================================
+  Variable    Holds
+  =========== ============================================================
+  base        the base URL for this tracker
+  classname   the current classname (possibly None)
+  env         the CGI environment variables
+  form        the current CGI form variables in a cgi.FieldStorage
+  template    the current template (suffix, also possibly None)
+  user        a HTMLUser instance for this user
+  =========== ============================================================
 
 **Index page specific variables (indexing arguments)**
 
-=========== ============================================================
-Variable    Holds
-=========== ============================================================
-columns     dictionary of the columns to display in an index page
-filter      properties to filter the index on
-filterspec  values to filter the index on (property=value, eg
-            ``priority=1`` or ``messages.author=42``
-group       index grouping properties [(direction, column name)]
-search_text text to perform a full-text search on for an index
-show        a convenience access to columns - request/show/colname will
-            be true if the columns should be displayed, false otherwise
-sort        index sort columns [(direction, column name)]
-=========== ============================================================
+.. table::
+  :class: valign-top
+
+  =========== ============================================================
+  Variable    Holds
+  =========== ============================================================
+  columns     dictionary of the columns to display in an index page
+  filter      properties to filter the index on
+  filterspec  values to filter the index on (property=value, eg
+	      ``priority=1`` or ``messages.author=42``
+  group       index grouping properties [(direction, column name)]
+  search_text text to perform a full-text search on for an index
+  show        a convenience access to columns - request/show/colname will
+	      be true if the columns should be displayed, false otherwise
+  sort        index sort columns [(direction, column name)]
+  =========== ============================================================
 
 There are several methods available on the request variable:
 
-=============== ========================================================
-Method          Description
-=============== ========================================================
-base_javascript render some javascript that is used by other components
-                of the templating
-batch           run the current index args through a filter and return a
-                list of items (see `hyperdb item wrapper`_, and
-                `batching`_)
-description     render a description of the request - handle for the
-                page title
-indexargs_form  render the current index args as form elements
-indexargs_url   render the current index args as a URL
-=============== ========================================================
+.. table::
+  :class: valign-top
+
+  =============== ========================================================
+  Method          Description
+  =============== ========================================================
+  base_javascript render some javascript that is used by other components
+		  of the templating
+  batch           run the current index args through a filter and return a
+		  list of items (see `hyperdb item wrapper`_, and
+		  `batching`_)
+  description     render a description of the request - handle for the
+		  page title
+  indexargs_form  render the current index args as form elements
+  indexargs_url   render the current index args as a URL
+		  (url, args)
+		  If the value of an arg (in args dict) is None,
+		  the argument is excluded from the url. If you want
+		  an empty value use an empty string '' as the value.
+		  Use this in templates to conditionally
+		  include an arg if it is set to a value. E.G.
+		  {..., '@queryname': request.dispname or None, ...}
+		  will include @queryname in the url if there is a
+		  dispname otherwise the parameter will be omitted
+		  from the url.
+  =============== ========================================================
 
 The form variable
 :::::::::::::::::
@@ -3513,21 +3547,24 @@ repeat variable entry called "user". This may be accessed as either::
 
 The "user" entry has a number of methods available for information:
 
-=============== =========================================================
-Method          Description
-=============== =========================================================
-start           True if the current item is the first in the sequence.
-end             True if the current item is the last in the sequence.
-even            True if the current item is an even item in the sequence.
-odd             True if the current item is an odd item in the sequence.
-number          Current position in the sequence, starting from 1.
-letter          Current position in the sequence as a letter, a through
-                z, then aa through zz, and so on.
-Letter          Same as letter(), except uppercase.
-roman           Current position in the sequence as lowercase roman
-                numerals.
-Roman           Same as roman(), except uppercase.
-=============== =========================================================
+.. table::
+  :class: valign-top
+
+  =============== =========================================================
+  Method          Description
+  =============== =========================================================
+  start           True if the current item is the first in the sequence.
+  end             True if the current item is the last in the sequence.
+  even            True if the current item is an even item in the sequence.
+  odd             True if the current item is an odd item in the sequence.
+  number          Current position in the sequence, starting from 1.
+  letter          Current position in the sequence as a letter, a through
+		  z, then aa through zz, and so on.
+  Letter          Same as letter(), except uppercase.
+  roman           Current position in the sequence as lowercase roman
+		  numerals.
+  Roman           Same as roman(), except uppercase.
+  =============== =========================================================
 
 For example, this will print a comma after each element except the
 last::
@@ -3550,17 +3587,20 @@ This is implemented by the
 ``roundup.cgi.templating.TemplatingUtils`` class, which may be extended
 with additional methods by extensions_.
 
-=============== ========================================================
-Method          Description
-=============== ========================================================
-Batch           return a batch object using the supplied list
-url_quote       quote some text as safe for a URL (ie. space, %, ...)
-html_quote      quote some text as safe in HTML (ie. <, >, ...)
-html_calendar   renders an HTML calendar used by the
-                ``_generic.calendar.html`` template (itself invoked by
-                the popupCalendar DateHTMLProperty method
-anti_csrf_nonce returns the random nonce generated for this session
-=============== ========================================================
+.. table::
+  :class: valign-top
+
+  =============== ========================================================
+  Method          Description
+  =============== ========================================================
+  Batch           return a batch object using the supplied list
+  url_quote       quote some text as safe for a URL (ie. space, %, ...)
+  html_quote      quote some text as safe in HTML (ie. <, >, ...)
+  html_calendar   renders an HTML calendar used by the
+		  ``_generic.calendar.html`` template (itself invoked by
+		  the popupCalendar DateHTMLProperty method
+  anti_csrf_nonce returns the random nonce generated for this session
+  =============== ========================================================
 
 
 Batching
@@ -3578,42 +3618,51 @@ or, to get the current index batch::
 
 The parameters are:
 
-========= ==============================================================
-Parameter  Usage
-========= ==============================================================
-sequence  a list of HTMLItems
-size      how big to make the sequence.
-start     where to start (0-indexed) in the sequence.
-end       where to end (0-indexed) in the sequence.
-orphan    if the next batch would contain less items than this value,
-          then it is combined with this batch
-overlap   the number of items shared between adjacent batches
-========= ==============================================================
+.. table::
+  :class: valign-top
+
+  ========= ==============================================================
+  Parameter  Usage
+  ========= ==============================================================
+  sequence  a list of HTMLItems
+  size      how big to make the sequence.
+  start     where to start (0-indexed) in the sequence.
+  end       where to end (0-indexed) in the sequence.
+  orphan    if the next batch would contain less items than this value,
+	    then it is combined with this batch
+  overlap   the number of items shared between adjacent batches
+  ========= ==============================================================
 
 All of the parameters are assigned as attributes on the batch object. In
 addition, it has several more attributes:
 
-=============== ========================================================
-Attribute       Description
-=============== ========================================================
-start           indicates the start index of the batch. *Unlike
-                the argument, is a 1-based index (I know, lame)*
-first           indicates the start index of the batch *as a 0-based
-                index*
-length          the actual number of elements in the batch
-sequence_length the length of the original, unbatched, sequence.
-=============== ========================================================
+.. table::
+  :class: valign-top
+
+  =============== ========================================================
+  Attribute       Description
+  =============== ========================================================
+  start           indicates the start index of the batch. *Unlike
+		  the argument, is a 1-based index (I know, lame)*
+  first           indicates the start index of the batch *as a 0-based
+		  index*
+  length          the actual number of elements in the batch
+  sequence_length the length of the original, unbatched, sequence.
+  =============== ========================================================
 
 And several methods:
 
-=============== ========================================================
-Method          Description
-=============== ========================================================
-previous        returns a new Batch with the previous batch settings
-next            returns a new Batch with the next batch settings
-propchanged     detect if the named property changed on the current item
-                when compared to the last item
-=============== ========================================================
+.. table::
+  :class: valign-top
+
+  =============== ========================================================
+  Method          Description
+  =============== ========================================================
+  previous        returns a new Batch with the previous batch settings
+  next            returns a new Batch with the next batch settings
+  propchanged     detect if the named property changed on the current item
+		  when compared to the last item
+  =============== ========================================================
 
 An example of batching::
 
@@ -3695,32 +3744,35 @@ section shows filters for the "status" and "keyword" properties, and the
 table includes columns for the "title", "status", and "fixer"
 properties.
 
-============ =============================================================
-Argument     Description
-============ =============================================================
-@sort        sort by prop name, optionally preceeded with '-' to give
-             descending or nothing for ascending sorting. Several
-             properties can be specified delimited with comma.
-             Internally a search-page using several sort properties may
-             use @sort0, @sort1 etc. with option @sortdir0, @sortdir1
-             etc. for the direction of sorting (a non-empty value of
-             sortdir0 specifies reverse order).
-@group       group by prop name, optionally preceeded with '-' or to sort
-             in descending or nothing for ascending order. Several
-             properties can be specified delimited with comma.
-             Internally a search-page using several grouping properties may
-             use @group0, @group1 etc. with option @groupdir0, @groupdir1
-             etc. for the direction of grouping (a non-empty value of
-             groupdir0 specifies reverse order).
-@columns     selects the columns that should be displayed. Default is
-             all.                     
-@filter      indicates which properties are being used in filtering.
-             Default is none.
-propname     selects the values the item properties given by propname must
-             have (very basic search/filter).
-@search_text if supplied, performs a full-text search (message bodies,
-             issue titles, etc)
-============ =============================================================
+.. table::
+  :class: valign-top
+
+  ============ =============================================================
+  Argument     Description
+  ============ =============================================================
+  @sort        sort by prop name, optionally preceeded with '-' to give
+	       descending or nothing for ascending sorting. Several
+	       properties can be specified delimited with comma.
+	       Internally a search-page using several sort properties may
+	       use @sort0, @sort1 etc. with option @sortdir0, @sortdir1
+	       etc. for the direction of sorting (a non-empty value of
+	       sortdir0 specifies reverse order).
+  @group       group by prop name, optionally preceeded with '-' or to sort
+	       in descending or nothing for ascending order. Several
+	       properties can be specified delimited with comma.
+	       Internally a search-page using several grouping properties may
+	       use @group0, @group1 etc. with option @groupdir0, @groupdir1
+	       etc. for the direction of grouping (a non-empty value of
+	       groupdir0 specifies reverse order).
+  @columns     selects the columns that should be displayed. Default is
+	       all.                     
+  @filter      indicates which properties are being used in filtering.
+	       Default is none.
+  propname     selects the values the item properties given by propname must
+	       have (very basic search/filter).
+  @search_text if supplied, performs a full-text search (message bodies,
+	       issue titles, etc)
+  ============ =============================================================
 
 
 Searching Views
@@ -3751,15 +3803,18 @@ more useful for the end user.
 If the search view does specify the "search" ``@action``, then it may also
 provide an additional argument:
 
-============ =============================================================
-Argument     Description
-============ =============================================================
-@query_name  if supplied, the index parameters (including @search_text)
-             will be saved off as a the query item and registered against
-             the user's queries property. Note that the *classic* template
-             schema has this ability, but the *minimal* template schema
-             does not.
-============ =============================================================
+.. table::
+  :class: valign-top
+
+  ============ =============================================================
+  Argument     Description
+  ============ =============================================================
+  @query_name  if supplied, the index parameters (including @search_text)
+	       will be saved off as a the query item and registered against
+	       the user's queries property. Note that the *classic* template
+	       schema has this ability, but the *minimal* template schema
+	       does not.
+  ============ =============================================================
 
 
 Item Views
