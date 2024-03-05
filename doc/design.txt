@@ -8,7 +8,9 @@
 Roundup - An Issue-Tracking System for Knowledge Workers
 ========================================================
 
-:Authors: Ka-Ping Yee (original), Richard Jones (implementation)
+:Authors: Ka-Ping Yee (original_), Richard Jones (implementation)
+
+.. _original: spec.html
 
 Contents
 

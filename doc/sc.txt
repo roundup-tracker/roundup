@@ -1,0 +1,29 @@
+.. meta::
+   :description:
+
+     Original documentation of the Roundup Issue tracker. Includes
+     historic Software Carpentry submissions and a short paper.
+
+===================================
+Software Carpentry and Short Papers
+===================================
+
+These papers are the original artifacts of Roundup.  They can't be
+included easily in the table of contents for the documentation, so
+they are referenced here.  All of these were written by Ka-Ping Yee,
+the original architect of Roundup..
+
+A few of the pages have been updated to correct links. However you may
+still have to use the `wayback machine <https://wayback.archive.org>`_
+to access some of the links on these pages. The papers in
+chronological order are:
+
+  * `See a short paper explaining Roundup <roundup_short_paper.html>`_
+
+  * `See the original overview document for Roundup submitted to the
+    Software Carpentry competition <original_overview.html>`_
+
+  * `See the original specification document for Roundup submitted to the
+    Software Carpentry competition <spec.html>`_
+
+

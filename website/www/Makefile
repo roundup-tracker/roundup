@@ -34,6 +34,7 @@ html: docs
              -e '/<meta/s/name="og:/property="og:/' html/index.html
 	cp robots.txt html/robots.txt
 	mkdir html/signatures && cp signatures/*.asc html/signatures
+	cp --no-clobber -r docs/html_extra/. html/docs/.
 
 linkcheck:
 	mkdir -p $(TMP)/linkcheck $(TMP)/doctrees

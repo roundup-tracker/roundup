@@ -11,6 +11,8 @@ Other Docs
    Design Overview <docs/overview>
    Design (original) <docs/design>
 
+   Software Carpentry and Short Papers <docs/sc>
+
    docs/developers
 
    Notes about the MySQL Database backend <docs/mysql>
