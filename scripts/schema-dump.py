@@ -22,19 +22,21 @@ __license__ = "Public Domain"
 __version__ = "1.1"
 __authors__ = [
     "anatoly techtonik <techtonik@gmail.com>"
-    "John Rouillard <rouilj@users.sourceforge.net>"
+    "John Rouillard <rouilj@users.sourceforge.net>",
 ]
 
 import os
 import pprint
 import sys
 import textwrap
+
 try:
     import urllib.parse as url_parser  # python 3
 except ImportError:
     import urlparse as url_parser  # python 2
 
 from argparse import ArgumentParser
+
 from roundup.anypy import xmlrpc_
 
 sname = os.path.basename(sys.argv[0])
