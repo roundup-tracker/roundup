@@ -3454,8 +3454,10 @@ There are several methods available on the request variable:
   description     render a description of the request - handle for the
 		  page title
   indexargs_form  render the current index args as form elements
-  indexargs_url   render the current index args as a URL
-		  (url, args)
+  indexargs_url   render the current index args as a URL::
+
+		    request.indexargs_url("url", {args})
+
 		  If the value of an arg (in args dict) is None,
 		  the argument is excluded from the url. If you want
 		  an empty value use an empty string '' as the value.
