@@ -119,6 +119,10 @@ Features:
   (Ralf Schlatterbeck)
 - issue2551317 - add some Jinja2 examples to customizing.txt
   document. (John Rouillard)
+- multiple scripts/... updates - Python3, linting, enhancements:
+  weekly-report,schema-dump.py, roundup-reminder, copy-user.py,
+  dump_dbm_sessions_db.py, contributors.py (John Rouillard)c
+
 
 2023-07-13 2.3.0
 
