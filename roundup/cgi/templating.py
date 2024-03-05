@@ -838,9 +838,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not check('Web Access', userid):
             return []
 
-        class_list = [HTMLItem(self._client, self._classname, id)
-                      for id in class_list if
-                      check('View', userid, self._classname, itemid=id)]
+        class_list = [HTMLItem(self._client, self._classname, itemid)
+                      for itemid in class_list if
+                      check('View', userid, self._classname, itemid=itemid)]
 
         return class_list
 
@@ -903,9 +903,10 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not check('Web Access', userid):
             return []
 
-        filtered = [HTMLItem(self._client, self.classname, id)
-                    for id in self._klass.filter(None, filterspec, sort, group)
-                    if check('View', userid, self.classname, itemid=id)]
+        filtered = [HTMLItem(self._client, self.classname, itemid)
+                    for itemid in self._klass.filter(None, filterspec,
+                                                     sort, group)
+                    if check('View', userid, self.classname, itemid=itemid)]
         return filtered
 
     def classhelp(self, properties=None, label=''"(list)", width='500',
@@ -1700,7 +1701,7 @@ class StringHTMLProperty(HTMLProperty):
             return self._hyper_repl_email(match, '<a href="mailto:%s">%s</a>')
         elif len(match.group('id')) < 10:
             return self._hyper_repl_item(
-                match, '<a href="%(cls)s%(id)s%(fragment)s">%(item)s</a>')
+                match, '<a href="%(cls)s%(itemid)s%(fragment)s">%(item)s</a>')
         else:
             # just return the matched text
             return match.group(0)
@@ -1733,14 +1734,14 @@ class StringHTMLProperty(HTMLProperty):
     def _hyper_repl_item(self, match, replacement):
         item = match.group('item')
         cls = match.group('class').lower()
-        id = match.group('id')
+        itemid = match.group('id')
         fragment = match.group('fragment')
         if fragment is None:
             fragment = ""
         try:
             # make sure cls is a valid tracker classname
             cl = self._db.getclass(cls)
-            if not cl.hasnode(id):
+            if not cl.hasnode(itemid):
                 return item
             return replacement % locals()
         except KeyError:
@@ -1754,7 +1755,7 @@ class StringHTMLProperty(HTMLProperty):
             s = match.group('email')
             return '`%s <mailto:%s>`_' % (s, s)
         elif len(match.group('id')) < 10:
-            return self._hyper_repl_item(match, '`%(item)s <%(cls)s%(id)s>`_')
+            return self._hyper_repl_item(match, '`%(item)s <%(cls)s%(itemid)s>`_')
         else:
             # just return the matched text
             return match.group(0)
@@ -1795,7 +1796,7 @@ class StringHTMLProperty(HTMLProperty):
                     if (prefix, suffix) in {('(', ')')}:
                         if match.string[start-1] == ']':
                             return match.group(0)
-            return self._hyper_repl_item(match, '[%(item)s](%(cls)s%(id)s)')
+            return self._hyper_repl_item(match, '[%(item)s](%(cls)s%(itemid)s)')
         else:
             # just return the matched text
             return match.group(0)
