@@ -131,7 +131,10 @@ which will compile the ``.po`` source files into binary
 German this will be
 ``locale/locale/de/LC_MESSAGES/roundup.mo``.  You will need
 ``msgfmt`` from the the GNU gettext tools to be installed on
-your system.
+your system. In a pinch you can invoke ``python roundup/msgfmt.py
+po_file mo_file`` to compile your .po file to a .mo file. It's slow
+but seems to work in basic tests. The msgfmt.py file is used by
+Roundup to compile out of date .po files.
 
 Submitting Changes
 ------------------

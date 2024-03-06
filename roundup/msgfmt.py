@@ -282,3 +282,15 @@ class Msgfmt:
 
     def getAsFile(self):
         return BytesIO(self.get())
+
+
+if __name__ == '__main__':
+    # a really dumb attempt to make this into a command
+    # Usage: python msgfmy.py <input_file>.po <output_file>.mo
+    import sys
+    
+    mo = Msgfmt(sys.argv[1]).get()
+    with open(sys.argv[2], 'wb') as mofile:
+        mofile.write(mo)
+        mofile.close()
+

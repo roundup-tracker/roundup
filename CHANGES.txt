@@ -121,7 +121,9 @@ Features:
   document. (John Rouillard)
 - multiple scripts/... updates - Python3, linting, enhancements:
   weekly-report,schema-dump.py, roundup-reminder, copy-user.py,
-  dump_dbm_sessions_db.py, contributors.py (John Rouillard)c
+  dump_dbm_sessions_db.py, contributors.py (John Rouillard)
+- roundup/msgfile.py can now be called as 'python msgfmt.py de.po de.mo'
+  to compile a translation file if msgfmt is missing. (John Rouillard)
 
 
 2023-07-13 2.3.0
