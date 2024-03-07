@@ -90,8 +90,8 @@ Fixed:
 - issue2551320: user.help-search.html doesn't respect
   properties. Setting url parameter properties when using the
   classhelp for users now shows the requested properties. (Found by
-  team-3 of the UMass-Boston CS682 Spring 2024 class; fix John
-  Rouillard)
+  Patel Malav and Nikunj Thakkar of the UMass-Boston CS682 Spring
+  2024 class; fix John Rouillard)
 - use ast.eval_literal() rather than eval() to turn CSV exported
   string values into Python object/values.
 
