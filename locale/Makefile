@@ -83,8 +83,8 @@ roundup.pot: $(SOURCES) $(TEMPLATES)
 	  ../share/roundup/templates/devel/html/*.html \
 	  ../share/roundup/templates/minimal/html/*.html \
 	  ../share/roundup/templates/responsive/html/*.html
-	VERSION="`sed -ne \"/__version__/s/.*'\(.*\)'.*/\1/p\" \
-	      ../roundup/__init__.py`"; \
+	VERSION="`${RUN_PYTHON} -c 'from roundup import __version__; \
+	                            print(__version__)';`"; \
 	${XGETTEXT} -j -w 80 -F \
 	  --package-name=Roundup \
 	  --package-version=$$VERSION \
