@@ -1159,7 +1159,7 @@ will take longer but may be worth trying if the ``exporttables`` and
 Another way that should be faster, but is untested is to use mysql
 dump to dump the database.
 https://makandracards.com/makandra/595-dumping-and-importing-from-to-mysql-in-an-utf-8-safe-way
-recommends::
+recommends:
 
    Note that when your MySQL server is not set to UTF-8 you need to do
    mysqldump --default-character-set=latin1 (!) to get a correctly
@@ -1237,6 +1237,8 @@ processed.
 If you do not modify the ``user.register.html`` template in your
 tracker's html directory, you *must* set this to 0. Otherwise you will
 see the error:
+
+.. code-block:: text
 
   Form is corrupted, missing: opaqueregister.
 
@@ -1629,6 +1631,8 @@ these forms as it is not needed.
 Errors and Troubleshooting - AttributeError list object no attribute value
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If you get an error:
+
+.. code-block:: text
 
   AttributeError: 'list' object has no attribute 'value'
 
@@ -2150,7 +2154,7 @@ not need it.
 Changes to property permissions
 -------------------------------
 
-If you create a permission:
+If you create a permission::
 
     db.security.addPermission(name='View', klass='user',
        properties=['theme'], check=own_record,
@@ -2177,7 +2181,7 @@ user expects to see the results of the query. But now that
 the code properly checks for duplicate search names, the user should
 stay on the search page if there is an error. To add this to your
 existing issue.search.html page, add the following line after the
-hidden field @old-queryname:
+hidden field ``@old-queryname``::
 
   <input type="hidden" name="@template" value="index|search"/>
 
