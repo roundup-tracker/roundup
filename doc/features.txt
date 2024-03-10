@@ -84,7 +84,6 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
    list by default
  - flexible access control built around Permissions and Roles with assigned
    Permissions
- - generates valid HTML4 or XHTML
  - detects concurrent user changes
  - saving and editing of user-defined queries which may optionally be
    shared with other users
