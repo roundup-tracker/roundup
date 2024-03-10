@@ -124,6 +124,9 @@ Features:
   dump_dbm_sessions_db.py, contributors.py (John Rouillard)
 - roundup/msgfile.py can now be called as 'python msgfmt.py de.po de.mo'
   to compile a translation file if msgfmt is missing. (John Rouillard)
+- save roundup-admin history between sessions. Load
+  ~/.roundup_admin_rlrc file to set history-size persistently. Add
+  pragma history_length to override for a session. (John Rouillard)
 
 
 2023-07-13 2.3.0

@@ -114,6 +114,7 @@ class AdminTool:
             'display_header': False,
             'display_protected': False,
             'indexer_backend': "as set in config.ini",
+            'history_length': -1,
             '_reopen_tracker': False,
             'savepoint_limit': self._default_savepoint_setting,
             'show_retired': "no",
@@ -2087,9 +2088,30 @@ Desc: %(description)s
         """
         print(_('Roundup %s ready for input.\nType "help" for help.')
                 % roundup_version)
+
+        initfile = os.path.join(os.path.expanduser("~"),
+                                ".roundup_admin_rlrc")
+        histfile = os.path.join(os.path.expanduser("~"),
+                                ".roundup_admin_history")
+
         try:
             import readline  # noqa: F401
+            readline.read_init_file(initfile)
+            try:
+                readline.read_history_file(histfile)
+            except FileNotFoundError:
+                # no history file yet
+                pass
+
+            # Default history length is unlimited.
+            # Set persistently in readline init file
+            # Pragma history_length allows setting on a per
+            #   invocation basis at startup
+            if self.settings['history_length'] != -1:
+                readline.set_history_length(
+                    self.settings['history_length'])
         except ImportError:
+            readline = None
             print(_('Note: command history and editing not available'))
 
         while 1:
@@ -2112,6 +2134,10 @@ Desc: %(description)s
             commit = self.my_input(_('There are unsaved changes. Commit them (y/N)? '))
             if commit and commit[0].lower() == 'y':
                 self.db.commit()
+
+        # looks like histfile is saved with mode 600
+        if readline:
+            readline.write_history_file(histfile)
         return 0
 
     def main(self):  # noqa: PLR0912, PLR0911

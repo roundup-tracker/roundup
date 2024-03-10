@@ -291,6 +291,30 @@ merged/updated config file is written to \fI<filename>\fP.
 Commands may be abbreviated as long as the abbreviation
 matches only one command, e.g. l == li == lis == list.
 
+.SH READLINE SUPPORT
+
+You can edit the command line and interact with history in
+roundup-admin's interactive mode. On Linux like systems, GNU Readline
+is required. On Mac's libedit can be used as well. On Windows
+pyreadline3 is required. See:
+https://docs.python.org/3/library/readline.html for details on
+readline.
+
+Roundup-admin will save the history between roundup-admin
+sessions. The commands are saved to the \fB.roundup_admin_history\fP
+file in the user's home directory.  You can set the pragma
+\fBhistory_length\fP on the roundup-admin command line to change the
+amount of available and stored history for the session.
+
+If you are using GNU readline, you can persistently change the history
+size by adding: \fBset history-size 100\fP to the init file
+\fB.roundup_admin_rlrc\fP located in the user's home directory.
+
+Mac users using libedit should be able to persistently save history
+and set the history size by adding \fBhistory size 100\fP.
+
+Users of pyreadline3 can use: \fBhistory_length(100)\fP.
+
 .SH SECURITY NOTES
 
 The \fB-u user\fP setting does not currently operate like a

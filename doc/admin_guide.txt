@@ -1407,6 +1407,33 @@ and feed it to roundup-admin on standard input. E.G.
 
 .. index:: ! roundup-admin; usage in scripts
 
+Using Interactively
+-------------------
+
+You can edit the command line using left/right arrow keys to move the
+cursor. Using the up/down arrow keys moves among commands. It will
+save your commands between roundup-admin sessions. This is supported
+on Unix/Linux and Mac's. On windows you should install the pyreadline3
+package (see `installation documentation`_).
+
+Using the ``history_length`` pragma you can set the saved history size
+for just one session.
+
+You can add initialization commands to ``~/.roundup_admin_rlrc``. It
+will be loaded when roundup-admin starts. This is the mechanism to
+persistently set the number of history commands, change editing modes
+(Vi vs. Emacs). Note that redefining the history file will not work.
+
+If you are using GNU readline, ``set history-size 10``. If your
+installation uses libedit (macs), it should be possible to
+persistently set the history size using ``history size
+10``. Pyreadline3 can set history length using
+``history_length(10)``. See the older documentation for example syntax:
+https://pythonhosted.org/pyreadline/usage.html.persistently.
+
+History is saved to the file ``.roundup_admin_history`` in your home
+directory (for windows usually ``\Users\<username>``.
+
 Using with the shell
 --------------------
 
