@@ -132,6 +132,10 @@ class AdminTool:
             _("Have 'display designator' and 'specification class' show\n"
               "      protected fields: creator, id etc.\n"),
 
+            'history_length':
+            _("Set the number of lines of history to keep for this session.\n"
+              "      -1 is infinite.\n"),
+
             'indexer_backend':
             _("Set indexer to use when running 'reindex' NYI\n"),
 
@@ -1508,7 +1512,11 @@ Erase it? Y/N: """) % locals())
                     continue
                 print("   %s=%s" % (key, self.settings[key]))
                 if is_verbose:
-                    print("      %s" % self.settings_help[key])
+                    try:
+                        print("      %s" % self.settings_help[key])
+                    except KeyError:
+                        print(_("      Help for this pragma is missing. "
+                                "Please report it to the Roundup project.\n"))
 
             return
 
