@@ -2272,13 +2272,13 @@ Desc: %(description)s
             import readline
             try:
                 readline.read_init_file(initfile)
-            except FileNotFoundError:
+            except IOError: # FileNotFoundError under python3
                 # file is optional
                 pass
 
             try:
                 readline.read_history_file(histfile)
-            except FileNotFoundError:
+            except IOError:  # FileNotFoundError under python3
                 # no history file yet
                 pass
 
