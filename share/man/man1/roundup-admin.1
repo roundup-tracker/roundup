@@ -119,11 +119,11 @@ Retrieves the property value of the nodes specified
 by the designators.
 
 .TP
-\fBhistory\fP \fIdesignator [skipquiet]\fP
+\fBhistory\fP \fIdesignator [skipquiet] [raw]\fP
 Lists the journal entries viewable by the user for the
-node identified by the designator. If skipquiet is the
-second argument, journal entries for quiet properties
-are not shown.
+node identified by the designator. If skipquiet is added, journal
+entries for quiet properties are not shown. Without the raw option
+a more human readable output format is used.
 .TP
 \fBimport\fP \fIimport_dir\fP
 Import a database from the directory containing CSV files,

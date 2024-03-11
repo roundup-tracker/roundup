@@ -86,6 +86,7 @@ roundup.pot: $(SOURCES) $(TEMPLATES)
 	VERSION="`${RUN_PYTHON} -c 'from roundup import __version__; \
 	                            print(__version__)';`"; \
 	${XGETTEXT} -j -w 80 -F \
+	  --add-comments=".Hint " \
 	  --package-name=Roundup \
 	  --package-version=$$VERSION \
 	  --msgid-bugs-address=roundup-devel@lists.sourceforge.net \

@@ -127,6 +127,9 @@ Features:
 - save roundup-admin history between sessions. Load
   ~/.roundup_admin_rlrc file to set history-size persistently. Add
   pragma history_length to override for a session. (John Rouillard)
+- the roundup-admin history command now dumps the journal entries
+  in a more human readable format. Use the raw option to get the older
+  machine parsible output. (John Rouillard)
 
 
 2023-07-13 2.3.0

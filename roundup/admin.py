@@ -953,16 +953,16 @@ Command help:
         return 0
 
     def do_history(self, args):
-        ''"""Usage: history designator [skipquiet]
+        ''"""Usage: history designator [skipquiet] [raw]
         Show the history entries of a designator.
 
         A designator is a classname and a nodeid concatenated,
         eg. bug1, user10, ...
 
-        Lists the journal entries viewable by the user for the
-        node identified by the designator. If skipquiet is the
-        second argument, journal entries for quiet properties
-        are not shown.
+        Lists the journal entries viewable by the user for the node
+        identified by the designator. If skipquiet is added, journal
+        entries for quiet properties are not shown. If raw is added,
+        the output is the raw representation of the journal entries.
         """
 
         if len(args) < 1:
@@ -972,15 +972,181 @@ Command help:
         except hyperdb.DesignatorError as message:
             raise UsageError(message)
 
-        skipquiet = False
-        if len(args) == 2:
-            if args[1] != 'skipquiet':
-                raise UsageError("Second argument is not skipquiet")
-            skipquiet = True
+        valid_args = ['skipquiet', 'raw']
+
+        if len(args) >= 2:
+            check = [a for a in args[1:] if a not in valid_args]
+            if check:
+                raise UsageError(
+                    _("Unexpected argument(s): %s. "
+                      "Expected 'skipquiet' or 'raw'.") % ", ".join(check))
+
+        skipquiet = 'skipquiet' in args[1:]
+        raw = 'raw' in args[1:]
+
+        getclass = self.db.getclass
+        def get_prop_name(key, prop_name):
+            # getclass and classname from enclosing method
+            klass = getclass(classname)
+            try:
+                property_obj = klass.properties[prop_name]
+            except KeyError:
+                # the property has been removed from the schema.
+                return None
+            if isinstance(property_obj,
+                        (hyperdb.Link, hyperdb.Multilink)):
+                prop_class = getclass(property_obj.classname)
+                key_prop_name = prop_class.key
+                if key_prop_name:
+                    return prop_class.get(key, key_prop_name)
+                # None indicates that there is no key_prop
+                return None
+            return None
+
+        def get_prop_class(prop_name):
+            # getclass and classname from enclosing method
+            klass = getclass(classname)
+            try:
+                property_obj = klass.properties[prop_name]
+            except KeyError:
+                # the property has been removed from the schema.
+                return None
+            if isinstance(property_obj,
+                          (hyperdb.Link, hyperdb.Multilink)):
+                prop_class = getclass(property_obj.classname)
+                return prop_class.classname
+            return None  # it's not a link
+
+        def _format_tuple_change(data, prop):
+            ''' ('-', ['2', '4'] ->
+                "removed fred(2), jim(6)"
+            '''
+            if data[0] == '-':
+                op = _("removed")
+            elif data[0] == '+':
+                op = _("added")
+            else:
+                raise ValueError(_("Unknown history set operation '%s'. "
+                                 "Expected +/-.") % op)
+            op_params = data[1]
+            name = get_prop_name(op_params[0], prop)
+            if name is not None:
+                list_items = ["%s(%s)" %
+                              (get_prop_name(o, prop), o)
+                              for o in op_params]
+            else:
+                propclass = get_prop_class(prop)
+                if propclass:  # noqa: SIM108
+                    list_items = ["%s%s" % (propclass, o)
+                                  for o in op_params]
+                else:
+                    list_items = op_params
+
+            return "%s: %s" % (op, ", ".join(list_items))
+
+        def format_report_class(_data):
+            """Eat the empty data dictionary or None"""
+            return classname
+
+        def format_link (data):
+            '''data = ('issue', '157', 'dependson')'''
+            # .Hint added issue23 to superseder
+            f = _("added %(class)s%(item_id)s to %(propname)s")
+            return f % {
+                'class': data[0], 'item_id': data[1], 'propname': data[2]}
+
+        def format_set(data):
+            '''data  = set {'fyi': None, 'priority': '5'}
+               set {'fyi': '....\ned through cleanly', 'priority': '3'}
+            '''
+            result = []
+
+            # Note that set data is the old value. So don't use
+            # current/future tense in sentences.
+
+            for prop, value in data.items():
+                if isinstance(value, str):
+                    name = get_prop_name(value, prop)
+                    if name:
+                        result.append(
+                            # .Hint read as: assignedto was admin(1)
+                            # .Hint where assignedto is the property
+                            # .Hint admin is the key name for value 1
+                            _("%(prop)s was %(name)%(value)s)") % {
+                                "prop": prop, "name": name, "value": value })
+                    else:
+                        # use repr so strings with embedded \n etc. don't
+                        # generate newlines in output. Try to keep each
+                        # journal entry on 1 line.
+                        result.append(_("%(prop)s was %(value)s") % {
+                            "prop": prop, "value": repr(value)})
+                elif isinstance(value, list):
+                    # test to see if there is a key prop.
+                    # Assumption, geting None here means no key
+                    # is defined for the property's class.
+                    name = get_prop_name(value[0], prop)
+                    if name is not None:
+                        list_items = ["%s(%s)" %
+                                      (get_prop_name(v, prop), v)
+                                      for v in value]
+                    else:
+                        prop_class = get_prop_class(prop)
+                        if prop_class:  # noqa: SIM108
+                            list_items = [ "%s%s" % (prop_class, v)
+                                           for v in value ]
+                        else:
+                            list_items = value
+
+                    result.append(_("%(prop)s was [%(value_list)s]") % {
+                        "prop": prop, "value_list": ", ".join(list_items)})
+                elif isinstance(value, tuple):
+                    # operation data
+                    decorated = [_format_tuple_change(data, prop)
+                                 for data in value]
+                    result.append(# .Hint modified nosy: added demo(3)
+                        _("modified %(prop)s: %(how)s") % {
+                        "prop": prop, "how": ", ".join(decorated)})
+                else:
+                    result.append(_("%(prop)s was %(value)s") % {
+                        "prop": prop, "value": value})
+
+            return '; '.join(result)
+
+        def format_unlink (data):
+            '''data = ('issue', '157', 'dependson')'''
+            return "removed %s%s from %s" % (data[0], data[1], data[2])
+
+        formatters = {
+            "create": format_report_class,
+            "link": format_link,
+            "restored": format_report_class,
+            "retired": format_report_class,
+            "set": format_set,
+            "unlink": format_unlink,
+        }
 
         try:
-            print(self.db.getclass(classname).history(nodeid,
-                                                      skipquiet=skipquiet))
+            # returns a tuple: (
+            # [0] = nodeid
+            # [1] = date
+            # [2] = userid
+            # [3] = operation
+            # [4] = details
+            raw_history = self.db.getclass(classname).history(nodeid,
+                                                      skipquiet=skipquiet)
+            if raw:
+                print(raw_history)
+                return 0
+
+            def make_readable(hist):
+                return "%s(%s) %s %s" % (self.db.user.get(hist[2], 'username'),
+                                  hist[1],
+                                  hist[3],
+                                  formatters.get(hist[3], lambda x: x)(
+                                      hist[4]))
+            printable_history = [make_readable(hist) for hist in raw_history]
+
+            print("\n".join(printable_history))
         except KeyError:
             raise UsageError(_('no such class "%(classname)s"') % locals())
         except IndexError:
@@ -2103,7 +2269,7 @@ Desc: %(description)s
                                 ".roundup_admin_history")
 
         try:
-            import readline  # noqa: F401
+            import readline
             readline.read_init_file(initfile)
             try:
                 readline.read_history_file(histfile)
@@ -2168,10 +2334,10 @@ Desc: %(description)s
         self.print_designator = 0
         self.verbose = 0
         for opt, arg in opts:
-            if opt == '-h':  # noqa: RET505 - allow elif after returns
+            if opt == '-h':
                 self.usage()
                 return 0
-            elif opt == '-v':
+            elif opt == '-v':  # noqa: RET505 - allow elif after returns
                 print('%s (python %s)' % (roundup_version,
                                           sys.version.split()[0]))
                 return 0

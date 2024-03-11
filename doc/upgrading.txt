@@ -270,6 +270,74 @@ before changing your PostgreSQL configuration, try changing the pragma
 ``10000``. In some cases this may be too high. See the `administration
 guide`_ for further details.
 
+roundup-admin's History Command Produces Readable Output
+--------------------------------------------------------
+
+The history command of roundup-admin used to print the raw journal
+data. In this release the default is to produce more human readable
+data. The original output (not pretty printed as below) was::
+
+  [('1', <Date 2013-02-18.20:30:34.125>, '1', 'create', {}),
+  ('1',
+   <Date 2013-02-19.21:24:20.391>,
+   '1',
+   'set',
+   {'messages': (('+', ['3']),)}),
+  ('1', <Date 2013-02-19.21:24:24.797>, '1', 'set', {'priority': '1'}),
+  ('1',
+   <Date 2013-02-20.03:16:52.000>,
+   '1',
+   'link',
+   ('issue', '2', 'dependson')),
+  ('1', <Date 2013-02-21.20:51:40.750>, '1', 'link', ('issue', '2',
+  'seealso')),
+  ('1',
+   <Date 2013-02-22.05:33:08.875>,
+   '1',
+   'set',
+   {'dependson': (('+', ['3']),), 'private': None, 'queue': None}),
+  ('1',
+   <Date 2013-02-22.05:33:19.406>,
+   '1',
+   'set',
+   {'dependson': (('+', ['2']),)}),
+  ('1',
+   <Date 2013-02-27.03:24:42.844>,
+   '1',
+   'unlink',
+   ('issue', '2', 'seealso')),
+   ...
+
+Now it produces (Each entry is on one line, lines wrapped
+and indented for display)::
+
+  admin(2013-02-18.20:30:34) create issue
+  admin(2013-02-19.21:24:20) set modified messages: added: msg3
+  admin(2013-02-19.21:24:24) set priority was critical(1)
+  admin(2013-02-20.03:16:52) link added issue2 to dependson
+  admin(2013-02-21.20:51:40) link added issue2 to seealso
+  admin(2013-02-22.05:33:08) set modified dependson: added: issue3;
+       private was None; queue was None
+  admin(2013-02-22.05:33:19) set modified dependson: added: issue2
+  admin(2013-02-27.03:24:42) unlink removed issue2 from seealso
+  ...
+
+
+A few things to note: set operations can either assign a property or
+report a modification of a multilink property. If an assignment
+occurs, the value reported is the **old value** that was there before
+the assignment. It is **not** the value that is assigned. In the
+example above I don't know what the current value of priority is. All
+I know it was set to critical when the issue was created.
+
+Modifications to multilink properties work differently. I know that
+``msg3`` was present in the messages property after 2013-02-19 at
+21:24:20 UTC.
+
+The history command gets a new optional argument ``raw`` that produces
+the old style output. The old style is (marginally) more useful for
+script automation.
+
 .. index:: Upgrading; 2.2.0 to 2.3.0
 
 Migrating from 2.2.0 to 2.3.0

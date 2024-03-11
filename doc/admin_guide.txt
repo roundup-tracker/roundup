@@ -1245,7 +1245,9 @@ Examples above show how to use it to:
 * creating a new user from the command line
 * list/find users in the tracker
 
-The basic usage is::
+The basic usage is:
+
+.. code-block:: text
 
  Usage: roundup-admin [options] [<command> <arguments>]
 
@@ -1282,7 +1284,7 @@ The basic usage is::
   genconfig <filename>
   get property designator[,designator]*
   help topic
-  history designator [skipquiet]
+  history designator [skipquiet] [raw]
   import import_dir
   importtables export_dir
   initialise [adminpw]
