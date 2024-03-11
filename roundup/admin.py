@@ -2270,7 +2270,12 @@ Desc: %(description)s
 
         try:
             import readline
-            readline.read_init_file(initfile)
+            try:
+                readline.read_init_file(initfile)
+            except FileNotFoundError:
+                # file is optional
+                pass
+
             try:
                 readline.read_history_file(histfile)
             except FileNotFoundError:
