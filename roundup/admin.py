@@ -996,10 +996,16 @@ Command help:
             if isinstance(property_obj,
                         (hyperdb.Link, hyperdb.Multilink)):
                 prop_class = getclass(property_obj.classname)
-                key_prop_name = prop_class.key
-                if key_prop_name:
-                    return prop_class.get(key, key_prop_name)
-                # None indicates that there is no key_prop
+                label_prop_name = prop_class.labelprop(default_to_id=True)
+                if label_prop_name not in ['id', 'title']:
+                    # Don't return 'id', its value is the key. If name is
+                    # empty, the caller will use the classname with the key
+                    # as the identifier: show "issue23" not "23(23)".
+                    # Also don't use the title. It's too long in most
+                    # cases. show: "issue23" not "please help me with
+                    # samba use athentication issue(23)"
+                    return prop_class.get(key, label_prop_name)
+                # None indicates that there is no viable label_prop
                 return None
             return None
 
@@ -1072,7 +1078,7 @@ Command help:
                             # .Hint read as: assignedto was admin(1)
                             # .Hint where assignedto is the property
                             # .Hint admin is the key name for value 1
-                            _("%(prop)s was %(name)%(value)s)") % {
+                            _("%(prop)s was %(name)s(%(value)s)") % {
                                 "prop": prop, "name": name, "value": value })
                     else:
                         # use repr so strings with embedded \n etc. don't
