@@ -59,7 +59,7 @@ tracker configuration, database, template, schema and extensions.
 Using Roundup
 =============
 
-Please see the user's guide at: 
+Please see the user's guide at:
 
   https://roundup-tracker.org/docs/installation.html#for-the-really-impatient
 
