@@ -104,7 +104,7 @@ def pt_html(context=5, i18n=None):
 </table></li>
 ''') % {
     'info': info,
-    'line': context.position[0],
+    'line': context.position[0] or -1,
     'globals': niceDict('    ', context.global_vars),
     'locals': niceDict('    ', context.local_vars)
    })

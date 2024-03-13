@@ -100,6 +100,11 @@ Fixed:
   request.client.additional_headers) to application/json and return
   json from the template. This json could access the 1i18n functions
   for a javascript helper. (John Rouillard)
+- when template processing raises an exception the line number is
+  sometimes missing. This causes cgitb to raise a second exception
+  which clobbers the info about the template issue. As a stop-gap set
+  the line number to -1 so the original traceback can be seen. This
+  could be a bug in ZopeTAL. (John Rouillard)
 
 Features:
 
