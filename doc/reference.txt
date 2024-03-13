@@ -3691,6 +3691,30 @@ create you'll need to add new locale files in the tracker home under a
 developer's guide <developers.html#extracting-translatable-messages>`_ to
 create the locale files.
 
+Setting the Type of the Returned Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Roundup processes a template and uses the name of the template to
+determine the Content-Type MIME header that is returned. For
+``issue.index.html` it would return ``text/html``. Similarly a file
+named ``issue.atom.xml`` (an rss feed) would have a type
+of``application/xml``. A file named 'issue.json' would have type
+``application/json``.
+
+However as of Roundup 2.4.0 you can set the type of the file by
+calling::
+
+  request.client.setHeader('Content-Type', 'application/atom+xml')
+
+from your template. For TAL based templates, something like this::
+
+   <tal:x tal:replace="python:request.client.setHeader(
+    'Content-Type', 'application/atom+xml'
+    )"/>
+
+will set the Content-Type header. The header name is case sensitive,
+so use capital letters as shown. If you don't you end up with multiple
+Content-Type definitions returned to the browser.
 
 Displaying Properties
 ---------------------
