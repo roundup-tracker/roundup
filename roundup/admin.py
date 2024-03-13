@@ -114,6 +114,7 @@ class AdminTool:
             'display_header': False,
             'display_protected': False,
             'indexer_backend': "as set in config.ini",
+            'history_features': 0,
             'history_length': -1,
             '_reopen_tracker': False,
             'savepoint_limit': self._default_savepoint_setting,
@@ -131,6 +132,15 @@ class AdminTool:
             'display_protected':
             _("Have 'display designator' and 'specification class' show\n"
               "      protected fields: creator, id etc.\n"),
+
+            'history_features':
+            _("Controls history options. It is a bitstring where setting\n"
+              "      the bit disables the feature. A value of 0 (default)\n"
+              "      enables all features. Value 1 disables loading of\n"
+              "      history.  Value 2 disables saving history. Value 4\n"
+              "      disables loading init file. Since it is a bitstring a\n"
+              "      value of 6 disables both loading init file and saving\n"
+              "      history.\n"),
 
             'history_length':
             _("Set the number of lines of history to keep for this session.\n"
@@ -2263,6 +2273,21 @@ Desc: %(description)s
             ret = 1
         return ret
 
+    def history_features(self, feature):
+        """ self.settings['history_features'] = 0: load rc, load/save history
+         self.settings['history_features'] = 1: do not load history
+         self.settings['history_features'] = 2: do not save history
+         self.settings['history_features'] = 4: don't load rc
+        """
+
+        features = {  # bit bashing
+            'load_history': 1,
+            'save_history': 2,
+            'load_rc': 4}
+
+        # setting the bit disables the feature, so use not.
+        return not self.settings['history_features'] & features[feature]
+
     def interactive(self):
         """Run in an interactive mode
         """
@@ -2277,13 +2302,15 @@ Desc: %(description)s
         try:
             import readline
             try:
-                readline.read_init_file(initfile)
+                if self.history_features('load_rc'):
+                    readline.read_init_file(initfile)
             except IOError: # FileNotFoundError under python3
                 # file is optional
                 pass
 
             try:
-                readline.read_history_file(histfile)
+                if self.history_features('load_history'):
+                    readline.read_history_file(histfile)
             except IOError:  # FileNotFoundError under python3
                 # no history file yet
                 pass
@@ -2322,7 +2349,8 @@ Desc: %(description)s
 
         # looks like histfile is saved with mode 600
         if readline:
-            readline.write_history_file(histfile)
+            if self.history_features('save_history'):
+                readline.write_history_file(histfile)
         return 0
 
     def main(self):  # noqa: PLR0912, PLR0911
@@ -2374,7 +2402,10 @@ Desc: %(description)s
             elif opt == '-d':
                 self.print_designator = 1
             elif opt == '-P':
-                self.do_pragma([arg])
+                try:
+                    self.do_pragma([arg])
+                except UsageError as e:
+                    print('\n%s\n' %  e)
             elif opt == '-u':
                 login_opt = arg.split(':')
                 self.name = login_opt[0]

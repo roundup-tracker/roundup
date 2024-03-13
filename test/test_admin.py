@@ -134,7 +134,10 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
-        sys.argv=['main', '-i', self.dirname]
+        # set history_features to disable loading/saving history
+        # and loading rc file. Otherwise file gets large and
+        # breaks testing or overwrites the users history file.
+        sys.argv=['main', '-i', self.dirname, '-P', 'history_features=7']
 
         with captured_output() as (out, err):
             ret = self.admin.main()
