@@ -2132,7 +2132,8 @@ class Client:
             except IndexerQueryError as e:
                 result = self.renderError(e.args[0])
 
-            self.additional_headers['Content-Type'] = pt.content_type
+            if 'Content-Type' not in self.additional_headers:
+                self.additional_headers['Content-Type'] = pt.content_type
             if self.env.get('CGI_SHOW_TIMING', ''):
                 if self.env['CGI_SHOW_TIMING'].upper() == 'COMMENT':
                     timings = {'starttag': '<!-- ', 'endtag': ' -->'}
