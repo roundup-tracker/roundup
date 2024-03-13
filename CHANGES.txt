@@ -94,6 +94,12 @@ Fixed:
   2024 class; fix John Rouillard)
 - use ast.eval_literal() rather than eval() to turn CSV exported
   string values into Python object/values.
+- use template's guess at Content-Type in headers only if Content-Type
+  is not already set. This allows a template to set its own content
+  type. For example: _generic.translate can set content type (via
+  request.client.additional_headers) to application/json and return
+  json from the template. This json could access the 1i18n functions
+  for a javascript helper. (John Rouillard)
 
 Features:
 
