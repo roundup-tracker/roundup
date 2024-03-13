@@ -134,10 +134,11 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         # set history_features to disable loading/saving history
         # and loading rc file. Otherwise file gets large and
         # breaks testing or overwrites the users history file.
-        sys.argv=['main', '-i', self.dirname, '-P', 'history_features=7']
+        sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
             ret = self.admin.main()
@@ -1067,6 +1068,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1088,6 +1090,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1119,6 +1122,7 @@ class AdminTest(object):
 
             self.install_init()
             self.admin=AdminTool()
+            self.admin.settings['history_features'] = 2
             sys.argv=['main', '-i', self.dirname]
 
             with captured_output() as (out, err):
@@ -1140,6 +1144,7 @@ class AdminTest(object):
 
             self.install_init()
             self.admin=AdminTool()
+            self.admin.settings['history_features'] = 2
             sys.argv=['main', '-i', self.dirname]
 
             with captured_output() as (out, err):
@@ -1159,6 +1164,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1181,6 +1187,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1200,6 +1207,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1221,6 +1229,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1241,6 +1250,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1258,6 +1268,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1278,6 +1289,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
