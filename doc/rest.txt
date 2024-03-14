@@ -2071,7 +2071,9 @@ only been tested with python3)::
                 claim['roles'] = newroles
             else:
                 claim['roles'] = user_roles
-            secret = self.db.config.WEB_JWT_SECRET
+
+            # Sign with newest/first secret.
+            secret = self.db.config.WEB_JWT_SECRET[0]
             myjwt = jwt.encode(claim, secret, algorithm='HS256')
 
             # if jwt.__version__ >= 2.0.0 jwt.encode() returns string
@@ -2090,7 +2092,10 @@ only been tested with python3)::
 
             myjwt = input['jwt'].value
 
-            secret = self.db.config.WEB_JWT_SECRET
+            secret = self.db.config.WEB_JWT_SECRET[0]
+
+            # only return decoded result if the newest signing key
+            # is used. Have older keys report an invalid signature.
             try:
                 result = jwt.decode(myjwt, secret,
                                     algorithms=['HS256'],

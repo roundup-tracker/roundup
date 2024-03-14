@@ -623,6 +623,25 @@ class TrackerConfig(unittest.TestCase):
 
         self.assertEqual(v, "test")
 
+    def testListSecret_for_jwt_invalid_secret(self):
+        """A jwt_secret is made of ',' separated strings.
+           If the first string is < 32 characters (like the default
+           value of disabled) then jwt is disabled and no harm done.
+           If any other secrets are <32 characters we raise a red flag
+           on startup to prevent them from being used.
+        """
+        self.munge_configini(mods=[ ("jwt_secret = ", "disable, test"), ])
+
+        config = configuration.CoreConfig()
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config.load(self.dirname)
+
+        print(cm.exception.args)
+        self.assertEqual(
+            cm.exception.args[2],
+            "One or more secrets less then 32 characters in length\nfound: test")
+
     def testSetMailPassword_with_set_username(self):
         """ Set [mail] username and set the password.
             Should have both values set.

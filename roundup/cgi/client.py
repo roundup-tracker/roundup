@@ -1111,23 +1111,42 @@ class Client:
             self.setHeader("WWW-Authenticate", "Basic")
             raise LoginError('Support for jwt disabled.')
 
-        secret = self.db.config.WEB_JWT_SECRET
-        if len(secret) < 32:
+
+        # If first ',' separated token is < 32, jwt is disabled.
+        # If second or later tokens are < 32 chars, the config system
+        # stops the tracker from starting so insecure tokens can not
+        # be used.
+        if len(self.db.config.WEB_JWT_SECRET[0]) < 32:
             # no support for jwt, this is fine.
             self.setHeader("WWW-Authenticate", "Basic")
             raise LoginError('Support for jwt disabled by admin.')
 
-        try:  # handle jwt exceptions
-            token = jwt.decode(challenge, secret,
-                               algorithms=['HS256'],
-                               audience=self.db.config.TRACKER_WEB,
-                               issuer=self.db.config.TRACKER_WEB)
-        except jwt.exceptions.InvalidTokenError as err:
-            self.setHeader("WWW-Authenticate", "Basic, Bearer")
-            self.make_user_anonymous()
-            raise LoginError(str(err))
+        last_error = "Unknown error validating bearer token."
 
-        return (token)
+        for secret in self.db.config.WEB_JWT_SECRET:
+            try:  # handle jwt exceptions
+                token = jwt.decode(challenge, secret,
+                                   algorithms=['HS256'],
+                                   audience=self.db.config.TRACKER_WEB,
+                                   issuer=self.db.config.TRACKER_WEB)
+                return (token)
+
+            except jwt.exceptions.InvalidSignatureError as err:
+                # Try more signatures.
+                # If all signatures generate InvalidSignatureError,
+                # we exhaust the loop and last_error is used to
+                # report the final (but not only) InvalidSignatureError
+                last_error = str(err)  # preserve for end of loop
+            except jwt.exceptions.InvalidTokenError as err:
+                self.setHeader("WWW-Authenticate", "Basic, Bearer")
+                self.make_user_anonymous()
+                raise LoginError(str(err))
+
+        # reach here only if no valid signature was found
+        self.setHeader("WWW-Authenticate", "Basic, Bearer")
+        self.make_user_anonymous()
+        raise LoginError(last_error)
+
 
     def determine_user(self, is_api=False):
         """Determine who the user is"""

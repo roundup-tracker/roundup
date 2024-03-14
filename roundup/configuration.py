@@ -826,6 +826,25 @@ class SecretNullableOption(NullableOption, SecretOption):
     get = SecretOption.get
     class_description = SecretOption.class_description
 
+class ListSecretOption(SecretOption):
+    # use get from SecretOption
+    def get(self):
+        value = SecretOption.get(self)
+        return [x.lstrip() for x in value.split(',')]
+
+    class_description = SecretOption.class_description
+
+    def validate(self, options):
+        if self.name == "WEB_JWT_SECRET":
+            secrets = self.get()
+            invalid_secrets = [ x for x in secrets[1:] if len(x) < 32]
+            if invalid_secrets:
+                raise OptionValueError(
+                    self, ", ".join(secrets),
+                    "One or more secrets less then 32 characters in length\n"
+                    "found: %s" % ', '.join(invalid_secrets))
+        else:
+            self.get()
 
 class RedisUrlOption(SecretNullableOption):
     """Do required check to make sure known bad parameters are not
@@ -1437,14 +1456,20 @@ always passes, so setting it less than 1 is not recommended."""),
             "(Note the default value changes every time\n"
             "     roundup-admin updateconfig\n"
             "is run, so it must be explicitly set to a non-empty string.\n"),
-        (SecretNullableOption, "jwt_secret", "disabled",
-            "This is used to generate/validate json web tokens (jwt).\n"
-            "Even if you don't use jwts it must not be empty.\n"
-            "If less than 256 bits (32 characters) in length it will\n"
-            "disable use of jwt. Changing this invalidates all jwts\n"
-            "issued by the roundup instance requiring *all* users to\n"
-            "generate new jwts. This is experimental and disabled by\n"
-            "default. It must be persistent across application restarts.\n"),
+        (ListSecretOption, "jwt_secret", "disabled",
+            "This is used to sign/validate json web tokens\n"
+            "(JWT). Even if you don't use JWTs it must not be\n"
+            "empty. You can use multiple secrets separated by a\n"
+            "comma ','. This allows for secret rotation. The newest\n"
+            "secret should be placed first and used for signing. The\n"
+            "rest of the secrets are used for validating an old JWT.\n"
+            "If the first secret is less than 256 bits (32\n"
+            "characters) in length JWTs are disabled. If other secrets\n"
+            "are less than 32 chars, the application will exit. Removing\n"
+            "a secret from this list invalidates all JWTs signed with\n"
+            "the secret. JWT support is experimental and disabled by\n"
+            "default. The secrets must be persistent across\n"
+            "application restarts.\n"),
     )),
     ("rdbms", (
         (DatabaseBackend, 'backend', NODEFAULT,
