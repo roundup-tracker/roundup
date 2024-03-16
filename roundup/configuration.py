@@ -7,27 +7,25 @@ __docformat__ = "restructuredtext"
 # Roundup if used with Python 2 because it generates unicode objects
 # where not expected by the Python code.  Thus, a version check is
 # used here instead of try/except.
-import sys
-import getopt
+import binascii
 import errno
+import getopt
 import logging
 import logging.config
 import os
 import re
-import time
 import smtplib
+import sys
+import time
 
 import roundup.date
-
+from roundup.anypy import random_
 from roundup.anypy.strings import b2s
-import roundup.anypy.random_ as random_
-import binascii
+from roundup.backends import list_backends
 from roundup.i18n import _
 
-from roundup.backends import list_backends
-
 if sys.version_info[0] > 2:
-    import configparser			 # Python 3
+    import configparser  # Python 3
 else:
     import ConfigParser as configparser  # Python 2
 
@@ -897,7 +895,7 @@ class SessiondbBackendOption(Option):
 
             redis_available = False
             try:
-                import redis                                    # noqa: F401
+                import redis  # noqa: F401
                 redis_available = True
             except ImportError:
                 if sessiondb_backend == 'redis':
@@ -1011,7 +1009,7 @@ class LogLevelOption(Option):
             raise OptionValueError(self, value, self.class_description)
 
 try:
-    import jinja2                                           # noqa: F401
+    import jinja2  # noqa: F401
     jinja2_avail = "Available found"
 except ImportError:
     jinja2_avail = "Unavailable needs"
