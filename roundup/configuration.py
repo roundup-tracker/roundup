@@ -254,7 +254,7 @@ class Option:
                 "default": self.value2str(self._default_value),
                 "name": self.setting,
                 "value": self.value2str(self._value),
-                "is_set": _is_set
+                "is_set": _is_set,
             }
         return _rv
 
@@ -544,10 +544,8 @@ class SpaceSeparatedListOption(Option):
     class_description = "A list of space separated elements."
 
     def get(self):
-        pathlist = []
         _val = Option.get(self)
-        for elem in _val.split():
-            pathlist.append(elem)
+        pathlist = list(_val.split())
         if pathlist:
             return pathlist
         else:
@@ -562,13 +560,12 @@ class OriginHeadersListOption(Option):
     class_description = "A list of space separated case sensitive\norigin headers 'scheme://host'."
 
     def set(self, _val):
-        pathlist = self._value = []
-        for elem in _val.split():
-            pathlist.append(elem)
+        pathlist = list(_val.split())
         if '*' in pathlist and pathlist[0] != '*':
             raise OptionValueError(
                 self, _val,
                 "If using '*' it must be the first element.")
+        self._value = pathlist
 
     def _value2str(self, value):
         return ','.join(value)
@@ -828,7 +825,7 @@ class ListSecretOption(SecretOption):
 
     class_description = SecretOption.class_description
 
-    def validate(self, options):
+    def validate(self, options):  # noqa: ARG002  --  options unused
         if self.name == "WEB_JWT_SECRET":
             secrets = self.get()
             invalid_secrets = [ x for x in secrets[1:] if len(x) < 32]
@@ -895,10 +892,9 @@ class SessiondbBackendOption(Option):
                 redis_available = True
             except ImportError:
                 if sessiondb_backend == 'redis':
-                    valid_session_backends = ', '.join(sorted(list(
+                    valid_session_backends = ', '.join(sorted(
                         [x[1] for x in self.compatibility_matrix
-                         if x[0] == rdbms_backend and x[1] != 'redis'])
-                    ))
+                         if x[0] == rdbms_backend and x[1] != 'redis']))
                     raise OptionValueError(
                         self, sessiondb_backend,
                         "Unable to load redis module. Please install "
@@ -907,12 +903,10 @@ class SessiondbBackendOption(Option):
 
             if ((rdbms_backend, sessiondb_backend) not in
                     self.compatibility_matrix):
-
-                valid_session_backends = ', '.join(sorted(list(
-                    set([x[1] for x in self.compatibility_matrix
+                valid_session_backends = ', '.join(sorted(
+                    {x[1] for x in self.compatibility_matrix
                          if x[0] == rdbms_backend and
-                         (redis_available or x[1] != 'redis')])
-                )))
+                         (redis_available or x[1] != 'redis')}))
 
                 raise OptionValueError(
                     self, sessiondb_backend,
@@ -975,7 +969,7 @@ class RegExpOption(Option):
                         description, aliases)
 
     def _value2str(self, value):
-        assert isinstance(value, self.RE_TYPE)
+        assert isinstance(value, self.RE_TYPE)  # noqa: S101  -- assert is ok
         return value.pattern
 
     def str2value(self, value):
@@ -1057,12 +1051,12 @@ SETTINGS = (
             "If no domain is specified then the config item\n"
             "mail -> domain is added."),
         (Option, "email_from_tag", "",
-            "Additional text to include in the \"name\" part\n"
+            'Additional text to include in the "name" part\n'
             "of the From: address used in nosy messages.\n"
-            "If the sending user is \"Foo Bar\", the From: line\n"
-            "is usually: \"Foo Bar\" <issue_tracker@tracker.example>\n"
-            "the EMAIL_FROM_TAG goes inside the \"Foo Bar\" quotes like so:\n"
-            "\"Foo Bar EMAIL_FROM_TAG\" <issue_tracker@tracker.example>"),
+            'If the sending user is "Foo Bar", the From: line\n'
+            'is usually: "Foo Bar" <issue_tracker@tracker.example>\n'
+            'the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:\n'
+            '"Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>'),
         (Option, "new_web_user_roles", "User",
             "Roles that a user gets when they register\n"
             "with Web User Interface.\n"
@@ -1168,7 +1162,7 @@ SETTINGS = (
             "nosy messages.\n"
             "If the value is unset (default) the roundup tracker's\n"
             "email address (above) is used.\n"
-            "If set to \"AUTHOR\" then the primary email address of the\n"
+            'If set to "AUTHOR" then the primary email address of the\n'
             "author of the change will be used as the reply-to\n"
             "address. This allows email exchanges to occur outside of\n"
             "the view of roundup and exposes the address of the person\n"
@@ -1539,7 +1533,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "cursor, this avoids caching large amounts of data in the\n"
             "client. This option only applies for the postgresql backend."),
     ), "Settings in this section (except for backend) are used\n"
-        " by RDBMS backends only."
+        " by RDBMS backends only.",
     ),
     ("sessiondb", (
         (SessiondbBackendOption, "backend", "",
@@ -1584,7 +1578,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "Do not include the '@' symbol."),
         (Option, "host", NODEFAULT,
             "SMTP mail host that roundup will use to send mail",
-            ["MAILHOST"],),
+            ["MAILHOST"]),
         (Option, "username", "", "SMTP login name.\n"
             "Set this if your mail host requires authenticated access.\n"
             "If username is not empty, password (below) MUST be set!"),
@@ -1631,15 +1625,15 @@ always passes, so setting it less than 1 is not recommended."""),
     ("mailgw", (
         (EmailBodyOption, "keep_quoted_text", "yes",
             "Keep email citations when accepting messages.\n"
-            "Setting this to \"no\" strips out \"quoted\" text\n"
-            "from the message. Setting this to \"new\" keeps quoted\n"
+            'Setting this to "no" strips out "quoted" text\n'
+            'from the message. Setting this to "new" keeps quoted\n'
             "text only if a new issue is being created.\n"
             "Signatures are also stripped.",
             ["EMAIL_KEEP_QUOTED_TEXT"]),
         (EmailBodyOption, "leave_body_unchanged", "no",
-            "Setting this to \"yes\" preserves the email body\n"
+            'Setting this to "yes" preserves the email body\n'
             "as is - that is, keep the citations _and_ signatures.\n"
-            "Setting this to \"new\" keeps the body only if we are\n"
+            'Setting this to "new" keeps the body only if we are\n'
             "creating a new issue.",
             ["EMAIL_LEAVE_BODY_UNCHANGED"]),
         (Option, "default_class", "issue",
@@ -1653,19 +1647,19 @@ always passes, so setting it less than 1 is not recommended."""),
             "the language of the tracker instance."),
         (Option, "subject_prefix_parsing", "strict",
             "Controls the parsing of the [prefix] on subject\n"
-            "lines in incoming emails. \"strict\" will return an\n"
+            'lines in incoming emails. "strict" will return an\n'
             "error to the sender if the [prefix] is not recognised.\n"
-            "\"loose\" will attempt to parse the [prefix] but just\n"
+            '"loose" will attempt to parse the [prefix] but just\n'
             "pass it through as part of the issue title if not\n"
-            "recognised. \"none\" will always pass any [prefix]\n"
+            'recognised. "none" will always pass any [prefix]\n'
             "through as part of the issue title."),
         (Option, "subject_suffix_parsing", "strict",
             "Controls the parsing of the [suffix] on subject\n"
-            "lines in incoming emails. \"strict\" will return an\n"
+            'lines in incoming emails. "strict" will return an\n'
             "error to the sender if the [suffix] is not recognised.\n"
-            "\"loose\" will attempt to parse the [suffix] but just\n"
+            '"loose" will attempt to parse the [suffix] but just\n'
             "pass it through as part of the issue title if not\n"
-            "recognised. \"none\" will always pass any [suffix]\n"
+            'recognised. "none" will always pass any [suffix]\n'
             "through as part of the issue title."),
         (Option, "subject_suffix_delimiters", "[]",
             "Defines the brackets used for delimiting the prefix and \n"
@@ -1675,14 +1669,14 @@ always passes, so setting it less than 1 is not recommended."""),
         (Option, "subject_content_match", "always",
             "Controls matching of the incoming email subject line\n"
             "against issue titles in the case where there is no\n"
-            "designator [prefix]. \"never\" turns off matching.\n"
-            "\"creation + interval\" or \"activity + interval\"\n"
+            'designator [prefix]. "never" turns off matching.\n'
+            '"creation + interval" or "activity + interval"\n'
             "will match an issue for the interval after the issue's\n"
             "creation or last activity. The interval is a standard\n"
             "Roundup interval."),
         (BooleanOption, "subject_updates_title", "yes",
             "Update issue title if incoming subject of email is different.\n"
-            "Setting this to \"no\" will ignore the title part of"
+            'Setting this to "no" will ignore the title part of'
             " the subject\nof incoming email messages.\n"),
         (RegExpOption, "refwd_re", r"(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+",
             "Regular expression matching a single reply or forward\n"
@@ -1785,13 +1779,13 @@ always passes, so setting it less than 1 is not recommended."""),
             ["ADD_RECIPIENTS_TO_NOSY"]),
         (Option, "email_sending", "single",
             "Controls the email sending from the nosy reactor. If\n"
-            "\"multiple\" then a separate email is sent to each\n"
-            "recipient. If \"single\" then a single email is sent with\n"
+            '"multiple" then a separate email is sent to each\n'
+            'recipient. If "single" then a single email is sent with\n'
             "each recipient as a CC address."),
         (IntegerNumberGeqZeroOption, "max_attachment_size", sys.maxsize,
             "Attachments larger than the given number of bytes\n"
             "won't be attached to nosy mails. They will be replaced by\n"
-            "a link to the tracker's download page for the file.")
+            "a link to the tracker's download page for the file."),
     ), "Nosy messages sending"),
     ("markdown", (
         (BooleanOption, "break_on_newline", "no",
@@ -1886,7 +1880,7 @@ class Config:
         *not* have aliases!
 
         """
-        if description or not (section in self.section_descriptions):
+        if description or (section not in self.section_descriptions):
             self.section_descriptions[section] = description
         for option_def in options:
             klass = option_def[0]
@@ -1998,7 +1992,7 @@ class Config:
         for (name, letter) in options.items():
             cfg_name = name.upper()
             short_opt = "-" + letter[0]
-            name = name.lower().replace("_", "-")
+            name = name.lower().replace("_", "-")  # noqa: PLW2901 change name
             cfg_names.update({short_opt: cfg_name, "--" + name: cfg_name})
 
             short_options += letter
@@ -2029,7 +2023,7 @@ class Config:
         extra_options = []
         for (opt, arg) in optlist:
             if (opt in booleans):  # and not arg
-                arg = "yes"
+                arg = "yes"  # noqa: PLW2901 -- change arg
             try:
                 name = cfg_names[opt]
             except KeyError:
