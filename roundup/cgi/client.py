@@ -15,37 +15,31 @@ import socket
 import stat
 import sys
 import time
-
 from email.mime.multipart import MIMEMultipart
 from traceback import format_exc
+
 try:
     from OpenSSL.SSL import SysCallError
 except ImportError:
     class SysCallError(Exception):
         pass
 
-from roundup.anypy.cgi_ import cgi
 import roundup.anypy.email_  # noqa: F401  -- patches for email library code
-import roundup.anypy.random_ as random_   # quality of random checked below
-
 from roundup import hyperdb, rest, xmlrpc
-
-from roundup.anypy import http_, urllib_, xmlrpc_
-from roundup.anypy.cookie_ import BaseCookie, CookieError, get_cookie_date, \
-    SimpleCookie
+# quality of random checked below
+from roundup.anypy import http_, random_, urllib_, xmlrpc_
+from roundup.anypy.cgi_ import cgi
+from roundup.anypy.cookie_ import BaseCookie, CookieError, SimpleCookie, get_cookie_date
 from roundup.anypy.html import html_escape
-from roundup.anypy.strings import s2b, b2s, bs2b, uchr, is_us
+from roundup.anypy.strings import b2s, bs2b, is_us, s2b, uchr
+from roundup.cgi import TranslationService, accept_language, actions, cgitb, templating
+from roundup.cgi.exceptions import DetectorError, FormError, \
+    IndexerQueryError, NotFound, NotModified, Redirect, SendFile, \
+    SendStaticFile, SeriousError
 
-from roundup.cgi import accept_language, actions, cgitb, templating, \
-    TranslationService
-from roundup.cgi.exceptions import (
-    DetectorError, FormError, IndexerQueryError, NotFound, NotModified,
-    Redirect, SendFile, SendStaticFile, SeriousError)
 from roundup.cgi.form_parser import FormParser
-
 from roundup.exceptions import LoginError, RateLimitExceeded, Reject, \
-                               RejectRaw, Unauthorised, UsageError
-
+    RejectRaw, Unauthorised, UsageError
 from roundup.mailer import Mailer, MessageSendError
 
 logger = logging.getLogger('roundup')
@@ -54,7 +48,6 @@ if not random_.is_weak:
     logger.debug("Importing good random generator")
 else:
     logger.warning("**SystemRandom not available. Using poor random generator")
-
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
