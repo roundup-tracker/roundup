@@ -1694,17 +1694,16 @@ class Client:
         # open the database or only set the user
         if not hasattr(self, 'db'):
             self.db = self.instance.open(username)
-            self.db.tx_Source = "web"
         elif self.instance.optimize:
                 self.db.setCurrentUser(username)
-                self.db.tx_Source = "web"
         else:
             self.db.close()
             self.db = self.instance.open(username)
-            self.db.tx_Source = "web"
             # The old session API refers to the closed database;
             # we can no longer use it.
             self.session_api = Session(self)
+
+        self.db.tx_Source = "web"
 
     # match designator in URL stripping leading 0's. So:
     # https://issues.roundup-tracker.org/issue002551190 is the same as
