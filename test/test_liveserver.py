@@ -240,7 +240,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.headers['content-range'],
                          "bytes 10-20/%s"%expected_length)
 
-        # get all bytest starting from 11
+        # get all bytes starting from 11
         hdrs = {"Range": "bytes=11-"}
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
@@ -269,10 +269,11 @@ class BaseTestCases(WsgiSetup):
 
         # range is too large, but etag is bad also, return whole file 200 code
         hdrs['Range'] = "0-99999" # too large
-        hdrs['If-Range'] = etag[2:]  # bad tag
+        hdrs['If-Range'] = '"' + etag[2:]  # start bad tag with "
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 200)
-        # not checking content length since it could be compressed
+        # note f.content has content-encoding (compression) undone.
+        self.assertEqual(len(f.content), int(expected_length))
         self.assertNotIn('content-range', f.headers, 'content-range should not be present')
 
         # range is too large, but etag is specified so return whole file
