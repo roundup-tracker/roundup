@@ -289,7 +289,8 @@ How stuff works:
    Interface uses language selected by currently authenticated user.
 
 Additional details may be found in `GNU gettext`_ and Python `gettext
-module`_ documentation.
+module`_ documentation. Additional information on ``.po`` translation
+files can also be found at pology_.
 
 `Roundup source distribution`_ includes POT and PO files for message
 translators, and also pre-built MO files to facilitate installations
@@ -342,6 +343,29 @@ of translation completeness.  For example, string ``</ol></body></html>``
 script) has no human readable parts at all, and needs no translations.
 Such strings are left untranslated in PO files, and are reported
 as such by PO status checkers (e.g. ``msgfmt --statistics``).
+
+Hints for the translator can be added by adding a comment block
+starting with ``# .Hint``. The hints will be extracted into the .pot
+file and merged to the .po files used by the translators. This can add
+context to how the string is used. For example from admin.py::
+
+  # .Hint read as: assignedto was admin(1)
+  # where assignedto is the property
+  # admin is the key name for value 1
+  _("%(prop)s was %(name)s(%(value)s)")
+
+is shown in the .po file as::
+
+  #. .Hint read as: assignedto was admin(1)
+  #. where assignedto is the property
+  #. admin is the key name for value 1
+  #: ../roundup/admin.py:1091
+  #, python-format
+  msgid "%(prop)s was %(name)s(%(value)s)"
+  msgstr ""
+
+allowing the translator to see the replaced string so they can
+understand how name and value are used.
 
 Command Line Interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -559,6 +583,8 @@ tools that may help you with this process:
    informed the original plugin author about these changes, but got
    no reply so far.
 
+Additional information on ``.po`` files can be found at pology_.
+
 Compiling Message Catalogs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -621,6 +647,7 @@ At run time, Roundup automatically compiles message catalogs whenever
     https://vim.sourceforge.io/scripts/script.php?script_id=695
 .. _PO utilities: https://github.com/pinard/po-utils
 .. _poEdit: https://poedit.net/
+.. _pology: http://pology.nedohodnik.net/doc/user/en_US/ch-poformat.html
 .. _pylint: https://pylint.pycqa.org/en/latest/
 .. _Roundup Source:
 .. _Roundup source distribution:
