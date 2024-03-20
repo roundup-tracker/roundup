@@ -143,7 +143,9 @@ Features:
   machine parsible output. (John Rouillard)
 - Multiple JWT secrets are supported to allow key rotation. See
   an updated config.ini for details. (John Rouillard)
-
+- issue2551212 - wsgi performance improvement feature added in 2.2.0
+  is active by default. Can be turned off if needed. See upgrading.txt
+  for info. (John Rouillard)
 
 2023-07-13 2.3.0
 

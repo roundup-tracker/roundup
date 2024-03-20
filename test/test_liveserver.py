@@ -127,7 +127,9 @@ class WsgiSetup(LiveServerTestCase):
         i18n.DOMAIN = cls.backup_domain
 
     def create_app(self):
-        '''The wsgi app to start - no feature_flags set.'''
+        '''The wsgi app to start - no feature_flags set.
+           Post 2.3.0 this enables the cache_tracker feature.
+        '''
 
         if _py3:
             return validator(RequestDispatcher(self.dirname))
@@ -1215,13 +1217,13 @@ class BaseTestCases(WsgiSetup):
         f = requests.get(self.url_base() + "?@search_text=RESULT")
         self.assertIn("foo bar", f.text)
 
-class TestFeatureFlagCacheTrackerOn(BaseTestCases, WsgiSetup):
+class TestFeatureFlagCacheTrackerOff(BaseTestCases, WsgiSetup):
     """Class to run all test in BaseTestCases with the cache_tracker
-       feature flag enabled when starting the wsgi server
+       feature flag disabled when starting the wsgi server
     """
     def create_app(self):
-        '''The wsgi app to start with feature flag enabled'''
-        ff = { "cache_tracker": "" }
+        '''The wsgi app to start with feature flag disabled'''
+        ff = { "cache_tracker": False }
         if _py3:
             return validator(RequestDispatcher(self.dirname, feature_flags=ff))
         else:
@@ -1232,7 +1234,7 @@ class TestFeatureFlagCacheTrackerOn(BaseTestCases, WsgiSetup):
 @skip_postgresql
 class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
     """Class to run all test in BaseTestCases with the cache_tracker
-       feature flag enabled when starting the wsgi server
+       feature enabled when starting the wsgi server
     """
 
     backend = 'postgresql'

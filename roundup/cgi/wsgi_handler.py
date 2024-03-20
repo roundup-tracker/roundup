@@ -98,7 +98,8 @@ class RequestDispatcher(object):
         else:
             self.translator = None
 
-        if "cache_tracker" in self.feature_flags:
+        if "cache_tracker" not in self.feature_flags or \
+           self.feature_flags["cache_tracker"] is not False:
             self.tracker = roundup.instance.open(self.home, not self.debug)
         else:
             self.preload()
@@ -133,7 +134,8 @@ class RequestDispatcher(object):
         else:
             form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-        if "cache_tracker" in self.feature_flags:
+        if "cache_tracker" not in self.feature_flags or \
+           self.feature_flags["cache_tracker"] is not False:
             client = self.tracker.Client(self.tracker, request, environ, form,
                                          self.translator)
             try:

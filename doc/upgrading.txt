@@ -112,6 +112,24 @@ values or if a value must be changed manually.
 
 This will insert the bad API login rate limiting settings.
 
+Disable performance improvement for wsgi mode (optional)
+--------------------------------------------------------
+
+In Roundup version 2.2.0 an experimental option to improve performance
+when running in wsgi mode was added. It as disabled at that time. In
+the last two years it has been in use at a few sits with no reports of
+issues.
+
+So the default mode is now to enable this improvement. This will get
+more people using it. In case there is a latent bug that hasn't been
+discovered, it can still be disabled. To disable it, add the
+feature_flags to the RequestDispatcher as below:
+
+   feature_flags = { "cache_tracker": False }
+   app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+
+and restart your wsgi instance.
+
 Fix duplicate id for confirm password in user.item.html (optional)
 ------------------------------------------------------------------
 
