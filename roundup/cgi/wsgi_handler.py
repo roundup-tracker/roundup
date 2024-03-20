@@ -5,17 +5,13 @@
 #
 
 import os
-import weakref
-
 from contextlib import contextmanager
 
-from roundup.anypy.html import html_escape
-
 import roundup.instance
-from roundup.cgi import TranslationService
 from roundup.anypy import http_
+from roundup.anypy.html import html_escape
 from roundup.anypy.strings import s2b
-
+from roundup.cgi import TranslationService
 from roundup.cgi.client import BinaryFieldStorage
 
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
@@ -28,7 +24,7 @@ except KeyError:
     http_.server.BaseHTTPRequestHandler.responses[429] = (
          'Too Many Requests',
         'The user has sent too many requests in '
-        'a given amount of time ("rate limiting")'
+        'a given amount of time ("rate limiting")',
     )
 
 class Headers(object):
