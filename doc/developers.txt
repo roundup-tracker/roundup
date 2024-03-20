@@ -542,6 +542,20 @@ locale name) in the same directory, e.g.: ``locale/ru.po``.
 These message catalogs are searched prior to system-wide translations
 kept in the ``share`` directory.
 
+If you are creating your own ``.po`` file from scratch rather than
+using ``roundup-gettext``, you must have the minimal preamble
+specifying the format of the file. This::
+
+  msgid ""
+  msgstr ""
+  "Content-Type: text/plain; charset=UTF-8\n"
+
+should be present as the first translatable string in your .po file.
+If you use ``roundup-gettext`` it will add a full preamble including
+``Content-Type``. If the preamble is missing, using characters outside
+of the ASCII range will cause Roundup to crash with a
+UnicodeDecodeError.
+
 Translating Messages
 ^^^^^^^^^^^^^^^^^^^^
 
