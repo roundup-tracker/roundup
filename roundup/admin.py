@@ -1086,8 +1086,8 @@ Command help:
                     if name:
                         result.append(
                             # .Hint read as: assignedto was admin(1)
-                            # .Hint where assignedto is the property
-                            # .Hint admin is the key name for value 1
+                            # where assignedto is the property
+                            # admin is the key name for value 1
                             _("%(prop)s was %(name)s(%(value)s)") % {
                                 "prop": prop, "name": name, "value": value })
                     else:
