@@ -132,6 +132,8 @@ install:
   - pip install redis
   - pip install pytz whoosh pyjwt requests
   - pip install jinja2
+  # note pytest-env is not needed for redis password as there is
+  # no password on CI's redis.
   - pip install pytest-cov
   - pip install beautifulsoup4
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
