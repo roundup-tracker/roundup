@@ -1,0 +1,111 @@
+[tool.pytest.ini_options]
+# Note this only works under python3. Pytest 6.0+ supports
+# pyproject.toml and is not available for python 2. These settings can
+# be adapted for pytest.ini if you are running under python2.
+
+# For use with packages:
+#     python -m pip install pytest-cov pytest-env pytest-randomly
+
+minversion = "6.0"
+
+# Disable randomly by default. There are still a few tests that are
+# order dependent. Enable on cli for python3 only using:
+#   "-p  randomly"
+addopts = "-p no:randomly --durations=10 --strict-markers -r a -v"
+
+# Set the redis password to nothing. Can be overridden on cli using:
+#    "-e pytest_redis_pw=mySecretPassword"
+env = [
+    "D:pytest_redis_pw="
+]
+
+# Don't search random directories to find tests.
+testpaths = [
+    "test",
+]
+
+[tool.ruff]
+line-length = 128
+output-format = "full"
+
+exclude = [
+    # ignore code imported/sourced from other places
+    "roundup/cgi/PageTemplates/*.py",
+    "roundup/cgi/TAL/*.py",
+    "roundup/cgi/ZTUtils/*.py",
+    "roundup/anypy/vendored/*.py",
+    "dicttoxml.py"
+]
+
+[tool.ruff.lint]
+select = [
+        "A",   # flake-8-builtins shadowing a builtin
+	"ARG", # flake8-unused-arguments
+	"B",   # flake8-bugbear
+	"C4",  # flake8-comprehensions
+	"C901", # McCabe complexity
+	"COM", # flake8-commas
+	"E",
+	"F",   # pyflakes
+	"G",   # logging format _(.... % ...) bad use _(...) % ...
+        "I",   # imports
+	"INT", # check gettext
+	"Q",   # quoting consistancy
+	"PERF",   # performance lint
+	"PIE794", # duplicate class field definition
+	"PL",  # pylint
+	"RET", # check for inconistent returns
+	"RUF", # ruff
+	"S",   # bandit - security
+	"SIM", # simplify code
+	"T10", # flake8-debugger
+	"W",   # pycode whitespace warnings
+]
+
+ignore = [ 
+   # raise from except hander with none or chaining; only python3
+   "B904",
+   # ### before comments is fine
+   "E266",
+   # ignore double vs. single quotes
+   "Q000", "Q001", "Q002",
+   # do not replace x in (a,b) with x in {a,b} (set). python 3.2
+   # got a speedup in this; only python 3 
+   "PLR6201",
+   # 505: allow use of else/elif even if it could be removed.
+   # if X: return; elif Z: return; else v ->
+   # if X: return; if Z: return; v
+   # 506: same but with a raise rather than return
+   #"RET505",
+   #"RET506",
+   # use *list to expand; only python 3
+   "RUF005",
+   # do not use contextlib.suppress rather than except: pass to suppress
+   # exception. contextlib doesn't work in python2 and is slower
+   "SIM105",
+]
+
+
+[tool.ruff.lint.per-file-ignores]
+"roundup/anypy/*.py" = ["RET505", "RET506"]
+"roundup/dehtml.py" = ["E501"]
+"roundup/rest.py" = ["E501"]
+"roundup/support.py" = ["E401"]
+"roundup/security.py" = ["E701"]
+"roundup/date.py" = ["E231", "E701"]
+"roundup/backends/back_sqlite.py" = [ "E203" ]
+
+[too.ruff.lint.pylint]
+max-args = 6
+max-branches=20
+max-statements = 100
+
+[tool.ruff.lint.mccabe]
+max-complexity = 50
+
+#
+#skip=
+#    C901
+#    E228
+#    E302
+#    E401

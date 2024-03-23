@@ -45,7 +45,7 @@ class RedisSessionTest(SessionTest):
         SessionTest.setUp(self)
 
         import os
-        if 'pytest_redis_pw' in os.environ:
+        if 'pytest_redis_pw' in os.environ and os.environ['pytest_redis_pw']:
             pw = os.environ['pytest_redis_pw']
             if ':' in pw:
                 # pw is user:password
