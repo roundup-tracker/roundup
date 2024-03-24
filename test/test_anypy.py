@@ -3,6 +3,7 @@
 
 import unittest
 from roundup.anypy.strings import repr_export, eval_import
+from roundup.anypy.cmp_ import _test
 
 import sys
 _py3 = sys.version_info[0] > 2
@@ -58,3 +59,7 @@ class StringsTest(unittest.TestCase):
         val = repr_export(('issue', '2345', 'status'))
         self.assertEqual(val, "('issue', '2345', 'status')")
             
+class MiscTest(unittest.TestCase):
+
+    def test_cmp_(self):
+        _test()
