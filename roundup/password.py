@@ -443,7 +443,7 @@ class Password(JournalPassword):
         return False
 
     def unpack(self, encrypted, scheme=None, strict=False, config=None):
-        """Set the password info from the scheme:<encryted info> string
+        """Set the password info from the scheme:<encrypted info> string
            (the inverse of __str__)
         """
         m = self.pwre.match(encrypted)
