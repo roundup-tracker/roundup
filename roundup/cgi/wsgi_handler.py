@@ -27,6 +27,7 @@ except KeyError:
         'a given amount of time ("rate limiting")',
     )
 
+
 class Headers(object):
     """ Idea more or less stolen from the 'apache.py' in same directory.
         Except that wsgi stores http headers in environment.
@@ -68,7 +69,7 @@ class RequestHandler(object):
 
     def start_response(self, headers, response_code):
         """Set HTTP response code"""
-        message, explain = BaseHTTPRequestHandler.responses[response_code]
+        message, _explain = BaseHTTPRequestHandler.responses[response_code]
         self.__wfile = self.__start_response('%d %s' % (response_code,
                                                         message), headers)
 
@@ -81,7 +82,8 @@ class RequestHandler(object):
 class RequestDispatcher(object):
     def __init__(self, home, debug=False, timing=False, lang=None,
                  feature_flags=None):
-        assert os.path.isdir(home), '%r is not a directory' % (home,)
+        if not os.path.isdir(home):
+            raise ValueError('%r is not a directory' % (home,))
         self.home = home
         self.debug = debug
         self.timing = timing
