@@ -119,7 +119,7 @@ jobs:
       # note pytest-env is not needed for redis password as there is
       # no password on CI's redis.
       - name: Install pytest and other packages needed for running tests
-        run: pip install flake8 mock pytest pytest-cov requests sphinx-tabs
+        run: pip install flake8 hypothesis mock pytest pytest-cov requests sphinx-tabs
 
       - name: run flake8 - abort for syntax error, otherwise warn only
         run: |
