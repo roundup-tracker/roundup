@@ -65,7 +65,7 @@ class dehtml:
 
                     self.text = self.text + data
 
-                def handle_starttag(self, tag, attrs):
+                def handle_starttag(self, tag, attrs):  # noqa: ARG002
                     if (tag == "p"):
                         self.text = self.text + "\n"
                     if (tag in ("style", "script")):
@@ -86,10 +86,8 @@ class dehtml:
                         self.text = self.text + " "
 
             def html2text(html):
-                if _pyver == 3:
-                    parser = DumbHTMLParser(convert_charrefs=True)
-                else:
-                    parser = DumbHTMLParser()
+                parser = DumbHTMLParser(
+                    convert_charrefs=True) if _pyver == 3 else DumbHTMLParser()
                 parser.feed(html)
                 parser.close()
                 return parser.text
