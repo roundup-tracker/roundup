@@ -230,7 +230,7 @@ Help:
         commands = ['']
         for command in self.commands.values():
             h = _(command.__doc__).split('\n')[0]
-            commands.append(' '+h[7:])
+            commands.append(' ' + h[7:])
         commands.sort()
         commands.append(_(
 """Commands may be abbreviated as long as the abbreviation
@@ -550,7 +550,7 @@ Command help:
             raise UsageError(_('Not enough arguments supplied'))
 
         display_protected = self.settings['display_protected']
-        display_header =  self.settings['display_header']
+        display_header = self.settings['display_header']
 
         # decode the node designator
         for designator in args[0].split(','):
@@ -627,7 +627,7 @@ Command help:
                 sys.stdout.write('Exporting %s WITHOUT the files\r\n' %
                                  classname)
 
-            with open(os.path.join(export_dir, classname+'.csv'), 'w') as f:
+            with open(os.path.join(export_dir, classname + '.csv'), 'w') as f:
                 writer = csv.writer(f, colon_separated)
 
                 propnames = cl.export_propnames()
@@ -676,7 +676,8 @@ Command help:
                         cl.export_files(export_dir, nodeid)
 
             # export the journals
-            with open(os.path.join(export_dir, classname+'-journals.csv'), 'w') as jf:
+            with open(os.path.join(export_dir,
+                                   classname + '-journals.csv'), 'w') as jf:
                 if self.verbose:
                     sys.stdout.write("\nExporting Journal for %s\n" %
                                      classname)
@@ -766,7 +767,7 @@ Command help:
         try:
             output_items = cl.filter(None, **props)
             if self.print_designator:
-                output_items = [ classname + i for i in output_items ]
+                output_items = [classname + i for i in output_items]
 
             if self.separator:
                 print(self.separator.join(output_items))
@@ -815,7 +816,7 @@ Command help:
         try:
             output_items = cl.find(**props)
             if self.print_designator:
-                output_items = [ classname + i for i in output_items ]
+                output_items = [classname + i for i in output_items]
 
             if self.separator:
                 print(self.separator.join(output_items))
@@ -995,6 +996,7 @@ Command help:
         raw = 'raw' in args[1:]
 
         getclass = self.db.getclass
+
         def get_prop_name(key, prop_name):
             # getclass and classname from enclosing method
             klass = getclass(classname)
@@ -1064,7 +1066,7 @@ Command help:
             """Eat the empty data dictionary or None"""
             return classname
 
-        def format_link (data):
+        def format_link(data):
             '''data = ('issue', '157', 'dependson')'''
             # .Hint added issue23 to superseder
             f = _("added %(class)s%(item_id)s to %(propname)s")
@@ -1089,7 +1091,7 @@ Command help:
                             # where assignedto is the property
                             # admin is the key name for value 1
                             _("%(prop)s was %(name)s(%(value)s)") % {
-                                "prop": prop, "name": name, "value": value })
+                                "prop": prop, "name": name, "value": value})
                     else:
                         # use repr so strings with embedded \n etc. don't
                         # generate newlines in output. Try to keep each
@@ -1108,8 +1110,8 @@ Command help:
                     else:
                         prop_class = get_prop_class(prop)
                         if prop_class:  # noqa: SIM108
-                            list_items = [ "%s%s" % (prop_class, v)
-                                           for v in value ]
+                            list_items = ["%s%s" % (prop_class, v)
+                                           for v in value]
                         else:
                             list_items = value
 
@@ -1128,7 +1130,7 @@ Command help:
 
             return '; '.join(result)
 
-        def format_unlink (data):
+        def format_unlink(data):
             '''data = ('issue', '157', 'dependson')'''
             return "removed %s%s from %s" % (data[0], data[1], data[2])
 
@@ -1252,10 +1254,10 @@ Command help:
                 cl.import_journals(reader)
 
             # (print to sys.stdout here to allow tests to squash it .. ugh)
-            print('setting', classname, maxid+1, file=sys.stdout)
+            print('setting', classname, maxid + 1, file=sys.stdout)
 
             # set the id counter
-            self.db.setid(classname, str(maxid+1))
+            self.db.setid(classname, str(maxid + 1))
 
         self.db_uncommitted = True
         return 0
@@ -1487,7 +1489,7 @@ Erase it? Y/N: """) % locals())
                 # create a list of propnames since user specified propname
                 proplist = []
                 try:
-                    proplist = [ cl.get(nodeid, propname) for nodeid in
+                    proplist = [cl.get(nodeid, propname) for nodeid in
                                  cl.getnodeids(retired=retired)]
                 except KeyError:
                     raise UsageError(_('%(classname)s has no property '
@@ -1638,7 +1640,7 @@ Erase it? Y/N: """) % locals())
                 return
 
             if props['scheme'].startswith('PBKDF2'):
-                (rounds, salt, _raw_salt, digest) = password.pbkdf2_unpack(
+                (rounds, _salt, _raw_salt, _digest) = password.pbkdf2_unpack(
                     pw_hash)
             else:
                 rounds = _("scheme does not support rounds.")
@@ -1646,7 +1648,7 @@ Erase it? Y/N: """) % locals())
             print(_(
                 "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, "
                 "rounds: %(rounds)s") %
-                  {"time": toc-tic, "scheme": props['scheme'],
+                  {"time": toc - tic, "scheme": props['scheme'],
                    "rounds": rounds})
 
     def do_pragma(self, args):
@@ -2348,8 +2350,7 @@ Desc: %(description)s
                 self.db.commit()
 
         # looks like histfile is saved with mode 600
-        if readline:
-            if self.history_features('save_history'):
+        if readline and self.history_features('save_history'):
                 readline.write_history_file(histfile)
         return 0
 
@@ -2405,7 +2406,7 @@ Desc: %(description)s
                 try:
                     self.do_pragma([arg])
                 except UsageError as e:
-                    print('\n%s\n' %  e)
+                    print('\n%s\n' % e)
             elif opt == '-u':
                 login_opt = arg.split(':')
                 self.name = login_opt[0]
