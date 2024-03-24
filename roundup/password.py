@@ -24,13 +24,11 @@ import re
 import string
 import sys
 import warnings
-
-from base64 import b64encode, b64decode
+from base64 import b64decode, b64encode
 from hashlib import md5, sha1, sha512
 
 from roundup.anypy import random_
-
-from roundup.anypy.strings import us2s, b2s, s2b
+from roundup.anypy.strings import b2s, s2b, us2s
 from roundup.exceptions import RoundupException
 
 try:
@@ -49,7 +47,7 @@ class ConfigNotSet(RoundupException):
 
 
 def bchr(c):
-    if bytes == str:
+    if bytes is str:
         # Python 2.
         return chr(c)
     else:
@@ -58,7 +56,7 @@ def bchr(c):
 
 
 def bord(c):
-    if bytes == str:
+    if bytes is str:
         # Python 2.
         return ord(c)
     else:
@@ -97,8 +95,8 @@ try:
         return pbkdf2_hmac('sha512', password, salt, rounds, keylen)
 except ImportError:
     # no hashlib.pbkdf2_hmac - make our own pbkdf2 function
-    from struct import pack
     from hmac import HMAC
+    from struct import pack
 
     def xor_bytes(left, right):
         "perform bitwise-xor of two byte-strings"
@@ -114,14 +112,14 @@ except ImportError:
         else:
             digest_size = 20  # sha1 generates 20-byte blocks
 
-        total_blocks = int((keylen+digest_size-1)/digest_size)
+        total_blocks = int((keylen + digest_size - 1) / digest_size)
         hmac_template = HMAC(password, None, sha)
         out = _bempty
-        for i in range(1, total_blocks+1):
+        for i in range(1, total_blocks + 1):
             hmac = hmac_template.copy()
             hmac.update(salt + pack(">L", i))
             block = tmp = hmac.digest()
-            for _j in range(rounds-1):
+            for _j in range(rounds - 1):
                 hmac = hmac_template.copy()
                 hmac.update(tmp)
                 tmp = hmac.digest()
@@ -139,7 +137,7 @@ def ssha(password, salt):
     Based on code of Roberto Aguilar <roberto@baremetal.io>
     https://gist.github.com/rca/7217540
     '''
-    shaval = sha1(password)  # nosec
+    shaval = sha1(password)  # noqa: S324
     shaval.update(salt)
     ssha_digest = b2s(b64encode(shaval.digest() + salt).strip())
     return ssha_digest
@@ -232,7 +230,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
         plaintext = ""
     if scheme in ["PBKDF2", "PBKDF2S5"]:  # all PBKDF schemes
         if other:
-            rounds, salt, raw_salt, digest = pbkdf2_unpack(other)
+            rounds, salt, raw_salt, _digest = pbkdf2_unpack(other)
         else:
             raw_salt = random_.token_bytes(20)
             salt = h64encode(raw_salt)
@@ -251,33 +249,34 @@ def encodePassword(plaintext, scheme, other=None, config=None):
                         # rounds value of 2,000,000 (for sha1) makes
                         # testing increase from 12 minutes to 1 hour in CI.
                         rounds = 1000
+            elif ("pytest" in sys.modules and
+                  "PYTEST_CURRENT_TEST" in os.environ):
+                # Set rounds to 1000 if no config is passed and
+                # we are running within a pytest test.
+                rounds = 1000
             else:
-                if ("pytest" in sys.modules and
-                    "PYTEST_CURRENT_TEST" in os.environ):
-                    # Set rounds to 1000 if no config is passed and
-                    # we are running within a pytest test.
-                    rounds = 1000
+                import logging
+                # Log and abort.  Initialize rounds and log (which
+                # will probably be ignored) with traceback in case
+                # ConfigNotSet exception is removed in the
+                # future.
+                rounds = 2000000
+                logger = logging.getLogger('roundup')
+                if sys.version_info[0] > 2:
+                    logger.critical(
+                        "encodePassword called without config.",
+                        stack_info=True)
                 else:
-                    import logging
-                    # Log and abort.  Initialize rounds and log (which
-                    # will probably be ignored) with traceback in case
-                    # ConfigNotSet exception is removed in the
-                    # future.
-                    rounds = 2000000
-                    logger = logging.getLogger('roundup')
-                    if sys.version_info[0] > 2:
-                        logger.critical(
-                            "encodePassword called without config.",
-                            stack_info=True)
-                    else:
-                        import inspect, traceback   # noqa: E401
-                        where = inspect.currentframe()
-                        trace = traceback.format_stack(where)
-                        logger.critical(
-                            "encodePassword called without config. %s",
-                            trace[:-1]
-                        )
-                    raise ConfigNotSet("encodePassword called without config.")
+                    import inspect
+                    import traceback
+
+                    where = inspect.currentframe()
+                    trace = traceback.format_stack(where)
+                    logger.critical(
+                        "encodePassword called without config. %s",
+                        trace[:-1]
+                    )
+                raise ConfigNotSet("encodePassword called without config.")
 
         if rounds < 1000:
             raise PasswordValueError("invalid PBKDF2 hash (rounds too low)")
@@ -293,13 +292,13 @@ def encodePassword(plaintext, scheme, other=None, config=None):
         else:
             # new password
             # variable salt length
-            salt_len = random_.randbelow(52-36) + 36
+            salt_len = random_.randbelow(52 - 36) + 36
             salt = random_.token_bytes(salt_len)
         s = ssha(s2b(plaintext), salt)
     elif scheme == 'SHA':
-        s = sha1(s2b(plaintext)).hexdigest()  # nosec
+        s = sha1(s2b(plaintext)).hexdigest()  # noqa: S324
     elif scheme == 'MD5':
-        s = md5(s2b(plaintext)).hexdigest()  # nosec
+        s = md5(s2b(plaintext)).hexdigest()   # noqa: S324
     elif scheme == 'crypt':
         if crypt is None:
             raise PasswordValueError(
@@ -307,7 +306,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
         if other is not None:
             salt = other
         else:
-            saltchars = './0123456789'+string.ascii_letters
+            saltchars = './0123456789' + string.ascii_letters
             salt = random_.choice(saltchars) + random_.choice(saltchars)
         s = crypt.crypt(plaintext, salt)
     elif scheme == 'plaintext':
@@ -318,7 +317,7 @@ def encodePassword(plaintext, scheme, other=None, config=None):
 
 
 def generatePassword(length=12):
-    chars = string.ascii_letters+string.digits
+    chars = string.ascii_letters + string.digits
     password = [random_.choice(chars) for x in range(length - 1)]
     # make sure there is at least one digit
     digitidx = random_.randbelow(length)
@@ -426,9 +425,12 @@ class Password(JournalPassword):
         """
         if self.scheme in self.deprecated_schemes:
             return True
-        rounds, salt, raw_salt, digest = pbkdf2_unpack(self.password)
+
+        rounds, _salt, _raw_salt, _digest = pbkdf2_unpack(self.password)
+
         if rounds < 1000:
             return True
+
         if (self.scheme == "PBKDF2"):
             new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
             if ("pytest" in sys.modules and
@@ -474,10 +476,11 @@ class Password(JournalPassword):
 
 
 def test_missing_crypt(config=None):
-    p = encodePassword('sekrit', 'crypt')      # noqa: F841   - test only
+    _p = encodePassword('sekrit', 'crypt', config=config)
 
 
 def test(config=None):
+    # ruff: noqa: S101 SIM300 - asserts are ok
     # SHA
     p = Password('sekrit', config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
@@ -488,7 +491,7 @@ def test(config=None):
     assert 'not sekrit' != p
 
     # MD5
-    p = Password('sekrit', 'MD5',  config=config)
+    p = Password('sekrit', 'MD5', config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
@@ -498,7 +501,7 @@ def test(config=None):
 
     # crypt
     if crypt:  # not available on Windows
-        p = Password('sekrit', 'crypt',  config=config)
+        p = Password('sekrit', 'crypt', config=config)
         assert Password(encrypted=str(p)) == 'sekrit'
         assert 'sekrit' == Password(encrypted=str(p))
         assert p == 'sekrit'
@@ -507,7 +510,7 @@ def test(config=None):
         assert 'not sekrit' != p
 
     # SSHA
-    p = Password('sekrit', 'SSHA',  config=config)
+    p = Password('sekrit', 'SSHA', config=config)
     assert Password(encrypted=str(p)) == 'sekrit'
     assert 'sekrit' == Password(encrypted=str(p))
     assert p == 'sekrit'
