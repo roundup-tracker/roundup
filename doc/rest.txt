@@ -18,7 +18,7 @@ REST API for Roundup
 Introduction
 ============
 
-After the last 1.6.0 Release, a REST-API developed in 2015 during a
+After the 1.6.0 Release, a REST-API developed in 2015 during a
 Google Summer of Code (GSOC) by Chau Nguyen, supervised by Ezio
 Melotti was integrated. The code was updated by Ralf Schlatterbeck and
 John Rouillard to address some limitations and incorporate essential
