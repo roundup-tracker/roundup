@@ -3596,14 +3596,37 @@ with additional methods by extensions_.
   Method          Description
   =============== ========================================================
   Batch           return a batch object using the supplied list
-  url_quote       quote some text as safe for a URL (ie. space, %, ...)
+  anti_csrf_nonce returns the random nonce generated for this session
+  expandfile      load a file into a template and expand
+                  '%(tokenname)s' in the file using
+                  values from the supplied dictionary.
   html_quote      quote some text as safe in HTML (ie. <, >, ...)
   html_calendar   renders an HTML calendar used by the
 		  ``_generic.calendar.html`` template (itself invoked by
 		  the popupCalendar DateHTMLProperty method
-  anti_csrf_nonce returns the random nonce generated for this session
+  readfile        read Javascript or other content in an external
+                  file into the template.
+  url_quote       quote some text as safe for a URL (ie. space, %, ...)
   =============== ========================================================
 
+Additional info can be obtained by starting ``python`` with the
+``roundup`` subdirectory on your PYTHONPATH and using the Python help
+function like::
+
+   >>> from roundup.cgi.templating import TemplatingUtils
+   >>> help(TemplatingUtils.readfile)
+   Help on function readfile in module roundup.cgi.templating:
+
+   readfile(self, name, optional=False)
+       Read an file in the template directory.
+
+       Used to inline file content into a template.  If file
+       is not found in template directory, reports an error
+       to the user unless optional=True. Then it returns an
+       empty string. Useful inlining JavaScript kept in an
+       external file where you can use linters/minifiers and
+
+(Note: ``>>>``` is the Python REPL prompt. Don't type the ``>>>```.)
 
 Batching
 ::::::::

@@ -146,6 +146,13 @@ Features:
 - issue2551212 - wsgi performance improvement feature added in 2.2.0
   is active by default. Can be turned off if needed. See upgrading.txt
   for info. (John Rouillard)
+- issue2551270 - Better templating support for JavaScript. Add
+  utils.readfile(file, optional=False) and utils.expandfile(file,
+  token_dict=None, optional=False). Allows reading an external file
+  (e.g. JavaScript) and inserting it using tal:contents or equivalent
+  jinja function. expandfile allows setting a dictionary and tokens in
+  the file of the form "%(token_name)s" will be replaced in the file
+  with the values from the dict. (John Rouillard)
 
 2023-07-13 2.3.0
 

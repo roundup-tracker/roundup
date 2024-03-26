@@ -20,6 +20,7 @@ from roundup.cgi.exceptions import FormError, NotFound, Redirect
 from roundup.exceptions import UsageError, Reject
 from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
 from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
+from roundup.cgi.templating import TemplatingUtils
 from roundup.cgi.form_parser import FormParser
 from roundup import init, instance, password, hyperdb, date
 from roundup.anypy.strings import u2s, b2s, s2b
@@ -2994,6 +2995,269 @@ class TemplateTestCase(unittest.TestCase):
         # template check works
         r = t.selectTemplate("user", "subdir/item")
         self.assertEqual("subdir/user.item", r)
+
+class TemplateUtilsTestCase(unittest.TestCase):
+    ''' Test various TemplateUtils
+    '''
+    def setUp(self):
+        self.dirname = '_test_template'
+        # set up and open a tracker
+        self.instance = setupTracker(self.dirname)
+
+        # open the database
+        self.db = self.instance.open('admin')
+        self.db.tx_Source = "web"
+        self.db.user.create(username='Chef', address='chef@bork.bork.bork',
+            realname='Bork, Chef', roles='User')
+        self.db.user.create(username='mary', address='mary@test.test',
+            roles='User', realname='Contrary, Mary')
+        self.db.post_init()
+
+    def tearDown(self):
+        self.db.close()
+        try:
+            shutil.rmtree(self.dirname)
+        except OSError as error:
+            if error.errno not in (errno.ENOENT, errno.ESRCH): raise
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
+    def testReadfile(self):
+        # create new files in html dir
+        testfiles = [
+            { "name": "file_to_read.js",
+              "content": ('hello world'),
+            },
+            { # for future test expanding TAL
+              "name": "_generic.readfile_success.html",
+              "content": (
+
+                  '''<span tal:content="python:utils.readfile('''
+                  """'example.js')"></span>""" ),
+            },
+        ]
+
+        for file_spec in testfiles:
+            file_path = "%s/html/%s" % (self.dirname, file_spec['name'])
+            with open(file_path, "w") as f:
+                f.write(file_spec['content'])
+
+        # get the client instance The form is needed to initialize,
+        # but not used since I call selectTemplate directly.
+        t = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+         form=db_test_base.makeForm({"@template": "readfile_success"}))
+
+        tu = TemplatingUtils(t)
+        # testcase 1 - file exists
+        r = tu.readfile("file_to_read.js")
+        self.assertEqual(r, 'hello world')
+        r = None
+
+        # testcase 2 - file does not exist
+        with self.assertRaises(NoTemplate) as e:
+            r = tu.readfile("no_file_to_read.js")
+
+        self.assertEqual(
+            e.exception.args[0],
+            "Unable to read or expand file 'no_file_to_read.js' "
+            "in template 'home'.")
+        r = None
+
+        # testcase 3 - file does not exist - optional = True
+        r = tu.readfile("no_file_to_read.js", optional=True)
+        self.assertEqual(r, '')
+
+        # make sure a created template is found
+        # note that the extension is not included just the basename
+        self.assertEqual("_generic.readfile_success",
+                         t.selectTemplate("", "readfile_success"))
+
+
+        
+    def testExpandfile(self):
+        # test for templates in subdirectories
+
+        # make the directory
+        subdir = self.dirname + "/html/subdir"
+        os.mkdir(subdir)
+
+        # create new files in html dir
+        testfiles = [
+            { "name": "file_to_read.js",
+              "content": ('hello world'),
+            },
+            { "name": "file_no_content.js",
+              "content": '',
+            },
+            { "name": "file_to_expand.js",
+              "content": ('hello world %(base)s'),
+            },
+            { "name": "file_with_broken_expand_type.js",
+              "content": ('hello world %(base)'),
+            },
+            { "name": "file_with_odd_token.js",
+              "content": ('hello world %(base)s, %(No,token)s'),
+            },
+            { "name": "file_with_missing.js",
+              "content": ('hello world %(base)s, %(idontexist)s'),
+            },
+            { "name": "subdir/file_to_read.js",
+              "content": ('hello world from subdir'),
+            },
+            { # for future test expanding TAL
+              "name": "_generic.expandfile_success.html",
+              "content": (
+
+                  '''<span tal:content="python:utils.expandfile('''
+                  """'example.js', { 'No Token': "NT",
+                  "dict_token': 'DT'})"></span>""" ),
+            },
+        ]
+
+        for file_spec in testfiles:
+            file_path = "%s/html/%s" % (self.dirname, file_spec['name'])
+            with open(file_path, "w") as f:
+                f.write(file_spec['content'])
+
+        # get the client instance The form is needed to initialize,
+        # but not used since I call selectTemplate directly.
+        t = client.Client(self.instance, "user",
+                {'PATH_INFO':'/user', 'REQUEST_METHOD':'POST'},
+         form=db_test_base.makeForm({"@template": "readfile_success"}))
+
+        t.db = MockNull()
+        t.db.config = MockNull()
+        t.db.config.TRACKER_WEB = '_tracker_template'
+        tu = TemplatingUtils(t)
+
+        # testcase 1 - file exists
+        r = tu.expandfile("file_to_read.js")
+        self.assertEqual(r, 'hello world')
+        r = None
+
+        # testcase 2 - file does not exist
+        with self.assertRaises(NoTemplate) as e:
+            r = tu.expandfile("no_file_to_read.js")
+
+        self.assertEqual(
+            e.exception.args[0],
+            "Unable to read or expand file 'no_file_to_read.js' "
+            "in template 'home'.")
+        r = None
+
+        # testcase 3 - file does not exist - optional = True
+        r = tu.expandfile("no_file_to_read.js", optional=True)
+        self.assertEqual(r, '')
+        r = None
+
+        # testcase 4 - file is empty
+        r = tu.expandfile("file_no_content.js")
+        self.assertEqual(r, '')
+        r = None
+
+        # testcase 5 - behave like readfile (values = None)
+        r = tu.expandfile("file_to_expand.js")
+        self.assertEqual(r, "hello world %(base)s")
+        r = None
+
+        # testcase 6 - expand predefined
+        r = tu.expandfile("file_to_expand.js", {})
+        self.assertEqual(r, "hello world _tracker_template")
+        r = None
+
+        # testcase 7 - missing trailing type specifier
+        r = tu.expandfile("file_with_broken_expand_type.js", {})
+
+        self.assertEqual(r, "")
+
+        # self._caplog.record_tuples[0] - without line breaks
+        # ('roundup.template', 40, "Found an incorrect token when
+        # expandfile applied string subsitution on
+        # '/home/roundup/_test_template/html/file_with_broken_expand_type.js.
+        # ValueError('incomplete format') was raised. Check the format 
+        # of your named conversion specifiers."
+
+        # name used for logging
+        self.assertEqual(self._caplog.record_tuples[0][0], 'roundup.template')
+        # severity ERROR = 40
+        self.assertEqual(self._caplog.record_tuples[0][1], 40,
+                        msg="logging level != 40 (ERROR)")
+        # message. It includes a full path to the problem file, so Regex
+        # match the changable filename directory
+        self.assertRegex(self._caplog.record_tuples[0][2], (
+            r"^Found an incorrect token when expandfile applied "
+            r"string subsitution on "
+            r"'[^']*/_test_template/html/file_with_broken_expand_type.js'. "
+            r"ValueError\('incomplete format'\) was raised. Check the format "
+            r"of your named conversion specifiers."))
+        self._caplog.clear()
+        r = None
+
+        # testcase 8 - odd token. Apparently names are not identifiers
+        r = tu.expandfile("file_with_odd_token.js", {'No,token': 'NT'})
+
+        self.assertEqual(r, "hello world _tracker_template, NT")
+
+        # self._caplog.record_tuples[0] - without line breaks
+        # ('roundup.template', 40, "Found an incorrect token when
+        # expandfile applied string subsitution on
+        # '/home/roundup/_test_template/html/file_with_broken_expand_type.js.
+        # ValueError('incomplete format') was raised. Check the format 
+        # of your named conversion specifiers."
+
+        # no logs should be present
+        self.assertEqual(self._caplog.text, '')
+        r = None
+
+        # testcase 9 - key missing from values
+        r = tu.expandfile("file_with_missing.js", {})
+
+        self.assertEqual(r, "")
+
+        # self._caplog.record_tuples[0] - without line breaks
+        # ('roundup.template', 40, "Found an incorrect token when
+        # expandfile applied string subsitution on
+        # '/home/roundup/_test_template/html/file_with_broken_expand_type.js.
+        # ValueError('incomplete format') was raised. Check the format 
+        # of your named conversion specifiers."
+
+        # name used for logging
+        self.assertEqual(self._caplog.record_tuples[0][0], 'roundup.template')
+        # severity ERROR = 40
+        self.assertEqual(self._caplog.record_tuples[0][1], 40,
+                        msg="logging level != 40 (ERROR)")
+        # message. It includes a full path to the problem file, so Regex
+        # match the changable filename directory
+        self.assertRegex(self._caplog.record_tuples[0][2], (
+            r"When running "
+            r"expandfile\('[^']*/_test_template/html/file_with_missing.js'\) "
+            r"in 'home' there was no value for token: 'idontexist'."))
+        self._caplog.clear()
+        r = None
+
+        # testcase 10 - set key missing from values in test 8
+        r = tu.expandfile("file_with_missing.js", {'idontexist': 'I do exist'})
+
+        self.assertEqual(r, "hello world _tracker_template, I do exist")
+
+        # no logging
+        self.assertEqual(self._caplog.text, '')
+        self._caplog.clear()
+
+        # testcase 11 - file exists in subdir
+        r = tu.expandfile("subdir/file_to_read.js")
+        self.assertEqual(r, 'hello world from subdir')
+        r = None
+
+
+        # make sure a created template is found
+        # note that the extension is not included just the basename
+        self.assertEqual("_generic.expandfile_success",
+                         t.selectTemplate("", "expandfile_success"))        
+
 
 class SqliteNativeFtsCgiTest(unittest.TestCase, testFtsQuery, testCsvExport):
     """All of the rest of the tests use anydbm as the backend.

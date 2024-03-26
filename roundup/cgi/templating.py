@@ -21,6 +21,7 @@ __docformat__ = 'restructuredtext'
 
 import calendar
 import csv
+import logging
 import os.path
 import re
 import textwrap
@@ -52,6 +53,7 @@ try:
 except ImportError:
     from itertools import izip_longest as zip_longest
 
+logger = logging.getLogger('roundup.template')
 
 # List of schemes that are not rendered as links in rst and markdown.
 _disable_url_schemes = ['javascript', 'data']
@@ -329,9 +331,10 @@ class TALLoaderBase(LoaderBase):
             src = os.path.join(realsrc, f)
             realpath = os.path.realpath(src)
             if not realpath.startswith(realsrc):
-                return  # will raise invalid template
+                return None # will raise invalid template
             if os.path.exists(src):
                 return (src, f)
+        return None
 
     def check(self, name):
         return bool(self._find(name))
@@ -3569,6 +3572,7 @@ class TemplatingUtils:
     """
     def __init__(self, client):
         self.client = client
+        self._ = self.client._
 
     def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
         return Batch(self.client, sequence, size, start, end, orphan,
@@ -3619,7 +3623,7 @@ class TemplatingUtils:
         display = request.form.getfirst("display", date_str)
         template = request.form.getfirst("@template", "calendar")
         form = request.form.getfirst("form")
-        property = request.form.getfirst("property")
+        aproperty = request.form.getfirst("property")
         curr_date = ""
         try:
             # date_str and display can be set to an invalid value
@@ -3656,7 +3660,7 @@ class TemplatingUtils:
         res = []
 
         base_link = "%s?@template=%s&property=%s&form=%s&date=%s" % \
-                    (request.classname, template, property, form, curr_date)
+                    (request.classname, template, aproperty, form, curr_date)
 
         # navigation
         # month
@@ -3717,6 +3721,92 @@ class TemplatingUtils:
             res.append('  </tr>')
         res.append('</table></td></tr></table>')
         return "\n".join(res)
+
+    def readfile(self, name, optional=False):
+        """Used to inline a file from the template directory.
+
+           Used to inline file content into a template. If file
+           is not found in the template directory and
+           optional=False, it reports an error to the user via a
+           NoTemplate exception. If optional=True it returns an
+           empty string when it can't find the file.
+
+           Useful for inlining JavaScript kept in an external
+           file where you can use linters/minifiers and other
+           tools on it.
+
+           A TAL example:
+
+             <script tal:attributes="nonce request/client/client_nonce"
+             tal:content="python:utils.readfile('mylibrary.js')"></script>
+
+           This method does not expands any tokens in the file.
+           See expandfile() for replacing tokens in the file.
+        """
+        file_result = self.client.instance.templates._find(name)
+
+        if file_result is None:
+            if optional:
+                return ""
+            template_name = self.client.selectTemplate(
+                self.client.classname, self.client.template)
+            raise NoTemplate(self._(
+                "Unable to read or expand file '%(name)s' "
+                "in template '%(template)s'.") % {
+                    "name": name, 'template': template_name})
+
+        fullpath, name = file_result
+        with open(fullpath) as f:
+            contents = f.read()
+        return contents
+
+    def expandfile(self, name, values=None, optional=False):
+        """Read a file and replace token placeholders.
+
+           Given a file name and a dict of tokens and
+           replacements, read the file from the tracker template
+           directory. Then replace all tokens of the form
+           '%(token_name)s' with the values in the dict. If the
+           values dict is set to None, it acts like
+           readfile(). In addition to values passed into the
+           method, the value for the tracker base directory taken
+           from TRACKER_WEB is available as the 'base' token. The
+           client_nonce used for Content Security Policy (CSP) is
+           available as 'client_nonce'.  If a token is not in the
+           dict, an empty string is returned and an error log
+           message is logged. See readfile for an usage example.
+        """
+        # readfile() raises NoTemplate if optional = false and
+        # the file is not found. Returns empty string if file not
+        # found and optional = true. File contents otherwise.
+        contents = self.readfile(name, optional=optional)
+
+        if values is None or not contents: # nothing to expand
+            return contents
+        tokens = {'base': self.client.db.config.TRACKER_WEB,
+                  'client_nonce': self.client.client_nonce}
+        tokens.update(values)
+        try:
+            return contents % tokens
+        except KeyError as e:
+            template_name = self.client.selectTemplate(
+                self.client.classname, self.client.template)
+            fullpath, name = self.client.instance.templates._find(name)
+            logger.error(
+                "When running expandfile('%(fullpath)s') in "
+                "'%(template)s' there was no value for token: '%(token)s'.",
+                {'fullpath': fullpath, 'token': e.args[0],
+                 'template': template_name})
+            return ""
+        except ValueError as e:
+            fullpath, name = self.client.instance.templates._find(name)
+            logger.error(self._(
+                "Found an incorrect token when expandfile applied "
+                "string subsitution on '%(fullpath)s'. "
+                "ValueError('%(issue)s') was raised. Check the format "
+                "of your named conversion specifiers."),
+                {'fullpath': fullpath, 'issue': e.args[0]})
+            return ""
 
 
 class MissingValue(object):
