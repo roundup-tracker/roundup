@@ -54,7 +54,7 @@ class HypoTestPassword(unittest.TestCase):
                          "SHA", "MD5", "crypt", "plaintext",
                          "zot")))
     @example("asd\x00df", "crypt")
-    @settings(max_examples=100 * _max_examples)
+    @settings(max_examples=_max_examples)
     def test_encodePassword(self, password, scheme):
 
         if	scheme == "crypt" and password and "\x00" in password:
