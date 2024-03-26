@@ -3080,6 +3080,10 @@ class TemplateUtilsTestCase(unittest.TestCase):
     def testExpandfile(self):
         # test for templates in subdirectories
 
+        # remove when no longer supporting python 2
+        if not hasattr(self, 'assertRegex'):
+            self.assertRegex = self.assertRegexpMatches
+
         # make the directory
         subdir = self.dirname + "/html/subdir"
         os.mkdir(subdir)
