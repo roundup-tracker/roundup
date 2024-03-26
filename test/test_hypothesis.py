@@ -91,6 +91,6 @@ class HypoTestPassword(unittest.TestCase):
                 self.assertRegex(pw, r"^[a-z0-9]{32}$")
             elif scheme == "crypt":
                 # WqzFDzhi8MmoU
-                self.assertRegex(pw, r"^[A-z0-9./]{13}$")
+                self.assertRegex(pw, r"^[A-Za-z0-9./]{13}$")
             else:
                 self.assertFalse("Unknown scheme: %s, val: %s" % (scheme, pw))
