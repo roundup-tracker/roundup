@@ -30,6 +30,8 @@ else
     might_be_interactive="false"
 fi
 
+printf "Starting Roundup with arguments: $@"
+
 for tracker_spec in "$@"; do
     # IFS== set a=b doesn't just assign $1 and $2 in busybox ash
     # it also clobbers '$@'. 'printf mumble | read' starts read in a
