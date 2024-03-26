@@ -3104,6 +3104,9 @@ class TemplateUtilsTestCase(unittest.TestCase):
             { "name": "file_with_missing.js",
               "content": ('hello world %(base)s, %(idontexist)s'),
             },
+            { "name": "file_with_bare_%.js",
+              "content": ('expr = 3 % 5 + (var1+var2)'),
+            },
             { "name": "subdir/file_to_read.js",
               "content": ('hello world from subdir'),
             },
@@ -3247,7 +3250,36 @@ class TemplateUtilsTestCase(unittest.TestCase):
         self.assertEqual(self._caplog.text, '')
         self._caplog.clear()
 
-        # testcase 11 - file exists in subdir
+        # testcase 11 - handle a file with a bare % that raises TypeError
+        r = tu.expandfile("file_with_bare_%.js", {"var1": "bar"})
+        self.assertEqual(r, '')
+
+        # self._caplog.record_tuples[0] - without line breaks
+        # ('roundup.template', 40, "Found an incorrect token when
+        # expandfile applied string subsitution on
+        # '/home/roundup/_test_template/html/file_with_broken_expand_type.js.
+        # ValueError('incomplete format') was raised. Check the format 
+        # of your named conversion specifiers."
+
+        # name used for logging
+        self.assertEqual(self._caplog.record_tuples[0][0], 'roundup.template')
+        # severity ERROR = 40
+        self.assertEqual(self._caplog.record_tuples[0][1], 40,
+                        msg="logging level != 40 (ERROR)")
+        # message. It includes a full path to the problem file, so Regex
+        # match the changable filename directory
+        self.assertRegex(self._caplog.record_tuples[0][2], (
+            r"^Found an incorrect token when expandfile applied "
+            r"string subsitution on "
+            r"'[^']*/_test_template/html/file_with_bare_%.js'. "
+            r"ValueError\("
+            r"'unsupported format character ' ' \(0x20\) at index 12'\) was "
+            r"raised. Check the format "
+            r"of your named conversion specifiers."))
+        self._caplog.clear()
+        r = None
+
+        # testcase 12 - file exists in subdir
         r = tu.expandfile("subdir/file_to_read.js")
         self.assertEqual(r, 'hello world from subdir')
         r = None
