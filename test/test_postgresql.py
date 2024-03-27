@@ -21,7 +21,6 @@ import pytest
 
 from roundup.hyperdb import DatabaseError
 from roundup.backends import get_backend, have_backend
-from roundup.backends.back_postgresql import db_command, get_database_schema_names
 
 from .db_test_base import DBTest, ROTest, config, SchemaTest, ClassicInitTest
 from .db_test_base import ConcurrentDBTest, HTMLItemTest, FilterCacheTest
@@ -36,7 +35,8 @@ if not have_backend('postgresql'):
         reason='Skipping PostgreSQL tests: backend not available'))
 else:
     try:
-        from roundup.backends.back_postgresql import psycopg2, db_command
+        from roundup.backends.back_postgresql import psycopg2, db_command,\
+            get_database_schema_names
         db_command(config, 'select 1')
         skip_postgresql = lambda func, *args, **kwargs: func
     except( DatabaseError ) as msg:
