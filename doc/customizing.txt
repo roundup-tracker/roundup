@@ -737,6 +737,11 @@ C. Add the timelog listing from step 5. to the ``msg.item.html`` template
     
     <table class="messages">
 
+The wiki includes an `auditor that extracts specially formatted timelog
+entries from emails`_ sent to the tracker.
+
+.. _auditor that extracts specially formatted timelog
+   entries from emails: https://wiki.roundup-tracker.org/TimelogAuditor
 
 Tracking different types of issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
