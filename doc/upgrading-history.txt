@@ -73,7 +73,7 @@ If you are using the xml-rpc interface, there is a change
   in the future.
 
 
-.. index:: upgrading; 1.4.19 to 1.4.20
+.. index:: Upgrading; 1.4.19 to 1.4.20
 
 Migrating from 1.4.19 to 1.4.20
 ===============================
@@ -101,7 +101,7 @@ the templates shipped with roundup did not use HTML tags in messages for
 highlighting.
 
 
-.. index:: upgrading; 1.4.17 to 1.4.18
+.. index:: Upgrading; 1.4.17 to 1.4.18
 
 Migrating from 1.4.17 to 1.4.18
 ===============================
@@ -144,7 +144,7 @@ you will set this using
 
 roundup-admin -i /path/to/your/tracker set issue42 files=5,17,23
 
-.. index:: upgrading; 1.4.x to 1.4.17
+.. index:: Upgrading; 1.4.x to 1.4.17
 
 Migrating from 1.4.x to 1.4.17
 ==============================
@@ -205,7 +205,7 @@ search for this property::
             print("        roles may search:", ', '.join(roles))
 
 
-.. index:: upgrading; 1.4.x to 1.4.12
+.. index:: Upgrading; 1.4.x to 1.4.12
 
 Migrating from 1.4.x to 1.4.12
 ==============================
@@ -255,7 +255,7 @@ If you have made local changes to those files you'll need to manually work
 the differences in to your versions or ignore the changes.
 
 
-.. index:: upgrading; 1.4.x to 1.4.11
+.. index:: Upgrading; 1.4.x to 1.4.11
 
 Migrating from 1.4.x to 1.4.11
 ==============================
@@ -318,7 +318,7 @@ the ``_generic.index.html`` template from the roundup distribution in
 ``share/roundup/templates/classic/html`` to your tracker's ``html`` directory.
 
 
-.. index:: upgrading; 1.4.x to 1.4.9
+.. index:: Upgrading; 1.4.x to 1.4.9
 
 Migrating from 1.4.x to 1.4.9
 =============================
@@ -377,7 +377,7 @@ in section `Migrating from 1.4.x to 1.4.7`_.
 Make sure the change is done as listed below in this document.
 
 
-.. index:: upgrading; 1.4.x to 1.4.7
+.. index:: Upgrading; 1.4.x to 1.4.7
 
 Migrating from 1.4.x to 1.4.7
 =============================
@@ -459,7 +459,7 @@ tracker's ``config.ini`` file:
 
 
 
-.. index:: upgrading; 1.4.2 to 1.4.3
+.. index:: Upgrading; 1.4.2 to 1.4.3
 
 Migrating from 1.4.2 to 1.4.3
 =============================
@@ -473,7 +473,7 @@ the same spec except the key column name needs a size. So an index on
 "_user (__retired, _name)" should become "_user (__retired, _name(255))".
 
 
-.. index:: upgrading; 1.4.x to 1.4.2
+.. index:: Upgrading; 1.4.x to 1.4.2
 
 Migrating from 1.4.x to 1.4.2
 =============================
@@ -494,7 +494,7 @@ or are using anydbm).
 It's safe to run this even if it's not required, so just get into the
 habit.
 
-.. index:: upgrading; 1.3.3 to 1.4.0
+.. index:: Upgrading; 1.3.3 to 1.4.0
 
 Migrating from 1.3.3 to 1.4.0
 =============================
@@ -530,7 +530,7 @@ username, password, and database name can all be found in the
 can run the SQL commands using the native client interface: ``psql``
 (postgres), ``mysql`` (MySQL), or ``sqlite3`` (SQLite).
 
-.. index:: upgrading; 1.2.x to 1.3.0
+.. index:: Upgrading; 1.2.x to 1.3.0
 
 Migrating from 1.2.x to 1.3.0
 =============================
@@ -543,7 +543,7 @@ were changed to fix some bugs and clean them up. You may wish to compare
 them to the HTML files in your tracker and apply any changes.
 
 
-.. index:: upgrading; 1.1.2 to 1.2.0
+.. index:: Upgrading; 1.1.2 to 1.2.0
 
 Migrating from 1.1.2 to 1.2.0
 =============================
@@ -576,7 +576,7 @@ lists. This is reflected in several places:
    changes. See the example in the classic template which makes use of
    ``batch.propchanged``.
 
-.. index:: upgrading; 1.1.0 to 1.1.1
+.. index:: Upgrading; 1.1.0 to 1.1.1
 
 Migrating from 1.1.0 to 1.1.1
 =============================
@@ -608,7 +608,7 @@ If you implemented the "clear this message" in your 1.1.0 tracker, then you
 should change it to the above and it will work much better!
 
 
-.. index:: upgrading; 1.0.x to 1.1.0
+.. index:: Upgrading; 1.0.x to 1.1.0
 
 Migrating from 1.0.x to 1.1.0
 =============================
@@ -661,7 +661,7 @@ to be::
  </p>
 
 
-.. index:: upgrading; 0.8.x to 1.0
+.. index:: Upgrading; 0.8.x to 1.0
 
 Migrating from 0.8.x to 1.0
 ===========================
@@ -703,7 +703,7 @@ so it looks like::
  for cl in 'issue', 'file', 'msg', 'keyword':
 
 
-.. index:: upgrading; 0.8.0 to 0.8.3
+.. index:: Upgrading; 0.8.0 to 0.8.3
 
 Migrating from 0.8.0 to 0.8.3
 =============================
@@ -720,7 +720,7 @@ If you have modified the ``nosyreaction.py`` file from the standard
 version, you will need to roll your changes into the new file.
 
 
-.. index:: upgrading; 0.7.1 to 0.8.0
+.. index:: Upgrading; 0.7.1 to 0.8.0
 
 Migrating from 0.7.1 to 0.8.0
 =============================
@@ -878,7 +878,7 @@ See the `administration guide`_ for information about configuring the new
 logging implemented in 0.8.0.
 
 
-.. index:: upgrading; 0.7.2 to 0.7.3
+.. index:: Upgrading; 0.7.2 to 0.7.3
 
 Migrating from 0.7.2 to 0.7.3
 =============================
@@ -893,7 +893,7 @@ define a new variable, ``STATIC_FILES`` which overrides this value for
 static files.
 
 
-.. index:: upgrading; 0.7.0 to 0.7.2
+.. index:: Upgrading; 0.7.0 to 0.7.2
 
 Migrating from 0.7.0 to 0.7.2
 =============================
@@ -908,7 +908,7 @@ following to your tracker's ``config.py`` file::
     # choose their own in their settings.
     DEFAULT_TIMEZONE = 0            # specify as numeric hour offest
 
-.. index:: upgrading; 0.7.0 to 0.7.1
+.. index:: Upgrading; 0.7.0 to 0.7.1
 
 Migrating from 0.7.0 to 0.7.1
 =============================
@@ -938,7 +938,7 @@ next to the existing ``'User'`` lines for the Permissions you wish to
 assign to the anonymous user.
 
 
-.. index:: upgrading; versions earlier than 0.7
+.. index:: Upgrading; versions earlier than 0.7
 
 Migrating from 0.6 to 0.7
 =========================
