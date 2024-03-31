@@ -1,7 +1,9 @@
 # misc tests
 
+import pytest
 import re
 import sys
+import time
 import unittest
 
 import roundup.anypy.cmp_
@@ -9,6 +11,8 @@ import roundup.anypy.cmp_
 from roundup.anypy.strings import StringIO  # define StringIO
 from roundup.cgi import cgitb
 from roundup.cgi.accept_language import parse
+
+from roundup.support import PrioList, Progress, TruthDict
 
 
 class AcceptLanguageTest(unittest.TestCase):
@@ -34,9 +38,68 @@ class AcceptLanguageTest(unittest.TestCase):
         self.assertEqual(parse("   "), [])
         self.assertEqual(parse("en,"), ['en'])
 
+
 class CmpTest(unittest.TestCase):
     def testCmp(self):
         roundup.anypy.cmp_._test()
+
+
+class PrioListTest(unittest.TestCase):
+    def testPL(self):
+        start_data = [(3, 33), (1, -2), (2, 10)]
+        pl = PrioList(key=lambda x: x[1])
+        for i in start_data:
+            pl.append(i)
+
+        l = [x for x in pl]
+        self.assertEqual(l, [(1, -2), (2, 10), (3, 33)])
+
+        pl = PrioList()
+        for i in start_data:
+            pl.append(i)
+
+        l = [x for x in pl]
+        self.assertEqual(l, [(1, -2), (2, 10), (3, 33)])
+
+class ProgressTest(unittest.TestCase):
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, capsys):
+        self._capsys = capsys
+
+    def testProgress(self):
+        for x in Progress("5 Items@2 sec:", [1,2,3,4,5]):
+            time.sleep(2)
+
+        captured = self._capsys.readouterr()
+
+        split_capture = captured.out.split('\r')
+
+        # lines padded to 75 characters test should be long enough to
+        # get an ETA printed at 100%, 80% and 60% hopefully this
+        # doesn't become a flakey test on different hardware.
+        self.assertIn("5 Items@2 sec:  0%".ljust(75),
+                      split_capture)
+        self.assertIn("5 Items@2 sec: 60% (ETA 00:00:02)".ljust(75),
+                      split_capture)
+        self.assertIn("5 Items@2 sec: 100% (ETA 00:00:00)".ljust(75),
+                      split_capture)
+        print(captured.err)
+
+
+class TruthDictTest(unittest.TestCase):
+    def testTD(self):
+        td = TruthDict([])
+        # empty TruthDict always returns True.
+        self.assertTrue(td['a'])
+        self.assertTrue(td['z'])
+        self.assertTrue(td[''])
+        self.assertTrue(td[None])
+
+        td = TruthDict(['a', 'b', 'c'])
+        self.assertTrue(td['a'])
+        self.assertFalse(td['z'])
+
 
 class VersionCheck(unittest.TestCase):
     def test_Version_Check(self):

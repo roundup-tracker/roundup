@@ -68,7 +68,6 @@ class PrioList:
 class Progress:
     '''Progress display for console applications.
 
-    See __main__ block at end of file for sample usage.
     '''
     def __init__(self, info, sequence):
         self.info = info
