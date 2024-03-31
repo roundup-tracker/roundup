@@ -47,6 +47,7 @@ from roundup.configuration import (
 )
 from roundup.exceptions import UsageError
 from roundup.i18n import _, get_translation
+from roundup import support
 
 try:
     from UserDict import UserDict
@@ -653,9 +654,10 @@ Command help:
                     all_nodes.sort(key=keysort)
                 # if there is no classkey no need to sort
 
-                for nodeid in all_nodes:
+                for nodeid in support.Progress( "Exporting %s" %
+                                                classname, all_nodes):
                     if self.verbose:
-                        sys.stdout.write('\rExporting %s - %s' %
+                        sys.stdout.write('\rExporting %s - %s ' %
                                          (classname, nodeid))
                         sys.stdout.flush()
                     node = cl.getnode(nodeid)
@@ -683,7 +685,8 @@ Command help:
                                      classname)
                     sys.stdout.flush()
                 journals = csv.writer(jf, colon_separated)
-                for row in cl.export_journals():
+                for row in support.Progress("   Writing journals",
+                                            cl.export_journals()):
                     journals.writerow(row)
         if max_len > self.db.config.CSV_FIELD_SIZE:
             print("Warning: config csv_field_size should be at least %s" %
@@ -1761,7 +1764,6 @@ Erase it? Y/N: """) % locals())
         to reindex issue class items 23-1000. Missing items
         are reported but do not stop indexing of the range.
         """
-        from roundup import support
         if args:
             for arg in args:
                 m = desre.match(arg)
