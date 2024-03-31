@@ -19,6 +19,13 @@ on:
     schedule:
         # monthly build/check
         - cron: '23 17 1 * *'
+    workflow_dispatch:
+      inputs:
+        debug_enabled:
+          type: boolean
+          description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+          required: false
+          default: false
 
 # GITHUB_TOKEN only has read repo context.
 permissions:
@@ -95,6 +102,16 @@ jobs:
         # continue-on-error: true
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
+        # https://github.com/mxschmitt/action-tmate
+        # allow remote ssh into the CI container. I need this to debug
+        # some xfail cases 
+        - name: Setup tmate session
+          uses: mxschmitt/action-tmate@v3
+          if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+          timeout-minutes: 2
+          with:
+            limit-access-to-actor: true
+           
       # Setup version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
