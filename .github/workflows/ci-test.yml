@@ -102,16 +102,6 @@ jobs:
         # continue-on-error: true
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      # https://github.com/mxschmitt/action-tmate
-      # allow remote ssh into the CI container. I need this to debug
-      # some xfail cases 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-        timeout-minutes: 2
-        with:
-          limit-access-to-actor: true
-           
       # Setup version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5.0.0
@@ -137,6 +127,16 @@ jobs:
       # no password on CI's redis.
       - name: Install pytest and other packages needed for running tests
         run: pip install flake8 hypothesis mock pytest pytest-cov requests sphinx-tabs
+
+      # https://github.com/mxschmitt/action-tmate
+      # allow remote ssh into the CI container. I need this to debug
+      # some xfail cases 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        timeout-minutes: 10
+        with:
+          limit-access-to-actor: true
 
       - name: run flake8 - abort for syntax error, otherwise warn only
         run: |
