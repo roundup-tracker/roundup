@@ -102,15 +102,15 @@ jobs:
         # continue-on-error: true
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-        # https://github.com/mxschmitt/action-tmate
-        # allow remote ssh into the CI container. I need this to debug
-        # some xfail cases 
-        - name: Setup tmate session
-          uses: mxschmitt/action-tmate@v3
-          if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-          timeout-minutes: 2
-          with:
-            limit-access-to-actor: true
+      # https://github.com/mxschmitt/action-tmate
+      # allow remote ssh into the CI container. I need this to debug
+      # some xfail cases 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        timeout-minutes: 2
+        with:
+          limit-access-to-actor: true
            
       # Setup version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
