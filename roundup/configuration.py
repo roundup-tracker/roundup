@@ -817,6 +817,7 @@ class SecretNullableOption(NullableOption, SecretOption):
     get = SecretOption.get
     class_description = SecretOption.class_description
 
+
 class ListSecretOption(SecretOption):
     # use get from SecretOption
     def get(self):
@@ -828,7 +829,7 @@ class ListSecretOption(SecretOption):
     def validate(self, options):  # noqa: ARG002  --  options unused
         if self.name == "WEB_JWT_SECRET":
             secrets = self.get()
-            invalid_secrets = [ x for x in secrets[1:] if len(x) < 32]
+            invalid_secrets = [x for x in secrets[1:] if len(x) < 32]
             if invalid_secrets:
                 raise OptionValueError(
                     self, ", ".join(secrets),
@@ -836,6 +837,7 @@ class ListSecretOption(SecretOption):
                     "found: %s" % ', '.join(invalid_secrets))
         else:
             self.get()
+
 
 class RedisUrlOption(SecretNullableOption):
     """Do required check to make sure known bad parameters are not
@@ -984,12 +986,12 @@ class RegExpOption(Option):
                 value = value.decode("utf-8")
         return re.compile(value, self.flags)
 
-class LogLevelOption(Option):
 
+class LogLevelOption(Option):
     """A log level, one of none, debug, info, warning, error, critical"""
 
-    values = "none debug info warning error critical".split ()
-    class_description = "Allowed values: %s" % (', '.join (values))
+    values = "none debug info warning error critical".split()
+    class_description = "Allowed values: %s" % (', '.join(values))
 
     def str2value(self, value):
         _val = value.lower()
@@ -997,6 +999,7 @@ class LogLevelOption(Option):
             return _val
         else:
             raise OptionValueError(self, value, self.class_description)
+
 
 try:
     import jinja2  # noqa: F401
