@@ -405,8 +405,8 @@ class EmailBodyOption(Option):
 class IsolationOption(Option):
     """Database isolation levels"""
 
-    allowed = ['read uncommitted', 'read committed', 'repeatable read',
-               'serializable']
+    allowed = ('read uncommitted', 'read committed', 'repeatable read',
+               'serializable')
     class_description = "Allowed values: %s" % ', '.join("'%s'" % a
                                                          for a in allowed)
 
@@ -420,7 +420,7 @@ class IsolationOption(Option):
 class IndexerOption(Option):
     """Valid options for indexer"""
 
-    allowed = ['', 'xapian', 'whoosh', 'native', 'native-fts']
+    allowed = ('', 'xapian', 'whoosh', 'native', 'native-fts')
     class_description = "Allowed values: %s" % ', '.join("'%s'" % a
                                                          for a in allowed)
 
@@ -428,7 +428,7 @@ class IndexerOption(Option):
     #    SELECT cfgname FROM pg_ts_config;
     # on a postgresql 14.1 server.
     # So the best we can do is hardcode this.
-    valid_langs = ["simple",
+    valid_langs = ("simple",
                    "custom1",
                    "custom2",
                    "custom3",
@@ -461,7 +461,7 @@ class IndexerOption(Option):
                    "swedish",
                    "tamil",
                    "turkish",
-                   "yiddish"]
+                   "yiddish")
 
     def str2value(self, value):
         _val = value.lower()
@@ -863,7 +863,7 @@ class SessiondbBackendOption(Option):
        Fail with error and suggestions if they are incompatible.
     """
 
-    compatibility_matrix = [
+    compatibility_matrix = (
         ('anydbm', 'anydbm'),
         ('anydbm', 'redis'),
         ('sqlite', 'anydbm'),
@@ -871,7 +871,7 @@ class SessiondbBackendOption(Option):
         ('sqlite', 'redis'),
         ('mysql', 'mysql'),
         ('postgresql', 'postgresql'),
-        ]
+        )
 
     def validate(self, options):
         ''' make sure session db is compatible with primary db.
