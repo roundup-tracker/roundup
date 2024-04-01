@@ -804,6 +804,7 @@ class RestfulInstance(object):
         verbose = 1
         display_props = set()
         sort = []
+        group = []
         for form_field in input.value:
             key = form_field.name
             value = form_field.value
@@ -837,6 +838,29 @@ class RestfulInstance(object):
                         uid, class_name, pn
                     ):
                         sort.append((ss, pn))
+                    else:
+                        raise (Unauthorised(
+                            'User does not have search permission on "%s.%s"'
+                            % (class_name, pn)))
+            elif key == "@group":
+                f = value.split(",")
+                for p in f:
+                    if not p:
+                        raise UsageError("Empty property "
+                                         "for class %s." % (class_name))
+                    if p[0] in ('-', '+'):
+                        pn = p[1:]
+                        ss = p[0]
+                    else:
+                        ss = '+'
+                        pn = p
+                    # Only include properties where we have search permission
+                    # Note that hasSearchPermission already returns 0 for
+                    # non-existing properties.
+                    if self.db.security.hasSearchPermission(
+                        uid, class_name, pn
+                    ):
+                        group.append((ss, pn))
                     else:
                         raise (Unauthorised(
                             'User does not have search permission on "%s.%s"'
@@ -912,6 +936,8 @@ class RestfulInstance(object):
         kw = {}
         if sort:
             l.append(sort)
+        if group:
+            l.append(group)
         if exact_props:
             kw['exact_match_spec'] = exact_props
         if page['size'] is None:

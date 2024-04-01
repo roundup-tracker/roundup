@@ -650,6 +650,29 @@ and then by id of an issue::
 
     @sort=status,-id
 
+Grouping
+~~~~~~~~
+
+Collection endpoints support grouping. This is controlled by
+specifying a ``@group`` parameter with a list of properties of
+the searched class.  Optionally properties can include a sign
+('+' or '-') to specify the groups are sorted in ascending or
+descending order, respectively. If no sign is given, the groups
+are returned in ascending order. The following example would
+return the issues grouped by status (in order from
+unread->reolved) then within each status, by priority in
+descending order (wish -> critical)::
+
+    @group=status,-priority
+
+Adding ``@fields=status,priority`` to the query will allow you to see
+the status and priority values change so you can identify the items in
+each group.
+
+If combined with ``@sort=-id`` within each group he items would be
+sorted in descending order by id.
+
+This is useful for select elements that use optgroup.
 
 Pagination
 ~~~~~~~~~~

@@ -316,7 +316,7 @@ class TestCase():
         except ValueError:
             pass
 
-    def create_sampledata(self):
+    def create_sampledata(self, data_max=3):
         """ Create sample data common to some test cases
         """
         self.create_stati()
@@ -337,6 +337,34 @@ class TestCase():
             status=self.db.status.lookup('open'),
             priority=self.db.priority.lookup('critical')
         )
+
+        if data_max > 10:
+            raise ValueError('data_max must be less than 10')
+
+        if data_max == 3:
+            return
+
+        sample_data = [
+             ["foo6", "normal", "closed"],
+             ["foo7", "critical", "open"],
+             ["foo8", "normal", "open"],
+             ["foo9", "critical", "open"],
+             ["foo10", "normal", "closed"],
+             ["foo11", "critical", "open"],
+             ["foo12", "normal", "closed"],
+             ["foo13", "normal", "open"],
+            
+        ]
+
+        for title, priority, status in sample_data:
+            new_issue = self.db.issue.create(
+                title=title,
+                status=self.db.status.lookup(status),
+                priority=self.db.priority.lookup(priority)
+            )
+
+            if int(new_issue) == data_max:
+                break
 
     def test_no_next_link_on_full_last_page(self):
         """Make sure that there is no next link
@@ -969,6 +997,47 @@ class TestCase():
                 {'link': base_path + '1', 'status': '7', 'id': '1'}]}}
 
         results = self.server.get_collection('issue', form)
+        self.assertDictEqual(expected, results)
+
+    def testGrouping(self):
+        self.maxDiff = 4000
+        self.create_sampledata(data_max=5)
+        self.db.issue.set('1', status='7', priority='4')
+        self.db.issue.set('2', status='2', priority='4')
+        self.db.issue.set('3', status='2', priority='4')
+        self.db.issue.set('4', status='2', priority='2')
+        self.db.issue.set('5', status='2', priority='2')
+        self.db.commit()
+        base_path = self.db.config['TRACKER_WEB'] + 'rest/data/issue/'
+        # change some data for sorting on later
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@fields', 'status,priority'),
+            cgi.MiniFieldStorage('@sort', '-id'),
+            cgi.MiniFieldStorage('@group', '-status,priority'),
+            cgi.MiniFieldStorage('@verbose', '0')
+        ]
+
+        # status is sorted by orderprop (property 'order')
+        expected={'data': {
+            '@total_size': 5,
+            'collection': [
+                {'link': base_path + '1', 'priority': '4',
+                 'status': '7', 'id': '1'},
+                {'link': base_path + '5',  'priority': '2',
+                 'status': '2', 'id': '5'},
+                {'link': base_path + '4',  'priority': '2',
+                 'status': '2', 'id': '4'},
+                {'link': base_path + '3',  'priority': '4',
+                 'status': '2', 'id': '3'},
+                {'link': base_path + '2',  'priority': '4',
+                 'status': '2', 'id': '2'},
+            ]
+        }}
+
+
+        results = self.server.get_collection('issue', form)
+        print(results)
         self.assertDictEqual(expected, results)
 
     def testTransitiveField(self):
