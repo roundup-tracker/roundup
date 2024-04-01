@@ -2176,6 +2176,8 @@ string in the nosy reaction function.
 Changing How the Core Code Works
 --------------------------------
 
+.. index:: single: interfaces.py; cache-control headers
+
 Changing Cache-Control Headers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2202,6 +2204,7 @@ path in the tracker's `config.ini`. In the example above:
 
 Note that a file name match overrides the mime type settings.
 
+.. index:: single: interfaces.py; password complexity checking
 
 Implement Password Complexity Checking
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2240,6 +2243,8 @@ your tracker (same place as schema.py)::
 it replaces the setPassword method in the Password class. The new
 version validates that the password is sufficiently complex. Then it
 passes off the setting of password to the original method.
+
+.. index:: single: interfaces.py; interpreting time interval values
 
 Enhance Time Intervals Forms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -491,11 +491,18 @@ Details are in the sections below.
 /data/\ *class* Collection
 --------------------------
 
-When performing the ``GET`` method on a class (e.g. ``/data/issue``),
-the ``data`` object includes the number of items available in
-``@total_size``. A a ``collection`` list follows which contains the id
-and link to the respective item.  For example a get on
-https://.../rest/data/issue returns::
+When you use the ``GET`` method on a class (like ``/data/issue``), the
+``data`` will include the number of available items in
+``@total_size``. If the size exceeds the administrative limit (which
+is 10 million by default), ``@total_size`` will be set to ``-1``. To
+navigate to the last page of results, you can use the ``next`` links
+or increment ``@page_index`` until the result does not include a
+``next`` ``@link`` or ``@total_size`` is not ``-1``. The value of the
+HTTP header ``X-Count-Total`` is the same as ``@total_size``.
+
+A ``collection`` list contains the id and link to the
+respective item.  For example a get on https://.../rest/data/issue
+returns::
 
     {
         "data": {
@@ -517,11 +524,17 @@ https://.../rest/data/issue returns::
 Collection endpoints support a number of features as seen in the next
 sections.
 
-A server may implement a default maximum number of items in the
-collection.  This can be used to prevent denial of service (DOS).  As
-a result all clients must be programmed to expect pagination
-decorations in the response. See the section on pagination below for
-details.
+Having an empty ``collection`` does not mean next next link will not
+return more data. The row limit is applied when the query is made to
+the database. The result set is then filtered, removing rows that the
+user does not have permission to access. So it is possible to have no
+data items on a page because the user does not have access to them. If
+you use ``@page_size`` near the administrative limit, you may receive
+fewer rows than requested. However, this does not mean you are out of
+data.
+
+All clients must be programmed to expect pagination decorations in the
+response. See the section on pagination below for details.
 
 Searching
 ~~~~~~~~~
@@ -591,7 +604,9 @@ searching keyword class not issue class) will return matches for
 ``Foo``, ``foobar``, ``foo taz`` etc.
 
 In all cases the field ``@total_size`` is reported which is the total
-number of items available if you were to retrieve all of them.
+number of items available if you were to retrieve all of them. See
+more details in the parent section about ``@total_size`` and when it
+can return ``-1``.
 
 Other data types: Date, Interval, Integer, Number need examples and may
 need work to allow range searches. Full text search (e.g. over the
@@ -1055,7 +1070,7 @@ Does not support PUT, DELETE or PATCH.
 /data/\ *class*/\ *id* item
 ---------------------------
 
-When performing the ``GET`` method on an item
+When you use the ``GET`` method on an item
 (e.g. ``/data/issue/42``), a ``link`` attribute contains the link to
 the item, ``id`` contains the id, ``type`` contains the class name
 (e.g. ``issue`` in the example) and an ``etag`` property can be used

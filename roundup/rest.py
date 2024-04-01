@@ -440,6 +440,10 @@ class RestfulInstance(object):
 
     api_version = None
 
+    # allow 10M row response - can change using interfaces.py
+    # limit is 1 less than this size.
+    max_response_row_size = 10000001
+
     def __init__(self, client, db):
         self.client = client
         self.db = db
@@ -795,7 +799,7 @@ class RestfulInstance(object):
         exact_props = {}
         page = {
             'size': None,
-            'index': 1   # setting just size starts at page 1
+            'index': 1,   # setting just size starts at page 1
         }
         verbose = 1
         display_props = set()
@@ -910,11 +914,25 @@ class RestfulInstance(object):
             l.append(sort)
         if exact_props:
             kw['exact_match_spec'] = exact_props
-        if page['size'] is not None and page['size'] > 0:
-            kw['limit'] = page['size']
+        if page['size'] is None:
+            kw['limit'] = self.max_response_row_size
+        elif page['size'] > 0:
+            if page['size'] >= self.max_response_row_size:
+                raise UsageError(_(
+                    "Page size %(page_size)s must be less than admin "
+                    "limit on query result size: %(max_size)s.") % {
+                        "page_size": page['size'],
+                        "max_size": self.max_response_row_size,
+                    })
+            kw['limit'] = self.max_response_row_size
             if page['index'] is not None and page['index'] > 1:
                 kw['offset'] = (page['index'] - 1) * page['size']
         obj_list = class_obj.filter(None, *l, **kw)
+
+        # Have we hit the max number of returned rows?
+        # If so there may be more data that the client
+        # has to explicitly page through using offset/@page_index.
+        overflow = len(obj_list) == self.max_response_row_size
 
         # Note: We don't sort explicitly in python. The filter implementation
         # of the DB already sorts by ID if no sort option was given.
@@ -930,7 +948,7 @@ class RestfulInstance(object):
         for item_id in obj_list:
             r = {}
             if self.db.security.hasPermission(
-                'View', uid, class_name, itemid=item_id, property='id'
+                'View', uid, class_name, itemid=item_id, property='id',
             ):
                 r = {'id': item_id, 'link': class_path + item_id}
             if display_props:
@@ -942,14 +960,30 @@ class RestfulInstance(object):
 
         result_len = len(result['collection'])
 
+        if not overflow:  # noqa: SIM108  - no nested ternary
+            # add back the number of items in the offset.
+            total_len = kw['offset'] + result_len if 'offset' in kw \
+                else result_len
+        else:
+            # we have hit the max number of rows configured to be
+            # returned.  We hae no idea how many rows can match. We
+            # could use 0 as the sentinel, but a filter could match 0
+            # rows.  So return -1 indicating we exceeded the result
+            # max size on this query.
+            total_len = -1
+
+        # truncate result['collection'] to page size
+        if page['size'] is not None and page['size'] > 0:
+            result['collection'] = result['collection'][:page['size']]
+
         # pagination - page_index from 1...N
         if page['size'] is not None and page['size'] > 0:
             result['@links'] = {}
             for rel in ('next', 'prev', 'self'):
                 if rel == 'next':
                     # if current index includes all data, continue
-                    if page['size'] > result_len: continue  # noqa: E701
-                    index = page['index']+1
+                    if page['size'] >= result_len: continue  # noqa: E701
+                    index = page['index'] + 1
                 if rel == 'prev':
                     if page['index'] <= 1: continue  # noqa: E701
                     index = page['index'] - 1
@@ -964,8 +998,8 @@ class RestfulInstance(object):
                                      for field in input.value
                                      if field.name != "@page_index"])})
 
-        result['@total_size'] = result_len
-        self.client.setHeader("X-Count-Total", str(result_len))
+        result['@total_size'] = total_len
+        self.client.setHeader("X-Count-Total", str(total_len))
         self.client.setHeader("Allow", "OPTIONS, GET, POST")
         return 200, result
 

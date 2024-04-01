@@ -1556,6 +1556,8 @@ flexible extension point mechanism.
 .. _interfaces.py:
 .. _modifying the core of Roundup:
 
+.. index:: single: interfaces.py; hooking into the roundup core
+
 interfaces.py - hooking into the core of Roundup
 ================================================
 

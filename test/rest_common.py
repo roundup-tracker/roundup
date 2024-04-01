@@ -7,6 +7,7 @@ from time import sleep
 from datetime import datetime, timedelta
 from roundup.anypy.cgi_ import cgi
 from roundup.anypy.datetime_ import utcnow
+from roundup.exceptions import UsageError
 from roundup.test.tx_Source_detector import init as tx_Source_init
 
 
@@ -336,6 +337,207 @@ class TestCase():
             status=self.db.status.lookup('open'),
             priority=self.db.priority.lookup('critical')
         )
+
+    def test_no_next_link_on_full_last_page(self):
+        """Make sure that there is no next link
+           on the last page where the total number of entries
+           is a multiple of the page size.
+        """
+
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
+
+        # Retrieve third user of the total of 3.
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '3'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        results = self.server.get_collection('user', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "3")
+        self.assertEqual(results['data']['@total_size'], 3)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "3"
+        )
+        self.assertNotIn('next', results['data']['@links'])
+        self.dummy_client.additional_headers.clear()
+
+        # Retrieve first user of the total of 3.
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '1'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        results = self.server.get_collection('user', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "1")
+        self.assertEqual(results['data']['@total_size'], 3)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "3"
+        )
+        self.assertIn('next', results['data']['@links'])
+        self.dummy_client.additional_headers.clear()
+
+    def testTotal_size(self):
+        """Make sure that total_size is properly set if @page_size
+           is specified.
+
+           Also test for the cases:
+
+             @page_size >= the max number of retreivable rows.
+                 raises UsageError (and error code 400)
+             @page_size < max retreivable rows, but
+                the amount of matching rows is > max retreivable rows.
+                 total_size/X-Count-Total should be -1
+
+            no @page_size and limit < total results returns
+               limit size and -1 for total.
+
+            Check:
+              http response code
+              length of collection
+              An expected id at end of collection
+              @total_size in payload
+              X-Count-Total in http headers
+                
+        """
+        from roundup.rest import RestfulInstance
+
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
+
+        # Retrieve one user of the total of 3. limit 10M+1
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '1'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        results = self.server.get_collection('user', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "1")
+        self.assertEqual(results['data']['@total_size'], 3)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "3"
+        )
+        self.dummy_client.additional_headers.clear()
+
+        # set max number of returned rows
+        self.stored_max = RestfulInstance.max_response_row_size
+        RestfulInstance.max_response_row_size = 2
+
+        # Retrieve whole class (no @page_*) with max rows restricted.
+        form = cgi.FieldStorage()
+        results = self.server.get_collection('user', self.empty_form)
+        # reset so changes don't affect other tests if any assetion fails.
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 2)
+        self.assertEqual(results['data']['collection'][1]['id'], "2")
+        self.assertEqual(results['data']['@total_size'], -1)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "-1"
+        )
+        self.dummy_client.additional_headers.clear()
+
+        # Make sure we can access items that are returned
+        # in rows RestfulInstance.max_response_row_size + 1.
+        # so can we access item 2
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '2'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        RestfulInstance.max_response_row_size = 2
+        results = self.server.get_collection('user', form)
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "2")
+        self.assertEqual(results['data']['@total_size'], -1)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "-1"
+        )
+        self.dummy_client.additional_headers.clear()
+
+        # Same as above, but access item 3
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '3'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        RestfulInstance.max_response_row_size = 2
+        results = self.server.get_collection('user', form)
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "3")
+        self.assertEqual(results['data']['@total_size'], 3)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "3"
+        )
+        self.dummy_client.additional_headers.clear()
+
+        # Retrieve one user but max number of rows is set to 2,
+        # and we retrieve two users from the db.
+        # So we don't know how many total users there are.
+
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '1'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        RestfulInstance.max_response_row_size = 2
+        results = self.server.get_collection('user', form)
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "1")
+        self.assertEqual(results['data']['@total_size'], -1)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "-1"
+        )
+        self.dummy_client.additional_headers.clear()
+
+
+        # Set the page size to be >= the max number of rows returned.
+        # and verify the exception returned.
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '2'),
+            cgi.MiniFieldStorage('@page_size', '2'),
+        ]
+        RestfulInstance.max_response_row_size = 2
+        results = self.server.get_collection('user', form)
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(results['error']['status'], 400)
+        self.assertTrue(isinstance(results['error']['msg'], UsageError))
+        self.assertEqual(results['error']['msg'].args[0],
+                         "Page size 2 must be less than "
+                         "admin limit on query result size: 2.")
+        self.assertTrue('@total_size' not in results)
+        self.assertTrue('@data' not in results)
+        self.assertTrue("X-Count-Total" not in
+                          self.dummy_client.additional_headers)
+
+        # reset environment just in case I forgot a reset above.
+        RestfulInstance.max_response_row_size = self.stored_max
 
     def testGet(self):
         """

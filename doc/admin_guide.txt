@@ -259,6 +259,8 @@ to compress responses on the fly. The python standard library includes
 gzip support. For brotli or zstd you will need to install packages. See
 the `installation documentation`_ for details.
 
+.. index:: single: interfaces.py; configuring http compression
+
 Some assets will not be compressed on the fly. Assets with mime types
 of "image/png" or "image/jpeg" will not be compressed. You
 can add mime types to the list by using ``interfaces.py`` as discussed
@@ -319,6 +321,31 @@ brotli. If there is a precompressed gzip file present the client will
 get the gzip version and not a brotli compressed version. This
 mechanism allows the admin to allow use of brotli and zstd for
 dynamic content, but not for static content.
+
+.. index:: single: interfaces.py; setting REST maximum result limit
+
+Configuring REST Maximum Result Limit
+=====================================
+
+To prevent denial of service (DOS) and limit user wait time for an
+unbounded request, the REST endpoint has a maximum limit on the number
+of rows that can be returned. By default, this is set to 10 million.
+This setting applies to all users of the REST interface. If you want
+to change this limit, you can add the following code to the
+``interfaces.py`` file in your tracker::
+
+    # change max response rows
+    from roundup.rest import RestfulInstance
+    RestfulInstance.max_response_row_size = 26
+
+This code will set the maximum number of rows to 25 (one less than the
+value). Note that this setting is rarely used and is not available in
+the tracker's ``config.ini`` file. Setting it through this mechanism
+allows you to enter a string or number that may break Roundup, such as
+"asdf" or 0. In general, it is recommended to keep the limit at its
+default value. However, this option is available for cases when a
+request requires more than 10 million rows and pagination using
+``@page_index`` and ``@page_size=9999999`` is not possible.
 
 Adding a Web Content Security Policy (CSP)
 ==========================================
