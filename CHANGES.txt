@@ -107,8 +107,8 @@ Fixed:
   could be a bug in ZopeTAL. (John Rouillard)
 - issue2551328 - REST results show next link if number of results is a
   multiple of page size. There should be no next link. (Found by Patel
-  Malav and ... of the UMass-Boston CS682 Spring 2024 class; fix John
-  Rouillard)
+  Malav and Bharath Kanama of the UMass-Boston CS682 Spring 2024
+  class; fix John Rouillard)
 - issue2551264 - REST X-Total-Count header and @total_size count
   incorrect when paginated - correct values are now returned.
   (John Rouillard)
