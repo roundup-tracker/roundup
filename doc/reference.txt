@@ -13,11 +13,11 @@ Roundup Reference
 
 .. admonition:: Welcome
 
-  This document used to be part of the `customisation document`_.  The
-  customisation document was getting large and unwieldy.  It was a
+  This document was part of the `customisation document`_.  The
+  customisation document was getting large and unwieldy. The
   combination of examples and internal information that made finding
-  information difficult. We often had questions on the mailing list that
-  were well answered in the customisation document, but finding the info
+  information difficult. Questions raised on the mailing list were
+  well answered in the customisation document, but finding the info
   was difficult.
 
   The documentation is slowly being reorganized using the `Diataxis
@@ -29,7 +29,7 @@ Roundup Reference
   .. _customisation document: customizing.html
   .. _diataxis framework: https://diataxis.fr/
 
-.. This document borrows from the ZopeBook section on ZPT. The original is at:
+.. This document borrows from the ZopeBook section on ZPT. The original was at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
 
 .. contents::
@@ -57,11 +57,11 @@ Trackers have the following structure:
   =================== ========================================================
   config.ini          Holds the basic `tracker configuration`_
   schema.py           Holds the `tracker schema`_
-  initial_data.py     Holds any data to be entered into the database when the
-		      tracker is initialised (optional)
+  initial_data.py     Loads initial data into the tracker (status,
+                      priority ...) when initializing the tracker (optional)
   interfaces.py       Allows `modifying the core of Roundup`_ (optional)
   db/                 Holds the tracker's database
-  db/files/           Holds the tracker's upload files and messages
+  db/files/           Holds the tracker's uploaded files and message
   db/backend_name     Names the database back-end for the tracker (obsolete).
 		      Use the ``backend`` setting in the ``[rdbms]``
 		      section of ``config.ini`` instead.
@@ -81,11 +81,11 @@ Tracker Configuration
 The ``config.ini`` located in your tracker home contains the basic
 configuration for the web and e-mail components of Roundup's interfaces.
 
-Changes to the data captured by your tracker is controlled by the `tracker
-schema`_.  Some configuration is also performed using permissions - see the 
-`security / access controls`_ section. For example, to allow users to
-automatically register through the email interface, you must grant the
-"Anonymous" Role the "Email Access" Permission.
+The `tracker schema`_ defines the data captured by your tracker. It
+also defines the permissions used when accessing the data: see the
+`security / access controls`_ section. For example, you must grant the
+"Anonymous" Role the "Email Access" Permission to allow users to
+automatically register through the email interface,.
 
 .. index::
    single: config.ini; sections
@@ -115,9 +115,8 @@ section "ConfigParser -- Configuration file parser":
 
 __ https://docs.python.org/2/library/configparser.html
 
-Example configuration settings are below. This is a partial
-list. Documentation on all the settings is included in the
-``config.ini`` file.
+Example configuration settings are below. This is a partial list. The
+``config.ini`` file includes documentation on all the settings.
  
 .. .comment out. file generation needs more work include:: tracker_config.txt
 
@@ -126,7 +125,7 @@ list. Documentation on all the settings is included in the
 Section **main**
  database -- ``db``
   Database directory path. The path may be either absolute or relative
-  to the directory containig this config file.
+  to the directory containing this config file.
 
  templates -- ``html``
   Path to the HTML templates directory. The path may be either absolute
@@ -262,9 +261,9 @@ Section **web**
    single: config.ini; database settings
 
 Section **rdbms**
- Settings in this section are used to set the backend and configure
- addition settings needed by RDBMs like SQLite, Postgresql and
- MySQL backends.
+ The settings in this section set the backend and configure
+ addition settings needed by RDBMS like SQLite, PostgreSQL and
+ MySQL.
 
  .. index::
     single: postgres; select backend in config.ini 
@@ -569,7 +568,7 @@ genconfig`` command. You can generate a new config file merging in
 existing settings using the ``roundup-admin updateconfig`` command.
 
 Configuration variables may be referred to in lower or upper case. In code,
-variables not in the "main" section are referred to using their section and
+refer to variables not in the "main" section using their section and
 name, so "domain" in the section "mail" becomes MAIL_DOMAIN.
 
 .. index:: pair: configuration; extensions
@@ -581,9 +580,9 @@ Extending the configuration file
 You can't add new variables to the config.ini file in the tracker home but
 you can add two new config.ini files:
 
-- a config.ini in the ``extensions`` directory will be loaded and attached
+- a config.ini in the ``extensions`` directory is loaded and attached
   to the config variable as "ext".
-- a config.ini in the ``detectors`` directory will be loaded and attached
+- a config.ini in the ``detectors`` directory is loaded and attached
   to the config variable as "detectors".
 
 For example, the following in ``detectors/config.ini``::
@@ -609,13 +608,13 @@ is supposed to be an integer value (e.g. 4) could be the word
 "foo". If you are writing Python code that uses these settings, you
 should expect to handle invalid values.
 
-Also, incorrect values aren't discovered until the config setting is
-used. This can be long after the tracker is started and the error may
-not be seen in the logs.
+Also, incorrect values are discovered when the config setting is
+used not set. This can be long after the tracker is
+started and the error may not be seen in the logs.
 
-It is possible to validate these settings. Validation involves calling
-the ``update_options`` method on the configuration option. This can be
-done from the ``init()`` function in the Python files implementing
+It's possible to validate these settings. Validation involves calling
+the ``update_options`` method on the configuration option. This is
+from by ``init()`` function in the Python files implementing
 extensions_ or detectors_.
 
 As an example, adding the following to an extension::
@@ -648,7 +647,7 @@ the settings for both config.ini`s. Otherwise detector options are not
 validated until the first request to the web interface (or email
 gateway).
 
-There are 4 arguments for ``update_option``:
+``update_option`` takes 4 arguments:
 
 1. config setting name - string (positional, mandatory)
 2. option type - Option derived class from configuration.py
@@ -660,13 +659,13 @@ The first argument is the config setting name as described at the
 beginning of this section.
 
 The second argument is a class in the roundup.configuration module.
-There are a number of these classes: BooleanOption,
+There are many of these classes: BooleanOption,
 IntegerNumberOption, RegExpOption.... Please see the configuration
 module for all Option validators and their descriptions. You can also
 define your own custom validator in `interfaces.py`_.
 
-The third and fourth arguments are strings and are optional. They are
-printed if there is an error and may help the user correct the problem.
+The third and fourth arguments are optional strings. They are printed
+when there is an error and may help the user correct the problem.
 
 .. index:: ! schema
 
@@ -718,7 +717,7 @@ You must never:
 .. [1] If you shut down the tracker, `export the database`_, modify the
        exported csv property data to be compatible with the new type,
        change the property type in the schema, and finally import the
-       changed exported data, you can change the property type. It is
+       changed exported data, you can change the property type. This is
        not trivial nor for the faint of heart. But it can be done.
 
 .. _export the database: admin_guide.html#using-roundup-admin
@@ -778,7 +777,7 @@ specifying (default) labelling and ordering of classes.)::
 Classes and Properties - creating a new information store
 ---------------------------------------------------------
 
-In the tracker above, we've defined 7 classes of information:
+The tracker above, defines 7 classes of information:
 
   priority
       Defines the possible levels of urgency for issues.
@@ -803,16 +802,16 @@ In the tracker above, we've defined 7 classes of information:
   issue
       Initially empty, this is where the issue information is stored.
 
-We define the "priority" and "status" classes to allow two things:
+It defines the "priority" and "status" classes to allow two things:
 
   1. reduction in the amount of information stored on the issue
   2. more powerful, accurate searching of issues by priority and status
 
-By only requiring a link on the issue (which is stored as a single
-number) we reduce the chance that someone mis-types a priority or
-status - or simply makes a new one up.
+By requiring a link on the issue (stored as a single
+number) the chance that someone mis-types a priority or
+status - or makes a new one up is reduced.
 
-Class names are used to access items of that class in the `REST api`_
+Class names access items of that class in the `REST api`_
 interface. The classic tracker was created before the REST interface
 was added. It uses the single form (i.e. issue and user not issues and
 users) for its classes. Most REST documentation suggests using plural
@@ -840,13 +839,13 @@ sometimes refer to this as the *itemid*.
 Properties
 ~~~~~~~~~~
 
-A Class is comprised of one or more properties of the following types:
+A Class consists of one or more properties of the following types:
 
 String
-     properties are for storing arbitrary-length strings.
+     properties store arbitrary-length strings.
 Password
-     properties are for storing encoded arbitrary-length strings.
-     The default encoding is defined on the ``roundup.password.Password``
+     properties store encoded arbitrary-length strings.
+     The default encoding is defined in the ``roundup.password.Password``
      class.
 Date
      properties store date-and-time stamps. Their values are Timestamp
@@ -862,15 +861,14 @@ Number
 Boolean
      properties store on/off, yes/no, true/false values.
 Link
-     properties refers to a single other item selected from a
+     properties refers to a single item selected from a
      specified class. The class is part of the property; the value is an
      integer, the id of the chosen item.
 Multilink
-     properties refer to possibly many items in a specified
+     properties refer to one or more items in a specified
      class. The value is a list of integers.
 
-Properties can have additional attributes to change the default
-behaviour:
+Properties have attributes to change the default behaviour:
 
 .. index:: triple: schema; property attributes; required
    triple: schema; property attributes; default_value
@@ -890,19 +888,18 @@ behaviour:
     - the property change section of the nosy email
     - the web history at the bottom of an item's page
 
-    This can be used to store state of the user interface (e.g. the
+    This is useful when storing the state of the user interface (e.g. the
     names of elements that are collapsed or hidden from the
-    user). Making properties that are updated as an indirect result of
+    user). Properties updates as an indirect result of
     a user's change (e.g. updating a blockers property, counting
-    number of times an issue was reopened or reassigned etc.) should
+    number of times an issue is reopened or reassigned etc.) should
     not be displayed to the user as they can be confusing.
 
 .. index:: triple: schema; property attributes; indexme
 
-* String properties can have an ``indexme`` attribute that defines if the
-  property should be part of the full text index. The default is 'no' but this
-  can be set to 'yes' to allow a property's contents to be in the full
-  text index.
+* String properties have an ``indexme`` attribute. The default is
+  'no'. Setting it to 'yes' includes the property in the full text
+  index.
 
 .. index:: triple: schema; property attributes; use_double
 
@@ -921,12 +918,12 @@ behaviour:
 
   .. index:: triple: schema; property attributes; try_id_parsing
 
-  - ``try_id_parsing`` is turned on by default. If entering a number
-    into a Link or Multilink field, Roundup interprets this number as an
-    ID of the item to link to. Sometimes items can have numeric names
-    (like, e.g., product codes). For these Roundup needs to match the
-    numeric name and should never match an ID. In this case you can set
-    ``try_id_parsing='no'``.
+  - ``try_id_parsing`` is turned on by default. If a number is entered
+    into a Link or Multilink field, Roundup interprets this number as
+    an ID of the item to link to. Sometimes items can have numeric
+    names (e.g., product codes). For these Roundup needs to
+    match the numeric name and should never match an ID. In this case
+    you can set ``try_id_parsing='no'``.
 
   .. index:: triple: schema; property attributes; rev_multilink
 
@@ -940,11 +937,11 @@ behaviour:
     template) or via the REST and XMLRPC APIs.
 
     As a example, suppose you want to group multiple issues into a
-    super issue. Each issue can be part of only one super issue. It is
-    inefficient to find all of the issues that are part of the
-    super issue by searching through all issues in the system looking
-    at the part_of link property. To make this more efficient, you
-    can declare an issue's part_of property as::
+    super issue. Each issue can be part of one super issue. It is
+    inefficient to find all of the issues linked to the super issue by
+    searching through all issues in the system looking at the part_of
+    link property. To make this more efficient, you can declare an
+    issue's part_of property as::
 
        issue = IssueClass(db, "issue",
                  ...
@@ -973,12 +970,12 @@ behaviour:
     regular multilink, but you can't explicitly assign to it.
     Another difference of reverse multilinks to normal multilinks
     is that when a linked node is retired, the node vanishes from the
-    multilink, e.g. in the example above, if an issue with ``part_of``
-    set to another issue is retired this issue vanishes from the
-    ``components`` multilink of the other issue.
+    multilink.  In the example above, when issue 1234 with ``part_of``
+    set to issue 5678 is retired, 1234 vanishes from the
+    ``components`` multilink of issue 5678.
 
-    You can also link between different classes. So you can modify
-    the issue definition to include::
+    You can also link between different classes. If the issue
+    definition includes::
 
        issue = IssueClass(db, "issue",
                  ...
@@ -1014,7 +1011,7 @@ behaviour:
         X-Roundup-issue-assigned_to: ...
 
     so that the mail recipients can filter emails where
-    ``X-Roundup-issue-assigned_to: name`` that contains their
+    ``X-Roundup-issue-assigned_to: name`` contains their
     username. The user class is defined as::
 
        user = Class(db, "user",
@@ -1029,8 +1026,8 @@ behaviour:
                 roles=String(),     # comma-separated string of Role names
                 timezone=String())
 
-    Because there is no ``name`` parameter for the user class, there
-    will be no header. However setting::
+    Because the user class does not have a ``name`` parameter, no
+    header will be written. Setting::
 
        assigned_to=Link("user", msg_header_property="username")
 
@@ -1049,15 +1046,15 @@ behaviour:
 
     for emails sent on issues where joe_user has been assigned to the issue.
 
-    If this property is set to the empty string "", it will prevent
-    the header from being generated on outgoing mail.
+    If this property is set to the empty string "", no header will be
+    generated on outgoing mail.
 
 .. index:: triple: schema; class property; creator
    triple: schema; class property; creation
    triple: schema; class property; actor
    triple: schema; class property; activity
 
-All Classes automatically have a number of properties by default:
+All Classes automatically have four properties by default:
 
 *creator*
   Link to the user that created the item.
@@ -1083,12 +1080,12 @@ setkey(property)
 
 .. index:: roundup-admin; setting assignedto on an issue
 
-Select a String property of the class to be the key property. The key
-property must be unique, and allows references to the items in the class
-by the content of the key property. That is, we can refer to users by
-their username: for example, let's say that there's an issue in Roundup,
-issue 23. There's also a user, richard, who happens to be user 2. To
-assign an issue to him, we could do either of::
+Set the key property of a class to a string property. The key property
+must be unique. References to the items in the class can be done by
+the content of the key property. For example, you can refer to users by
+their username. Let's say that there's an issue in
+Roundup, issue 23. There's also a user, richard, who happens to be
+user 2. To assign an issue to him, we could do use::
 
      roundup-admin set issue23 assignedto=2
 
@@ -1104,7 +1101,7 @@ setlabelprop(property)
 ::::::::::::::::::::::
 
 Select a property of the class to be the label property. The label
-property is used whereever an item should be uniquely identified, e.g.,
+property is used whenever an item should be uniquely identified, e.g.,
 when displaying a link to an item. If setlabelprop is not specified for
 a class, the following values are tried for the label: 
 
@@ -1113,13 +1110,12 @@ a class, the following values are tried for the label:
 * the "title" property
 * the first property from the sorted property name list
 
-So in most cases you can get away without specifying setlabelprop
+In most cases you can get away without specifying setlabelprop
 explicitly.
 
-You should make sure that users have View access to this property or
-the id property for a class. If the property can not be viewed by a
-user, looping over items in the class (e.g. messages attached to an
-issue) will not work.
+Users should have View access to this property or the id property for
+a class. If the property can not be viewed by a user, looping over
+items in the class (e.g. messages attached to an issue) will not work.
 
 .. index:: triple: schema; class method; setorderprop
 
@@ -1129,14 +1125,14 @@ setorderprop(property)
 Select a property of the class to be the order property. The order
 property is used whenever using a default sort order for the class,
 e.g., when grouping or sorting class A by a link to class B in the user
-interface, the order property of class B is used for sorting.  If
+interface, the order property of class B is used for sorting. If
 setorderprop is not specified for a class, the following values are tried
 for the order property:
 
 * the property named "order"
 * the label property (see `setlabelprop(property)`_ above)
 
-So in most cases you can get away without specifying setorderprop
+Usually you can get away without specifying setorderprop
 explicitly.
 
 .. index:: triple: schema; class method; create
@@ -1144,27 +1140,27 @@ explicitly.
 create(information)
 :::::::::::::::::::
 
-Create an item in the database. This is generally used to create items
+Create an item in the database. This is used to create items
 in the :term:`definitional class` like "priority" and "status".
 
 IssueClass
 ~~~~~~~~~~
 
-IssueClasses automatically include the "messages", "files", "nosy", and
+IssueClass automatically includes the "messages", "files", "nosy", and
 "superseder" properties.
 
 The messages and files properties list the links to the messages and
 files related to the issue. The nosy property is a list of links to
-users who wish to be informed of changes to the issue - they get "CC'ed"
+users to tell about changes to the issue. They get "CC'ed"
 e-mails when messages are sent to or generated by the issue. The nosy
 reactor (in the ``'detectors'`` directory) handles this action. The
 superseder link indicates an issue which has superseded this one.
 
-They also have the dynamically generated "creation", "activity" and
-"creator" properties.
+They also have the default "creation", "activity" and "creator"
+properties.
 
 The value of the "creation" property is the date when an item was
-created, and the value of the "activity" property is the date when any
+created. The value of the "activity" property is the date when any
 property on the item was last edited (equivalently, these are the dates
 on the first and last records in the item's journal). The "creator"
 property holds a link to the user that created the issue.
@@ -1177,20 +1173,20 @@ FileClass
 
 FileClasses save their "content" attribute off in a separate file from
 the rest of the database. This reduces the number of large entries in
-the database, which generally makes databases more efficient, and also
-allows us to use command-line tools to operate on the files. They are
-stored in the files sub-directory of the ``'db'`` directory in your
-tracker. FileClasses also have a "type" attribute to store the MIME
-type of the file.
+the database, which makes databases more efficient. Also web servers,
+image processing applications, and command line tools can operate on
+the files. The content is stored in the ``files`` sub-directory of the
+``'db'`` directory in your tracker. FileClasses also have a "type"
+attribute to store the file's MIME type.
 
-Roundup by default considers the contents of the file immutable. This
-is to assist in maintaining an accurate record of correspondence.  The
-distributed tracker templates do not enforce this. So if you have
-access to the Roundup tracker directory, you can edit the files (make
-sure to preserve mode, owner and group) to remove information (e.g. if
-somebody includes a password or you need to redact proprietary
-information). Obviously the journal for the message/file will not
-report that the file has changed.
+Roundup, by default, considers the contents of the file
+immutable. This assists in maintaining an accurate record of
+correspondence. The distributed tracker templates do not enforce
+this. If you have access to the Roundup tracker directory, you can
+edit the files (make sure to preserve mode, owner and group) to remove
+information. You may need to do this if somebody includes a password
+or you need to redact proprietary information. The journal for the
+message/file won't report that the file has changed.
 
 Best practice is to remove offending material and leave a
 placeholder. E.G. replace a password with the text::
@@ -1248,12 +1244,15 @@ where ``hello`` is a file on local disk.
 You can enforce immutability in your tracker by adding an auditor (see
 detectors_) for the file/msg class that rejects changes to the content
 property. The auditor could also add a journal entry so that a change
-via the Roundup mechanism is reported.  Using a mixin (see:
+via the Roundup mechanism is reported. Using a mixin (see:
 https://wiki.roundup-tracker.org/MixinClassFileClass) to augment the
-file class allows for other possibilities including signing the file, or
-recording a checksum in the database and validating the file contents
-at the time it gets read. This allows detection of changes done on the
-filesystem outside of the Roundup mechanism.
+file class allows for other possibilities including:
+
+* signing the file,
+* recording a checksum in the database and validating the file
+  contents at the time it gets read. This allows detection of changes
+  done on the filesystem outside of the Roundup mechanism.
+* keeping multiple revisions of the file.
 
 .. index:: triple: schema; class property; messages
    triple: schema; class property; files
@@ -1265,31 +1264,29 @@ filesystem outside of the Roundup mechanism.
 A note about ordering
 ~~~~~~~~~~~~~~~~~~~~~
 
-When we sort items in the hyperdb, we use one of a number of methods,
-depending on the properties being sorted on:
+When we sort items in the hyperdb, we use one of three methods,
+depending on the property type:
 
-1. If it's a String, Integer, Number, Date or Interval property, we
-   just sort the scalar value of the property. Strings are sorted
-   case-sensitively.
-2. If it's a Link property, we sort by either the linked item's "order"
+1. String, Integer, Number, Date or Interval property, sort the scalar
+   value of the property. Strings sort case-sensitively.
+2. a Link property, sort by either the linked item's "order"
    property (if it has one) or the linked item's "id".
-3. Mulitlinks sort similar to #2, but we start with the first Multilink
-   list item, and if they're the same, we sort by the second item, and
+3. Mulitlinks sort similar to #2, starting with the first Multilink
+   list item, and if they are the same, sort by the second item, and
    so on.
 
-Note that if an "order" property is defined on a Class that is used for
-sorting, all items of that Class *must* have a value against the "order"
-property, or sorting will result in random ordering.
+Note that if an "order" property is defined for a class, all items of
+that Class *must* have a value for the "order" property, or
+sorting will result in random ordering.
 
 
 Examples of adding to your schema
 ---------------------------------
 
-Some examples are in the :ref:`CustomExamples` section.
+See :ref:`CustomExamples` for examples.
 
-Also you can start with `Roundup wiki CategorySchema`_ to see a list
-of additional examples of how schemas can be customised to add new
-functionality.
+The Roundup wiki CategorySchema`_ provides a list of additional
+examples of how to customize schemas to add new functionality.
 
 .. _Roundup wiki CategorySchema:
    https://wiki.roundup-tracker.org/CategorySchema
@@ -1304,7 +1301,7 @@ Schema Integrity
 
 There is a table in all SQL based schemas called ``schema``. It
 contains a representation of the current schema and the current
-Roundup schema version. Roundup will exit the version is not supported
+Roundup schema version. Roundup will exit if the version is not supported
 by the release. E.G. Roundup 2.1.0 will not work with a database
 created by 2.3.0 as db version 8 used by 2.3.0 is not supported by
 2.1.0.
@@ -1343,16 +1340,16 @@ version.
 Detectors - adding behaviour to your tracker
 ============================================
 
-Detectors are initialised every time you open your tracker database, so
-you're free to add and remove them any time, even after the database is
-initialised via the ``roundup-admin initialise`` command.
+Detectors are Python modules that sit in your tracker's ``detectors``
+directory. You are free to add and remove them any time, even after
+the database is initialised via the ``roundup-admin initialise``
+command.
 
-The detectors in your tracker fire *before* (**auditors**) and *after*
-(**reactors**) changes to the contents of your database. They are Python
-modules that sit in your tracker's ``detectors`` directory. You will
-have some installed by default - have a look. You can write new
-detectors or modify the existing ones. The existing detectors installed
-for you are:
+Detectors in your tracker are run *before* (**auditors**) and *after*
+(**reactors**) changes to the contents of your database. You will have
+some installed by default - have a look. You can write new detectors
+or modify the existing ones. The existing detectors installed for you
+are:
 
 .. index:: detectors; installed
 
@@ -1375,7 +1372,7 @@ for you are:
   Verifies the content of some of the user fields (email addresses and
   roles lists).
 
-If you don't want this default behaviour, you're completely free to change
+If you don't want this default behaviour, you are completely free to change
 or remove these detectors.
 
 See the detectors section in the `design document`__ for details of the
@@ -1403,13 +1400,13 @@ IssueClass within the database, and ``newdata`` is a dictionary mapping
 property names to values.
 
 For a ``create()`` operation, the ``itemid`` argument is None and
-newdata contains all of the initial property values with which the item
-is about to be created.
+``newdata`` contains all the initial property values that will be
+used to create the item
 
-For a ``set()`` operation, newdata contains only the names and values of
-properties that are about to be changed.
+For a ``set()`` operation, ``newdata`` contains only the names and
+values of properties that are about to be changed.
 
-For a ``retire()`` or ``restore()`` operation, newdata is None.
+For a ``retire()`` or ``restore()`` operation, ``newdata`` is None.
 
 .. index:: pair: detectors; reactor
    single: reactors; function signature
@@ -1425,7 +1422,7 @@ IssueClass within the database, and ``olddata`` is a dictionary mapping
 property names to values.
 
 For a ``create()`` operation, the ``itemid`` argument is the id of the
-newly-created item and ``olddata`` is None.
+newly created item and ``olddata`` is None.
 
 For a ``set()`` operation, ``olddata`` contains the names and previous
 values of properties that were changed.
@@ -1445,7 +1442,7 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
 **irker.py**
   This detector sends notification on IRC through an irker daemon
   (http://www.catb.org/esr/irker/) when issues are created or messages
-  are added.  In order to use it you need to install irker, start the
+  are added.  To use it you need to install irker, start the
   irkerd daemon, and add an ``[irker]`` section in ``detectors/config.ini``
   that contains a comma-separated list of channels where the messages should
   be sent, e.g. ``channels = irc://chat.freenode.net/channelname``.
@@ -1455,12 +1452,13 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
   before you use it (look for the text 'team@team.host') or you'll get
   email errors!
 **creator_resolution.py**
-  Catch attempts to set the status to "resolved" - if the assignedto
-  user isn't the creator, then set the status to "confirm-done". Note that
-  "classic" Roundup doesn't have that status, so you'll have to add it. If
-  you don't want to though, it'll just use "in-progress" instead.
+  When the status is set to "resolved" this auditor checks the user
+  performing the action. If the user is not the creator, it sets the
+  status to "confirm-done". Note that "classic" Roundup doesn't have
+  that status, so you'll have to add it. If you don't want to though,
+  it'll just use "in-progress" instead.
 **email_auditor.py**
-  If a file added to an issue is of type message/rfc822, we tack on the
+  If a file added to an issue is of type message/rfc822, tack on the
   extension .eml.
   The reason for this is that Microsoft Internet Explorer will not open
   things with a .eml attachment, as they deem it 'unsafe'. Worse yet,
@@ -1474,7 +1472,7 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
 Auditor or Reactor?
 -------------------
 
-Generally speaking, the following rules should be observed:
+Generally speaking, you should observe the following rules:
 
 **Auditors**
   Are used for `vetoing creation of or changes to items`_. They might
@@ -1489,7 +1487,7 @@ Vetoing creation of or changes to items
 ---------------------------------------
 
 Auditors may raise the ``Reject`` exception to prevent the creation of
-or changes to items in the database.  The mail gateway, for example, will
+or changes to items in the database. The mail gateway, for example, will
 not attach files or messages to issues when the creation of those files or
 messages are prevented through the ``Reject`` exception. It'll also not create
 users if that creation is ``Reject``'ed too.
@@ -1498,15 +1496,15 @@ To use, simply add at the top of your auditor::
 
    from roundup.exceptions import Reject
 
-And then when your rejection criteria have been detected, simply::
+And then when your rejection criteria have been detected, use::
 
    raise Reject('Description of error')
 
-Error messages raised with ``Reject`` automatically have any HTML content
-escaped before being displayed to the user. To display an error message to the
-user without performing any HTML escaping the ``RejectRaw`` should be used. All
-security implications should be carefully considering before using
-``RejectRaw``.
+Error messages raised with ``Reject`` automatically have any HTML
+content escaped before being displayed to the user. To display an
+error message to the user without performing any HTML escaping
+the ``RejectRaw`` should be used. All security implications
+should be carefully considering before using ``RejectRaw``.
 
 
 Generating email from Roundup
@@ -1515,11 +1513,11 @@ Generating email from Roundup
 The module ``roundup.mailer`` contains most of the nuts-n-bolts required
 to generate email messages from Roundup.
 
-In addition, the ``IssueClass`` methods ``nosymessage()`` and
-``send_message()`` are used to generate nosy messages, and may generate
-messages which only consist of a change note (ie. the message id parameter
-is not required - this is referred to as a "System Message" because it
-comes from "the system" and not a user).
+Also, the ``IssueClass`` methods ``nosymessage()`` and
+``send_message()`` generate nosy messages, and may generate
+messages which only consist of a change note (i.e. the message id
+parameter is not required - this is referred to as a "System
+Message" because it comes from "the system" and not a user).
 
 
 .. index:: extensions
@@ -1532,26 +1530,27 @@ Extensions - adding capabilities to your tracker
 
 While detectors_ add new behavior by reacting to changes in tracked
 objects, `extensions` add new actions and utilities to Roundup, which
-are mostly used to enhance web interface.
+are mostly used to enhance the web interface.
 
-You can create an extension by creating Python file in your tracker
-``extensions`` directory.  All files from this dir are loaded when
-tracker instance is created, at which point it calls ``init(instance)``
-from each file supplying itself as a first argument.
+You can create an extension by creating Python file in your
+tracker ``extensions`` directory. The tracker loads all the files
+from this directory, at which point it calls ``init(instance)`` from
+each file supplying itself as a first argument.
 
-Note that at this point web interface is not loaded, but extensions still
-can register actions for in tracker instance. This may be fixed in
-Roundup 1.6 by introducing ``init_web(client)`` callback or a more
-flexible extension point mechanism.
+Note that at this point web interface is not loaded, but
+extensions still can register actions for it in the tracker
+instance. This may be fixed in Roundup 1.6 by introducing
+``init_web(client)`` callback or a more flexible extension point
+mechanism.
 
 * ``instance.registerUtil`` is used for adding `templating utilities`_
   (see `adding a time log to your issues
   <customizing.html#adding-a-time-log-to-your-issues-4>`_ for an example)
 
-* ``instance.registerAction`` is used to add more actions to instance
-  and to web interface. See `Defining new web actions`_ for details.
-  Generic action can be added by inheriting from ``action.Action``
-  instead of ``cgi.action.Action``.
+* ``instance.registerAction`` is used to add more actions to the
+  instance and to web interface. See `Defining new web actions`_
+  for details.  Generic action can be added by inheriting from
+  ``action.Action`` instead of ``cgi.action.Action``.
 
 .. _interfaces.py:
 .. _modifying the core of Roundup:
@@ -1572,20 +1571,20 @@ this you can:
 
 but with great power comes great responsibility.
 
-Interfaces.py has been around since the earliest releases of Roundup
-and used to be the main way to get a lot of customisation done. In
+Interfaces.py has existed since the earliest releases of Roundup
+and was the main way to get a lot of customisation done. In
 modern Roundup, the extensions_ mechanism is used to `add actions
-<#defining-new-web-actions>`_ and `templating utilities`_. But there are
-places where interfaces.py is still useful. Note that the tracker
-directories are not on the Python system path when interfaces.py is
-evaluated. You need to add library directories explictly by
-modifying sys.path.
+<#defining-new-web-actions>`_ and `templating utilities`_. But
+there are places where interfaces.py is still useful. Note that
+the tracker directories are not on the Python system path when
+interfaces.py is evaluated. You need to add library directories
+explicitly by modifying sys.path.
 
 Interfaces.py allows you to interact with any part of Roundup's
 internals. These internals are not as stable as defined interfaces
 (e.g. extensions. detectors, schema). So the code in interfaces.py is
 more likely to need modification when upgrading from version to
-version.  While the developers attempt to keep the examples working,
+version. While the developers attempt to keep the examples working,
 it may make more sense to change the internals to make the code
 clearer, add more features etc.
 
@@ -1604,7 +1603,7 @@ Database Content
    "working", you need to change the check.)
 
 Customisation of the special :term:`definitional classes <definitional
-class>` (eg. status,
+class>` (e.g. status,
 priority, resolution, ...) may be done either before or after the
 tracker is initialised. The actual method of doing so is completely
 different in each case though, so be careful to use the right one.
@@ -1679,7 +1678,8 @@ These are hooked into the default Roles:
 - Anonymous (Web Access)
 
 Finally, the "admin" user gets the "Admin" Role, and the "anonymous"
-user gets the "Anonymous" Role assigned when the tracker is installed.
+user gets the "Anonymous" Role. The "Admin" and "Anonymous" roles
+are created when the tracker is initialized.
 
 For the "User" Role, the "classic" tracker defines:
 
