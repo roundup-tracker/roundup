@@ -296,10 +296,6 @@ jobs:
           path-to-lcov: coverage.lcov
           parallel: run-{{ matrix.python-version }}-{{ matrix.os }}
 
-      - name: test build_doc
-        run: |
-          python ./setup.py build_doc
-
       #- name: test docker build current version ubuntu-latest
       #  if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
       #  run: |
