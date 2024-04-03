@@ -1651,11 +1651,11 @@ Email Access
   interface (see also the ``new_email_user_roles`` configuration option).
 
 Web Access
-  If defined, the user may use the web interface. This is usually
-  assigned to the Anonymous role as well to allow authorized users to
-  access the form based login. If some other authorization mode (basic
-  auth, SSO, etc.) is used Web Access can be removed from the
-  Anonymous user.
+  If defined, the user may use the web interface. This is
+  assigned to the Anonymous role to allow authorized users to
+  access the form based login. If your tracker uses some other
+  authorization mode (basic auth, Single Sign On (SSO), etc.) Web
+  Access can be removed from the Anonymous user.
 
 Web Roles
   Controls user access to editing the "roles" property of the "user" class.
@@ -1668,10 +1668,10 @@ Rest Access |br| Xmlrpc Access
   `xmlrpc interface documentation`_.
 
 Register
-  This is assigned to the anonymous user and allows automatic user
-  registration by email or web.
+  This enables automatic user registration by email or web. It is
+  assigned to the anonymous user.
 
-These are hooked into the default Roles:
+These are assigned into the default Roles:
 
 - Admin (Create, Edit, Retire, Restore, Search, View for everything; Web Roles)
 - User (Web Access; Email Access)
@@ -1688,7 +1688,7 @@ For the "User" Role, the "classic" tracker defines:
 - View user
 - Edit their own user record
 
-And the "Anonymous" Role is defined as:
+And the "Anonymous" Role has the following permissions:
 
 - Web interface access
 - Register user (for registration)
@@ -1819,24 +1819,24 @@ cause baffling permission issues.
 Automatic Permission Checks
 ---------------------------
 
-Permissions are automatically checked when information is rendered
+Permissions are automatically checked when rendering information
 through the web. This includes:
 
-1. View checks for properties when being rendered via the ``plain()`` or
-   similar methods. If the check fails, the text "[hidden]" will be
+1. View checks for properties when rendered via the ``plain()`` or
+   similar methods. If the check fails, the text "[hidden]" is
    displayed.
-2. Edit checks for properties when the edit field is being rendered via
+2. Edit checks for properties when the edit field is rendered via
    the ``field()`` or similar methods. If the check fails, the property
-   will be rendered via the ``plain()`` method (see point 1. for subsequent
+   is rendered via the ``plain()`` method (see point 1. for subsequent
    checking performed)
 3. View checks are performed in index pages for each item being displayed
    such that if the user does not have permission, the row is not rendered.
 4. View checks are performed at the top of item pages for the Item being
    displayed. If the user does not have permission, the text "You are not
-   allowed to view this page." will be displayed.
+   allowed to view this page." is displayed.
 5. View checks are performed at the top of index pages for the Class being
    displayed. If the user does not have permission, the text "You are not
-   allowed to view this page." will be displayed.
+   allowed to view this page." is displayed.
 
 
 New User Roles
@@ -1863,13 +1863,13 @@ You may use the ``roundup-admin`` "``security``" command to display the
 current Role and Permission configuration in your tracker.
 
 
-Adding a new Permission
+Adding a New Permission
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-When adding a new Permission, you will need to:
+When adding a new Permission, you need to:
 
-1. add it to your tracker's ``schema.py`` so it is created, using
-   ``security.addPermission``, for example::
+1. create it in your tracker's ``schema.py`` using
+   ``security.addPermission``. For example::
 
     db.security.addPermission(name="View", klass='frozzle',
         description="User is allowed to access frozzles")
@@ -1877,51 +1877,12 @@ When adding a new Permission, you will need to:
    will set up a new "View" permission on the Class "frozzle".
 2. enable it for the Roles that should have it (verify with
    "``roundup-admin security``")
-3. add it to the relevant HTML interface templates
-4. add it to the appropriate xxxPermission methods on in your tracker
-   interfaces module
+3. check it in the relevant HTML interface templates
+4. check it in the appropriate hasPermission methods in your tracker's
+   extensions/detectors/interfaces.py modules
 
-The ``addPermission`` method takes a few optional parameters:
+The ``addPermission`` method takes a three optional parameters:
 
-**properties**
-  A sequence of property names that are the only properties to apply the
-  new Permission to (eg. ``... klass='user', properties=('name',
-  'email') ...``)
-**props_only**
-  A boolean value (set to false by default) that is a new feature
-  in Roundup 1.6.
-  A permission defined using:
-
-     ``properties=('list', 'of', 'property', 'names')``
-
-  is used to determine access for things other than just those
-  properties. For example a check for View permission on the issue
-  class or an issue item can use any View permission for the issue
-  class even if that permission has a property list.  This can be
-  confusing and surprising as you would think that a permission
-  including properties would be used only for determining the
-  access permission for those properties.
-
-  ``roundup-admin security`` will report invalid properties for the
-  class. For example a permission with an invalid summary property is
-  presented as::
-
-     Allowed to see content of object regardless of spam status
-        (View for "file": ('content', 'summary') only)
-
-     **Invalid properties for file: ['summary']
-
-  Setting ``props_only=True`` will make the permission valid only for
-  those properties.
-
-  If you use a lot of permissions with property checks, it can be
-  difficult to change all of them. Calling the function:
-
-    db.security.set_props_only_default(True)
-
-  at the top of ``schema.py`` will make every permission creation
-  behave as though props_only was set to True. It is expected that the
-  default of True will become the default in a future Roundup release.
 **check**
   A function to be executed which returns boolean determining whether
   the Permission is allowed. If it returns True, the permission is
@@ -1951,6 +1912,57 @@ The second form is preferred as it makes it easier to implement more
 complex permission schemes. An `example in upgrading.html
 <upgrading.html#enhancement-to-check-command-for-permissions>`_
 shows the use of ``ctx``.
+**properties**
+  A sequence of property names that are the only properties to apply the
+  new Permission to (eg. ``... klass='user', properties=('name',
+  'email') ...``)
+**props_only**
+  A boolean value (set to false by default) that is a new feature
+  in Roundup 1.6.
+  A permission defined using:
+
+     ``properties=('list', 'of', 'property', 'names')``
+
+  determines access for things other than just those
+  properties. For example a check for View permission on the
+  issue class or an issue item can use any View permission for
+  the issue class even if that permission has a property
+  list. This makes sense if you understand that a user can't
+  access the properties of a class if they can't access the
+  class. The ability to access class properties implies class
+  access.
+
+  This eliminates the need to create a duplicate View permission
+  without properties to allow access to the View properties
+  permission. Even though it makes sense, it can be confusing and
+  surprising.
+
+  You would think that a permission including properties would be
+  used only for determining the access permission when checking
+  properties. But that is not the case.
+
+  Setting ``props_only=True`` will prevent the permission
+  from being used unless the check include properties.
+
+  If you use a lot of permissions with property checks, it can be
+  difficult to change all of them. Calling the function:
+
+    db.security.set_props_only_default(True)
+
+  at the top of ``schema.py`` will make every permission creation
+  behave as though props_only is True. Note that you may
+  need to add new View permissions without properties to allow
+  property only checks to take effect.
+
+  ``roundup-admin security`` will report invalid properties for the
+  class. For example a permission with an invalid summary property is
+  presented as::
+
+     Allowed to see content of object regardless of spam status
+        (View for "file": ('content', 'summary') only)
+
+     **Invalid properties for file: ['summary']
+
 
 Example Scenarios
 ~~~~~~~~~~~~~~~~~
@@ -1974,7 +1986,8 @@ examples of customisation.
  unidentified user will automatically be registered with the tracker
  (with no password, so they won't be able to log in through
  the web until an admin sets their password). By default new Roundup
- trackers don't allow this as it opens them up to spam. It may be enabled
+ trackers don't enable "Email Access" for "anonymous" as it opens
+ them up to spam. It may be enabled
  by uncommenting the appropriate addPermissionToRole in your tracker's
  ``schema.py`` file. The new user is given the Roles list defined in the
  "new_email_user_roles" config variable. 
@@ -1993,7 +2006,7 @@ examples of customisation.
  new Role "Manager" which has that Permission, and assign that to the
  appropriate users. In your web interface, only display the "resolved"
  issue state option when the user has the "Closer" Permissions. Enforce
- the Permission with an auditor. This is very similar to the previous
+ the Permission with an auditor. This is similar to the previous
  example, except that the web interface check would look like::
 
    <option tal:condition="python:request.user.hasPermission('Closer')"
@@ -2024,8 +2037,8 @@ Web Interface
 
 The web interface is provided by the ``roundup.cgi.client`` module and
 is used by ``roundup.cgi``, ``roundup-server`` and ``ZRoundup``
-(``ZRoundup``  is broken, until further notice). In all cases, we
-determine which tracker is being accessed (the first part of the URL
+(``ZRoundup``  is broken, until further notice). In all cases, Roundup
+determines which tracker is accessed (the first part of the URL
 path inside the scope of the CGI handler) and pass control on to the
 ``roundup.cgi.client.Client`` class - which handles the rest of the
 access through its ``main()`` method. This means that you can do pretty
@@ -2041,7 +2054,7 @@ the web interface knows about it:
 
 1. Index, item and search pages for the relevant classes may need to
    have properties added or removed,
-2. The "page" template may require links to be changed, as might the
+2. The "page" template may require changing links, as might the
    "home" page's content arguments.
 
 
@@ -2083,11 +2096,11 @@ lead to the main tracker page:
 2. ``/index``
 3. ``/home``
 
-The following prefix is used to access static resources:
+The following prefix accesses static resources:
 
 4. ``/@@file/``
 
-Two additional url's are used for the API's.
+Two url's are used for the API's.
 The `REST api`_ is accessed via:
  
 5. ``/rest/``
@@ -2106,14 +2119,14 @@ for specific items of that class. Example for class URL:
 
 7. ``/issue``
 
-This is usually used to show listings of class items. The URL for
+Shows a listings of class items, usually in a table. The URL for
 for specific object of issue class with id 1 will look like:
 
 8. ``/issue1``
 
 .. _strip_zeros:
 
-Note that a leading string of 0's will be stripped from the id part of
+Note that Roundup strips a leading string of 0's from the id part of
 the object :term:`designator` in the URL. E.G. ``/issue001`` is the
 same as ``/issue1``.  Similarly for ``/file01`` etc. However you
 should generate URL's without the extra zeros.
@@ -2121,41 +2134,45 @@ should generate URL's without the extra zeros.
 Determining web context
 -----------------------
 
-To determine the "context" of a request (what request is for), we look at
-the URL path after the tracker root and at ``@template`` request
-parameter. Typical URL paths look like:
+To determine the "context" of a request (what request is for),
+Roundup looks at the URL path after the tracker root and at
+``@template`` request parameter. Typical URL paths look like:
 
-1.  ``/tracker/issue``
-2.  ``/tracker/issue1``
-3.  ``/tracker/@@file/style.css``
-4.  ``/cgi-bin/roundup.cgi/tracker/file1``
-5.  ``/cgi-bin/roundup.cgi/tracker/file1/kitten.png``
+1.  ``/tracker/``
+2.  ``/tracker/issue``
+3.  ``/tracker/issue1``
+4.  ``/tracker/@@file/style.css``
+5.  ``/cgi-bin/roundup.cgi/tracker/file1``
+6.  ``/cgi-bin/roundup.cgi/tracker/file1/kitten.png``
 
 where tracker root is ``/tracker/`` or ``/cgi-bin/roundup.cgi/tracker/``
 We're looking at "issue", "issue1", "@@file/style.css", "file1" and
 "file1/kitten.png" in the cases above.
 
-1. with is no path we are in the "home" context. See `the "home"
+1. with no path Roundup is in the "home" context. See `the "home"
    context`_ below for details. "index" or "home" paths may also be used
    to switch into "home" context.
-2. for paths starting with "@@file" the additional path entry ("style.css"
-   in the example above) specifies the static file to be served
-   from the tracker TEMPLATES directory (or STATIC_FILES, if configured).
-   This is usually the tracker's "html" directory. Internally this works
-   by raising SendStaticFile exception.
-3. if there is something in the path (as in example 1, "issue"), it
+2. if there is something in the path (as in example 2, "issue"), it
    identifies the tracker class to display.
-4. if the path is an item designator (as in examples 2 and 4, "issue1"
+3. if the path is an item designator (as in examples 3 and 5, "issue1"
    and "file1"), then we're to display a specific item.
    :ref:`Note. <strip_zeros>`
-5. if the path starts with an item designator and is longer than one
+4. for paths starting with "@@file" the additional path entry ("style.css"
+   in the example above) specifies the static file to be served
+   from the tracker TEMPLATES directory (or STATIC_FILES, if configured).
+   The TEMPLATES directory is usually the tracker's "html"
+   directory. Internally this works by raising SendStaticFile exception.
+5. A file can have additional path components (as in example
+   6). Without the additional components, the metadata for the
+   file is displayed.
+6. if the path starts with an item designator and is longer than one
    entry (as in example 5, "file1/kitten.png"), then we're assumed to be
    handling an item of a ``FileClass``, and the extra path information
    gives the filename that the client is going to label the download
    with (i.e. "file1/kitten.png" is nicer to download than "file1").
    This raises a ``SendFile`` exception.
 
-Neither 2. or 5. use templates and stop before the template is
+Neither 4. or 6. use templates and stop before the template is
 determined. For other contexts the template used is specified by the
 ``@template`` variable, which defaults to:
 
@@ -2167,7 +2184,7 @@ The "home" Context
 ------------------
 
 The "home" context is special because it allows you to add templated
-pages to your tracker that don't rely on a class or item (ie. an issues
+pages to your tracker that don't rely on a class or item (e.g. an issues
 list or specific issue).
 
 Let's say you wish to add frames to control the layout of your tracker's
@@ -2221,14 +2238,14 @@ of:
 **edit**
  Perform an edit of an item in the database. There are some `special form
  variables`_ you may use. Also you can set the ``__redirect_to`` form
- variable to the URL that should be displayed after the edit is succesfully
+ variable to the URL to display after the edit is successfully
  completed. If you wanted to edit a sequence of issues, users etc. this
  could be used to display the next item in the sequence to the user. 
 
 **new**
  Add a new item to the database. You may use the same `special form
  variables`_ as in the "edit" action. Also you can set the
- ``__redirect_to`` form variable to the URL that should be displayed after
+ ``__redirect_to`` form variable to the URL to display after
  the new item is created. This is useful if you want to create another
  item rather than edit the newly created item.
 
@@ -2245,7 +2262,7 @@ of:
  Mangle some of the form variables:
 
  - Set the form ":filter" variable based on the values of the filter
-   variables - if they're set to anything other than "dontcare" then add
+   variables - if they are set to anything other than "dontcare" then add
    them to :filter.
 
  - Also handle the ":queryname" variable and save off the query to the
@@ -2286,7 +2303,7 @@ Protecting users from web application attacks
 
 There is a class of attacks known as Cross Site Request Forgeries
 (CSRF). Malicious code running in the browser can making a
-request to Roundup while you are logged into Roundup.  The
+request to Roundup while you are logged into Roundup. The
 malicious code piggy backs on your existing Roundup session to
 make changes without your knowledge. Roundup 1.6 has support for
 defending against this by analyzing the
@@ -2301,12 +2318,14 @@ in the [tracker] section of the tracker's ``config.ini``.
 
 Also a per form token (also called a nonce) can be enabled for
 the tracker using the ``csrf_enforce_token`` option in
-config.ini.  When enabled, Roundup will validate a hidden form
-field called ``@csrf``. If the validation fails (or the token
-is used more than once) the request is rejected.  The ``@csrf``
-input field is added automatically by calling the ``submit``
-function/path. It can also be added manually by calling
-anti_csrf_nonce() directly. For example::
+config.ini. When enabled, Roundup will check a hidden form field
+called ``@csrf``. If the field's value matches a token in the
+database, the validation passes and the token is deleted. If the
+validation fails because the token is not found (e.g. if the
+token is used more than once) the request is rejected. The
+``@csrf`` input field is added automatically when calling the
+``submit`` function/path. It can also be added manually by
+calling anti_csrf_nonce() directly. For example::
 
    <input name="@csrf" type="hidden"
       tal:attributes="value python:utils.anti_csrf_nonce(lifetime=10)">
@@ -2315,15 +2334,15 @@ By default a nonce lifetime is 2 weeks. However the lifetime (in
 minutes) can be set by passing a lifetime argument as shown
 above. The example above makes the nonce lifetime 10 minutes.
  
-Search for @csrf in this document for more examples. There are
-more examples and information in ``upgrading.txt``.
+Search for @csrf in this document for more examples. More
+examples and information is provided in ``upgrading.txt``.
 
 The token protects you because malicious code supplied by another
-site is unable to obtain the token. Thus many attempts they make
-to submit a request are rejected.
+site is unable to obtain the token. Thus any attempt they make
+to submit a request is rejected.
 
 The protection on the xmlrpc interface is untested, but is based
-on a valid header check against the Roundup url and the presence
+on a valid header check against the Roundup URL and the presence
 of the ``X-REQUESTED-WITH`` header. Work to improve this is a
 future project after the 1.6 release.
 
@@ -2355,23 +2374,30 @@ These operations will only take place if the form action (the
 In the following, <bracketed> values are variable, "@" may be
 either ":" or "@", and other text "required" is fixed.
 
+.. index::
+   single: i18n; set from web interface
+   single: internationalization; set from web interface
+   single: language; set from web interface
+
 Two special form variables are used to specify user language preferences:
 
 ``@language``
   value may be locale name or ``none``. If this variable is set to
   locale name, web interface language is changed to given value
-  (provided that appropriate translation is available), the value
-  is stored in the browser cookie and will be used for all following
-  requests.  If value is ``none`` the cookie is removed and the
+  (if the appropriate translation is available). The value
+  is stored in a browser cookie and is used for all following
+  requests. If value is ``none`` the cookie is removed and the
   language is changed to the tracker default, set up in the tracker
   configuration or OS environment.
 
 ``@charset``
   value may be character set name or ``none``.  Character set name
-  is stored in the browser cookie and sets output encoding for all
+  is stored in a browser cookie and sets output encoding for all
   HTML pages generated by Roundup.  If value is ``none`` the cookie
   is removed and HTML output is reset to Roundup internal encoding
-  (UTF-8).
+  (UTF-8). This is unlikely to be needed with modern web browsers
+  and is left over from the early days of the web. It will
+  be removed at some future date.
 
 Most properties are specified as form variables:
 
@@ -2393,7 +2419,7 @@ Designators name a specific item of a class.
     designator of this form always refers to the same new
     item.
 
-Once we have determined the "propname", we look at it to see
+Once we have determined the "propname", we check to see
 if it's special:
 
 ``@required``
@@ -2411,9 +2437,9 @@ if it's special:
 
 ``@remove@<propname>=id(s)`` or ``@add@<propname>=id(s)``
     The "@add@" and "@remove@" edit actions apply only to
-    Multilink properties.  The form value must be a
+    Multilink properties. The form value must be a
     comma-separate list of keys for the class specified by
-    the simple form variable.  The listed items are added
+    the simple form variable. The listed items are added
     to (respectively, removed from) the specified
     property.
 
@@ -2421,30 +2447,30 @@ if it's special:
     If the edit action is "@link@", the simple form
     variable must specify a Link or Multilink property.
     The form value is a comma-separated list of
-    designators.  The item corresponding to each
+    designators. The item corresponding to each
     designator is linked to the property given by simple
     form variable.
 
-None of the above (ie. just a simple form value)
+None of the above (i.e. just a simple form value)
     The value of the form variable is converted
     appropriately, depending on the type of the property.
 
     For a Link('klass') property, the form value is a
-    single key for 'klass', where the key field is
-    specified in schema.py.  
+    single key (or id number) for 'klass',
+    where the key field is specified in schema.py.
 
     For a Multilink('klass') property, the form value is a
-    comma-separated list of keys for 'klass', where the
+    comma-separated list of keys (or id nummber) for 'klass', where the
     key field is specified in schema.py.  
 
-    Note that for simple-form-variables specifiying Link
+    Note that for simple-form-variables specifying Link
     and Multilink properties, the linked-to class must
     have a key field.
 
     For a String() property specifying a filename, the
     file named by the form value is uploaded. This means we
     try to set additional properties "filename" and "type" (if
-    they are valid for the class).  Otherwise, the property
+    they are defined for the class).  Otherwise, the property
     is set to the form value.
 
     For Date(), Interval(), Boolean(), Integer() and Number()
@@ -2455,12 +2481,12 @@ Any of the form variables may be prefixed with a classname or
 designator.
 
 Setting the form variable: ``__redirect_to=`` to a url when
-@action=new redirects the user to the specified url after successfully
-creating the new item. This is useful if you want the user to create
-another item rather than edit the newly created item.  Note that the
-url assigned to ``__redirect_to`` must be url encoded/quoted and be
-under the tracker's base url. If the base_url uses http, you can set
-the url to https.
+``@action=new`` redirects the user to the specified url after
+successfully creating the new item. This is useful if you want
+the user to create another item rather than edit the newly
+created item. Note that the url assigned to ``__redirect_to``
+must be url encoded/quoted and be under the tracker's base
+url. If the base_url uses http, you can set the url to https.
 
 Two special form values are supported for backwards compatibility:
 
@@ -2519,7 +2545,7 @@ templates in the tracker ``'html'`` directory. There are several types
 of files in there. The *minimal* template includes:
 
 **page.html**
-  This template usually defines the overall look of your tracker. When
+  This template defines the overall look of your tracker. When
   you view an issue, it appears inside this template. When you view an
   index, it also appears inside this template. This template defines a
   macro called "icing" which is used by almost all other templates as a
@@ -2527,21 +2553,22 @@ of files in there. The *minimal* template includes:
   the "head_title" and "body_title" slots to allow setting of the page
   title.
 **home.html**
-  the default page displayed when no other page is indicated by the user
+  the default page displayed when in `the "home" context`_ and no
+  other page is requested using the ``@template`` parameter
 **home.classlist.html**
   a special version of the default page that lists the classes in the
-  tracker
+  tracker. It is requested in the "home" context using ``@template=classlist``
 **classname.item.html**
-  displays an item of the *classname* class
+  displays an item of the *classname* class given a :term:`designator`
 **classname.index.html**
   displays a list of *classname* items
 **classname.search.html**
   displays a search page for *classname* items
 **_generic.index.html**
-  used to display a list of items where there is no
+  used to display a list of items when there is no
   ``*classname*.index`` available
 **_generic.help.html**
-  used to display a "class help" page where there is no
+  used to display a "class help" page when there is no
   ``*classname*.help``
 **user.register.html**
   a special page just for the user class, that renders the registration
@@ -2553,7 +2580,8 @@ The *classic* template has a number of additional templates.
 
 Remember that you can create any template extension you want to,
 so if you just want to play around with the templating for new issues,
-you can copy the current "issue.item" template to "issue.test", and then
+you can copy the current "issue.item.html" template to
+"issue.test" (or "issue.test.html"), and then
 access the test template using the "@template" URL argument::
 
    http://your.tracker.example/tracker/issue?@template=test
