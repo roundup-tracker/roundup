@@ -251,9 +251,13 @@ jinja2
   its TEMPLATE-INFO.txt file) you need
   to have the jinja2_ template engine installed.
 
+.. _install/docutils:
+
 docutils
   To use ReStructuredText rendering you need to have the `docutils`_
   package installed.
+
+.. _install/markdown:
 
 markdown, markdown2 or mistune
   To use markdown rendering you need to have the markdown_,
