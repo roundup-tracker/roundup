@@ -3316,6 +3316,12 @@ There are several methods available on these wrapper objects:
 
 		"structure msg/content/hyperlinked"
 
+  wrapped     Wraps long lines on the nearest whitespace. Like
+              plain(), it takes ``escape`` and ``hyperlink``
+              arguments. However, the defaults are to enable both
+              escape and hyperlinks. It also takes a ``columns``
+	      argument set by default to 80.
+ 
   field       render an appropriate form edit field for the property - for
 	      most types this is a text entry box, but for
 	      Booleans it is a
@@ -3337,6 +3343,7 @@ There are several methods available on these wrapper objects:
   rst         only on String properties - render the value of the property
 	      as ReStructuredText (requires the :ref:`Docutils
 	      module to be installed separately<install/docutils>`).
+
   stext       only on String properties - render the value of the property
 	      as StructuredText (requires the StructureText module to be
 	      installed separately) (depricated, to be removed
@@ -3347,25 +3354,32 @@ There are several methods available on these wrapper objects:
 
   multiline   only on String properties - render a multiline form edit
 	      field for the property
+
   email       only on String properties - render the value of the property
 	      as an obscured email address
+
   url_quote   only on String properties. It quotes any characters in the
 	      string so it is safe to use in a url. E.G. a space is
 	      replaced with %20.
+
   confirm     only on Password properties - render a second form edit field
 	      for the property, used for confirmation that the user typed
 	      the password correctly. Generates a field with name
 	      "name:confirm".
+
   now         only on Date properties - return the current date as a new
 	      property
+
   reldate     only on Date properties - render the interval between the date
 	      and now
+
   local       only on Date properties - return this date as a new property
 	      with some timezone offset, for example::
 
 		  python:context.creation.local(10)
 
 	      will render the date with a +10 hour offset.
+
   pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
 	      Mar 2004"). Takes an optional format argument, for example::
 
@@ -3382,6 +3396,7 @@ There are several methods available on these wrapper objects:
 	      (default: '%0.3f') and formats the number accordingly.
 	      If the value can't be converted, '' is returned if the
 	      value is ``None`` otherwise it is converted to a string.
+
   popcal      Generate a link to a popup calendar which may be used to
 	      edit the date field, for example::
 
@@ -3446,8 +3461,10 @@ There are several methods available on these wrapper objects:
 	      ``reverse=True`` the meaning of NoneFirst is inverted:
 	      True sorts None/unset at the end and False sorts at the
 	      beginning.
+
   reverse     only on Multilink properties - produce a list of the linked
 	      items in reverse order
+
   isset       returns True if the property has been set to a value
   =========== ================================================================
 

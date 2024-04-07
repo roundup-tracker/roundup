@@ -1835,7 +1835,7 @@ class StringHTMLProperty(HTMLProperty):
             s = self.hyper_re.sub(self._hyper_repl, s)
         return s
 
-    def wrapped(self, escape=1, hyperlink=1):
+    def wrapped(self, escape=1, hyperlink=1, columns=80):
         """Render a "wrapped" representation of the property.
 
         We wrap long lines at 80 columns on the nearest whitespace. Lines
@@ -1847,13 +1847,16 @@ class StringHTMLProperty(HTMLProperty):
         - "escape" turns on/off HTML quoting
         - "hyperlink" turns on/off in-text hyperlinking of URLs, email
           addresses and designators
+        - "columns" sets the column where the wrapping will occur.
+          Default of 80.
         """
         if not self.is_view_ok():
             return self._('[hidden]')
 
         if self._value is None:
             return ''
-        s = '\n'.join(textwrap.wrap(str(self._value), 80))
+        s = '\n'.join(textwrap.wrap(str(self._value), columns,
+                                    break_long_words=False))
         if escape:
             s = html_escape(s)
         if hyperlink:

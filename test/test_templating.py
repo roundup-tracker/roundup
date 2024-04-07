@@ -450,7 +450,9 @@ class HTMLClassTestCase(TemplatingTestCase) :
                        ' Put in <html> to be escaped. Put in a'
                        ' https://example.com/link as well. Let us see if'
                        ' it will wrap properly.' )
-        test_result = ('A long string that needs to be wrapped to 80'
+
+        test_result_wrap = {}
+        test_result_wrap[80] = ('A long string that needs to be wrapped to 80'
                        ' characters and no more. Put in a\n'
                        'link <a href="issue1">issue1</a>. Put in'
                        ' &lt;html&gt; to be escaped. Put in a <a'
@@ -458,10 +460,30 @@ class HTMLClassTestCase(TemplatingTestCase) :
                        ' rel="nofollow noopener">'
                        'https://example.com/link</a> as\n'
                        'well. Let us see if it will wrap properly.')
+        test_result_wrap[20] = (
+            'A long string that\n'
+            'needs to be wrapped\n'
+            'to 80 characters and\n'
+            'no more. Put in a\nlink <a href="issue1">issue1</a>. Put in\n'
+            '&lt;html&gt; to be\n'
+            'escaped. Put in a\n'
+            '<a href="https://example.com/link" rel="nofollow '
+            'noopener">https://example.com/link</a>\n'
+            'as well. Let us see\n'
+            'if it will wrap\n'
+            'properly.')
+        test_result_wrap[100] = (
+            'A long string that needs to be wrapped to 80 characters and no more. Put in a link <a href="issue1">issue1</a>. Put in\n'
+            '&lt;html&gt; to be escaped. Put in a <a href="https://example.com/link" rel="nofollow noopener">https://example.com/link</a> as well. Let us see if it will wrap\n'
+            'properly.')
 
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
                                test_string)
-        self.assertEqual(p.wrapped(), test_result)
+
+        for i in [80, 20, 100]:
+            wrapped = p.wrapped(columns=i)
+            print(wrapped)
+            self.assertEqual(wrapped, test_result_wrap[i])
 
     def test_string_plain_or_hyperlinked(self):
         ''' test that email obscures the email '''
