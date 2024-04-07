@@ -3340,6 +3340,15 @@ There are several methods available on these wrapper objects:
 		Include the JavaScript-based popup calendar for date
 		selection. Defaults to on.
 
+	      y_label, n_label, u_label (Boolean properties only)
+	        Set the labels for the true/false/undefined
+		states. If u_label is provided, it produces a
+	        tri-state radio button selector. Otherwise, it
+		allows selection of true,yes/false,no only.
+
+	      labelfirst (Boolean properties only)
+	        place the labels before the radiobuttons
+
   rst         only on String properties - render the value of the property
 	      as ReStructuredText (requires the :ref:`Docutils
 	      module to be installed separately<install/docutils>`).
