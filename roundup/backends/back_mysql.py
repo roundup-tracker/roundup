@@ -100,9 +100,13 @@ def db_create(config):
     kwargs = connection_dict(config)
     conn = MySQLdb.connect(**kwargs)
     cursor = conn.cursor()
-    command = "CREATE DATABASE %s COLLATE utf8_general_ci" % config.RDBMS_NAME
+    command = "CREATE DATABASE %s COLLATE %s" % (config.RDBMS_NAME,
+                                                 config.RDBMS_MYSQL_COLLATION)
     if sys.version_info[0] > 2:
-        command += ' CHARACTER SET utf8'
+        charset = config.RDBMS_MYSQL_CHARSET
+        if charset == 'default':
+            charset = 'utf8mb4'  # use full utf set.
+        command += ' CHARACTER SET %s' % charset
     logging.info(command)
     cursor.execute(command)
     conn.commit()
@@ -652,10 +656,14 @@ class Database(rdbms_common.Database):
 
 
 class MysqlClass:
-    case_sensitive_equal = 'COLLATE utf8_bin ='
+
+    case_sensitive_equal = None # defined by self.get_case_sensitive_equal()
 
     # TODO: AFAIK its version dependent for MySQL
     supports_subselects = False
+
+    def get_case_sensitive_equal(self):
+        return 'COLLATE %s =' % self.db.config.RDBMS_MYSQL_BINARY_COLLATION
 
     def _subselect(self, proptree):
         ''' "I can't believe it's not a toy RDBMS"

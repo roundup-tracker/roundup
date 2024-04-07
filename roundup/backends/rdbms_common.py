@@ -1643,7 +1643,9 @@ class Class(hyperdb.Class):
     case_insensitive_like = 'LIKE'
 
     # For some databases (mysql) the = operator for strings ignores case.
-    # We define the default here, can be changed in derivative class
+    # We define the default here, can be changed in derivative class.
+    # If set to any false value, self.get_case_sensitive_equal() is
+    # called to set its value.
     case_sensitive_equal = '='
 
     # Some DBs order NULL values last. Set this variable in the backend
@@ -1674,6 +1676,16 @@ class Class(hyperdb.Class):
         """Turn journalling off for this class
         """
         self.do_journal = 0
+
+    def get_case_sensitive_equal(self):
+        """ For some databases (mysql) the = operator for strings ignores
+        case. We define the default here, can be changed in derivative class.
+
+        It takes config as an argument because mysql has multiple collations.
+        The admin sets both the primary and case sensitive collation in
+        config.ini for mysql.
+        """
+        raise ValueError("get_case_sensitive_equal called in error")
 
     # Editing nodes:
     def create(self, **propvalues):
@@ -2800,10 +2812,14 @@ class Class(hyperdb.Class):
 
                     # now add to the where clause
                     w = []
+                    if not self.case_sensitive_equal:
+                        self.case_sensitive_equal = \
+                            self.get_case_sensitive_equal()
+                    cse = self.case_sensitive_equal
                     for vv, ex in zip(v, exact):
                         if ex:
                             w.append("_%s._%s %s %s" % (
-                                pln, k, self.case_sensitive_equal, a))
+                                pln, k, cse, a))
                             args.append(vv)
                         else:
                             w.append("_%s._%s %s %s ESCAPE %s" % (

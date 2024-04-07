@@ -16,6 +16,12 @@ python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 
 Fixed:
 
+- issue2551282 - MySQL utf8mb4 issues and
+  issue2551115 - Use utf8mb4 as a default for MySQL instead of utf8
+  The default database type and collations have been set to:
+  utf8mb4, utf8mb4_unicode_ci and utf8mb4_0900_bin. They are (sadly)
+  configurable from config.ini. Require directions on upgrading the
+  MySQL db have been documented in upgrading.txt.
 - issue2551063 - Rest/Xmlrpc interfaces needs failed login protection.
   Failed API login rate limiting with expiring lockout added. (John
   Rouillard)

@@ -1495,11 +1495,23 @@ always passes, so setting it less than 1 is not recommended."""),
             "Name of the group to use in the MySQL defaults file (.my.cnf).\n"
             "Only used in MySQL connections."),
         (Option, 'mysql_charset', 'utf8mb4',
-            "Charset to use for mysql connection,\n"
-            "use 'default' for the mysql default, no charset option\n"
-            "is used when creating the connection in that case.\n"
+            "Charset to use for mysql connection and databases.\n"
+            "If set to 'default', no charset option is used when\n"
+            "creating the db connection and utf8mb4 is used for the\n"
+            "database charset.\n"
             "Otherwise any permissible mysql charset is allowed here.\n"
             "Only used in MySQL connections."),
+        (Option, 'mysql_collation', 'utf8mb4_unicode_ci',
+            "Comparison/order to use for mysql database/table collations.\n"
+            "When upgrading, you can use 'utf8' to match the\n"
+            "depricated 'utf8mb3'. This must be compatible with the\n"
+            "mysql_charset setting above. Only used by MySQL."),
+        (Option, 'mysql_binary_collation', 'utf8mb4_0900_bin',
+            "Comparison/order to use for mysql database/table collations\n"
+            "when matching case. When upgrading, you can use 'utf8_bin'\n"
+            "to match the depricated 'utf8mb3_bin' collation. This must\n"
+            "be compatible with the mysql_collation above. Only used\n"
+            "by MySQL."),
         (IntegerNumberGeqZeroOption, 'sqlite_timeout', '30',
             "Number of seconds to wait when the SQLite database is locked\n"
             "Default: use a 30 second timeout (extraordinarily generous)\n"

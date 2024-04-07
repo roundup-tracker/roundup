@@ -112,6 +112,128 @@ values or if a value must be changed manually.
 
 This will insert the bad API login rate limiting settings.
 
+Update MySQL character set/collations (required)
+------------------------------------------------
+
+issue2551282_ and issue2551115_ discuss issues with MySQL's utf8
+support. MySQL has variations on utf8 character support. This
+version of Roundup expects to use utf8mb4 which is a version of
+utf8 that covers all characters, not just the ones in the basic
+multilingual plane. Previous versions of Roundup used latin1 or
+utf8mb3 (also known as just utf8). Newer versions of MySQL are
+supposed to make utf8mb4 and not utf8mb3 the default.
+
+To convert your database, you need to have MySQL 8.0.11 or newer
+(April 2018) and a mysql client.
+
+.. warning::
+
+   This conversion can damage your database. Back up your
+   database using mysqldump or other tools. Preferably on a quiet
+   database.  Verify that your database can be restored (or at
+   least look up directions for restoring it). This is very
+   important.
+
+We suggest shutting down Roundup's interfaces:
+
+  * web
+  * email
+  * cron jobs that use Python or roundup-admin
+
+then make your backup.
+
+Then connect to your mysql instance using ``mysql`` with the
+information in ``config.ini``. If your tracker's ``config.ini``
+includes::
+
+  name = roundupdb
+  host = localhost
+  user = roundupuser
+  password = rounduppw
+
+you would run some version of::
+
+  mysql -u roundupuser --host localhost -p roundupdb
+
+and supply ``rounduppw`` when prompted.
+
+With the Roundup database quiet, convert the character set for the
+database and then for all the tables. To convert the tables you
+need a list of them. To get this run::
+
+    mysql -sN -u roundupuser --host localhost -p \
+       -e 'show tables;' roundupdb > /tmp/tracker.tables
+
+The ``-sN`` removes line drawing characters and column headers
+from the output. For each table ``<t>`` in the file, run::
+
+ ALTER TABLE `<t>` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+You can automate this conversion using sed::
+
+    sed -e 's/^/ALTER TABLE `/' \
+     -e 's/$/` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;/'\
+     /tmp/tracker.tables> /tmp/tracker.tables.sql
+
+The backticks "`" are required as some of the table names became
+MySQL reserved words during Roundup's lifetime.
+
+Inspect ``tracker.tables.sql`` to see if all the lines look
+correct. If so then we can start the conversion.
+
+First convert the character set for the database by running::
+
+  mysql -u roundupuser --host localhost -p roundupdb
+
+Then at the ``mysql>`` prompt run::
+
+  ALTER DATABASE roundupdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+you should see: ``Query OK, 1 row affected (0.01 sec)``.
+
+Now to modify all the tables run:
+
+  \. /tmp/tracker.tables.sql
+
+You will see output similar to::
+
+  Query OK, 5 rows affected (0.01 sec)
+  Records: 5  Duplicates: 0  Warnings: 0
+
+for each table. The rows/records will depend on the number of
+entries in the table. This can take a while.
+
+Once you have successfully completed this, copy your tracker's
+config.ini to a backup file. Edit ``config.ini`` to use the defaults:
+
+ * mysql_charset = utf8mb4
+ * mysql_collation = utf8mb4_unicode_ci
+ * mysql_binary_collation = utf8mb4_0900_bin
+
+Also look for a ``~/.my.cnf`` for the roundup user and make sure
+that the settings for character set (charset) are utf8mb4 compatible.
+
+To test, run ``roundup-admin -i tracker_home`` and display an
+issue designator: e.g. ``display issue10``. Check that the text
+fields are properly displayed (e.g. title). Start the web
+interface and browse some issues. Again, check that the text
+fields display correctly, that the history at the bottom of the
+issues displays correctly and if you are using the default full
+text search, make sure that that works.
+
+If this works, bring email cron jobs etc. back online.
+
+If this fails, take down the web interface, restore the database
+from backup, restore the old config.ini. Then test again and
+reach out to the mailing list for help.
+
+We can use assistance in getting these directions corrected or
+enhanced. The core Roundup developers don't use MySQL for their
+production workloads so we count on users to help us with this.
+
+.. _issue2551282: https://issues.roundup-tracker.org/issue2551282
+.. _issue2551115: https://issues.roundup-tracker.org/issue2551115
+
 Disable performance improvement for wsgi mode (optional)
 --------------------------------------------------------
 
