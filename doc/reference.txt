@@ -2606,39 +2606,43 @@ Many item templates allow you to edit the item. They contain
 code that renders edit boxes if the user has edit permissions.
 Otherwise the template will just display the item information.
 
-In some cases you want to do a modal edit. The user has to take some
-action (click a button or follow a link) to shift from display mode to
-edit mode. When the changes are submitted, ending the edit mode,
-the user is returned to display mode.
+However, you may want a modal edit. A modal edit requires the
+user to take some action (click a button or follow a link) to
+shift from display mode to edit mode. Submitting the changes
+ends edit mode and the user returns to display
+mode.
 
-Modal workflows usually slow things down and are not implemented by
-default templates. However for some workflows a modal edit is useful.
-For example a batch edit mode that allows the user to edit a number of
-issues all from one form could be implemented as a modal workflow of:
+To build a modal edit for an item, move the (editable)
+issue.item.html template to issue.item_edit.html. Then create a new
+issue.item.html template that only displays information. Add an
+edit link that calls the display url, but adds ``@template=item_edit``
+to the link.
 
-* search for issues to modify
-* switch to edit mode and change values
-* exit back to the results of the search
-
-To implement the modal edit, assume you have an issue.edit.html
-template that implements an edit form.  On the display page (a version
-of issue.item.html modified to only display information) add a link
-that calls the display url, but adds ``@template=edit`` to the link.
-
-This will now display the edit page. On the edit page you want to add
-a hidden text field to your form named ``@template`` with the value:
-``item|edit``.  When the form is submitted it is validated. If the
-form is correct the user will see the item rendered using the item
-template. If there is an error (validation failed) the item will be
-rendered using the edit template. The edit template that is rendered
-will display all the changes that the user made to the form before it
-was submitted. The user can correct the error and resubmit the changes
-until the form validates.
+This will now display the edit page. On the edit page you want to
+add a hidden text field to your form named ``@template`` with the
+value: ``item|item_edit``.  When the form is submitted, it is
+validated. If the form is correct the user will see the item
+rendered using the item template. If there is an error
+(validation failed) the item will be rendered using the
+``item_edit`` template. The rendered ``item_edit`` template will
+display all the changes that the user made to the form before it
+was submitted. The user can correct the error and resubmit the
+changes until the form validates.
 
 If the form failed to validate but the ``@template`` field had the
 value ``item`` the user would still see the error, but all of the data
 the user entered would be discarded. The user would have to redo all
 the edits again.
+
+In general, modal workflows are not implemented by the default
+templates because they slow down the edit cycle. For some
+specific workflows a modal edit is useful. For example, a batch
+edit mode allows the user to edit multiple issues in one
+form. It can result in a modal workflow of:
+
+* search for issues to modify
+* switch to edit mode and change values
+* exit back to the results of the search
 
 
 How the templates work
@@ -2654,15 +2658,15 @@ Since version 1.4.20 Roundup supports two templating engines:
 * the standalone Chameleon templating engine. Chameleon is intended
   as a replacement for the original TAL engine, and supports the
   same syntax, but they are not 100% compatible. The major (and most
-  likely the only) incompatibility is the default expression type being
+  likely the only) incompatibility is the default expression type of
   ``python:`` instead of ``path:``. See also "Incompatibilities and
   differences" section of `Chameleon documentation`__.
 
-Version 1.5.0 added experimental support for the `jinja2`_ templating
-language. You must install the `jinja2`_ module in order to use it. The
+Version 1.5.0 added support for the `jinja2`_ templating
+language. You must install the `jinja2`_ module to use it. The
 ``jinja2`` template supplied with Roundup has the templates rewritten
 to use ``jinja2`` rather than TAL. A number of trackers are running
-using ``jinja2`` templating so it is considered less experimental than
+using ``jinja2`` templating so it is less experimental than
 Chameleon templating.
 
 .. _jinja2: https://palletsprojects.com/p/jinja/
@@ -2671,7 +2675,7 @@ Chameleon templating.
 **NOTE1**: For historical reasons, examples given below assumes path
 expression as default expression type. With Chameleon you have to manually
 resolve the path expressions. A Chameleon-based, z3c.pt, that is fully
-compatible with the old TAL implementation, is planned to be included in a
+compatible with the old TAL implementation, is planned for a
 future release.
 
 **NOTE2**: As of 1.4.20 Chameleon support is highly experimental and **not**
@@ -2695,31 +2699,31 @@ These attributes form the **Template Attribute Language**, or TAL.
 The basic TAL commands are:
 
 **tal:define="variable expression; variable expression; ..."**
-   Define a new variable that is local to this tag and its contents. For
+   Define a new local variable for this tag and its contents. For
    example::
 
       <html tal:define="title request/description">
        <head><title tal:content="title"></title></head>
       </html>
 
-   In this example, the variable "title" is defined as the result of the
-   expression "request/description". The "tal:content" command inside the
-   <html> tag may then use the "title" variable.
+   In this example, the variable "title" is defined by the
+   expression "request/description". The "tal:content" command
+   inside the <html> tag may then use the "title" variable.
 
 **tal:condition="expression"**
-   Only keep this tag and its contents if the expression is true. For
+   Keep this tag and its contents if the expression is true. For
    example::
 
      <p tal:condition="python:request.user.hasPermission('View', 'issue')">
       Display some issue information.
      </p>
 
-   In the example, the <p> tag and its contents are only displayed if
-   the user has the "View" permission for issues. We consider the number
-   zero, a blank string, an empty list, and the built-in variable
-   nothing to be false values. Nearly every other value is true,
-   including non-zero numbers, and strings with anything in them (even
-   spaces!).
+   In the example, the <p> tag and its contents are displayed
+   only if the user has the "View" permission for issues. We
+   consider the number zero, a blank string, an empty list, and
+   the built-in variable nothing to be false values. Nearly every
+   other value is true, including non-zero numbers, and strings
+   with anything in them (even spaces!).
 
 **tal:repeat="variable expression"**
    Repeat this tag and its contents for each element of the sequence
@@ -2754,9 +2758,9 @@ The basic TAL commands are:
     <span tal:content="request/user/realname">user's name appears here
     </span>
 
-   The example would replace the contents of the <span> tag with the
+   This example would replace the contents of the ``<span>`` tag with the
    user's realname. If the user's realname was "Bruce" then the
-   resultant output would be "<span>Bruce</span>".
+   output will be ``<span>Bruce</span>``.
 
 **tal:attributes="attribute expression; attribute expression; ..."**
    Set attributes on this tag to the results of expressions. For
@@ -2764,9 +2768,9 @@ The basic TAL commands are:
 
      <a tal:attributes="href string:user${request/user/id}">My Details</a>
 
-   In the example, the "href" attribute of the <a> tag is set to the
-   value of the "string:user${request/user/id}" expression, which will
-   be something like "user123".
+   In the example, the "href" attribute of the ``<a>`` tag is set
+   to the value of the expression "string:user${request/user/id}",
+   which will look like "user123".
 
 **tal:omit-tag="expression"**
    Remove this tag (but not its contents) if the expression is true. For
@@ -2778,8 +2782,8 @@ The basic TAL commands are:
 
       Hello, world!
 
-Note that the commands on a given tag are evaulated in the order above,
-so *define* comes before *condition*, and so on.
+Note that TAL evaluates the commands on a given tag in the order above.
+*define* is evaluated before *condition*, and so on.
 
 Additionally, you may include tags such as <tal:block>, which are
 removed from output. Its content is kept, but the tag itself is not (so
@@ -2792,21 +2796,28 @@ illegal tag placement to effect the repeat).
 Templating Expressions
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Templating Expressions are covered by `Template Attribute Language
-Expression Syntax`_, or TALES. The expressions you may use in the
+Templating Expressions are covered by `Template Attribute
+Language Expression Syntax`_ (TALES). The expressions you use in
 attribute values may be one of the following forms:
 
-**Path Expressions** - eg. ``item/status/checklist``
+**Path Expressions** - e.g. ``item/status/checklist``
    These are object attribute / item accesses. Roughly speaking, the
    path ``item/status/checklist`` is broken into parts ``item``,
    ``status`` and ``checklist``. The ``item`` part is the root of the
-   expression. We then look for a ``status`` attribute on ``item``, or
+   expression. It then looks for a ``status`` attribute on ``item``, or
    failing that, a ``status`` item (as in ``item['status']``). If that
    fails, the path expression fails. When we get to the end, the object
    we're left with is evaluated to get a string - if it is a method, it
    is called; if it is an object, it is stringified. Path expressions
-   may have an optional ``path:`` prefix, but they are the default
-   expression type, so it's not necessary.
+   may have an optional ``path:`` prefix, but path is the default
+   expression type for TAL. In Chameleon you must include the
+   ``path:`` prefix.
+
+   If an element in the path may not exist, you can use the ``|``
+   operator in the expression to provide an alternative. The
+   expression ``request/form/foo/value | default`` would simply
+   leave the current HTML in place if the "foo" form variable
+   doesn't exist.
 
    If an expression evaluates to ``default``, then the expression is
    "cancelled" - whatever HTML already exists in the template will
@@ -2818,37 +2829,34 @@ attribute values may be one of the following forms:
    attributes in the case of ``tal:attributes`` and the tag itself in
    the case of ``tal:replace``).
 
-   If an element in the path may not exist, then you can use the ``|``
-   operator in the expression to provide an alternative. So, the
-   expression ``request/form/foo/value | default`` would simply leave
-   the current HTML in place if the "foo" form variable doesn't exist.
-
    You may use the python function ``path``, as in
    ``path("item/status")``, to embed path expressions in Python
    expressions.
 
-**String Expressions** - eg. ``string:hello ${user/name}`` 
-   These expressions are simple string interpolations - though they can
-   be just plain strings with no interpolation if you want. The
-   expression in the ``${ ... }`` is just a path expression as above.
+**String Expressions** - e.g. ``string:hello ${user/name}`` These
+   expressions are string interpolations - though they can be
+   just plain strings with no interpolation if you want. The
+   expression in the interpolation decorator ``${ ... }`` is a
+   path expression as above.
 
-**Python Expressions** - eg. ``python: 1+1`` 
+**Python Expressions** - e.g. ``python: 1+1`` 
    These expressions give the full power of Python. All the "root level"
-   variables are available, so ``python:item.status.checklist()`` would
-   be equivalent to ``item/status/checklist``, assuming that
+   variables are available, so ``python:item.status.checklist()`` is
+   the same as ``item/status/checklist``, assuming that
    ``checklist`` is a method.
 
 Modifiers:
 
-**structure** - eg. ``structure python:msg.content.plain(hyperlink=1)``
-   The result of expressions are normally *escaped* to be safe for HTML
-   display (all "<", ">" and "&" are turned into special entities). The
-   ``structure`` expression modifier turns off this escaping - the
-   result of the expression is now assumed to be HTML, which is passed
-   to the web browser for rendering.
+**structure** - e.g. ``structure python:msg.content.plain(hyperlink=1)``
+   The result of expressions are *escaped* to be safe for HTML
+   display (all "<", ">" and "&" are replaced with entities
+   (e.g. ``&lt;``). The ``structure`` expression modifier turns
+   off this escaping - the result of the expression is now
+   assumed to be HTML, which is passed to the web browser for
+   rendering.
 
 **not:** - eg. ``not:python:1=1``
-   This simply inverts the logical true/false value of another
+   This inverts the logical true/false value of another
    expression.
 
 .. _TALES:
@@ -2859,14 +2867,14 @@ Modifiers:
 Template Macros
 ~~~~~~~~~~~~~~~
 
-Macros are used in Roundup to save us from repeating the same common
-page stuctures over and over. The most common (and probably only) macro
+Roundup uses macros to save us from repeating the same common
+page structures over and over. The most common (and probably only) macro
 you'll use is the "icing" macro defined in the "page" template.
 
 Macros are generated and used inside your templates using special
 attributes similar to the `basic templating actions`_. In this case,
 though, the attributes belong to the `Macro Expansion Template
-Attribute Language`_, or METAL. The macro commands are:
+Attribute Language`_, (METAL). The macro commands are:
 
 **metal:define-macro="macro name"**
   Define that the tag and its contents are now a macro that may be
@@ -2878,43 +2886,46 @@ Attribute Language`_, or METAL. The macro commands are:
     </html>
 
   defines a macro called "page" using the ``<html>`` tag and its
-  contents. Once defined, macros are stored on the template they're
-  defined on in the ``macros`` attribute. You can access them later on
-  through the ``templates`` variable, eg. the most common
-  ``templates/page/macros/icing`` to access the "page" macro of the
-  "page" template.
+  contents. Once defined, macros are stored in the ``macros``
+  attribute of the template they are defined on. You can access
+  them later on through the ``templates`` variable. Use the path
+  expression ``templates/page/macros/icing`` to access the
+  "icing" macro defined in the "page.html" template.
 
 **metal:use-macro="path expression"**
-  Use a macro, which is identified by the path expression (see above).
-  This will replace the current tag with the identified macro contents.
-  For example::
+  Use a macro, identified by the path expression. This replaces
+  the current tag with the identified macro contents. For
+  example::
 
-   <tal:block metal:use-macro="templates/page/macros/icing">
-    ...
-   </tal:block>
+     <tal:block metal:use-macro="templates/page/macros/icing">
+      ...
+     </tal:block>
 
-   will replace the tag and its contents with the "page" macro of the
-   "page" template.
+  will replace the tag and its contents with the "icing" macro
+  from the "page" template.
 
 **metal:define-slot="slot name"** and **metal:fill-slot="slot name"**
-  To define *dynamic* parts of the macro, you define "slots" which may
-  be filled when the macro is used with a *use-macro* command. For
-  example, the ``templates/page/macros/icing`` macro defines a slot like
-  so::
+  To define *dynamic* parts of the macro, you define "slots"
+  which are filled when the macro is used with a *use-macro*
+  command. For example, the ``templates/page/macros/icing`` macro
+  defines a ``head_title`` slot like so::
 
     <title metal:define-slot="head_title">title goes here</title>
 
   In your *use-macro* command, you may now use a *fill-slot* command
   like this::
 
-    <title metal:fill-slot="head_title">My Title</title>
+    <tal:block metal:use-macro="templates/page/macros/icing">
+      <title class="big" metal:fill-slot="head_title">My Title</title>
+    </tal:block>
 
   where the tag that fills the slot completely replaces the one defined
   as the slot in the macro.
 
-Note that you may not mix `METAL`_ and `TAL`_ commands on the same tag, but
-TAL commands may be used freely inside METAL-using tags (so your
-*fill-slots* tags may have all manner of TAL inside them).
+Note that you may not mix `METAL`_ and `TAL`_ commands on the
+same tag. But TAL commands can be used freely inside METAL-using
+tags (so your *fill-slots* tags may have all manner of TAL inside
+them).
 
 .. _METAL:
 .. _Macro Expansion Template Attribute Language:
@@ -2923,7 +2934,10 @@ TAL commands may be used freely inside METAL-using tags (so your
 Information available to templates
 ----------------------------------
 
-This is implemented by ``roundup.cgi.templating.RoundupPageTemplate``
+This is implemented by
+``roundup.cgi.templating.RoundupPageTemplate``. Documentation in
+the installed file ``roundup/cgi/templating.py`` supplements this
+documentation.
 
 The following variables are available to templates.
 
@@ -2935,20 +2949,20 @@ The following variables are available to templates.
   Includes information about the current request, including:
 
   - the current index information (``filterspec``, ``filter``
-    args, ``properties``, etc) parsed out of the form. 
-  - methods for easy filterspec link generation
+    arguments, ``properties``, etc) parsed out of the form. 
+  - methods for filterspec link generation (indexargs_url)
   - "form"
     The current CGI form information as a mapping of form argument name
     to value (specifically a cgi.FieldStorage)
   - "env" the CGI environment variables
-  - "base" the base URL for this instance
+  - "base" the base URL of this instance
   - "user" a HTMLItem instance for the current user
-  - "language" as determined by the browser or config
+  - "language" as determined by the browser or configuration
   - "classname" the current classname (possibly None)
   - "template" the current template (suffix, also possibly None)
 **config**
   This variable holds all the values defined in the tracker config.ini
-  file (eg. TRACKER_NAME, etc.)
+  file (e.g. TRACKER_NAME, etc.)
 **db**
   The current database, used to access arbitrary database items.
 **templates**
@@ -2957,18 +2971,17 @@ The following variables are available to templates.
 **utils**
   This variable makes available some utility functions like batching.
 **nothing**
-  This is a special variable - if an expression evaluates to this, then
-  the tag (in the case of a ``tal:replace``), its contents (in the case
-  of ``tal:content``) or some attributes (in the case of
-  ``tal:attributes``) will not appear in the the output. So, for
-  example::
+  This is a special variable - if an expression evaluates to
+  this, then the tag (when used with ``tal:replace``), its
+  contents (in the case of ``tal:content``) or some attributes
+  (when used with ``tal:attributes``) will not appear in the
+  output. For example::
 
     <span tal:attributes="class nothing">Hello, World!</span>
 
   would result in::
 
     <span>Hello, World!</span>
-
 **default**
   Also a special variable - if an expression evaluates to this, then the
   existing HTML in the template will not be replaced or removed, it will
@@ -2980,6 +2993,13 @@ The following variables are available to templates.
 
     <span>Hello, World!</span>
 
+  and::
+
+    <a href="foo" tal:attributes"href nope | default">H</a>
+
+  when ``nope`` is not defined results in::
+
+    <a href="foo">H</a>
 **true**, **false**
   Boolean constants that may be used in `templating expressions`_
   instead of ``python:1`` and ``python:0``.
@@ -2998,23 +3018,22 @@ The following variables are available to templates.
 The context variable
 ~~~~~~~~~~~~~~~~~~~~
 
-The *context* variable is one of three things based on the current
-context (see `determining web context`_ for how we figure this out):
+The *context* variable can contain one of three things based on the
+current context (see `determining web context`_ for how Roundup figures
+this out). If Roundup is:
 
-1. if we're looking at a "home" page, then it's None
-2. if we're looking at a specific hyperdb class, it's a
-   `hyperdb class wrapper`_.
-3. if we're looking at a specific hyperdb item, it's a
-   `hyperdb item wrapper`_.
+1. at a "home" page, then it's None
+2. at a specific hyperdb class, it's a `hyperdb class wrapper`_.
+3. at a specific hyperdb item, it's a  `hyperdb item wrapper`_.
 
-If the context is not None, we can access the properties of the class or
-item. The only real difference between cases 2 and 3 above are:
+If the context is not None, you can access the properties of the class or
+item. The only real difference between cases 2 and 3 are:
 
 1. the properties may have a real value behind them, and this will
    appear if the property is displayed through ``context/property`` or
    ``context/property/field``.
-2. the context's "id" property will be a false value in the second case,
-   but a real, or true value in the third. Thus we can determine whether
+2. the context's "id" property will be a false value in case 2,
+   but a real, or true value in case 3. Thus we can determine whether
    we're looking at a real item from the hyperdb by testing
    "context/id".
 
@@ -3025,7 +3044,7 @@ This is implemented by the ``roundup.cgi.templating.HTMLClass``
 class.
 
 This wrapper object provides access to a hyperdb class. It is used
-primarily in both index view and new item views, but it's also usable
+primarily in both index view and new item views, but it is usable
 anywhere else that you wish to access information about a class, or the
 items of a class, when you don't have a specific item of that class in
 mind.
@@ -3062,35 +3081,48 @@ There are several methods available on these wrapper objects:
 		 may be transitive, i.e., it may contain properties of
 		 the form link.link.link.name.
 
-	      eg. All issues with a priority of "1" with messages added in
+	      e.g. All issues with a priority of "1" with messages added in
 	      the last week, sorted by activity date:
 	      ``issue.filter(filterspec={"priority": "1",
 	      'messages.creation' : '.-1w;'}, sort=[('activity', '+')])``
 
 	      Note that when searching for Link and Multilink values, the
 	      special value '-1' searches for empty Link or Multilink
-	      values. For both, Links and Multilinks, multiple values
+	      values. For both Links and Multilinks, multiple values
 	      given in a filter call are combined with 'OR' by default.
-	      For Multilinks a postfix expression syntax using negative ID
-	      numbers (as strings) as operators is supported. Each
-	      non-negative number (or '-1') is pushed on an operand stack.
-	      A negative number pops the required number of arguments from
-	      the stack, applies the operator, and pushes the result. The
-	      following operators are supported:
+
+	      Both Link and Multilinks support a postfix
+	      expression syntax using negative ID numbers (as
+	      strings) as operators. Each
+	      non-negative number (or '-1') is pushed on an
+	      operand stack. A negative number pops the required
+	      number of arguments from the stack, applies the
+	      operator, and pushes the result. The following
+	      operators are supported:
 
 	      - '-2' stands for 'NOT' and takes one argument
 	      - '-3' stands for 'AND' and takes two arguments
 	      - '-4' stands for 'OR' and takes two arguments
 
-	      Note that this special handling of ID arguments is applied only
-	      when a negative number smaller than -1 is encountered as an ID
-	      in the filter call. Otherwise the implicit OR default
-	      applies.
+	      Note that this special handling of ID arguments is
+	      applied only when a negative number smaller than -1
+	      is encountered as an ID in the filter
+	      call. Otherwise the implicit OR default applies.
 	      Examples of using Multilink expressions would be
 
 	      - '1', '2', '-4', '3', '4', '-4', '-3'
 		would search for IDs (1 or 2) and (3 or 4)
 	      - '-1' '-2' would search for all non-empty Multilinks
+	      - The URL fragment
+		``filter=assignedto&assignedto=-1,-2``
+		would find all issues that are assigned (where
+		the assignedto field is not empty).
+
+	      Note that 'NOT', (``-2``) is the only useful
+	      operand for links. By default, a multi-value search
+	      uses 'OR', so '-4' is redundant. Since a link only
+	      has a single value, the 'AND' operand will return
+	      an empty result.
 
   filter_sql  **Only in SQL backends**
 
@@ -3103,13 +3135,13 @@ There are several methods available on these wrapper objects:
 	      on a where clause "__retired__ <> 1" if you don't want
 	      retired nodes.
 
-  classhelp   display a link to a javascript popup containing this class'
+  classhelp   display a link to a JavaScript popup containing this class'
 	      "help" template.
 
 	      This generates a link to a popup window which displays the
 	      properties indicated by "properties" of the class named by
 	      "classname". The "properties" should be a comma-separated list
-	      (eg. 'id,name,description'). Properties defaults to all the
+	      (e.g. 'id,name,description'). Properties defaults to all the
 	      properties of a class (excluding id, creator, created and
 	      activity).
 
@@ -3121,14 +3153,14 @@ There are several methods available on these wrapper objects:
 	      which items are supposed to be displayed. It has to be of
 	      the format "<field>=<values>;<field>=<values>;...".
 
-	      The popup window will be resizable and scrollable.
+	      The popup window is resizable and scrollable.
 
 	      If the "property" arg is given, it's passed through to the
-	      javascript help_window function. This allows updating of a
+	      JavaScript help_window function. This allows updating of a
 	      property in the calling HTML page.
 
 	      If the "form" arg is given, it's passed through to the
-	      javascript help_window function - it's the name of the form
+	      JavaScript help_window function - it's the name of the form
 	      the "property" belongs to.
 
   submit      generate a submit button (and action and @csrf hidden elements)
@@ -3173,7 +3205,7 @@ There are several methods available on these wrapper objects:
   history         render the journal of the current item as
 		  HTML. By default properties marked as "quiet" (see 
 		  `design documentation`_) are not shown unless the
-		  function is called with the showall=True parameter.
+		  function is called with the ``showall=True`` parameter.
 		  Properties that are not Viewable to the user are not
 		  shown.
   renderQueryForm specific to the "query" class - render the search form
@@ -3224,9 +3256,9 @@ This is implemented by subclasses of the
 This wrapper object provides access to a single property of a class. Its
 value may be either:
 
-1. if accessed through a `hyperdb item wrapper`_, then it's a value from
+1. if accessed through a `hyperdb item wrapper`_, then it is a value from
    the hyperdb
-2. if access through a `hyperdb class wrapper`_, then it's a value from
+2. if access through a `hyperdb class wrapper`_, then it is a value from
    the CGI form
 
 
@@ -3285,7 +3317,8 @@ There are several methods available on these wrapper objects:
 		"structure msg/content/hyperlinked"
 
   field       render an appropriate form edit field for the property - for
-	      most types this is a text entry box, but for Booleans it's a
+	      most types this is a text entry box, but for
+	      Booleans it is a
 	      tri-state yes/no/neither selection. This method may take some
 	      arguments:
 
@@ -3298,12 +3331,20 @@ There are several methods available on these wrapper objects:
 		below.
 
 	      popcal (Date properties only)
-		Include the Javascript-based popup calendar for date
+		Include the JavaScript-based popup calendar for date
 		selection. Defaults to on.
 
+  rst         only on String properties - render the value of the property
+	      as ReStructuredText (requires the :ref:`Docutils
+	      module to be installed separately<install/docutils>`).
   stext       only on String properties - render the value of the property
 	      as StructuredText (requires the StructureText module to be
-	      installed separately)
+	      installed separately) (depricated, to be removed
+	      use rst or markdown instead).
+  markdown    only on String properties - render the value of the property
+	      as Markdown (requires a :ref:`Markdown module to be
+	      installed separately<install/markdown>`).
+
   multiline   only on String properties - render a multiline form edit
 	      field for the property
   email       only on String properties - render the value of the property
