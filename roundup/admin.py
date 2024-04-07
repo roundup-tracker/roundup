@@ -297,6 +297,7 @@ quotes. Examples:
            address="1 2 3"  (1 token: address=1 2 3)
            \\\\               (1 token: \\)
            \\n\\r\\t           (1 token: a newline, carriage-return and tab)
+           f "test\\"q"      (2 tokens: f test"q)
 
 When multiple nodes are specified to the roundup get or roundup set
 commands, the specified properties are retrieved or set on all the listed
