@@ -1912,6 +1912,7 @@ The second form is preferred as it makes it easier to implement more
 complex permission schemes. An `example in upgrading.html
 <upgrading.html#enhancement-to-check-command-for-permissions>`_
 shows the use of ``ctx``.
+
 **properties**
   A sequence of property names that are the only properties to apply the
   new Permission to (eg. ``... klass='user', properties=('name',
