@@ -3710,8 +3710,8 @@ The utils variable
 ~~~~~~~~~~~~~~~~~~
 
 This is implemented by the
-``roundup.cgi.templating.TemplatingUtils`` class, which may be extended
-with additional methods by extensions_.
+``roundup.cgi.templating.TemplatingUtils`` class. New methods can
+be added to the variable by using extensions_.
 
 .. table::
   :class: valign-top
@@ -3728,7 +3728,7 @@ with additional methods by extensions_.
   html_calendar   renders an HTML calendar used by the
 		  ``_generic.calendar.html`` template (itself invoked by
 		  the popupCalendar DateHTMLProperty method
-  readfile        read Javascript or other content in an external
+  readfile        read JavaScript or other content in an external
                   file into the template.
   url_quote       quote some text as safe for a URL (ie. space, %, ...)
   =============== ========================================================
@@ -3773,13 +3773,13 @@ The parameters are:
   ========= ==============================================================
   Parameter  Usage
   ========= ==============================================================
-  sequence  a list of HTMLItems
-  size      how big to make the sequence.
-  start     where to start (0-indexed) in the sequence.
   end       where to end (0-indexed) in the sequence.
   orphan    if the next batch would contain less items than this value,
 	    then it is combined with this batch
   overlap   the number of items shared between adjacent batches
+  sequence  a list of HTMLItems
+  size      how big to make the sequence.
+  start     where to start (0-indexed) in the sequence.
   ========= ==============================================================
 
 All of the parameters are assigned as attributes on the batch object. In
@@ -3791,11 +3791,11 @@ addition, it has several more attributes:
   =============== ========================================================
   Attribute       Description
   =============== ========================================================
-  start           indicates the start index of the batch. *Unlike
-		  the argument, is a 1-based index (I know, lame)*
   first           indicates the start index of the batch *as a 0-based
 		  index*
   length          the actual number of elements in the batch
+  start           indicates the start index of the batch. *Unlike
+		  the argument, is a 1-based index (I know, lame)*
   sequence_length the length of the original, unbatched, sequence.
   =============== ========================================================
 
@@ -3825,7 +3825,7 @@ An example of batching::
   </tr>
  </table>
 
-... which will produce a table with four columns containing the items of
+will produce a table with four columns containing the items of
 the "keyword" class (well, their "name" anyway).
 
 
@@ -3859,7 +3859,7 @@ from your template. For TAL based templates, something like this::
     'Content-Type', 'application/atom+xml'
     )"/>
 
-will set the Content-Type header. The header name is case sensitive,
+will set the ``Content-Type`` header. The header name is case sensitive,
 so use capital letters as shown. If you don't you end up with multiple
 Content-Type definitions returned to the browser.
 
@@ -3869,7 +3869,7 @@ Displaying Properties
 Properties appear in the user interface in three contexts: in indices,
 in editors, and as search arguments. For each type of property, there
 are several display possibilities. For example, in an index view, a
-string property may just be printed as a plain string, but in an editor
+string property may just be printed as a plain string. In an editor
 view, that property may be displayed in an editable field.
 
 
@@ -3895,20 +3895,21 @@ been added for clarity)::
 
 The index view is determined by two parts of the specifier: the layout
 part and the filter part. The layout part consists of the query
-parameters that begin with colons, and it determines the way that the
-properties of selected items are displayed. The filter part consists of
-all the other query parameters, and it determines the criteria by which
-items are selected for display. The filter part is interactively
-manipulated with the form widgets displayed in the filter section. The
-layout part is interactively manipulated by clicking on the column
-headings in the table.
+parameters that begin with the '@' character, and it determines
+the way that the properties of selected items are displayed. The
+filter part consists of all the other query parameters, and it
+determines the criteria by which items are selected for
+display. The filter part is interactively manipulated with the
+form widgets displayed in the filter section. The layout part is
+interactively manipulated by clicking on the column headings in
+the table. 
 
 The filter part selects the union of the sets of items with values
 matching any specified Link properties and the intersection of the sets
-of items with values matching any specified Multilink properties.
+of items with values matching any specified MultiLink properties.
 
 The example specifies an index of "issue" items. Only items with a
-"status" of either "unread" or "in-progress" or "resolved" are
+"status" of either "unread", "in-progress" or "resolved" are
 displayed, and only items with "keyword" values including both "security"
 and "ui" are displayed. The items are grouped by priority arranged in
 ascending order and in descending order by status; and within
@@ -3963,7 +3964,7 @@ This is one of the class context views. The template used is typically
 - sets up additional filtering, as well as performing indexed text
   searching
 - sets the ``@filter`` variable correctly
-- saves the query off if ``@query_name`` is set.
+- saves the query to the user's query list if ``@query_name`` is set.
 
 The search page should lay out any fields that you wish to allow the
 user to search on. If your schema contains a large number of properties,
@@ -3983,7 +3984,7 @@ provide an additional argument:
   Argument     Description
   ============ =============================================================
   @query_name  if supplied, the index parameters (including @search_text)
-	       will be saved off as a the query item and registered against
+	       will be saved as a the query item and registered against
 	       the user's queries property. Note that the *classic* template
 	       schema has this ability, but the *minimal* template schema
 	       does not.
@@ -4049,13 +4050,13 @@ template)::
  <tr>
   <th>Change Note</th>
   <td colspan="3">
-   <textarea name=":note" wrap="hard" rows="5" cols="60"></textarea>
+   <textarea name="@note" wrap="hard" rows="5" cols="60"></textarea>
   </td>
  </tr>
  
  <tr>
   <th>File</th>
-  <td colspan="3"><input type="file" name=":file" size="40"></td>
+  <td colspan="3"><input type="file" name="@file" size="40"></td>
  </tr>
  
  <tr>
@@ -4069,7 +4070,7 @@ template)::
 
 When a change is submitted, the system automatically generates a message
 describing the changed properties. As shown in the example, the editor
-template can use the ":note" and ":file" fields, which are added to the
+template can use the "@note" and "@file" fields, which are added to the
 standard changenote message generated by Roundup.
 
 
@@ -4080,9 +4081,9 @@ We have a number of ways to pull properties out of the form in order to
 meet the various needs of:
 
 1. editing the current item (perhaps an issue item)
-2. editing information related to the current item (eg. messages or
+2. editing information related to the current item (e.g. messages or
    attached files)
-3. creating new information to be linked to the current item (eg. time
+3. creating new information to be linked to the current item (e.g. time
    spent on an issue)
 
 In the following, ``<bracketed>`` values are variable, ":" may be one of
@@ -4100,7 +4101,7 @@ Properties are specified as form variables:
   property on the Nth new item of classname (generally for creating new
   items to attach to the current item)
 
-Once we have determined the "propname", we check to see if it is one of
+Once we have determined the "propname", check to see if it is one of
 the special form values:
 
 ``@required``
@@ -4174,15 +4175,15 @@ templating through the "journal" method of the item*::
 Defining new web actions
 ------------------------
 
-You may define new actions to be triggered by the ``@action`` form variable.
-These are added to the tracker ``extensions`` directory and registered
+You may define new actions triggered by the ``@action`` form variable.
+These defined in the tracker's ``extensions`` directory and registered
 using ``instance.registerAction``.
 
-All the existing Actions are defined in ``roundup.cgi.actions``.
+All the pre-existing Actions are defined in ``roundup.cgi.actions``.
 
 Adding action classes takes three steps; first you `define the new
 action class`_, then you `register the action class`_ with the cgi
-interface so it may be triggered by the ``@action`` form variable.
+interface so it can be triggered by the ``@action`` form variable.
 Finally you `use the new action`_ in your HTML form.
 
 See `setting up a "wizard" (or "druid") for controlled adding of
@@ -4253,15 +4254,17 @@ override the content type indicated to the user by calling ``setHeader``::
    self.client.setHeader('Content-Type', 'text/csv')
 
 This example indicates that the value sent back to the user is actually
-comma-separated value content (eg. something to be loaded into a
+comma-separated value content (i.e. something to load into a
 spreadsheet or database).
 
 
 8-bit character set support in Web interface
 --------------------------------------------
 
-The web interface uses UTF-8 default. It may be overridden in both forms
-and a browser cookie.
+The web interface uses UTF-8 default. It may be overridden in
+both forms and a browser cookie. In general, the UTF-8 standard
+should work with all modern browsers. You shouldn't have to
+make any modifications from this section.
 
 - In forms, use the ``@charset`` variable.
 - To use the cookie override, have the ``roundup_charset`` cookie set.
@@ -4272,8 +4275,8 @@ In both cases, the value is a valid charset name (eg. ``utf-8`` or
 Inside Roundup, all strings are stored and processed in utf-8.
 Unfortunately, some older browsers do not work properly with
 utf-8-encoded pages (e.g. Netscape Navigator 4 displays wrong
-characters in form fields).  This version allows one to change
-the character set for http transfers.  To do so, you may add
+characters in form fields).  Roundup allows one to change
+the character set for http transfers. To do so, you may add
 the following code to your ``page.html`` template::
 
  <tal:block define="uri string:${request/base}${request/env/PATH_INFO}">
@@ -4294,9 +4297,6 @@ should be changed to include actual character set name::
  />
 
 The charset is also sent in the http header.
-
-
-
 
 
 Debugging Trackers
