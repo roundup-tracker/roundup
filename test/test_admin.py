@@ -719,7 +719,7 @@ class AdminTest(object):
         out = out.getvalue().strip()
         print(out)
         expected = ("Update 'password_pbkdf2_default_rounds' to a number "
-                    "equal to or larger\nthan 2000000.")
+                    "equal to or larger\n  than 2000000.")
 
         self.assertIn(expected, out)
         self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
