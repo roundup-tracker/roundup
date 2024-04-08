@@ -3342,12 +3342,12 @@ There are several methods available on these wrapper objects:
 
 	      y_label, n_label, u_label (Boolean properties only)
 	        Set the labels for the true/false/undefined
-		states. If u_label is provided, it produces a
+		states. If u_label is defined, it produces a
 	        tri-state radio button selector. Otherwise, it
 		allows selection of true,yes/false,no only.
 
 	      labelfirst (Boolean properties only)
-	        place the labels before the radiobuttons
+	        place the labels before the radio buttons
 
   rst         only on String properties - render the value of the property
 	      as ReStructuredText (requires the :ref:`Docutils
@@ -3355,7 +3355,7 @@ There are several methods available on these wrapper objects:
 
   stext       only on String properties - render the value of the property
 	      as StructuredText (requires the StructureText module to be
-	      installed separately) (depricated, to be removed
+	      installed separately) (deprecated, to be removed
 	      use rst or markdown instead).
   markdown    only on String properties - render the value of the property
 	      as Markdown (requires a :ref:`Markdown module to be
@@ -3396,15 +3396,17 @@ There are several methods available on these wrapper objects:
 
 	      Will format as "2004-03-19" instead.
 
-	      Interval properties - render the interval in a pretty
-	      format (eg. "yesterday"). The format arguments are those used
-	      in the standard ``strftime`` call (see the `Python Library
+	      Interval properties - render the interval in a
+	      pretty format (e.g. "yesterday"). The format
+	      arguments are those used in the standard
+	      ``strftime`` call (see the `Python Library
 	      Reference: time module`__)
 
-	      Number properties - takes a printf style format argument
-	      (default: '%0.3f') and formats the number accordingly.
-	      If the value can't be converted, '' is returned if the
-	      value is ``None`` otherwise it is converted to a string.
+	      Number properties - takes a printf style format
+	      argument (default: '%0.3f') and formats the number
+	      accordingly.  If the value can't be converted, ''
+	      is returned if the value is ``None`` otherwise it
+	      is converted to a string.
 
   popcal      Generate a link to a popup calendar which may be used to
 	      edit the date field, for example::
@@ -3479,7 +3481,7 @@ There are several methods available on these wrapper objects:
 
 __ https://docs.python.org/2/library/time.html
 
-All of the above functions perform checks for permissions required to
+All the above functions perform checks for permissions required to
 display or edit the data they are manipulating. The simplest case is
 editing an issue title. Including the expression::
 
@@ -3536,7 +3538,7 @@ request.
   sort        index sort columns [(direction, column name)]
   =========== ============================================================
 
-There are several methods available on the request variable:
+Several methods are available on the request variable:
 
 .. table::
   :class: valign-top
@@ -3544,7 +3546,7 @@ There are several methods available on the request variable:
   =============== ========================================================
   Method          Description
   =============== ========================================================
-  base_javascript render some javascript that is used by other components
+  base_javascript render some javascript used by other components
 		  of the templating
   batch           run the current index args through a filter and return a
 		  list of items (see `hyperdb item wrapper`_, and
@@ -3582,11 +3584,12 @@ or the python expression::
    python:request.form['name'].value
 
 Note the "item" access used in the python case, and also note the
-explicit "value" attribute we have to access. That's because the form
-variables are stored as MiniFieldStorages. If there's more than one
-"name" value in the form, then the above will break since
-``request/form/name`` is actually a *list* of MiniFieldStorages. So it's
-best to know beforehand what you're dealing with.
+explicit "value" attribute we have to access. That's because the
+form variables are stored as MiniFieldStorages. If there's more
+than one "name" value in the form, then the above will break
+since ``request/form/name`` is actually a *list* of
+MiniFieldStorages. So it is best to know beforehand what you are
+dealing with.
 
 
 The db variable
@@ -3601,9 +3604,9 @@ you want access to the "user" class, for example, you would use::
   db/user
   python:db.user
 
-Also, the current id of the current user is available as
-``db.getuid()``. This isn't so useful in templates (where you have
-``request/user``), but it can be useful in detectors or interfaces.
+Also, the id of the current user is available as
+``db.getuid()``. This isn't as useful in templates (where you have
+``request/user``), but is useful in detectors or interfaces.
 
 The access results in a `hyperdb class wrapper`_.
 
@@ -3617,7 +3620,7 @@ template engine loader class.
 
 This variable is used to access other templates in expressions and
 template macros. It doesn't have any useful methods defined. The
-templates can be accessed using the following path expression::
+templates are accessed using the following path expression::
 
    templates/name
 
@@ -3638,14 +3641,15 @@ or the python expression::
 The repeat variable
 ~~~~~~~~~~~~~~~~~~~
 
-The repeat variable holds an entry for each active iteration. That is, if
-you have a ``tal:repeat="user db/users"`` command, then there will be a
-repeat variable entry called "user". This may be accessed as either::
+The repeat variable holds an entry for each active iteration. If
+you have a ``tal:repeat="myusers db/users"`` command, then there
+will be a repeat variable entry called "myusers". This is accessed
+as either::
 
-    repeat/user
-    python:repeat['user']
+    repeat/myusers
+    python:repeat['myusers']
 
-The "user" entry has a number of methods available for information:
+The "myusers" entry has nine methods available for information:
 
 .. table::
   :class: valign-top
@@ -3653,8 +3657,8 @@ The "user" entry has a number of methods available for information:
   =============== =========================================================
   Method          Description
   =============== =========================================================
-  start           True if the current item is the first in the sequence.
-  end             True if the current item is the last in the sequence.
+  first           True if the current item is the first in the sequence.
+  last            True if the current item is the last in the sequence.
   even            True if the current item is an even item in the sequence.
   odd             True if the current item is an odd item in the sequence.
   number          Current position in the sequence, starting from 1.
@@ -3666,6 +3670,24 @@ The "user" entry has a number of methods available for information:
   Roman           Same as roman(), except uppercase.
   =============== =========================================================
 
+(Note: except for even, True above can be a truthy/falsy value not
+actually True/False. Also the first item in a sequence is 0,
+so it starts with even() = True when number() returns 1 as index
+is 0.)
+
+It also has the following properties:
+
+.. table::
+  :class: valign-top
+
+  =============== =========================================================
+  Properties      Description
+  =============== =========================================================
+  end             Truthy if the current item is the last in the sequence.
+  index           Current index in sequence starting at 0
+  start           Truthy if the current item is the first in the sequence.
+  =============== =========================================================
+
 For example, this will print a comma after each element except the
 last::
 
@@ -3673,10 +3695,14 @@ last::
      <tal:x tal:repeat="field
           python:request.form['properties'].value.split(',')">
        <tal:x tal:replace="field"></tal:x>
-       <tal:x tal:condition="python:not repeat['field'].end"
+       <tal:x tal:condition="python:not repeat['field'].last()"
           tal:content="string:,"></tal:x>
      </tal:x>
    </span>
+
+The same can be done using a path expression::
+
+         <tal:x tal:condition="not: repeat/field/last" ...
 
 .. _templating utilities:
 
