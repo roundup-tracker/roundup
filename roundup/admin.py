@@ -865,8 +865,14 @@ Command help:
             if default_ppdr > config.PASSWORD_PBKDF2_DEFAULT_ROUNDS:
                 print(_("Update "
                         "'password_pbkdf2_default_rounds' "
-                        "to a number equal to or larger\nthan %s.") %
+                        "to a number equal to or larger\n  than %s.\n") %
                       default_ppdr)
+
+            if not config.RDBMS_MYSQL_COLLATION.startswith(
+                    config.RDBMS_MYSQL_CHARSET + "_"):
+                print(_("Check the rdbms mysql_* settings. Your charset and "
+                        "collations may need\n"
+                        "  to be changed. See upgrading instructions.\n"))
         else:
             # generate default config
             config = CoreConfig()
