@@ -118,6 +118,7 @@ Fixed:
 - issue2551264 - REST X-Total-Count header and @total_size count
   incorrect when paginated - correct values are now returned.
   (John Rouillard)
+- issue2551331 - Fix repeat first/last methods. (John Rouillard)
 
 
 Features:

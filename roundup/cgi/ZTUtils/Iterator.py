@@ -85,17 +85,42 @@ class Iterator:
         return s
 
     def roman(self, lower=lambda x:x.lower):
-        return lower(self.Roman())
+        return self.Roman().lower()
 
     def first(self, name=None):
         if self.start: return 1
-        return not self.same_part(name, self._last, self.item)
+        return self.same_part(name, self._last, self.item)
 
     def last(self, name=None):
         if self.end: return 1
-        return not self.same_part(name, self.item, self._next)
+        return self.same_part(name, self.item, self._next)
 
     def same_part(self, name, ob1, ob2):
+        """I have no idea what this does.
+
+           It returns True for first()/last() when there are more items
+           in the sequence. Called by first() to compare the previous
+           item in sequence and the current item. Caled by last() to
+           compare the current item and next item in sequence.
+ 
+           Accepts a string version of the name of an attribute as 'name'.
+
+           If no attribute name is provided, return True if the two items:
+
+              are equal (==) - duplicate strings/integer/same object
+
+           else False.
+
+           If a non-existent attribute name is provided return False.
+
+           If the attribute is present and the named attributes compare
+           equal (==) return True else False.
+
+           No idea what use case this handles. Maybe this has
+           something to do with batching and first/last returning True
+           triggers a new group?
+        """
+
         if name is None:
             return ob1 == ob2
         no = []

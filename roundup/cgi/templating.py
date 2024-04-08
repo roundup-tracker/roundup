@@ -2143,7 +2143,7 @@ class BooleanHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
 
             In addition to being able to set arbitrary html properties
-            using prop=val arguments, the thre arguments:
+            using prop=val arguments, the three arguments:
 
               y_label, n_label, u_label let you control the labels
               associated with the yes, no (and optionally unknown/empty)

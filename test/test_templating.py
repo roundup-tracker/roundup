@@ -4,6 +4,7 @@ import time
 
 from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
 from roundup.cgi.templating import *
+from roundup.cgi.ZTUtils.Iterator import Iterator
 from .test_actions import MockNull, true
 from .html_norm import NormalizingHtmlParser
 
@@ -1118,6 +1119,139 @@ class NoStextTestCase(TemplatingTestCase) :
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
         self.assertEqual(p.stext(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
 
+
+class ZUtilsTestcase(TemplatingTestCase):
+
+    def test_Iterator(self):
+        """Test all the iterator functions and properties.
+        """
+        sequence = ['one', 'two', '3', 4]
+        i = Iterator(sequence)
+        for j in [ # element, item, 1st, last, even, odd, number,
+                   # letter, Letter, roman, Roman
+                (1, "one", 1, 0, True,  0, 1, 'a', 'A', 'i',   'I'),
+                (1, "two", 0, 0, False, 1, 2, 'b', 'B', 'ii',  'II'),
+                (1, "3",   0, 0, True,  0, 3, 'c', 'C', 'iii', 'III'),
+                (1,   4,   0, 1, False, 1, 4, 'd', 'D', 'iv',  'IV'),
+                # next() fails with 0 when past end of sequence
+                # everything else is left at end of sequence
+                (0,   4,   0, 1, False, 1, 4, 'd', 'D', 'iv',  'IV'),
+
+
+        ]:
+            element = i.next()  # returns 1 if next item else 0
+            print(i.item)
+            self.assertEqual(element, j[0])
+            self.assertEqual(i.item, j[1])
+            self.assertEqual(i.first(), j[2])
+            self.assertEqual(i.start, j[2])
+            self.assertEqual(i.last(), j[3])
+            self.assertEqual(i.end, j[3])
+            self.assertIs(i.even(), j[4])
+            self.assertEqual(i.odd(), j[5])
+            self.assertEqual(i.number(), j[6])
+            self.assertEqual(i.index, j[6] - 1)
+            self.assertEqual(i.nextIndex, j[6])
+            self.assertEqual(i.letter(), j[7])
+            self.assertEqual(i.Letter(), j[8])
+            self.assertEqual(i.roman(), j[9])
+            self.assertEqual(i.Roman(), j[10])
+
+        class I:
+            def __init__(self, name, data):
+                self.name = name
+                self.data = data
+
+        sequence = [I('Al',   'd'),
+                    I('Bob',  'e'),
+                    I('Bob',  'd'),
+                    I('Chip', 'd')
+        ]
+
+        iterator = iter(sequence)
+
+        # Iterator is supposed take both sequence and Python iterator.
+        for source in [sequence, iterator]:
+            i = Iterator(source)
+
+            element = i.next()  # returns 1 if next item else 0
+            item1 = i.item
+
+            # note these can trigger calls by first/last to same_part().
+            # It can return true for first/last even when there are more
+            # items in the sequence. I am just testing the current
+            # implementation. Woe to the person who tries to change
+            # Iterator.py.
+
+            self.assertEqual(element, 1)
+            # i.start == 1, so it bypasses name check
+            self.assertEqual(i.first(name='namea'), 1)
+            self.assertEqual(i.first(name='name'), 1)
+            # i.end == 0 so it uses name check in object
+            self.assertEqual(i.last(name='namea'), 0)
+            self.assertEqual(i.last(name='name'), 0)
+
+            element = i.next()  # returns 1 if next item else 0
+            item2 = i.item
+            self.assertEqual(element, 1)
+            # i.start == 0 so it uses name check
+            # between item1 and item2
+            self.assertEqual(i.first(name='namea'), 0)
+            self.assertEqual(i.first(name='name'), 0)
+            # i.end == 0 so it uses name check in object
+            # between item2 and the next item item3
+            self.assertEqual(i.last(name='namea'), 0)
+            self.assertEqual(i.last(name='name'), True)
+
+            element = i.next()  # returns 1 if next item else 0
+            item3 = i.item
+            self.assertEqual(element, 1)
+            # i.start == 0 so it uses name check
+            self.assertEqual(i.first(name='namea'), 0)
+            self.assertEqual(i.first(name='name'), 1)
+            # i.end == 0 so it uses name check in object
+            # between item3 and the next item item4
+            self.assertEqual(i.last(name='namea'), 0)
+            self.assertEqual(i.last(name='name'), 0)
+
+            element = i.next()  # returns 1 if next item else 0
+            item4 = i.item
+            self.assertEqual(element, 1)
+            # i.start == 0 so it uses name check
+            self.assertEqual(i.first(name='namea'), 0)
+            self.assertEqual(i.first(name='name'), 0)
+            # i.end == 0 so it uses name check in object
+            # last two object have same name (1)
+            self.assertEqual(i.last(name='namea'), 1)
+            self.assertEqual(i.last(name='name'), 1)
+
+            element = i.next()  # returns 1 if next item else 0
+            self.assertEqual(element, 0)
+
+            # this is the underlying call for first/last
+            # when i.start/i.end are 0
+            # use non-existing attribute name, same item
+            self.assertIs(i.same_part('namea', item2, item2), False)
+            # use correct attribute name
+            self.assertIs(i.same_part('name', item2, item2), True)
+            # use no attribute name
+            self.assertIs(i.same_part(None, item2, item2), True)
+
+            # use non-existing attribute name, different item
+            # non-matching names
+            self.assertIs(i.same_part('namea', item1, item2), False)
+            # use correct attribute name
+            self.assertIs(i.same_part('name', item1, item2), False)
+            # use no attribute name
+            self.assertIs(i.same_part(None, item1, item2), False)
+
+            # use non-existing attribute name, different item
+            # matching names
+            self.assertIs(i.same_part('namea', item2, item3), False)
+            # use correct attribute name
+            self.assertIs(i.same_part('name', item2, item3), True)
+            # use no attribute name
+            self.assertIs(i.same_part(None, item2, item3), False)
 
 r'''
 class HTMLPermissions:
