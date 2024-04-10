@@ -1,12 +1,24 @@
 from __future__ import print_function
 import sys, os, time
-import importlib
+import importlib, signal, shutil
+
+# --- patch sys.path to make sure 'import roundup' finds correct version
+import os.path as osp
+import pdb; pdb.set_trace()
+thisdir = osp.dirname(osp.abspath(__file__))
+rootdir = osp.dirname(thisdir)
+if (osp.exists(thisdir + '/benchmark.py') and
+        osp.exists(rootdir + '/roundup/__init__.py')):
+    # the script is located inside roundup source code
+    sys.path.insert(0, rootdir)
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number
 from roundup import date, password
 
 from test.db_test_base import config
+
+int_sig_default_handler = None
 
 def setupSchema(db, module):
     status = module.Class(db, "status", name=String())
@@ -24,7 +36,15 @@ def setupSchema(db, module):
     db.post_init()
     db.commit()
 
+def rm_db_on_signal(sig, frame):
+    print("removing incomplete database %s due to interruption." %
+          config.DATABASE)
+    shutil.rmtree(config.DATABASE)
+    signal.signal(signal.SIGINT, int_sig_default_handler)
+    signal.raise_signal(signal.SIGTERM)
+
 def main(backendname, time=time.time, numissues=10):
+    global int_sig_default_handler
     try:
         backend = importlib.import_module("roundup.backends.back_%s" %
                                           backendname)
@@ -36,6 +56,7 @@ def main(backendname, time=time.time, numissues=10):
     config.DATABASE = os.path.join('_benchmark', '%s-%s'%(backendname,
         numissues))
     if not os.path.exists(config.DATABASE):
+        int_sig_default_handler = signal.signal(signal.SIGINT, rm_db_on_signal)
         db = backend.Database(config, 'admin')
         setupSchema(db, backend)
         # create a whole bunch of stuff
@@ -55,11 +76,12 @@ def main(backendname, time=time.time, numissues=10):
                 db.issue.set(str(i+1), status='2', assignedto='2', nosy=[])
                 db.issue.set(str(i+1), status='1', assignedto='1',
                     nosy=['1','2'])
-            if (i*100//numissues) != pc:
+            if (i*100//numissues) != pc and 'INCI' not in os.environ:
                 pc = (i*100//numissues)
                 sys.stdout.write("%d%%\r"%pc)
                 sys.stdout.flush()
             db.commit()
+        signal.signal(signal.SIGINT, int_sig_default_handler)
     else:
         db = backend.Database(config, 'admin')
         setupSchema(db, backend)
