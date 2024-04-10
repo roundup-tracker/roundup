@@ -313,6 +313,10 @@ jobs:
       #         -f scripts/Docker/Dockerfile . 
 
 
+      - name: run benchmarks
+        if: "contains(github.event.head_commit.message, 'benchmark')"        
+        run: PYTHONPATH=. python test/benchmark.py
+        
   # in parallel build coveralls requires a finish step
   finish:
     needs: test

@@ -1,11 +1,12 @@
 from __future__ import print_function
 import sys, os, time
+import importlib
 
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number
 from roundup import date, password
 
-from .db_test_base import config
+from test.db_test_base import config
 
 def setupSchema(db, module):
     status = module.Class(db, "status", name=String())
@@ -25,7 +26,8 @@ def setupSchema(db, module):
 
 def main(backendname, time=time.time, numissues=10):
     try:
-        exec('from roundup.backends import %s as backend'%backendname)
+        backend = importlib.import_module("roundup.backends.back_%s" %
+                                          backendname)
     except ImportError:
         return
 
@@ -37,14 +39,14 @@ def main(backendname, time=time.time, numissues=10):
         db = backend.Database(config, 'admin')
         setupSchema(db, backend)
         # create a whole bunch of stuff
-        db.user.create(**{'username': 'admin'})
+        db.user.create(**{'username': 'admin', 'roles': 'Admin'})
         db.status.create(name="unread")
         db.status.create(name="in-progress")
         db.status.create(name="testing")
         db.status.create(name="resolved")
         pc = -1
         for i in range(numissues):
-            db.user.create(**{'username': 'user %s'%i})
+            db.user.create(**{'username': 'user %s'%i, 'roles': 'User'})
             for j in range(10):
                 db.user.set(str(i+1), assignable=1)
                 db.user.set(str(i+1), assignable=0)
@@ -122,14 +124,14 @@ if __name__ == '__main__':
     #      0         1         2         3         4         5         6
     #      01234567890123456789012345678901234567890123456789012345678901234
     print('Test name       fetch  journl jprops lookup filter filtml TOTAL ')
-    for name in 'anydbm metakit sqlite'.split():
+    for name in 'anydbm sqlite'.split():
         main(name)
-    for name in 'anydbm metakit sqlite'.split():
+    for name in 'anydbm sqlite'.split():
         main(name, numissues=20)
-    for name in 'anydbm metakit sqlite'.split():
+    for name in 'anydbm sqlite'.split():
         main(name, numissues=100)
     # don't even bother benchmarking the dbm backends > 100!
-    for name in 'metakit sqlite'.split():
+    for name in 'sqlite'.split():
         main(name, numissues=1000)
 
 # vim: set et sts=4 sw=4 :
