@@ -288,9 +288,18 @@ if __name__ == '__main__':
     # a really dumb attempt to make this into a command
     # Usage: python msgfmy.py <input_file>.po <output_file>.mo
     import sys
+    input_filename = ""
+    output_filename = ""
 
-    mo = Msgfmt(sys.argv[1]).get()
-    with open(sys.argv[2], 'wb') as mofile:
+    if sys.argv[1] == "-o":
+        output_filename = sys.argv[2]
+        input_filename = sys.argv[3]
+    else:
+        input_filename = sys.argv[1]
+        output_filename = sys.argv[2]
+
+    mo = Msgfmt(input_filename).get()
+    with open(output_filename, 'wb') as mofile:
         mofile.write(mo)
         mofile.close()
 
