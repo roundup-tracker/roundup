@@ -4,7 +4,6 @@ import importlib, signal, shutil
 
 # --- patch sys.path to make sure 'import roundup' finds correct version
 import os.path as osp
-import pdb; pdb.set_trace()
 thisdir = osp.dirname(osp.abspath(__file__))
 rootdir = osp.dirname(thisdir)
 if (osp.exists(thisdir + '/benchmark.py') and
