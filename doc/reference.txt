@@ -113,6 +113,26 @@ section "ConfigParser -- Configuration file parser":
  would resolve the "%(dir)s" to the value of "dir" ("frob" in this case)
  resulting in "foodir" being "frob/whatever".
 
+The reference above discusses using the ``[DEFAULT]`` section and
+interpolation. For example::
+
+   [DEFAULT]
+   local_admin_email = admin@example.com
+
+   [main]
+   admin_email = %(local_admin_email)s
+
+will set the admin_email setting. This works when running the
+tracker. When upgrading Roundup using ``updateconfig`` to create
+a new ``config.ini``, the ``DEFAULT`` section is not preserved
+and interpolation tokens (e.g. ``%(local_admin_email)s`` are
+replaced with their values (``admin@example.com``). This may be
+fixed in a future release of Roundup.
+
+Note that you can not reference settings in the ``DEFAULT``
+section from Roundup. They are only useful when interpolated into
+a defined setting.
+
 __ https://docs.python.org/2/library/configparser.html
 
 Example configuration settings are below. This is a partial list. The
@@ -584,6 +604,12 @@ you can add two new config.ini files:
   to the config variable as "ext".
 - a config.ini in the ``detectors`` directory is loaded and attached
   to the config variable as "detectors".
+
+These configuration files support the same operations as the main
+``config.ini`` file. This included a ``DEFAULT`` section and
+interpolation. Note that you can not reference settings in the
+``DEFAULT`` section from Roundup. They can only be used for
+interpolation.
 
 For example, the following in ``detectors/config.ini``::
 
