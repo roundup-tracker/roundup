@@ -1,3 +1,26 @@
+""" Usage: python benchmark.py ["database backend list" | backend1] [backend2]
+
+Import the backend (anydbm, sqlite by default) and run some performance
+tests. Example:
+
+test default anypy and sqlite backends
+
+  python benchmark.py
+
+test mysql and sqlite backends
+
+  python benchmark.py mysql sqlite
+
+or
+
+  python benchmark.py "mysql sqlite"
+
+test all backends
+
+  python benchmark.py anydbm mysql postgresql sqlite
+
+
+"""
 from __future__ import print_function
 import sys, os, time
 import importlib, signal, shutil
@@ -17,6 +40,8 @@ from roundup import date, password
 
 from test.db_test_base import config
 
+# global for the default signal hander so
+# my signal handler can reset before it raises signal.
 int_sig_default_handler = None
 
 def setupSchema(db, module):
@@ -38,26 +63,39 @@ def setupSchema(db, module):
 def rm_db_on_signal(sig, frame):
     print("removing incomplete database %s due to interruption." %
           config.DATABASE)
+
     shutil.rmtree(config.DATABASE)
+
     signal.signal(signal.SIGINT, int_sig_default_handler)
+    # re-raise the signal so the normal signal handling runs.
     signal.raise_signal(signal.SIGTERM)
 
 def main(backendname, time=time.time, numissues=10):
     global int_sig_default_handler
+
     try:
         backend = importlib.import_module("roundup.backends.back_%s" %
                                           backendname)
     except ImportError:
+        print("Unable to import %s backend." % backendname)
         return
 
     times = []
 
     config.DATABASE = os.path.join('_benchmark', '%s-%s'%(backendname,
         numissues))
+
+    config.RDBMS_NAME = "rounduptest_%s" % numissues
+
     if not os.path.exists(config.DATABASE):
         int_sig_default_handler = signal.signal(signal.SIGINT, rm_db_on_signal)
         db = backend.Database(config, 'admin')
         setupSchema(db, backend)
+
+        # if we are re-initializing, delete any existing db
+        db.clear()
+        db.commit()
+
         # create a whole bunch of stuff
         db.user.create(**{'username': 'admin', 'roles': 'Admin'})
         db.status.create(name="unread")
@@ -85,7 +123,7 @@ def main(backendname, time=time.time, numissues=10):
         db = backend.Database(config, 'admin')
         setupSchema(db, backend)
 
-    sys.stdout.write('%7s: %-6d'%(backendname, numissues))
+    sys.stdout.write('%10s: %-6d'%(backendname[:10], numissues))
     sys.stdout.flush()
 
     times.append(('start', time()))
@@ -142,17 +180,35 @@ def main(backendname, time=time.time, numissues=10):
     sys.stdout.flush()
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        test_databases = sys.argv[1].split()
+    elif len(sys.argv) > 2:
+        test_databases = sys.argv[1:]
+    else:
+        test_databases = ['anydbm', 'sqlite']
+
     #      0         1         2         3         4         5         6
     #      01234567890123456789012345678901234567890123456789012345678901234
-    print('Test name       fetch  journl jprops lookup filter filtml TOTAL ')
-    for name in 'anydbm sqlite'.split():
+    print('Test name         fetch  journl jprops lookup filter filtml TOTAL ')
+    for name in test_databases:
         main(name)
-    for name in 'anydbm sqlite'.split():
+    for name in test_databases:
         main(name, numissues=20)
-    for name in 'anydbm sqlite'.split():
+    for name in test_databases:
         main(name, numissues=100)
+
     # don't even bother benchmarking the dbm backends > 100!
-    for name in 'sqlite'.split():
+    try:
+        test_databases.remove('anydbm')
+    except ValueError:
+        # anydbm not present; this is fine
+        pass
+
+    for name in test_databases:
         main(name, numissues=1000)
+
+    for name in test_databases:
+        main(name, numissues=10000)
+
 
 # vim: set et sts=4 sw=4 :
