@@ -1259,7 +1259,6 @@ class DBTest(commonDBTest):
         expected = {'nosy': (('+', ['1']), ('-', ['3'])),
                     'deadline': date.Date("2016-07-30.22:39:00.000")}
 
-        result.sort()
         print("result unquiet", result)
         (id, tx_date, user, action, args) = result[-1]
         # check piecewise
@@ -1304,7 +1303,6 @@ class DBTest(commonDBTest):
         # Verify last journal entry as admin is a role change
         # from None
         result=self.db.user.history(new_user, skipquiet=False)
-        result.sort()
         ''' result should end like:
           [ ...
           ('3', <Date 2017-04-15.02:06:11.482>, '1', 'set',
