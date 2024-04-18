@@ -49,6 +49,10 @@ class SessionTest(object):
     def tearDown(self):
         if hasattr(self, 'db'):
             self.db.close()
+        if hasattr(self, 'sessions'):
+            self.sessions.close()
+        if hasattr(self, 'otks'):
+            self.otks.close()
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
 
