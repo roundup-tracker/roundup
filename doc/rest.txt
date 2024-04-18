@@ -1971,7 +1971,9 @@ There are 5 steps to set this up:
    This uses the `Adding new rest endpoints`_ mechanism.
 4. configure roundup's config.ini [web] jwt_secret with at least 32
    random characters of data. (You will get a message
-   ``Support for jwt disabled by admin.`` if it's not long enough.)
+   ``Support for jwt disabled by admin.`` if it's not long
+   enough.) If you have openssl installed, you can use the output
+   of ``openssl rand -base64 32``.
 5. add an auditor to make sure that users with this role are appending
    timelog links to the ``times`` property of the issue.
 
@@ -2212,7 +2214,8 @@ Final steps
 See the `upgrading directions`_ on how to use the ``updateconfig``
 command to generate an updated copy of config.ini using
 roundup-admin. Then set the ``JWT_secret`` to at least 32 characters
-(more is better up to 512 bits).
+(more is better up to 512 bits). The output of
+``openssl rand -base64 32`` will fulfill the minimum requirements.
 
 Writing an auditor that uses "db.user.get_roles" to see if the user
 making the change has the ``user:timelog`` role, and then comparing
