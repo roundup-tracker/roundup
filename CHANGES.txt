@@ -119,6 +119,10 @@ Fixed:
   incorrect when paginated - correct values are now returned.
   (John Rouillard)
 - issue2551331 - Fix repeat first/last methods. (John Rouillard)
+- Fix import/export on windows. Use unix line terminating characters.
+  (John Rouillard)
+- Fix anydbm session/otks clear() method on windows when backed by
+  dumbdbm. (John Rouillard)
 
 
 Features:

@@ -630,7 +630,7 @@ Command help:
                                  classname)
 
             with open(os.path.join(export_dir, classname + '.csv'), 'w') as f:
-                writer = csv.writer(f, colon_separated)
+                writer = csv.writer(f, colon_separated, lineterminator='\n')
 
                 propnames = cl.export_propnames()
                 fields = propnames[:]
@@ -685,7 +685,7 @@ Command help:
                     sys.stdout.write("\nExporting Journal for %s\n" %
                                      classname)
                     sys.stdout.flush()
-                journals = csv.writer(jf, colon_separated)
+                journals = csv.writer(jf, colon_separated, lineterminator='\n')
                 for row in support.Progress("   Writing journals",
                                             cl.export_journals()):
                     journals.writerow(row)
@@ -1236,7 +1236,7 @@ Command help:
 
             # ensure that the properties and the CSV file headings match
             with open(os.path.join(import_dir, file), 'r') as f:
-                reader = csv.reader(f, colon_separated)
+                reader = csv.reader(f, colon_separated, lineterminator='\n')
                 file_props = None
                 maxid = 1
                 # loop through the file and create a node for each entry
@@ -1260,7 +1260,7 @@ Command help:
 
             # import the journals
             with open(os.path.join(import_dir, classname + '-journals.csv'), 'r') as f:
-                reader = csv.reader(f, colon_separated)
+                reader = csv.reader(f, colon_separated, lineterminator='\n')
                 cl.import_journals(reader)
 
             # (print to sys.stdout here to allow tests to squash it .. ugh)
