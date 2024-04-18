@@ -369,9 +369,11 @@ class AdminTest(object):
         self.assertTrue(os.path.isfile(self.dirname + "/config.ini"))
         self.assertTrue(os.path.isfile(self.dirname + "/schema.py"))
 
+        nopath= '/tmp/noSuchDirectory/nodir'
+        norealpath = os.path.realpath(nopath + "/..")
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '/tmp/noSuchDirectory/nodir', 'install', 'classic', self.backend]
+            sys.argv=['main', '-i', nopath, 'install', 'classic', self.backend]
             ret = self.admin.main()
 
         out = out.getvalue().strip()
@@ -379,7 +381,7 @@ class AdminTest(object):
         print(out)
         self.assertEqual(ret, 1)
         self.assertIn('Error: Instance home parent directory '
-                      '"/tmp/noSuchDirectory" does not exist', out)
+                      '"%s" does not exist' % norealpath, out)
 
     def testInitWithConfig_ini(self):
         from roundup.configuration import CoreConfig
@@ -410,7 +412,8 @@ class AdminTest(object):
         self.assertTrue(os.path.isfile(self.dirname + "/config.ini"))
         self.assertTrue(os.path.isfile(self.dirname + "/schema.py"))
         config=CoreConfig(self.dirname)
-        self.assertEqual(config['MAIL_DEBUG'], self.dirname + "/SendMail.LOG")
+        self.assertEqual(config['MAIL_DEBUG'],
+                         os.path.normpath(self.dirname + "/SendMail.LOG"))
 
     def testList(self):
         ''' Note the tests will fail if you run this under pdb.
