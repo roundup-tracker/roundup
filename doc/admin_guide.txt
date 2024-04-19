@@ -717,7 +717,7 @@ sqlite databases for storing the session and otk data.
 The following table shows which primary databases support
 different session database backends:
 
-.. table:: D - default if unconfigured, X - compatible choice
+.. table:: D - default if unconfigured, + - compatible choice
   :class: captionbelow
 
   +---------------+--------+--------+-------+-------+------------+
@@ -725,9 +725,9 @@ different session database backends:
   +---------------+--------+--------+-------+-------+------------+
   |primary db     | anydbm | sqlite | redis | mysql | postgresql |
   +===============+========+========+=======+=======+============+
-  |anydbm         |    D   |        |   X   |       |            |
+  |anydbm         |    D   |        |   +   |       |            |
   +---------------+--------+--------+-------+-------+------------+
-  |sqlite         |    X   |    D   |   X   |       |            |
+  |sqlite         |    +   |    D   |   +   |       |            |
   +---------------+--------+--------+-------+-------+------------+
   |mysql          |        |        |       |   D   |            |
   +---------------+--------+--------+-------+-------+------------+
