@@ -122,7 +122,8 @@ Fixed:
 - Fix import/export on windows. Use unix line terminating characters.
   (John Rouillard)
 - Fix anydbm session/otks clear() method on windows when backed by
-  dumbdbm. (John Rouillard)
+  dumbdbm. Also make anydbm detect the initialized database when
+  using dumbdbm. (John Rouillard)
 
 
 Features:
