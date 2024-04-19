@@ -46,7 +46,7 @@ class BasicDatabase(SessionCommon):
             os.remove(path+".dir")
             os.remove(path+".dat")
 
-        self._db_type = None
+        #self._db_type = None
 
     def cache_db_type(self, path):
         ''' determine which DB wrote the class file, and cache it as an
@@ -148,7 +148,7 @@ class BasicDatabase(SessionCommon):
         # new database? let anydbm pick the best dbm
         if not db_type:
             db = anydbm.open(path, 'c')
-            self.cache_db_type(path)
+            #self.cache_db_type(path)
             return db
 
         # open the database with the correct module
