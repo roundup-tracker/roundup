@@ -201,7 +201,9 @@ jobs:
           pip install redis
 
       - name: Install python db libraries
-        run: pip install psycopg2 mysqlclient
+        run: |
+          pip install mysqlclient
+          [ "$PYTHON_VERSION" != "3.13" ] || pip install psycopg2
 
       - name: Install auxiliary packages
         run: |
