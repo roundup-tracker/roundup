@@ -15,14 +15,38 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-import unittest
-import logging
+import errno
 import fileinput
-
-import os, shutil, errno, sys
-
+import logging
+import os
 import pytest
+import shutil
+import sys
+import unittest
+
 from roundup import configuration
+from roundup.backends import get_backend, have_backend
+from roundup.hyperdb import DatabaseError
+
+from .db_test_base import config
+
+if not have_backend('postgresql'):
+    # FIX: workaround for a bug in pytest.mark.skip():
+    #   https://github.com/pytest-dev/pytest/issues/568
+    from .pytest_patcher import mark_class
+    skip_postgresql = mark_class(pytest.mark.skip(
+        reason='Skipping PostgreSQL tests: backend not available'))
+else:
+    try:
+        from roundup.backends.back_postgresql import psycopg2, db_command,\
+            get_database_schema_names
+        db_command(config, 'select 1')
+        skip_postgresql = lambda func, *args, **kwargs: func
+    except( DatabaseError ) as msg:
+        from .pytest_patcher import mark_class
+        skip_postgresql = mark_class(pytest.mark.skip(
+            reason='Skipping PostgreSQL tests: database not available'))
+
 
 try:
     import xapian
@@ -802,7 +826,7 @@ class TrackerConfig(unittest.TestCase):
         self.assertIn("basque", cm.exception.args[2])
 
     @skip_redis
-    def testLoadSessionDbRedis(self):
+    def testLoadSessionDbRedisCompatible(self):
         """ run load to validate config """
 
         config = configuration.CoreConfig()
@@ -819,6 +843,10 @@ class TrackerConfig(unittest.TestCase):
 
         config.validator(config.options)
 
+    @skip_redis
+    @skip_postgresql
+    def testLoadSessionDbRedisIncompatible(self):
+        """ run load to validate config """
         # incompatible pair
         config.RDBMS_BACKEND = "postgresql"
         config.SESSIONDB_BACKEND = "redis"
