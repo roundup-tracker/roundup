@@ -251,7 +251,7 @@ jobs:
             diff -u configure.FCS configure || true; \
             ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; \
           fi
-          case "$PYTHON_VERSION" in "3.13*") echo skipping xapian build;; *) make && sudo make install; esac
+          case "$PYTHON_VERSION" in "3.13") echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
