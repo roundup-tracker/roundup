@@ -49,12 +49,15 @@ class HypoTestPassword(unittest.TestCase):
 
         self.assertEqual(h64decode(h64encode(s)), s)
 
+    crypt_modes = ["PBKDF2S5", "PBKDF2", "SSHA", "SHA", "MD5",
+                   "plaintext", "zot"]
+    if crypt_method:
+        crypt_modes.append("crypt")
+
     @given(one_of(none(), text()),
-           sampled_from(("PBKDF2S5", "PBKDF2", "SSHA",
-                         "SHA", "MD5", "crypt", "plaintext",
-                         "zot")))
+           sampled_from(crypt_modes))
     @example("asd\x00df", "crypt")
-    @settings(max_examples=_max_examples)
+    @settings(max_examples=_max_examples)  # deadline=None for debugging
     def test_encodePassword(self, password, scheme):
 
         if scheme == "crypt" and password and "\x00" in password:
