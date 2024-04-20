@@ -12,7 +12,7 @@ from roundup.anypy.strings import b2s, s2b, s2u, u2s
 # ruff: noqa: I001  - yes I know I am using \ to continue the line...
 from roundup.password import PasswordValueError, encodePassword, \
      h64decode, h64encode
-
+from roundup.password import crypt as crypt_method
 
 def Identity(x):
     return x
@@ -57,11 +57,15 @@ class HypoTestPassword(unittest.TestCase):
     @settings(max_examples=_max_examples)
     def test_encodePassword(self, password, scheme):
 
-        if	scheme == "crypt" and password and "\x00" in password:
+        if scheme == "crypt" and password and "\x00" in password:
             with self.assertRaises(ValueError) as e:
                 encodePassword(password, scheme)
-            self.assertEqual(e.exception.args[0],
-                             "embedded null character")
+            if crypt_method:
+                self.assertEqual(e.exception.args[0],
+                                 "embedded null character")
+            else:
+                self.assertEqual(e.exception.args[0],
+                                 "Unsupported encryption scheme 'crypt'")
         elif scheme == "plaintext":
             if password is not None:
                 self.assertEqual(encodePassword(password, scheme), password)
@@ -90,7 +94,9 @@ class HypoTestPassword(unittest.TestCase):
                 # d41d8cd98f00b204e9800998ecf8427e'
                 self.assertRegex(pw, r"^[a-z0-9]{32}$")
             elif scheme == "crypt":
-                # WqzFDzhi8MmoU
-                self.assertRegex(pw, r"^[A-Za-z0-9./]{13}$")
+                # crypt_method is None if crypt is unknown
+                if crypt_method:
+                    # WqzFDzhi8MmoU
+                    self.assertRegex(pw, r"^[A-Za-z0-9./]{13}$")
             else:
                 self.assertFalse("Unknown scheme: %s, val: %s" % (scheme, pw))
