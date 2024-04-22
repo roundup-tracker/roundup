@@ -3291,7 +3291,7 @@ env: %(env)s
 
             This routine generates an html form with hidden elements.
             If you want to have visible form elements in your tal/jinja
-            generated templates use the exclude aray to list the names for
+            generated templates use the exclude array to list the names for
             these elements. This wll prevent the function from creating
             these elements in its output.
         """
