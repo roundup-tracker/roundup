@@ -374,6 +374,10 @@ class RDBMSIndexerTest(object):
         self.dex = Indexer(self.db)
     def tearDown(self):
         if hasattr(self, 'db'):
+            # commit any outstanding cursors.
+            # close() doesn't actually close file handle on
+            #    windows unless commit() is called.
+            self.db.commit()
             self.db.close()
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
