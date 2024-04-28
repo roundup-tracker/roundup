@@ -1401,6 +1401,13 @@ class TestApiRateLogin(WsgiSetup):
             logins count though. So log in 10 times in a row
             to verify that valid username/passwords aren't limited.
         """
+        # On windows, using localhost in the URL with requests
+        # tries an IPv6 address first. This causes a request to
+        # take 2 seconds which is too slow to ever trip the rate
+        # limit. So replace localhost with 127.0.0.1 that does an
+        # IPv4 request only.
+        url_base_numeric = self.url_base()
+        url_base_numeric =  url_base_numeric.replace('localhost','127.0.0.1')
 
         # verify that valid logins are not counted against the limit.
         for i in range(10):
@@ -1408,7 +1415,7 @@ class TestApiRateLogin(WsgiSetup):
         
             request_headers = {'content-type': "",
                                'Origin': "http://localhost:9001",}
-            f = requests.options(self.url_base() + '/rest/data',
+            f = requests.options(url_base_numeric + '/rest/data',
                                  auth=('admin', 'sekrit'),
                                  headers=request_headers
             )
@@ -1441,7 +1448,7 @@ class TestApiRateLogin(WsgiSetup):
         for i in range(10):
             # use basic auth for rest endpoint
         
-            f = requests.options(self.url_base() + '/rest/data',
+            f = requests.options(url_base_numeric + '/rest/data',
                                  auth=('admin', 'ekrit'),
                                  headers = {'content-type': "",
                                             'Origin': "http://localhost:9001",}
@@ -1478,7 +1485,7 @@ class TestApiRateLogin(WsgiSetup):
 
         # test lockout this is a valid login but should be rejected
         # with 429.
-        f = requests.options(self.url_base() + '/rest/data',
+        f = requests.options(url_base_numeric + '/rest/data',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
                                         'Origin': "http://localhost:9001",}
@@ -1493,7 +1500,7 @@ class TestApiRateLogin(WsgiSetup):
         sleep(4)
         # slept long enough to get a login slot. Should work with
         # 200 return code.
-        f = requests.get(self.url_base() + '/rest/data',
+        f = requests.get(url_base_numeric + '/rest/data',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
                                         'Origin': "http://localhost:9001",}
