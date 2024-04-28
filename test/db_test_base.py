@@ -160,7 +160,11 @@ def setupSchema(db, create, module):
 class MyTestCase(object):
     def tearDown(self):
         if hasattr(self, 'db'):
-            self.db.close()
+          if hasattr(self.db, 'session'):
+            self.db.session.db.close()
+          if hasattr(self.db, 'otk'):
+            self.db.otk.db.close()
+          self.db.close()
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
 
