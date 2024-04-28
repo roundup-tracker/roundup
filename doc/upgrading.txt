@@ -367,6 +367,14 @@ If you have modified that template, you can follow the analysis in
 `issue2551320 <https://issues.roundup-tracker.org/issue2551320>`_
 to fix your template.
 
+Fix static_files use of '-' directory (info)
+--------------------------------------------
+
+Use of the '-' directory in ``static_files`` config.ini setting now
+works. So it will prevent access to the html directory when using
+``@@file/`` based url's.
+
+
 Bad Login Rate Limiting and Locking (info)
 ------------------------------------------
 
@@ -410,8 +418,8 @@ before changing your PostgreSQL configuration, try changing the pragma
 ``10000``. In some cases this may be too high. See the `administration
 guide`_ for further details.
 
-roundup-admin's History Command Produces Readable Output
---------------------------------------------------------
+roundup-admin's History Command Produces Readable Output (info)
+---------------------------------------------------------------
 
 The history command of roundup-admin used to print the raw journal
 data. In this release the default is to produce more human readable

@@ -124,7 +124,8 @@ Fixed:
 - Fix anydbm session/otks clear() method on windows when backed by
   dumbdbm. Also make anydbm detect the initialized database when
   using dumbdbm. (John Rouillard)
-
+- Use of '-' directory in static_files config option under windows
+  Python fixed.
 
 Features:
 
