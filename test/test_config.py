@@ -24,6 +24,8 @@ import shutil
 import sys
 import unittest
 
+from os.path import normpath
+
 from roundup import configuration
 from roundup.backends import get_backend, have_backend
 from roundup.hyperdb import DatabaseError
@@ -218,14 +220,15 @@ class ConfigTest(unittest.TestCase):
     def testStaticFiles(self):
         config = configuration.CoreConfig()
 
+
+        if ("/tmp/bar" == normpath("/tmp/bar/")):
+            result_list = ["./foo", "/tmp/bar"]
+        else:
+            result_list = [".\\foo", "\\tmp\\bar"]
         self.assertEqual(None,
                 config._get_option('STATIC_FILES').set("foo /tmp/bar"))
-
-        self.assertEqual(config.STATIC_FILES,
-                         ["./foo", "/tmp/bar"])
-
-        self.assertEqual(config['STATIC_FILES'],
-                         ["./foo", "/tmp/bar"])
+        print(config.STATIC_FILES)
+        self.assertEqual(config.STATIC_FILES, result_list)
 
     def testIsolationLevel(self):
         config = configuration.CoreConfig()
@@ -982,7 +985,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
 
         print(cm.exception)
         self.assertIn("'%' must be followed by '%' or '(', found: '% is invalid'", cm.exception.args[0])
-        self.assertIn("_test_instance/config.ini with section [main] at option admin_email", cm.exception.args[0])
+        self.assertIn(normpath("_test_instance/config.ini") + " with section [main] at option admin_email", cm.exception.args[0])
 
 
         from roundup.admin import AdminTool
@@ -993,7 +996,11 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
             sys.argv=['main', '-i', self.dirname, 'get', 'tile', 'issue1']
             ret = admin.main()
 
-        expected_err = "Error in _test_instance/config.ini with section [main] at option admin_email: '%' must be followed by '%' or '(', found: '% is invalid'"
+        expected_err = ("Error in " +
+                        normpath("_test_instance/config.ini") +
+                        " with section [main] at option admin_email: '%' "
+                        "must be followed by '%' or '(', found: "
+                        "'% is invalid'")
 
         self.assertEqual(ret, 1)
         out = out.getvalue().strip()
