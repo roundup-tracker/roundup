@@ -2,6 +2,8 @@ import pytest
 import unittest
 import os, sys, shutil
 
+from os.path import normpath
+
 from roundup.demo import install_demo, run_demo
 
 import roundup.scripts.roundup_server
@@ -89,9 +91,13 @@ class TestDemo(unittest.TestCase):
         self.assertIn("http://localhost:8917/demo/", out.getvalue())
 
         # verify the default anydbm db is created
-        db_file = self.home + "/db/nodes.user"
-        self.assertTrue(os.path.isfile(db_file),
-                        "expected db file %s does not exist" % db_file)
+        db_file = self.home + normpath("/db/nodes.user")
+        db_file_dumbdbm = self.home + normpath("/db/nodes.user.dir")
+        self.assertTrue(os.path.isfile(db_file) or
+                        os.path.isfile(db_file_dumbdbm),
+                        "expected db file %s or %s does not exist" % (
+                            db_file, db_file_dumbdbm
+                        ))
 
          # verify requested template was used
         with open(self.home + "/TEMPLATE-INFO.txt", "r") as f:
