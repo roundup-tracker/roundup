@@ -209,7 +209,9 @@ NameError: name 'a' is not defined
 <p>&nbsp;</p>"""
 
         # allow file directory prefix and line number to change
-        p = re.sub(r'(File ")/.*/(test/test_misc.py",)', r'\1XX/\2', p)
+        p = re.sub(r'\\',r'/', p)  # support windows \ => /
+        # [A-Z]?:? optional drive spec on windows
+        p = re.sub(r'(File ")[A-Z]?:?/.*/(test/test_misc.py",)', r'\1XX/\2', p)
         p = re.sub(r'(", line )\d*,', r'\1XX,', p)
 
         print(p)
