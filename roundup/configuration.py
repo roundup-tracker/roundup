@@ -590,7 +590,7 @@ class MultiFilePathOption(Option):
             if elem and not os.path.isabs(elem):
                 pathlist.append(os.path.join(self.config["HOME"], elem))
             else:
-                pathlist.append(elem)
+                pathlist.append(os.path.normpath(elem))
         if pathlist:
             return pathlist
         else:
