@@ -411,6 +411,7 @@ class DBTest(commonDBTest):
 
         # test set & retrieve (this time for file contents)
         nid = self.db.file.create(content=ustr)
+        self.db.commit()
         self.assertEqual(self.db.file.get(nid, 'content'), ustr)
         self.assertEqual(self.db.file.get(nid, 'binary_content'), s2b(ustr))
 
