@@ -1517,7 +1517,8 @@ always passes, so setting it less than 1 is not recommended."""),
             "Default: use a 30 second timeout (extraordinarily generous)\n"
             "Only used in SQLite connections."),
         (IntegerNumberGeqZeroOption, 'cache_size', '100',
-            "Size of the node cache (in elements)"),
+            "Size of the node cache (in elements). Used to keep the\n"
+            "most recently used data in memory."),
         (BooleanOption, "allow_create", "yes",
             "Setting this option to 'no' protects the database against\n"
             "table creations."),
@@ -1603,8 +1604,10 @@ always passes, so setting it less than 1 is not recommended."""),
             "Default port to send SMTP on.\n"
             "Set this if your mail server runs on a different port."),
         (NullableOption, "local_hostname", '',
-            "The local hostname to use during SMTP transmission.\n"
-            "Set this if your mail server requires something specific."),
+            "The (fully qualified) host/ domain name (FQDN) to use during\n"
+            "SMTP sessions. If left blank, the underlying SMTP library will\n"
+            "attempt to detect your FQDN. Set this if your mail server\n"
+            "requires something specific.\n"),
         (BooleanOption, "tls", "no",
             "If your SMTP mail host provides or requires TLS\n"
             "(Transport Layer Security) then set this option to 'yes'."),
@@ -1636,7 +1639,8 @@ always passes, so setting it less than 1 is not recommended."""),
             "of the actor is added which protects the mail address of the\n"
             "actor from being exposed at mail archives, etc."),
     ), "Outgoing email options.\n"
-     "Used for nosy messages and approval requests"),
+     "Used for nosy messages, password reset and registration approval\n"
+     "requests."),
     ("mailgw", (
         (EmailBodyOption, "keep_quoted_text", "yes",
             "Keep email citations when accepting messages.\n"
