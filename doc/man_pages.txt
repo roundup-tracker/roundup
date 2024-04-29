@@ -1,0 +1,17 @@
+.. meta::
+   :description:
+
+     Links to man pages for the top level commands provided by Roundup.
+
+
+====================
+Roundup Manual Pages
+====================
+
+Roundup man pages have been formated as html for your use.
+
+  * `roundup-admin <man_pages/roundup-admin.1.html>`_
+  * `roundup-demo <man_pages/roundup-demo.1.html>`_
+  * `roundup-mailgw <man_pages/roundup-mailgw.1.html>`_
+  * `roundup-server <man_pages/roundup-server.1.html>`_
+

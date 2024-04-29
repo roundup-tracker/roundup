@@ -33,6 +33,7 @@ documentation.
    Reference <docs/reference>
    Glossary <docs/glossary>
    docs/admin_guide
+   docs/man_pages
    docs/license
    docs/acknowledgements
    olderdocs

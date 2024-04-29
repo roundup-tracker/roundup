@@ -99,7 +99,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # see https://issues.roundup-tracker.org/issue2550907:
-exclude_patterns = ['_build',
+exclude_patterns = ['_build', 'tracker_config.txt',
                     'announcement.txt', 'whatsnew-0.7.txt',
                     'whatsnew-0.8.txt']
 
