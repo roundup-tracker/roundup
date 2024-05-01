@@ -491,6 +491,10 @@ Deprecation Notices (info)
 
 Support for SQLite version 1 has been removed in 2.4.0.
 
+Support for the `PySQLite <https://github.com/ghaering/pysqlite>`_
+library will be removed in 2.5.0. Only the Python supplied sqlite3
+library will be supported.
+
 .. index:: Upgrading; 2.2.0 to 2.3.0
 
 Migrating from 2.2.0 to 2.3.0
