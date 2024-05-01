@@ -24,8 +24,18 @@ authorization (see `SourceForge.net docs for details
 
   hg clone ssh://USERNAME@hg.code.sf.net/p/roundup/code roundup
 
-You also need to be added as a Roundup developer for write access - ask
-for it on the :doc:`roundup-devel list <contact>`.
+You also need to be added as a Roundup developer for write access -
+ask for it on the :doc:`roundup-devel list <contact>`.
+
+You can also use the Roundup mirror on GitHub. It lags behind the
+Mercurial repository, but is usually only a couple of weeks old. You
+can clone it using::
+
+   git clone https://github.com/roundup-tracker/roundup.git
+
+Note that even though we have a mirror on GitHub we don't use Issues
+(use https://issues.roundup-tracker.org) or Pull requests. The GitHub
+mirror is used for CI.
 
 Run demo
 --------
