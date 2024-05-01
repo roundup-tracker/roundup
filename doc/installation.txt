@@ -612,7 +612,7 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   simultaneous users, but requires much less installation and maintenance
   effort than more scalable postgresql and mysql backends.
 
-  SQLite is supported via PySQLite versions 1.1.7, 2.1.0 and sqlite3 (the last
+  SQLite is supported via PySQLite version 2.1.0 and sqlite3 (the last
   being bundled with Python 2.5+)
 
   Installed SQLite should be the latest version available (3.9.0 or newer).

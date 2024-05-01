@@ -128,6 +128,9 @@ Fixed:
   Python fixed. (John Rouillard)
 - issue2551334 - number of test bugs that prevented test suite from
   running under Windows Python are fixed. WIP. (John Rouillard)
+- issue2551302 - Remove support for sqlite version 1 from
+  back_sqlite.py. We have been using sqlite3 for over a decade. (John
+  Rouillard)
 
 Features:
 

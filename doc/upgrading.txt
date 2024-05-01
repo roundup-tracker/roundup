@@ -486,6 +486,11 @@ The history command gets a new optional argument ``raw`` that produces
 the old style output. The old style is (marginally) more useful for
 script automation.
 
+Deprecation Notices (info)
+--------------------------
+
+Support for SQLite version 1 has been removed in 2.4.0.
+
 .. index:: Upgrading; 2.2.0 to 2.3.0
 
 Migrating from 2.2.0 to 2.3.0
