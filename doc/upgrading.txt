@@ -491,6 +491,9 @@ Deprecation Notices (info)
 
 Support for SQLite version 1 has been removed in 2.4.0.
 
+Support for StructuredText has been removed in 2.4.0. Support for
+reStructuredText remains.
+
 Support for the `PySQLite <https://github.com/ghaering/pysqlite>`_
 library will be removed in 2.5.0. Only the Python supplied sqlite3
 library will be supported.

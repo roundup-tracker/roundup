@@ -131,6 +131,8 @@ Fixed:
 - issue2551302 - Remove support for sqlite version 1 from
   back_sqlite.py. We have been using sqlite3 for over a decade. (John
   Rouillard)
+- issue2551285 - Remove StructuredText support. reStructuredText is
+  still supported. (John Rouillard)
 
 Features:
 

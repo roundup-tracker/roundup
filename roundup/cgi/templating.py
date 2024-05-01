@@ -38,13 +38,6 @@ from roundup.exceptions import RoundupException
 from .KeywordsExpr import render_keywords_expression_editor
 
 try:
-    from StructuredText.StructuredText import HTML as StructuredText
-except ImportError:
-    try:  # older version
-        import StructuredText
-    except ImportError:
-        StructuredText = None
-try:
     from docutils.core import publish_parts as ReStructuredText
 except ImportError:
     ReStructuredText = None
@@ -1865,19 +1858,6 @@ class StringHTMLProperty(HTMLProperty):
                 s = html_escape(s)
             s = self.hyper_re.sub(self._hyper_repl, s)
         return s
-
-    def stext(self, escape=0, hyperlink=1):
-        """ Render the value of the property as StructuredText.
-
-            This requires the StructureText module to be installed separately.
-        """
-        if not self.is_view_ok():
-            return self._('[hidden]')
-
-        s = self.plain(escape=escape, hyperlink=hyperlink)
-        if not StructuredText:
-            return s
-        return StructuredText(s, level=1, header=0)
 
     def rst(self, hyperlink=1):
         """ Render the value of the property as ReStructuredText.

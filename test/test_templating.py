@@ -23,12 +23,6 @@ else:
     skip_rst = mark_class(pytest.mark.skip(
         reason='ReStructuredText not available'))
 
-if StructuredText:
-    skip_stext = lambda func, *args, **kwargs: func
-else:
-    skip_stext = mark_class(pytest.mark.skip(
-        reason='StructuredText not available'))
-
 import roundup.cgi.templating
 if roundup.cgi.templating._import_mistune():
     skip_mistune = lambda func, *args, **kwargs: func
@@ -570,11 +564,6 @@ class HTMLClassTestCase(TemplatingTestCase) :
         self.assertEqual(t.rst(), u2s(t_result))
         self.assertEqual(u.rst(), u2s(u_result))
 
-    @skip_stext
-    def test_string_stext(self):
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
-        self.assertEqual(p.stext(), u2s(u'<p>A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> <em>embedded</em> \u00df</p>\n'))
-
     def test_string_field(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
         self.assertEqual(p.field(), '<input name="test1@test" size="30" type="text" value="A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;">')
@@ -1102,23 +1091,6 @@ class NoRstTestCase(TemplatingTestCase) :
     def test_string_rst(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
         self.assertEqual(p.rst(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
-
-class NoStextTestCase(TemplatingTestCase) :
-    def setUp(self):
-        TemplatingTestCase.setUp(self)
-
-        from roundup.cgi import templating
-        self.__StructuredText = templating.StructuredText
-        templating.StructuredText = None
-
-    def tearDown(self):
-        from roundup.cgi import templating
-        templating.StructuredText = self.__StructuredText
-
-    def test_string_stext(self):
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
-        self.assertEqual(p.stext(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
-
 
 class ZUtilsTestcase(TemplatingTestCase):
 
