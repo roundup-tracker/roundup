@@ -133,6 +133,8 @@ Fixed:
   Rouillard)
 - issue2551285 - Remove StructuredText support. reStructuredText is
   still supported. (John Rouillard)
+- Use roundup-demo -p option to set listening port. Was ignored
+  before. (John Rouillard)
 
 Features:
 

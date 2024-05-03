@@ -170,7 +170,7 @@ Instant gratification demo - Roundup Issue Tracker
         # install
         demo.install_demo(home, backend,
                           admin.AdminTool().listTemplates()[template]['path'],
-                          use_port=cli_args.urlport or DEFAULT_PORT)
+                          use_port=cli_args.urlport or cli_args.port or DEFAULT_PORT)
     else:
         # make sure that no options are specified that are only useful on initialization.
         if ( cli_args.backend or cli_args.template or
