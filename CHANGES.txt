@@ -190,6 +190,12 @@ Features:
   parameter. So you can start a demo tracker that is available from
   your network using 'roundup-demo ... -B hostname -H hostname'. (John
   Rouillard)
+- issue2551347 - make _generic.help.html work without property
+  settings. THis applies to classic or minimal trackers. It allows use
+  of classhelp without the property seting for informtion only
+  (e.g. description of what a priority or status means) without being
+  able to select the property in the classhelper.  Good for adding help
+  for Link properties. (John Rouilllard)
 
 2023-07-13 2.3.0
 

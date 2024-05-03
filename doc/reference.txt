@@ -2756,9 +2756,16 @@ There are several methods available on these wrapper objects:
 
 	      The popup window is resizable and scrollable.
 
-	      If the "property" arg is given, it's passed through to the
-	      JavaScript help_window function. This allows updating of a
-	      property in the calling HTML page.
+	      If the "property" arg is given, it's passed through to
+	      the JavaScript help_window function. This allows
+	      updating of a property in the calling HTML
+	      page. "property" is optional. If not provided, the
+	      resulting window will be read only. This is useful for
+	      Link properties where selection can be done by drop-down,
+	      but descriptions of the values can be seen in the popup.
+	      Note that some tracker templates may generate an error
+	      if the property is missing. Version 2.4.0 of Roundup
+	      fixed these templates.
 
 	      If the "form" arg is given, it's passed through to the
 	      JavaScript help_window function - it's the name of the form

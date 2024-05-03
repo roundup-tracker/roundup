@@ -367,6 +367,20 @@ If you have modified that template, you can follow the analysis in
 `issue2551320 <https://issues.roundup-tracker.org/issue2551320>`_
 to fix your template.
 
+Update for _generic.help.html (optional)
+----------------------------------------
+
+Using the ``_generic.help.html`` template with ``classhelper()`` to
+provide information on a property without selecting a property caused
+an error when processing the template. Using the help template with
+Link properties can provide description or other information that the
+user can use to determine the right setting.
+
+If your tracker is based on the minimal or classic tracker and you have
+not changed the _generic.help.html file, you can copy it into place
+from the template directory.
+
+
 Fix static_files use of '-' directory (info)
 --------------------------------------------
 
