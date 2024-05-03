@@ -135,6 +135,13 @@ Fixed:
   still supported. (John Rouillard)
 - Use roundup-demo -p option to set listening port. Was ignored
   before. (John Rouillard)
+- issue2551346 - Classic tracker's statusauditor raises error if
+  detectors/config.ini missing
+  STATUSAUDITOR_CHATTING_REQUIRES_TWO_USERS.  The statusauditor.py for
+  jinja2 and classic templates has been changed to assume that this
+  option is off when the setting is missing from
+  detectors/config.ini. Other templates do not implement this option.
+  (John Rouillard)
 
 Features:
 
