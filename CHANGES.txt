@@ -186,6 +186,10 @@ Features:
   with the values from the dict. (John Rouillard)
 - add @group to rest interface collection queries. Useful when using
   optgroup in select elements. (John Rouillard)
+- roundup-demo can set the hostname in the URL using the -H
+  parameter. So you can start a demo tracker that is available from
+  your network using 'roundup-demo ... -B hostname -H hostname'. (John
+  Rouillard)
 
 2023-07-13 2.3.0
 

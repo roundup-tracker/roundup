@@ -71,12 +71,19 @@ Instant gratification demo - Roundup Issue Tracker
     cli.add_argument('-B', '--bind_address',
                      default="127.0.0.1",
                      help=( "Choose address for server to listen at.\n"
-                            "Use 0.0.0.0 to bind to all addreses.\n"
+                            "Use 0.0.0.0 to bind to all addreses. Use\n"
+                            "the external name of the computer to bind to\n"
+                            "the external host interface.\n"
                             "Default: %(default)s.\n\n"))
     cli.add_argument('-b', '--backend_db',
                      choices=backends,
                      help=( "Choose backend database. Default: %s.\n\n" %
                             DEFAULT_BACKEND))
+    cli.add_argument('-H', '--hostname',
+                     default="localhost",
+                     help=( "Choose hostname for the server.\n"
+                            "Default: %(default)s.\n\n"
+                            ))
     cli.add_argument('-t', '--template',
                      choices=templates,
                      help="Use specified template. (*)\n\n")
@@ -87,8 +94,8 @@ Instant gratification demo - Roundup Issue Tracker
     cli.add_argument('-P', '--urlport',
                      type=int,
                      help=( "Set docker external port. If using\n"
-                            "   docker ... -p 9090:8917 ..."
-                            "this should be set to 9090. "
+                            "   docker ... -p 9090:8917 ...\n"
+                            "this should be set to 9090.\n"
                             "Default: as selected by --port\n\n"))
     cli.add_argument('-V', '--version', action='version',
                      version='Roundup version %s'%roundup_version,
@@ -108,7 +115,8 @@ Instant gratification demo - Roundup Issue Tracker
 
     cli.add_argument('nuke', nargs='?', metavar='nuke', choices=['nuke'],
                      help=( "The word 'nuke' will delete tracker and reset.\n"
-                            "E.G. %(prog)s -b sqlite -t classic ./mytracker nuke\n") % {"prog": sys.argv[0]})
+                            "E.G. %(prog)s -b sqlite \\ \n"
+                            "-t classic ./mytracker nuke\n") % {"prog": sys.argv[0]})
 
     cli_args = cli.parse_args()
 
@@ -168,9 +176,10 @@ Instant gratification demo - Roundup Issue Tracker
                 print("Unknown template: %s. Exiting." % template)
                 exit(1)
         # install
+        url_port = cli_args.urlport or cli_args.port or DEFAULT_PORT
         demo.install_demo(home, backend,
                           admin.AdminTool().listTemplates()[template]['path'],
-                          use_port=cli_args.urlport or cli_args.port or DEFAULT_PORT)
+                          use_port=url_port, use_host=cli_args.hostname)
     else:
         # make sure that no options are specified that are only useful on initialization.
         if ( cli_args.backend or cli_args.template or

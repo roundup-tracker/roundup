@@ -33,7 +33,7 @@ tracker using the sqlite backend.
 
 Show the help message and exit
 .TP
-\fB-b\fp \fIBIND_ADDRESS\fI, \fB--bind_address\fP \fIBIND_ADDRESS\fP
+\fB-B\fp \fIBIND_ADDRESS\fI, \fB--bind_address\fP \fIBIND_ADDRESS\fP
 
 Choose address for server to listen at. Use 0.0.0.0 to bind to all addreses.
 Default: 127.0.0.1.
@@ -51,15 +51,21 @@ sqlite. Available backends are subject to availability on your system.
 
 Use specified template when building tracker. (*)
 .TP
+\fB-h\fP \fIHOSTNAME\fP, \fB--hostname\fP \fIHOSTNAME\fP
+
+Set the hostname used in the URL. This does not make the server listen
+at the hostname. Use the hostname with \fB-B\fP to listen on that IP
+address.
+.TP
 \fB-p\fP \fIPORT\fP, \fB--port\fP \fIPORT\fP
 
 Listen at this port. Default: search for open port starting at 8917.
 .TP
-\fB-P\fP \fIURLPORT\fP, \fB--urlport\fP \fIURLPORT\fP When using
+\fB-P\fP \fIURLPORT\fP, \fB--urlport\fP \fIURLPORT\fP
 
-docker this option passes the docker external port to the demo
-instance. If using \fBdocker ... -p 9090:8917 ...\fP this should be
-set to \fB-P 9090\fP. Default: as selected by \fB--port\fP.
+When using docker this option passes the docker external port to the
+demo instance. If using \fBdocker ... -p 9090:8917 ...\fP this should
+be set to \fB-P 9090\fP. Default: as selected by \fB--port\fP.
 .TP
 \fB-V\fP, \fB--version\fP
 
