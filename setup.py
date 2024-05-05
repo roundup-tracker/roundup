@@ -52,7 +52,7 @@ def mapscript(path):
     return '%s = roundup.scripts.%s:run' % (script, module)
 
 
-def make_data_files_absolute(data_files, prefix):
+def make_data_files_absolute(data_files, prefix, enable=False):
     """Using setuptools data files are put under the egg install directory
        if the datafiles are relative paths. We don't want this. Data files
        like man pages, documentation, templates etc. should be installed
@@ -63,8 +63,9 @@ def make_data_files_absolute(data_files, prefix):
     """
     new_data_files = [ (os.path.join(prefix,df[0]),df[1])
                        for df in data_files ]
-
-    return new_data_files
+    if enable:
+        return new_data_files
+    return data_files
 
 
 def get_prefix():
