@@ -40,7 +40,7 @@ def include(d, e):
 
     'e' -- A glob pattern"""
 
-    return (d, [f for f in glob('%s/%s'%(d, e)) if os.path.isfile(f)])
+    return (d, [f for f in glob('%s/%s' % (d, e)) if os.path.isfile(f)])
 
 
 def mapscript(path):
@@ -50,6 +50,7 @@ def mapscript(path):
     module = os.path.splitext(os.path.basename(path))[0]
     script = module.replace('_', '-')
     return '%s = roundup.scripts.%s:run' % (script, module)
+
 
 def make_data_files_absolute(data_files, prefix):
     """Using setuptools data files are put under the egg install directory
@@ -65,51 +66,51 @@ def make_data_files_absolute(data_files, prefix):
 
     return new_data_files
 
+
 def get_prefix():
     """Get site specific prefix using --prefix, platform lib or
        sys.prefix.
     """
-    prefix_arg=False
-    prefix=""
+    prefix_arg = False
+    prefix = ""
     for a in sys.argv:
         if prefix_arg:
-            prefix=a
+            prefix = a
             break
         # is there a short form -p or something for this??
         if a.startswith('--prefix'):
             if a == '--prefix':
                 # next argument is prefix
-                prefix_arg=True
+                prefix_arg = True
                 continue
-            else:
-                # strip '--prefix='
-                prefix=a[9:]
+            # strip '--prefix='
+            prefix = a[9:]
     if prefix:
         return prefix
-    else:
-        if sys.platform.startswith('win'):
-            # on windows, using pip to install and
-            # prefixing data file paths with c:\path\a\b\...
-            # results in treatment as a relative path.
-            # The result is files are buried under:
-            # platlib\path\a\b\...\share\ and not findable by
-            # Roundup. So return no prefix which places the files at
-            # platlib\share\{doc,locale,roundup} where roundup can
-            # find templates/translations etc.
-            # sigh....
-            return ""
 
-        # start with the platform library
-        plp = get_path('platlib')
-        # nuke suffix that matches lib/* and return prefix
-        head, tail = os.path.split(plp)
-        old_head = None
-        while tail.lower() not in ['lib', 'lib64' ] and head != old_head:
-            old_head = head
-            head, tail = os.path.split(head)
-        if head == old_head:
-            head = sys.prefix
-        return head
+    if sys.platform.startswith('win'):
+        # on windows, using pip to install and
+        # prefixing data file paths with c:\path\a\b\...
+        # results in treatment as a relative path.
+        # The result is files are buried under:
+        # platlib\path\a\b\...\share\ and not findable by
+        # Roundup. So return no prefix which places the files at
+        # platlib\share\{doc,locale,roundup} where roundup can
+        # find templates/translations etc.
+        # sigh....
+        return ""
+
+    # start with the platform library
+    plp = get_path('platlib')
+    # nuke suffix that matches lib/* and return prefix
+    head, tail = os.path.split(plp)
+    old_head = None
+    while tail.lower() not in ['lib', 'lib64'] and head != old_head:
+        old_head = head
+        head, tail = os.path.split(head)
+    if head == old_head:
+        head = sys.prefix
+    return head
 
 
 def main():
@@ -132,17 +133,17 @@ def main():
 
     # build list of zope files/directories
     Zope = {}
-    Zope['module'] = [f for f in glob('frontends/ZRoundup/*.py')]
-    Zope['module'].append('frontends/ZRoundup/refresh.txt');
-    Zope['icons'] = [f for f in glob('frontends/ZRoundupscripts/*.gif')]
-    Zope['dtml'] = [f for f in glob('frontends/ZRoundupscripts/*.dtml')]
+    Zope['module'] = list(glob('frontends/ZRoundup/*.py'))
+    Zope['module'].append('frontends/ZRoundup/refresh.txt')
+    Zope['icons'] = list(glob('frontends/ZRoundupscripts/*.gif'))
+    Zope['dtml'] = list(glob('frontends/ZRoundupscripts/*.dtml'))
 
     data_files = [
         ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
         ('share/roundup/frontends', ['frontends/wsgi.py']),
         ('share/roundup/frontends/ZRoundup', Zope['module']),
         ('share/roundup/frontends/ZRoundup/icons', Zope['icons']),
-        ('share/roundup/frontends/ZRoundup/dtml', Zope['dtml'])
+        ('share/roundup/frontends/ZRoundup/dtml', Zope['dtml']),
     ]
     # install man pages on POSIX platforms
     if os.name == 'posix':
@@ -191,7 +192,8 @@ def main():
     # because the distutils installer will try to use the mbcs codec
     # which isn't available on non-windows platforms. See also
     # http://bugs.python.org/issue10945
-    long_description=open('doc/announcement.txt').read()
+    with open('doc/announcement.txt') as announcement:
+        long_description = announcement.read()
     try:
         # attempt to interpret string as 'ascii'
         long_description.encode('ascii')
@@ -252,7 +254,7 @@ def main():
           extras_require={
               "charting": ['pygal'],
               "jinja2": ['jinja2'],
-              "extras": [ 'brotli', 'pytz'],
+              "extras": ['brotli', 'pytz'],
               "test": ['pytest > 7.0.0'],
               },
           # Override certain command classes with our own ones
@@ -263,9 +265,10 @@ def main():
                      },
           packages=packages,
           entry_points={
-              'console_scripts': scripts
+              'console_scripts': scripts,
           },
           data_files=data_files)
+
 
 if __name__ == '__main__':
 
