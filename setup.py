@@ -18,19 +18,19 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-
 from __future__ import print_function
-from roundup.dist.command.build_doc import build_doc
-from roundup.dist.command.build import build, list_message_files
-from roundup.dist.command.bdist_rpm import bdist_rpm
-from roundup.dist.command.install_lib import install_lib
+
+import os
+import sys
+from glob import glob
+from sysconfig import get_path
 
 from setuptools import setup
 
-from sysconfig import get_path
-
-import sys, os
-from glob import glob
+from roundup.dist.command.bdist_rpm import bdist_rpm
+from roundup.dist.command.build import build, list_message_files
+from roundup.dist.command.build_doc import build_doc
+from roundup.dist.command.install_lib import install_lib
 
 
 def include(d, e):
