@@ -327,8 +327,10 @@ with::
 
 There are three places where ``value request/user/id`` is used in the
 classic template. Your template may have more.
-`Details can be found in issue1525113
- <https://issues.roundup-tracker.org/issue1525113>`_.
+
+If you have a user with the exact username of `@current_user` they
+should change it. `Details can be found in issue1525113
+<https://issues.roundup-tracker.org/issue1525113>`_.
 
 New PostgreSQL Settings (optional)
 ----------------------------------
