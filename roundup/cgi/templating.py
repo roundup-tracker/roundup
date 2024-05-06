@@ -564,10 +564,16 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
             else:
                 l.append(item)
                 continue
+
         # if fail_ok, ignore lookup error
         # otherwise entry must be existing object id rather than key value
         if fail_ok:
             l.append(entry)
+        elif entry == '@current_user' and prop.classname == 'user':
+            # as a special case, '@current_user' means the currently
+            # logged-in user
+            l.append(entry)
+
     return l
 
 

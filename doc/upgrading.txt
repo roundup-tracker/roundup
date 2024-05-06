@@ -293,6 +293,43 @@ The removed columns are: severity, versions, keywords, dependencies.
 It is also missing the ``solves`` field which is added to match the
 schema.
 
+Use @current_user in Searches (optional)
+----------------------------------------
+
+You can create queries like: "My issues" by searching the ``creator``
+property of issues for your id number. Similarly you can search for
+"Issues assigned to me" by searching on the ``assignedto`` property.
+
+Queries in Roundup can be shared between users. However queries like
+these can be shared. However for any user but they will only find
+issues created by/assigned to the user who created the query.
+
+This release allows you to search Links to the User class by
+specifying ``@current_user``. This token searches for the currently
+log in user. It makes searches like the above usable when shared.
+
+This only works for properties that are a Link to the user
+class. E.G. creator, actor, assignedto. It does not yet work for
+MultiLink properties (like nosy).
+
+As an example this can be deployed to the classic tracker's issue
+search template (issue.search.html), by replacing::
+
+    <option metal:fill-slot="extra_options" i18n:translate=""
+            tal:attributes="value request/user/id">created by
+            me</option>
+
+with::
+
+    <option metal:fill-slot="extra_options" value="@current_user"
+            tal:attributes="selected python:value == '@current_user'"
+            i18n:translate="">created by me</option>
+
+There are three places where ``value request/user/id`` is used in the
+classic template. Your template may have more.
+`Details can be found in issue1525113
+ <https://issues.roundup-tracker.org/issue1525113>`_.
+
 New PostgreSQL Settings (optional)
 ----------------------------------
 

@@ -202,6 +202,7 @@ class commonDBTest(MyTestCase):
             yield (filt_iter_list)
         return self.assertEqual, filter_test_iterator
 
+
     def filteringSetupTransitiveSearch(self, classname='issue'):
         u_m = {}
         k = 30
@@ -1512,6 +1513,50 @@ class DBTest(commonDBTest):
 
         # we should have the create and last set entries now
         self.assertEqual(jlen-1, len(self.db.getjournal('issue', id)))
+
+    def testCurrentUserLookup(self):
+        # admin is the default
+        f = self.db.user.lookup('@current_user')
+        self.assertEqual(f, "1")
+
+
+        self.db.journaltag = "fred"
+        f = self.db.user.lookup('@current_user')
+        self.assertEqual(f, "2")
+
+    def testCurrentUserIssueFilterLink(self):
+        # admin is the default user
+
+        for user in ['admin', 'fred']:
+            self.db.journaltag = user
+            for commit in (0,1):
+                nid = self.db.issue.create(
+                    title="spam %s %s" % (user, commit),
+                    status='1',
+                    nosy=['2'] if commit else ['1'])
+            self.db.commit()
+
+        self.db.journaltag = 'admin'
+        self.db.issue.set('3', status='2')
+
+        f = self.db.issue.filter(None, {"creator": '@current_user'})
+        self.assertEqual(f, ["1", "2"])
+
+        f = self.db.issue.filter(None, {"actor": '@current_user'})
+        self.assertEqual(f, ["1", "2", "3"])
+
+
+        self.db.journaltag = 'fred'
+        f = self.db.issue.filter(None, {"creator": '@current_user'})
+        self.assertEqual(f, ["3", "4"])
+
+        # check not @current_user
+        f = self.db.issue.filter(None, {"creator": ['@current_user', '-2']})
+        self.assertEqual(f, ["1", "2"])
+
+        # check different prop
+        f = self.db.issue.filter(None, {"actor": '@current_user'})
+        self.assertEqual(f, ["4"])
 
     def testIndexerSearching(self):
         f1 = self.db.file.create(content='hello', type="text/plain")

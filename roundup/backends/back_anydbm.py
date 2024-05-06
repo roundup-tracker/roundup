@@ -1522,6 +1522,11 @@ class Class(hyperdb.Class):
         if not self.key:
             raise TypeError('No key property set for '
                             'class %s' % self.classname)
+
+        # special notation for looking up the current database user
+        if keyvalue == '@current_user' and self.classname == 'user':
+            keyvalue = self.db.user.get(self.db.getuid(), self.key)
+
         cldb = self.db.getclassdb(self.classname)
         try:
             for nodeid in self.getnodeids(cldb):
@@ -1763,6 +1768,9 @@ class Class(hyperdb.Class):
                 if isinstance(propclass, hyperdb.Link):
                     if not isinstance(v, list):
                         v = [v]
+                    if propclass.classname == 'user' and '@current_user' in v:
+                        cu = self.db.getuid()
+                        v = [x if x != "@current_user" else cu for x in v]
                     l.append((LINK, k, v))
                 elif isinstance(propclass, hyperdb.Multilink):
                     # If it's a reverse multilink, we've already

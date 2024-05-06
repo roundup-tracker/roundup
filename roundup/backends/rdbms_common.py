@@ -2313,6 +2313,10 @@ class Class(hyperdb.Class):
             raise TypeError('No key property set for class %s' %
                             self.classname)
 
+        # special notation for looking up the current database user
+        if keyvalue == '@current_user' and self.classname == 'user':
+            keyvalue = self.db.user.get(self.db.getuid(), self.key)
+
         # use the arg to handle any odd database type conversion (hello,
         # sqlite)
         sql = "select id from _%s where _%s=%s and __retired__=%s" % (
@@ -2566,6 +2570,10 @@ class Class(hyperdb.Class):
         """
         pln = proptree.parent.uniqname
         prp = proptree.name
+
+        if proptree.classname == 'user' and '@current_user' in v:
+            cu = self.db.getuid()
+            v = [x if x != "@current_user" else cu for x in v]
         try:
             opcodes = [int(x) for x in v]
             if min(opcodes) >= -1:
@@ -2843,6 +2851,9 @@ class Class(hyperdb.Class):
                                 where.append(w)
                                 args += arg
                         else:
+                            if v == '@current_user' and \
+                               propclass.classname == 'user':
+                                v = self.db.getuid()
                             if v in ('-1', None):
                                 v = None
                                 where.append('_%s._%s is NULL' % (pln, k))

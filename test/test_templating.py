@@ -145,6 +145,8 @@ class FunctionsTestCase(TemplatingTestCase):
                 return '1'
             if key == 'fail':
                 raise KeyError('fail')
+            if key == '@current_user':
+                raise KeyError('@current_user')
             return key
         db._db.classes = {'issue': MockNull(lookup=lookup)}
         prop = MockNull(classname='issue')
@@ -153,6 +155,8 @@ class FunctionsTestCase(TemplatingTestCase):
         self.assertEqual(lookupIds(db._db, prop, ['ok', 'fail'], 1),
             ['1', 'fail'])
         self.assertEqual(lookupIds(db._db, prop, ['ok', 'fail']), ['1'])
+        self.assertEqual(lookupIds(db._db, prop, ['ok', '@current_user']),
+                        ['1'])
 
     def test_lookupKeys(self):
         db = HTMLDatabase(self.client)
