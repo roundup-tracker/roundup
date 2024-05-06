@@ -145,6 +145,26 @@ class BaseTestCases(WsgiSetup):
        wsgi server is started with various feature flags
     """
 
+    def create_login_session(self, username="admin", password="sekrit",
+                             return_response=True, expect_login_ok=True):
+        # Set up session to manage cookies <insert blue monster here>
+        session = requests.Session()
+        session.headers.update({'Origin': 'http://localhost:9001'})
+
+        # login using form to get cookie
+        login = {"__login_name": username, '__login_password': password,
+                 "@action": "login"}
+        response = session.post(self.url_base()+'/', data=login)
+
+        if expect_login_ok:
+            # verify we have a cookie
+            self.assertIn('roundup_session_Roundupissuetracker',
+                          session.cookies)
+
+        if not return_response:
+            return session
+        return session, response
+
     def test_start_page(self):
         """ simple test that verifies that the server can serve a start page.
         """
@@ -1039,14 +1059,9 @@ class BaseTestCases(WsgiSetup):
         '''Test case where we have an outdated session cookie. Make
            sure cookie is removed.
         '''
-        session = requests.Session()
-        session.headers.update({'Origin': 'http://localhost:9001'})
 
-        # login using form to get cookie
-        login = {"__login_name": 'admin', '__login_password': 'sekrit',
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
-        
+        session, f = self.create_login_session()
+
         # verify cookie is present and we are logged in
         self.assertIn('<b>Hello, admin</b>', f.text)
         self.assertIn('roundup_session_Roundupissuetracker',
@@ -1066,44 +1081,30 @@ class BaseTestCases(WsgiSetup):
         self.assertNotIn('roundup_session_Roundupissuetracker', session.cookies)
 
     def test_login_fail_then_succeed(self):
-        # Set up session to manage cookies <insert blue monster here>
-        session = requests.Session()
-        session.headers.update({'Origin': 'http://localhost:9001'})
 
-        # login using form
-        login = {"__login_name": 'admin', '__login_password': 'bad_sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
+        session, f = self.create_login_session(password="bad_sekrit",
+                                               expect_login_ok=False)
+
         # verify error message and no hello message in sidebar.
         self.assertIn('class="error-message">Invalid login <br/ >', f.text)
         self.assertNotIn('<b>Hello, admin</b>', f.text)
 
-        # login using form
-        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
-        # look for change in text in sidebar post login
+        session, f = self.create_login_session(return_response=True)
         self.assertIn('<b>Hello, admin</b>', f.text)
 
     def test__generic_item_template_editok(self, user="admin"):
-        """Load /status1 object. Admin has edit rights so should see
+        """Load /status7 object. Admin has edit rights so should see
            a submit button. fred doesn't have edit rights
            so should not have a submit button.
         """
-        # Set up session to manage cookies <insert blue monster here>
-        session = requests.Session()
-        session.headers.update({'Origin': self.url_base()})
+        session, f = self.create_login_session(username=user)
 
-        # login using form
-        login = {"__login_name": user, '__login_password': 'sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
         # look for change in text in sidebar post login
         self.assertIn('Hello, %s'%user, f.text)
-        f = session.post(self.url_base()+'/status7', data=login)
+        f = session.get(self.url_base()+'/status7')
         print(f.content)
 
-        # status1's name is unread
+        # status7's name is done-cbb
         self.assertIn(b'done-cbb', f.content)
 
         if user == 'admin':
@@ -1120,14 +1121,8 @@ class BaseTestCases(WsgiSetup):
         self.test__generic_item_template_editok(user=user)
 
     def test_new_issue_with_file_upload(self):
-        # Set up session to manage cookies <insert blue monster here>
-        session = requests.Session()
-        session.headers.update({'Origin': 'http://localhost:9001'})
+        session, f = self.create_login_session()
 
-        # login using form
-        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
         # look for change in text in sidebar post login
         self.assertIn('Hello, admin', f.text)
 
@@ -1198,12 +1193,7 @@ class BaseTestCases(WsgiSetup):
 
         # get session variable from web form login
         #   and use it to upload file
-        # login using form
-        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login,
-                          headers = {'Origin': "http://localhost:9001"}
-)
+        session, f = self.create_login_session()
         # look for change in text in sidebar post login
         self.assertIn('Hello, admin', f.text)
 
