@@ -176,6 +176,37 @@ class BaseTestCases(WsgiSetup):
             return session
         return session, response
 
+
+    def test_query(self):
+        current_user_query = (
+            "@columns=title,id,activity,status,assignedto&"
+            "@sort=activity&@group=priority&@filter=creator&"
+            "@pagesize=50&@startwith=0&creator=%40current_user&"
+            "@dispname=Test1")
+
+        session, _response = self.create_login_session()
+        f = session.get(self.url_base()+'/issue?' + current_user_query)
+
+        # verify the query has run by looking for the query name
+        self.assertIn('List of issues\n   - Test1', f.text)
+        # find title of issue 1
+        self.assertIn('foo bar RESULT', f.text)
+        # match footer "1..1 out of 1" if issue is found
+        self.assertIn('out of', f.text)
+        # logout
+        f = session.get(self.url_base()+'/?@action=logout')
+
+
+        # set up for another user
+        session, _response = self.create_login_session(username="fred")
+        f = session.get(self.url_base()+'/issue?' + current_user_query)
+
+        # verify the query has run
+        self.assertIn('List of issues\n   - Test1', f.text)
+        # We should have no rows, so verify the static part
+        # of the footer is missing.
+        self.assertNotIn('out of', f.text)
+
     def test_start_page(self):
         """ simple test that verifies that the server can serve a start page.
         """
