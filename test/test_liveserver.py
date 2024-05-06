@@ -102,6 +102,17 @@ class WsgiSetup(LiveServerTestCase):
                                    content = "a message foo bar RESULT",
                                    date=rdate.Date(),
                                    messageid="test-msg-id")
+
+        # add a query using @current_user
+        result = cls.db.query.create(
+            klass="issue",
+            name="I created",
+            private_for=None,
+            url=("@columns=title,id,activity,status,assignedto&"
+                 "@sort=activity&@group=priority&@filter=creator&"
+                 "@pagesize=50&@startwith=0&creator=%40current_user")
+            )
+
         cls.db.commit()
         cls.db.close()
         
