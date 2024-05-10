@@ -238,7 +238,8 @@ Roundup release checklist:
 
         docker run -it --rm --volume \
 	/var/run/docker.sock:/var/run/docker.sock \
-          --name trivy aquasec/trivy:latest image rounduptracker/roundup:2.2.0
+          --name trivy aquasec/trivy:latest image --exit-code 1 \
+          --ignore-unfixed rounduptracker/roundup:2.2.0
 
      You may need to explicitly update/refresh the scanners with:
      "docker pull anchore/grype:latest" and similarly for
