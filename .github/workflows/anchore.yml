@@ -17,8 +17,8 @@ on:
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ "master" ]
-  schedule:
-    - cron: '38 21 * * 6'
+  #schedule:
+    #- cron: '38 21 * * 6'
 
 permissions:
   contents: read
