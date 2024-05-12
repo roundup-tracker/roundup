@@ -82,7 +82,7 @@ jobs:
           # Sphinx required to build the xapian python bindings. Use 1.8.5 on
           # older python and newest on newer.
           if [[ $PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
-          XAPIAN_VER="1.4.22"; echo $XAPIAN_VER;
+          XAPIAN_VER="1.4.20"; echo $XAPIAN_VER;
           cd /tmp
           curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
           tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
