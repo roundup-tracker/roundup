@@ -35,7 +35,16 @@ jobs:
       PYTHON_VERSION: ${{ matrix.python-version }}
 
     steps:
-      # Setup version of Python to use
+      # Checkout the latest code from the repo
+      - name: Checkout source
+        # example directives:
+          # disable step
+        # if: {{ false }}
+          # continue running if step fails
+        # continue-on-error: true
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+        # Setup version of Python to use
       - name: Set Up Python 3.13
         uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
         with:
