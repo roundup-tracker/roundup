@@ -1,0 +1,99 @@
+
+name: build-xapian
+
+on: 
+    push:
+         # skip if github.ref is 'refs/heads/maint-1.6'
+         #   aka github.ref_name of 'maint-1.6'
+         # see https://github.com/orgs/community/discussions/26253
+         # for mechanism to control matrix based on branch
+         branches: [ "*", '!maint-1.6' ]
+    workflow_dispatch:
+      inputs:
+        debug_enabled:
+          type: boolean
+          description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+          required: false
+          default: false
+# GITHUB_TOKEN only has read repo context.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: build xapian
+    runs-on: ubuntu-22.04
+
+    env:
+     # get colorized pytest output even without a controlling tty
+      PYTEST_ADDOPTS: "--color=yes"
+      #  OS: ${{ matrix.os }}
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+      # Setup version of Python to use
+      - name: Set Up Python 3.13
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        with:
+          python-version: 3.13
+          allow-prereleases: true
+          cache: 'pip'
+
+      - name: Install build tools - setuptools
+        run: pip install setuptools
+
+      # Display the Python version being used
+      - name: Display Python and key module versions
+        run: |
+          python -c "import sys; print('python version: ', sys.version)"
+          python -c "import sqlite3; print('sqlite version: ', sqlite3.sqlite_version)"
+          python -c "import setuptools; print('setuptools version: ', setuptools.__version__);"
+
+      - name: Update pip
+        run: python -m pip install --upgrade pip
+            
+      # https://github.com/mxschmitt/action-tmate
+      # allow remote ssh into the CI container. I need this to debug
+      # some xfail cases 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        timeout-minutes: 10
+        with:
+          limit-access-to-actor: true
+
+      - name: Install xapian
+        run: |
+          set -xv
+          sudo apt-get install libxapian-dev
+          # Sphinx required to build the xapian python bindings. Use 1.8.5 on
+          # older python and newest on newer.
+          if [[ $PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
+          XAPIAN_VER="1.4.24"; echo $XAPIAN_VER;
+          cd /tmp
+          curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
+          tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
+          cd xapian-bindings-$XAPIAN_VER/
+          # edit the configure script.
+          # distutils.sysconfig.get_config_vars('SO')  doesn't work for
+          # 3.11 or newer.
+          # Change distutils.sysconfig... to just sysconfig and SO
+          # to EXT_SUFFIX to get valid value.
+          if [[ $PYTHON_VERSION == "X."* ]]; then
+            cp configure configure.FCS;
+            sed -i \
+              -e '/PYTHON3_SO=/s/distutils\.//g' \
+              -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' \
+              -e '/PYTHON3_CACHE_TAG=/s/imp;print(imp.get_tag())/sys;print(sys.implementation.cache_tag)/' \
+              -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\.get_tag()/sys.implementation.cache_tag/g' \
+              -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\b/importlib/g' \
+            configure;
+            diff -u configure.FCS configure || true;
+          fi
+          ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation
+          make && sudo make install
+          python -c 'import xapian'
