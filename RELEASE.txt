@@ -44,6 +44,13 @@ Roundup release checklist:
 4.  Update documentation
       doc/announcement.txt
       doc/upgrading.txt
+
+    Use::
+
+       sed -ne '/^20[0-9][0-9]-XX/,/^202[0-9]-/{/^-/p}' CHANGES.txt | wc -l
+
+   to get number of features/fixes included in the release.
+
 4a. cd to website/www and run 'make linkcheck'. See output in
     _tmp/linkcheck/output.txt
        fix broken references in docs
