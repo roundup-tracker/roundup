@@ -32,7 +32,7 @@ jobs:
      # get colorized pytest output even without a controlling tty
       PYTEST_ADDOPTS: "--color=yes"
       #  OS: ${{ matrix.os }}
-      PYTHON_VERSION: ${{ matrix.python-version }}
+      PYTHON_VERSION: 3.13
 
     steps:
       # Checkout the latest code from the repo
