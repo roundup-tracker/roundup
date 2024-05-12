@@ -224,7 +224,7 @@ jobs:
               pip install Markdown; fi
 
       - name: Install xapian
-        if: matrix.python-version != '3.14'
+        if: matrix.python-version != '3.13'
         run: |
           set -xv
           sudo apt-get install libxapian-dev
@@ -259,7 +259,7 @@ jobs:
             diff -u configure.FCS configure || true; \
             ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; \
           fi
-          case "$PYTHON_VERSION" in "3.14") echo skipping xapian build;; *) make && sudo make install; esac
+          case "$PYTHON_VERSION" in "3.13") echo skipping xapian build;; *) make && sudo make install; esac
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
