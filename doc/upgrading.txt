@@ -453,7 +453,7 @@ and its storage objects available by importing from::
    from roundup.anypy.cgi_ import cgi
    from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
 
-It is unlikey that you will care unless you have done some expert
+It is unlikely that you will care unless you have done some expert
 level Roundup customization. If you have, use one of the imports above
 if you plan on running on Python 3.13 (expected in 2024) or newer.
 
