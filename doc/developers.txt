@@ -664,7 +664,7 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _Plural Forms:
    https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
 .. _po filetype plugin:
-    https://vim.sourceforge.io/scripts/script.php?script_id=695
+    https://www.vim.org/scripts/script.php?script_id=64
 .. _PO utilities: https://github.com/pinard/po-utils
 .. _poEdit: https://poedit.net/
 .. _pology: http://pology.nedohodnik.net/doc/user/en_US/ch-poformat.html
@@ -685,4 +685,4 @@ At run time, Roundup automatically compiles message catalogs whenever
    https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
 .. _TravisCI: https://app.travis-ci.com/github/roundup-tracker/roundup
 .. _vim: https://www.vim.org/
-.. _ZPTInternationalization: http://grok.zope.org/doc/community/view_generation/i18n_of_your_app.html
+.. _ZPTInternationalization: https://web.archive.org/web/20120804003011/http://grok.zope.org/doc/community/view_generation/i18n_of_your_app.html

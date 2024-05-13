@@ -583,7 +583,7 @@ languages are supported.
    to_tsquery. It is enabled by starting the search phrase with ``ts:``.
 
 .. _Parsing Queries: \
-   https://www.postgresql.org/docs/14/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+   https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
 
 Websearch provides a more natural style of search and supports:
 
@@ -641,7 +641,7 @@ You will see an error about ``text search configuration ... does not
 exist``.
 
 .. _own textsearch configuration: \
-  https://www.postgresql.org/docs/14/textsearch-configuration.html
+  https://www.postgresql.org/docs/current/textsearch-configuration.html
 
 It may be possible to append to this list using the tracker's
 interfaces.py. For details, see ``test/test_indexer.py`` in the
@@ -1457,8 +1457,8 @@ If you are using GNU readline, ``set history-size 10``. If your
 installation uses libedit (macs), it should be possible to
 persistently set the history size using ``history size
 10``. Pyreadline3 can set history length using
-``history_length(10)``. See the older documentation for example syntax:
-https://pythonhosted.org/pyreadline/usage.html.persistently.
+``history_length(10)``. See the documentation for example syntax:
+https://pythonhosted.org/pyreadline/usage.html#configuration-file.
 
 History is saved to the file ``.roundup_admin_history`` in your home
 directory (for windows usually ``\Users\<username>``.

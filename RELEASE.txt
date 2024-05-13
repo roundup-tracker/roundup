@@ -56,6 +56,14 @@ Roundup release checklist:
        fix broken references in docs
        verify redirects are correct
 
+    Use::
+
+        grep '\[broken\]\s*htt'  _tmp/linkcheck/output.txt
+
+    to find external refs only. Internal refs will probably fail
+    because they don't use :ref: or :doc: roles to reference them.
+    They are referenced using html link syntax.
+
 5.  Update setup.py info if needed (contacts, classifiers, etc.). When
     releasing check that Development Status matches release: stable,
     beta alpha etc.

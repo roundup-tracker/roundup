@@ -246,3 +246,5 @@ linkcheck_ignore = [
     r'https://.../rest/.*',              # dummy example url
     r'http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport',                 # dead link, there for historic
 ]
+
+linkcheck_timeout = 10  # seconds
