@@ -254,7 +254,7 @@ jobs:
               -e '/PYTHON3_SO=/s/"SO"/"EXT_SUFFIX"/g' \
               -e '/PYTHON3_CACHE_TAG=/s/imp;print(imp.get_tag())/sys;print(sys.implementation.cache_tag)/' \
               -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\.get_tag()/sys.implementation.cache_tag/g' \
-              -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\b/importlib/g' \
+              -e '/PYTHON3_CACHE_OPT1_EXT=/s/imp\b/sys/g' \
             configure; \
             diff -u configure.FCS configure || true; \
             ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; \
