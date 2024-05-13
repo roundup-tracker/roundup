@@ -9,8 +9,6 @@ from roundup.anypy.strings import b2s, s2b
 from roundup.backends.indexer_common import Indexer as IndexerBase
 from roundup.i18n import _
 
-# TODO: we need to delete documents when a property is *reindexed*
-
 # Note that Xapian always uses UTF-8 encoded string, see
 # https://xapian.org/docs/bindings/python3/introduction.html#strings:
 # "Where std::string is returned, it's always mapped to bytes in
