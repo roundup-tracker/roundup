@@ -237,20 +237,27 @@ production workloads so we count on users to help us with this.
 Disable performance improvement for wsgi mode (optional)
 --------------------------------------------------------
 
-In Roundup version 2.2.0 an experimental option to improve performance
-when running in wsgi mode was added. It as disabled at that time. In
-the last two years it has been in use at a few sits with no reports of
-issues.
+In Roundup version 2.2.0, an experimental feature was introduced to
+enhance performance while operating in wsgi mode. Initially, this
+feature was disabled. Over the past two years, it has been used at a
+few sites without any reported problems.
 
-So the default mode is now to enable this improvement. This will get
-more people using it. In case there is a latent bug that hasn't been
-discovered, it can still be disabled. To disable it, add the
-feature_flags to the RequestDispatcher as below:
+As a result, the default setting now enables this performance
+improvement, encouraging a wider adoption of the feature. In the
+event that an undiscovered bug arises, it can still be disabled
+if you experience problems. To disable it, modify your wsgi
+startup script and add the feature_flags to the RequestDispatcher
+as below:
 
    feature_flags = { "cache_tracker": False }
    app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
 
-and restart your wsgi instance.
+Then restart your wsgi instance. If you have to disable this
+feature, send email to the roundup-users mailing list
+(roundup-users at lists.sourceforge.net) so we can help you
+diagnose the cause and fix it for everybody.
+
+In the future, support for disabling this improvement will be removed.
 
 Fix duplicate id for confirm password in user.item.html (optional)
 ------------------------------------------------------------------
@@ -292,6 +299,8 @@ The removed columns are: severity, versions, keywords, dependencies.
 
 It is also missing the ``solves`` field which is added to match the
 schema.
+
+`You can see the diff in the Sourceforge web interface <https://sourceforge.net/p/roundup/code/ci/54eb12cd3be143b079809795dcb2f813f75a691c/tree/share/roundup/templates/devel/html/task.index.html?diff=c95870b2bbab822def6066498a4ef8634e76e0b3>`_.
 
 Use @current_user in Searches (optional)
 ----------------------------------------
@@ -335,12 +344,13 @@ should change it. `Details can be found in issue1525113
 New PostgreSQL Settings (optional)
 ----------------------------------
 
-With this release, you can specify a Postgresql database
-schema to use. By default Roundup creates a database when
-using ``roundup-admin init``. Setting the rdbms ``name``
-keyword to ``roundup_database.roundup_schema`` will create
-and use the ``roundup_schema`` in the pre-created
-``roundup_database``.
+With this release, you can specify a Postgresql database schema
+to use. By default Roundup creates a database when using
+``roundup-admin init``. Setting the rdbms ``name`` keyword to
+``roundup_database.roundup_schema`` will create and use the
+``roundup_schema`` in the pre-created ``roundup_database``. See
+the `Roundup PostgreSQL documentation`_ for details on how to set
+up the roles.
 
 Also there is a new configuration keyword in the rdbms
 section of ``config.ini``. The ``service`` keyword allows
@@ -1452,7 +1462,7 @@ Then import the dump. Removing ``SET NAMES`` should allow the import
 to use UTF-8.
 
 Please report success or issues with this conversion to the
-roundup-users AT lists.sourceforge.net mailing list.
+roundup-users at lists.sourceforge.net mailing list.
 
 As people report successful or unsuccessful conversions, we will update
 the errata page at: https://wiki.roundup-tracker.org/ReleaseErrata.
@@ -2573,6 +2583,7 @@ Migrating from older versions
 See the `historical migration <upgrading-history.html>`_ document.
 
 .. _`security documentation`: security-history.html
+.. _`Roundup postgresql documentation`: postgresql.html
 .. _`administration guide`: admin_guide.html
 .. _`xmlrpc guide`: xmlrpc.html
 .. _FTS5 full-text search engine: https://www.sqlite.org/fts5.html

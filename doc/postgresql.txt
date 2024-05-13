@@ -48,7 +48,8 @@ list.
 Creating a Role/User
 --------------------
 
-For case 1 create a user using::
+For case 1 (Roundup user creates and uses a database) create a user
+using::
 
   psql -c "CREATE ROLE roundupuser WITH CREATEDB LOGIN PASSWORD 'rounduppw';" -U postgres
 
@@ -60,7 +61,8 @@ remove the CREATEDB permission using::
 If needed (e.g. you want to deploy a new tracker) you can use ``ALTER
 ROLE`` with ``CREATEDB`` to add the permission back.
 
-For case 2 you need to create the user:: 
+For case 2 (Roundup user uses a schema under a pre-created database)
+you need to create the user::
 
   psql -c "CREATE ROLE roundupuser LOGIN PASSWORD 'rounduppw';" -U postgres
 
