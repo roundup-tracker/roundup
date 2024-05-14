@@ -81,8 +81,8 @@ jobs:
           sudo apt-get install libxapian-dev
           # Sphinx required to build the xapian python bindings. Use 1.8.5 on
           # older python and newest on newer.
-          if [[ $PYTHON_VERSION == '3.'* ]] ; then pip install sphinx; fi
-          XAPIAN_VER="1.4.18"; echo $XAPIAN_VER;
+          pip install sphinx
+          XAPIAN_VER="1.4.25"; echo $XAPIAN_VER;
           cd /tmp
           curl -s -O https://oligarchy.co.uk/xapian/$XAPIAN_VER/xapian-bindings-$XAPIAN_VER.tar.xz
           tar -Jxvf xapian-bindings-$XAPIAN_VER.tar.xz
@@ -92,6 +92,7 @@ jobs:
           # 3.11 or newer.
           # Change distutils.sysconfig... to just sysconfig and SO
           # to EXT_SUFFIX to get valid value.
+          # DISABLED use their script
           if [[ $PYTHON_VERSION == "X."* ]]; then
             cp configure configure.FCS;
             sed -i \
