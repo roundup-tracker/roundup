@@ -944,8 +944,8 @@ class TrackerConfig(unittest.TestCase):
         print(cm.exception)
         self.assertEqual(cm.exception.args[0], self.dirname)
 
-    def testCopyConfig(self):
 
+    def testXhtmlRaisesOptionError(self):
         self.munge_configini(mods=[ ("html_version = ", "xhtml") ])
 
         config = configuration.CoreConfig()
@@ -953,17 +953,34 @@ class TrackerConfig(unittest.TestCase):
         # verify config is initalized to defaults
         self.assertEqual(config['HTML_VERSION'], 'html4')
 
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            # load config
+            config.load(self.dirname)
+
+        print(cm.exception)
+        self.assertEqual(str(cm.exception),
+                         "Invalid value for HTML_VERSION: 'xhtml'\n"
+                         "Allowed values: html4")
+
+    def testCopyConfig(self):
+
+        self.munge_configini(mods=[ ("static_files = ", "html2") ])
+
+        config = configuration.CoreConfig()
+
+        # verify config is initalized to defaults
+        self.assertEqual(config['STATIC_FILES'], None)
+
         # load config
         config.load(self.dirname)
-
-        # loaded new option
-        self.assertEqual(config['HTML_VERSION'], 'xhtml')
+        self.assertEqual(config['STATIC_FILES'], ['_test_instance/html2'])
 
         # copy config
         config_copy = config.copy()
 
         # this should work
-        self.assertEqual(config_copy['HTML_VERSION'], 'xhtml')
+        self.assertEqual(config_copy['STATIC_FILES'], ['_test_instance/html2'])
 
     @skip_py2
     def testConfigValueInterpolateError(self):
