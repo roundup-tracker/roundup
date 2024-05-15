@@ -145,6 +145,9 @@ Fixed:
 - issue2551350 - Python changes for 3.12 with roundup 2.3.0. Fixes for
   cgitb.py crash due to pydoc.html.header() signature change. (Patch
   by Andrew (kragacles), applied John Rouillard)
+- issue2551350 - Python changes for 3.12 with roundup 2.3.0. Fixes for
+  mailer.py crash due to change in starttls signature change. (Patch
+  by Andrew (kragacles), modified and applied John Rouillard)
 
 Features:
 
