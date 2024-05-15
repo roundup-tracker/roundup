@@ -223,7 +223,7 @@ NameError: name 'a' is not defined
         else:
             self.assertEqual(expected2, p)
 
-    def notest_html(self):
+    def test_html(self):
         """ templating error """
         # enabiling this will cause the test to fail as the variable
         # is included in the live output but not in expected.

@@ -142,6 +142,9 @@ Fixed:
   option is off when the setting is missing from
   detectors/config.ini. Other templates do not implement this option.
   (John Rouillard)
+- issue2551350 - Python changes for 3.12 with roundup 2.3.0. Fixes for
+  cgitb.py crash due to pydoc.html.header() signature change. (Patch
+  by Andrew (kragacles), applied John Rouillard)
 
 Features:
 
