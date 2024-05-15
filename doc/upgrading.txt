@@ -112,6 +112,22 @@ values or if a value must be changed manually.
 
 This will insert the bad API login rate limiting settings.
 
+Also if you have ``html_version`` set to ``xhtml``, you will get
+an error.
+
+Use of xhtml html_version disabled (required)
+---------------------------------------------
+
+If you enabled xhtml formatted templates, you will need to
+change them to html (html4) format. Also change the value of
+``html_version`` from ``xhtml`` to ``html``.
+
+Note that the default Roundup templates use html4 so it is
+unlikely that your templates are xhtml based. See
+`issue2551323
+<https://issues.roundup-tracker.org/issue2551323>`_ for
+details on the deprecation of xhtml.
+
 Update MySQL character set/collations (required)
 ------------------------------------------------
 

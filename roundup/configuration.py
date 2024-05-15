@@ -387,6 +387,19 @@ class HtmlToTextOption(Option):
             raise OptionValueError(self, value, self.class_description)
 
 
+class HtmlVersionOption(Option):
+    """Accept html4 only for now. Raise error for xhtml which is not
+       supported in roundup 2.4 and newer."""
+
+    class_description = "Allowed values: html4"
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in ("html4"):
+            return _val
+        else:
+            raise OptionValueError(self, value, self.class_description)
+
 class EmailBodyOption(Option):
 
     """When to replace message body or strip quoting: always, never
@@ -1083,14 +1096,10 @@ SETTINGS = (
             'or "both" (these are the three allowed values).\n'
             'The dispatcher is configured using the DISPATCHER_EMAIL\n'
             ' setting.'),
-        (Option, "html_version", "html4",
+        (HtmlVersionOption, "html_version", "html4",
             "This setting should be left at the default value of html4.\n"
-            "Support is ending for xhtml mode.\n"
-            "HTML version to generate. The templates are html4 by default.\n"
-            "If you wish to make them xhtml, then you'll need to change\n"
-            "this setting to 'xhtml' too so all auto-generated HTML\n"
-            "is compliant.\n"
-            "Allowed values: html4, xhtml"),
+            "Support for xhtml has been disabled.\n"
+            "HTML version to generate. The templates are html4 by default."),
         (TimezoneOption, "timezone", TimezoneOption.defaulttz,
             "Default timezone offset,\n"
             "applied when user's timezone is not set.",

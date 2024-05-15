@@ -145,6 +145,10 @@ Fixed:
 
 Features:
 
+- issue2551323 - Remove XHTML support. Disabled option to set
+  html_version to xhtml. Running roundup commands with html_version
+  set to xhtml will result in an "Invalid value for HTML_VERSION:
+  'xhtml'" error. (John Rouillard)
 - issue2551103 - add pragma 'display_protected' to roundup-admin. If
   true, print protected attributes like id, activity, actor...
   when using display or specification subcommands. (John Rouillard)
