@@ -260,9 +260,10 @@ docutils
 .. _install/markdown:
 
 markdown, markdown2 or mistune
-  To use markdown rendering you need to have the markdown_,
-  markdown2_ (2.4.9 known to be broken, 2.3.3 known to work),
-  or mistune_ (v0.8.4 tested; python3 only) package installed.
+  To use markdown rendering (as supplied by the jinja2 template)
+  you need to have the markdown_,
+  markdown2_ (2.4.9 known to be broken, 2.3.3, 2.4.10+ known to
+  work), or mistune_ (v0.8.4 tested; python3 only) package installed.
 
 zstd, brotli
   To have roundup compress the returned data using one of these
