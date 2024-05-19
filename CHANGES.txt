@@ -148,6 +148,9 @@ Fixed:
 - issue2551350 - Python changes for 3.12 with roundup 2.3.0. Fixes for
   mailer.py crash due to change in starttls signature change. (Patch
   by Andrew (kragacles), modified and applied John Rouillard)
+- make classhelper link open in a new window by setting
+  target="_blank". This prevents overwriting of current page with the
+  classhelper if javascript is disabled. (John Rouillard)
 
 Features:
 

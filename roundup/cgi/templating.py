@@ -981,7 +981,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                   (help_url, width, height)
         return ('<a class="classhelp" data-helpurl="%s" '
                 'data-width="%s" data-height="%s" href="%s" '
-                'onclick="%s" %s>%s</a>') % (
+                'target="_blank" onclick="%s" %s>%s</a>') % (
                     help_url, width, height,
                     help_url, onclick, self.cgi_escape_attrs(**html_kwargs),
                     self._(label))
