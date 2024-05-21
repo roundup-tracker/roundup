@@ -250,6 +250,44 @@ production workloads so we count on users to help us with this.
 .. _issue2551282: https://issues.roundup-tracker.org/issue2551282
 .. _issue2551115: https://issues.roundup-tracker.org/issue2551115
 
+Add new classhelper to your templates (optional)
+------------------------------------------------
+
+The classic classhelper invoked by the ``(list)`` link in your
+issue.item.html template can be greatly improved by wrapping the
+links with the new web-component based ``roundup-classhelper``.
+
+The new classhelper:
+
+  * allows you to select items from multiple pages
+  * is usable with a content security policy
+  * is more easily styled
+  
+To deploy it, install the required files and wrap classhelp calls
+in the new ``<roundup-classhelper>`` component. For example,
+wrap::
+
+  <span tal:condition="context/is_edit_ok" tal:replace="structure
+     python:db.user.classhelp('username,realname,address',
+     property='nosy', width='600'" />
+
+so it looks like::
+
+    <roundup-classhelper
+      data-search-with="username,phone,roles[]">
+
+      <span tal:condition="context/is_edit_ok" tal:replace="structure
+         python:db.user.classhelp('username,realname,address',
+         property='nosy', width='600')" />
+
+    </roundup-classhelper>
+
+to allow the user to search by: username, phone number and use a
+select/dropdown to search by role. Full details about the
+attributes and installation instructions can be found in the
+`classhelper documentation`_ in the admin guide.
+
+
 Disable performance improvement for wsgi mode (optional)
 --------------------------------------------------------
 
@@ -2606,6 +2644,7 @@ See the `historical migration <upgrading-history.html>`_ document.
 .. _PostgreSQL's full text search: https://www.postgresql.org/docs/current/textsearch.html
 .. _`administration guide notes on native-fts`: admin_guide.html#configuring-native-fts-full-text-search
 .. _Configuring Compression: admin_guide.html#configuring-compression
+.. _classhelper documentation: admin_guide.html#classhelper-web-component
 .. _Software Upgrade: admin_guide.html#software-upgrade
 .. _new search permissions for query in 1.4.17:
    upgrading-history.html#new-search-permissions-for-query-in-1-4-17

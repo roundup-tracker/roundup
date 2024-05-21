@@ -1029,6 +1029,21 @@ class RestfulInstance(object):
         self.client.setHeader("Allow", "OPTIONS, GET, POST")
         return 200, result
 
+    @Routing.route("/data/user/roles", 'GET')
+    @_data_decorator
+    def get_roles(self, input):
+        """Return all defined roles for users with Admin role.
+           The User class property roles is a string but simulate
+           it as a MultiLink to an actual Roles class.
+        """
+        if not self.client.db.user.has_role(self.client.db.getuid(), "Admin"):
+            raise Unauthorised(
+                'User does not have permission on "user.roles"')
+
+        return 200, {"collection":
+                     [{"id": rolename,"name": rolename}
+                      for rolename in list(self.db.security.role.keys())]}
+
     @Routing.route("/data/<:class_name>/<:item_id>", 'GET')
     @_data_decorator
     def get_element(self, class_name, item_id, input):

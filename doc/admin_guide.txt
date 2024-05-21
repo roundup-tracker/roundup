@@ -514,6 +514,323 @@ handlers.
 
 .. _CSP: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
 
+Classhelper Web Component
+=========================
+
+Version 2.4.0 provides a new classhelper popup written as a
+web component. By installing 3 files and adding a stanza to
+``interfaces.py`` you can enable the new component.
+
+The `development of this component was done by team-03
+<https://github.com/UMB-CS-682-Team-03/tracker>`_ of the
+Spring 2024 CS682 graduate software engineering SDL capstone
+class at the University of Massachusetts - Boston. Their
+documentation is copied/adapted below.
+
+File Installation
+-----------------
+
+There are three files to install in your tracker. You can
+copy them from the template directory for the classic
+tracker. The location of the template file can be obtained
+by running: ``roundup-admin templates`` and looking for the
+path value of the classic template. If the path value is
+``/path/to/template``, copy::
+
+ /path/to/template/html/classhelper.js
+ /path/to/template/html/classhelper.css
+ /path/to/template/html/_generic.translation
+
+to your tracker's html directory.
+
+.. :
+    remove in 2.5 release if /data/user/roles endpoint
+    in rest.py is successful.
+
+    If you wish to search for user's by role, you have to do one more
+    step. Because roles are not an actual class (e.g. like status or
+    keyword), you have to set up a new REST endpoint for them. To do this,
+    copy::
+
+
+      from roundup.rest import Routing, RestfulInstance, _data_decorator
+
+      class RestfulInstance:
+
+	  @Routing.route("/roles", 'GET')
+	  @_data_decorator
+	  def get_roles(self, input):
+	      """Return all defined roles. The User class property
+		 roles is a string but simulate it as a MultiLink
+		 to an actual Roles class.
+	      """
+	      return 200, {"collection":
+		  [{"id": rolename,"name": rolename}
+		      for rolename in list(self.db.security.role.keys())]}
+
+    into the file ``interfaces.py`` in your tracker's home
+    directory. You can create this file if it doesn't exist.
+    See the `REST documentation <rest.html>`_ for details on
+    ``interfaces.py``.
+
+    The classic tracker does not have the ``/roles`` REST endpoint
+    configured. If you are creating a new tracker from the classic
+    template, it will show a text based search not a select/dropdown based
+    search. By modifying interfaces.py you will enable a dropdown search.
+
+Wrapping the Classic Classhelper
+--------------------------------
+
+To allow your users to select items in the web interface
+using the new classhelper, you should edit the template files
+in the ``html/`` subdirectory of your tracker. Where you see
+code like::
+
+ <th i18n:translate="">Superseder</th>
+  <td>
+    <span tal:replace="structure
+          python:context.superseder.field(showid=1,size=20)" />
+    <span tal:condition="context/is_edit_ok"
+	  tal:replace="structure
+	               python:db.issue.classhelp('id,title',
+		       property='superseder', pagesize=100)" />
+     [...]
+ </td>
+
+change it to wrap the classhelp span like this::
+
+ <th i18n:translate="">Superseder</th>
+  <td>
+    <span tal:replace="structure
+          python:context.superseder.field(showid=1,size=20)" />
+    <roundup-classhelper
+      data-popup-title="Superseder Classhelper - {itemDesignator}"
+      data-search-with="title,status,keyword[]-name">
+      <span tal:condition="context/is_edit_ok"
+	    tal:replace="structure
+                         python:db.issue.classhelp('id,title',
+                         property='superseder', pagesize=100)" />
+    </roundup-classhelper>
+     [...]
+ </td>
+
+which displays a three part classhelper.
+
+  1. the search pane includes a text search box for the `title`
+     and `status` properties and a dropdown for the keyword property,
+     sorted by name in descending order.
+  2. the selection pane will show 100 search results per page.
+     It also allows the user to move to the next or previous result
+     page.
+  3. the accumulator at the bottom shows all the selected items. It
+     also has buttons to accept the items or cancel the
+     classhelper, leaving the original page unchanged.
+
+Note that the user class is a little different because users without
+an Admin role can't search for a user by Role. So we hide the Role
+search element for non admin users. Starting with::
+
+  <th i18n:translate="">Nosy List</th>
+  <td>
+    <span tal:replace="structure context/nosy/field" />
+    <span tal:condition="context/is_edit_ok" tal:replace="structure
+	  python:db.user.classhelp('username,realname,address',
+	  property='nosy', width='600'" />
+  </td>
+
+wrap the classhelp span with ``<roundup-classhelper>`` like::
+
+  <th i18n:translate="">Nosy List</th>
+  <td>
+    <span tal:replace="structure context/nosy/field" />
+    <roundup-classhelper tal:define="search string:name,phone,roles[]"
+			 tal:attributes="data-search-with python:search
+			 if request.user.hasRole('Admin') else
+			 ','.join(search.split(',')[:-1])">
+      <span tal:condition="context/is_edit_ok" tal:replace="structure
+	    python:db.user.classhelp('username,realname,address',
+	    property='nosy', width='600'" />
+    </roundup-classhelper>
+  </td>
+
+The ``','.join(search.split(',')[:-1])`` removes the last element of
+the search string (``roles[]``) if the user does not have the Admin
+role.
+
+<roundup-classhelper> configuration
+-----------------------------------
+
+There are two attributes used to configure the classhelper.
+
+data-popup-title:
+  * this attribute is optional. A reasonable default is
+    provided if it is missing.
+  * Adding ``data-popup-title`` changes the title of the popup
+    window with the value of the attribute.
+  * ``{itemDesignator}`` can be used inside the attribute value
+    to replace it with the current classhelper usage context.
+    E.G. ``data-popup-title="Nosy List Classhelper - {itemDesignator}"``
+    will display the popup window title as ``Nosy List Classhelper - issue24``
+
+data-search-with:
+  * this attribute is optional. If it is not set, a search
+    panel is not created provided to allow the users search
+    within the class.
+  * Adding ``data-search-with`` specifies the fields that can
+    be used for searching.
+    E.G. ``data-search-with="title,status,keyword"``
+  * The search can be customized using the following syntax:
+
+    * Adding ``[]`` at then end of a field (``"status[]"``)
+      will displays a dropdown for the "status" field
+      listing all the values the user can access. E.G.::
+
+         <roundup-classhelper
+             data-search-with="title,status[],keyword[]">
+           <span tal:condition="context/is_edit_ok"
+             tal:replace="structure
+             python:db.issue.classhelp('id,title',
+             property='superseder', pagesize=100)" />
+         </roundup-classhelper>
+
+      will create a search pane with a text search for title
+      and dropdowns for status and keyword.
+
+    * Adding a sort key after the ``[]`` allows you to
+      select the order of the elements in the dropdown. For
+      example ``keyword[]+name`` sorts the keyword
+      dropdown in ascending order by name. While
+      ``keyword[]-name`` sorts the keyword dropdown in
+      descending order by name. If the sort order is not
+      specified, the default order for the class is used.
+
+.. :
+    remove in 2.5 release if /data/user/roles endpoint
+    in rest.py is successful.
+
+    * Note that the ``roles`` field for the user class is
+      special. If you have not modified ``interfaces.py``,
+      roles can not be displayed as a dropdown. It will be
+      displayed as a text search field instead.
+
+<roundup-classhelper> styling
+-----------------------------
+
+The roundup-classhelper component uses minimal styling so it
+can blend in with most trackers. If you want to change the
+styling, you can modify the classhelper.css file in the html
+directory. Even though roundup-classhelper is a web
+component, it doesn't use the shadow DOM. If you don't know
+what this means, it just means that it's easy to style.
+
+There is on trick however. Getting the web component to load
+changes to the css file is a bit tricky. Basically the
+browser caches the old file and you have to resort to tricks
+to make it get a new copy of the file.
+
+One way to do this is to open to the ``classhelper.css``
+file in your browser and force refresh it. To do this:
+
+   1. Open the home page for your Roundup issue tracker in a
+      web browser.
+
+   2. In the address bar, append ``@@file/classhelper.css``
+      to the end of your Roundup URL. For example, if your
+      Roundup URL is ``https://example.com/tracker/``, the
+      URL you should visit would be
+      ``https://example.com/tracker/@@file/classhelper.css``.
+
+   3. This will open the `classhelper.css` file in your browser.
+
+   4. Press ``Ctrl+Shift+R`` (on Windows and Linux) or
+      ``Cmd+Shift+R`` (on macOS). This triggers a hard
+      refresh of the page, which forces the browser to
+      reload the file and associated resources from the
+      server.
+
+This should resolve any issues caused by cached or outdated
+files. It is possible that you have to open devtools and set
+the disable cache option in the network panel in extreme
+cases.
+
+Also during development, you might want to `set a very low
+cache time
+<customizing.html#changing-cache-control-headers>`_ for
+classhelper.css using something like::
+
+   Client.Cache_Control['classhelper.css'] = "public, max-age=10"
+
+
+Translations
+------------
+
+To set up translations for the <roundup-classhelper>
+component, follow these steps.
+
+  1. Create a ``messages.pot`` file by running
+     ``roundup-gettext <tracker_home_directory>``. This
+     creates ``locale/messages.pot`` in your tracker's home
+     directory. It extracts all translatable strings from
+     your tracker. We will use it as a base template for the
+     new strings you want to translate.
+  2. See if you already have a ``.po`` translation file for
+     your language in the tracker's locale/ directory. If you
+     don't, copy ``messages.pot`` to a .po file for the
+     language you want to translate. For example German
+     would be at ``de.po`` English would be at ``en.po``
+     (for example if you want to change the ``apply`` button
+     to say ``Do It``.
+
+  3. Edit the new .po file. After the header, add the
+     translation entries for the <roundup-classhelper>
+     component. For example `next` and `submit` are
+     displayed in English when the rest of the interface is
+     in German. Add::
+
+        msgid "submit"
+        msgstr "gehen"
+
+        msgid "next"
+        msgstr "nächste"
+
+        msgid "name"
+        msgstr "name"
+
+     Note: the value for `msgid` is case sensitive. You can
+     see the msgid for static strings by looking for
+     ``CLASSHELPER_TRANSLATION_KEYWORDS`` in classhelper.js.
+
+  4. Save the .po file.
+
+  5. Restart your Roundup instance.
+
+This should display the missing translations, for more
+details refer to the `translation (i18n) section of the
+developers documentation
+<developers.html#extracting-translatable-messages>`_.
+
+Troubleshooting
+---------------
+
+The roundup-classhelper will fallback to using the classic
+classhelper if:
+
+  * the user doesn't have REST access
+  * the browser doesn't support web components
+
+It will display an alert modal dialog to the user before triggering
+the classic classhelper as a fallback. A detailed error will be
+printed to the browser console. The console is visible in devtools and
+can be opened by pressing the ``F12`` key.
+
+You can disable the classhelper on a per URL basis by adding
+``#classhelper-wc-toggle`` to the end of the URL. This will prevent
+the web component from starting up.
+
+Also you can set ``DISABLE_CLASSHELP = true`` at the top of
+classhelper.js to disable the classhelper without having to make any
+changes to your templates.
+
 Configuring native-fts Full Text Search
 =======================================
 

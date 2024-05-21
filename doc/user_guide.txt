@@ -155,6 +155,10 @@ not set. For example, the following searches on the issues:
 ``keyword=-1``
   match issues with no keywords set
 
+When entering the value for a constrained property you may have a
+helper (also called classhelper) available by clicking on a link
+usally displayed as ``(list)``. See the section `Using the
+Classhelper`_ for details.
 
 Date properties
 ~~~~~~~~~~~~~~~
@@ -439,6 +443,92 @@ the `documentation for configuring the native-fts`_ backend to find
 the supported format and features.
 
 .. _`documentation for configuring the native-fts`: admin_guide.html#configuring-native-fts-full-text-search
+
+Using the Classhelper
+---------------------
+
+The classhelper makes finding the id number or name for linked items
+easier.  It is usually invoked from the parent window by clicking on
+the ``(list)`` link. There are two classhelpers: classic and
+component. This documentation discusses the newer component
+classhelper available with Roundup 2.4.0 or newer. If there is a
+problem with the component classhelper, it reports the problem and
+falls back to using the classic classhelper.
+
+The component classhelper is displayed in a popup window. You can
+interact with the original window by moving the popup out of the way
+or minimizing it. If you don't see a popup, check to see if your
+browser has disabled popup windows.
+
+The classhelper has three parts:
+
+ 1. an optional search pane
+ 2. a selection pane
+ 3. an accumulator pane
+
+.. image:: images/classhelper-issue-all.png
+   :width: 675
+   :height: 914
+   :alt: Image of the new component classhelper popup. The image shows
+         the operating system window decorations with a title of "Superseder
+	 Classhelper - issue2". Then it shows a search panel with options to
+	 enter text to search issue titles or status and a select/dropdown
+	 to search by a keyword on the issue. Below the options are search
+	 and reset buttons. Below the search panel is a selection
+	 panel that shows buttons to move to the previous or next pages and
+	 says that it is displaying items 26 to 50. This is followed by a
+	 scrollable table of issues where each row has a checkbox and the
+	 box for issue 114 is checked. At the bottom of the window is a text
+	 box that lists a number of issue numbers including 114. To the
+	 right of the text box are apply and cancel buttons.
+
+
+The search pane has text or select/dropdown fields to search for a
+matching item. The image above shows a search for issues. The Title
+and Status properties can be matched using a text input while the
+Keyword property can be selected from a dropdown. Hitting enter while
+in a text input will trigger a search and the results will be
+displayed below the search pane in the selection pane. Tabbing to the
+search button and pressing enter will also trigger a search. The reset
+button will clear the search form.
+
+Below the search pane is the select pane. It lists the number of items
+displayed (26-50) and includes two buttons to move to the previous or
+next page of search results. If there is no search pane, this will
+display a page of items from all the items in the class. Below the
+pagination component is the scrollable selection table. Each row in
+the table has a checkbox and one or more columns of data about the
+item.  Clicking on a row toggles the item's checkbox and adds or
+removes the id or name for the item in the accumulator's
+display. Arrow keys or tab/shift-tab can be used to scroll through
+each item in the selection table. The space key or enter will
+select/deselect the item. You can jump to the page controls using the
+'<' and '>' keys. Once the page control button is focused, press enter
+to trigger a page change.
+
+The bottom pane consists of a text input called the accumulator
+display. It lists all the items that have been selected. The first two
+items in this example were selected from the previous selection
+page. Next to the display are the apply and cancel buttons. You can
+jump to the apply button quickly by pressing Shift-Enter as long as
+you are not in a search input. Once the apply button is focused, press
+enter to copy the items in the display to the associated field on the
+parent window. If you activate the cancel button or close the window
+using the window decoration, the classhelper will close and not change
+the parent window.
+
+The classhelper can also be used in read-only mode. In this mode, the
+accumulator is not shown. Also the checkboxes are not displayed. To
+close the classhelper in read-only mode use the window decoration or a
+hotkey (e.g. control-w).
+
+You can have multiple classhelpers up at a time. The title on the
+window identifies the property and item the classhelper will
+modify. For example the image shows the superseder for issue2.
+
+Do not refresh the classhelper window using the ``F5`` key. This will
+erase the contents of the window and you will have to close it and
+invoke the link from the parent window again.
 
 Access Controls
 ---------------

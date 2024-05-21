@@ -32,7 +32,10 @@ Developer activity by changesets::
 
 Other contributers
 
-Norbert Schlemmer
+Norbert Schlemmer - docker support
+
+Bharath Kanama, Nikunj Thakkar, Patel Malav - classhelper web
+component development.
 
 2.3
 ---
