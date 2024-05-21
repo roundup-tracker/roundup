@@ -1090,6 +1090,45 @@ allowed on a given endpoint.
 
 Does not support PUT, DELETE or PATCH.
 
+/data/user/roles endpoint
+-------------------------
+
+The list of valid roles for a user is not an actual class in the
+hyperdb.  This endpoint returns a list of all defined roles if the
+user has the ``Admin`` role. Otherwise it returns a 403 - not
+authorized error.  The output from this endpoint looks like::
+
+  {
+      "data": {
+	  "collection": [
+	      {
+		  "id": "user",
+		  "name": "user"
+	      },
+	      {
+		  "id": "admin",
+		  "name": "admin"
+	      },
+	      {
+		  "id": "anonymous",
+		  "name": "anonymous"
+	      }
+	  ]
+      }
+  }
+
+to mimic a class collection.
+
+Unlike a real class collection endpoint, ``@total_size`` is not
+returned. Also it does not support any query options like: filtering,
+`@sort`, `@group`, `@verbose` etc. Note that the ``id`` property is
+not numeric.
+
+This endpoint was introduced in release 2.4.0 to support a roles
+select/dropdown in the web component classhelper. This lets the web
+component helper implement the same function in the classic user class
+classhelper.
+
 /data/\ *class*/\ *id* item
 ---------------------------
 

@@ -223,6 +223,7 @@ Features:
   hard coded user id number and replacing it with the current user's
   id. Tracker templates updated to use it. (John Rouillard from a
   patch by Jon C. Thomason)
+- Add a /rest/data/user/roles REST endpoint. (John Rouillard)
 
 2023-07-13 2.3.0
 
