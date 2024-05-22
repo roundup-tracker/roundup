@@ -681,10 +681,9 @@ directory. Even though roundup-classhelper is a web
 component, it doesn't use the shadow DOM. If you don't know
 what this means, it just means that it's easy to style.
 
-There is on trick however. Getting the web component to load
-changes to the css file is a bit tricky. Basically the
-browser caches the old file and you have to resort to tricks
-to make it get a new copy of the file.
+Getting the web component to load changes to the css file is
+a bit tricky. The browser caches the old file and you have
+to resort to tricks to make it get a new copy of the file.
 
 One way to do this is to open to the ``classhelper.css``
 file in your browser and force refresh it. To do this:
