@@ -815,7 +815,7 @@ the user to have Admin rights. You can add your own roles
 endpoint with a different authorization mechanism.  The
 following code can be added to your tracker's interfaces.py.
 You can create this file if it doesn't exist. This code
-creates a new REST endpoint at '/rest/roles'::
+creates a new REST endpoint at `/rest/roles`::
 
   from roundup.rest import Routing, RestfulInstance, _data_decorator
 
