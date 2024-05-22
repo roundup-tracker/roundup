@@ -639,8 +639,8 @@ data-popup-title:
 
 data-search-with:
   * this attribute is optional. If it is not set, a search
-    panel is not created provided to allow the users search
-    within the class.
+    panel is not created to allow the user to search within
+    the class.
   * Adding ``data-search-with`` specifies the fields that can
     be used for searching.
     E.G. ``data-search-with="title,status,keyword"``
