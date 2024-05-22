@@ -684,6 +684,30 @@ class BaseTestCases(WsgiSetup):
 
         self.assertEqual(f.status_code, 404)
 
+    def test_rest_endpoint_user_roles(self):
+        # use basic auth for rest endpoint
+        f = requests.get(self.url_base() + '/rest/data/user/roles',
+                         auth=('admin', 'sekrit'),
+                         headers = {'content-type': "",
+                                    'Origin': "http://localhost:9001",
+                         })
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Access-Control-Expose-Headers': 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Limit-Period, Retry-After, Sunset, Allow',
+                     'Access-Control-Allow-Credentials': 'true',
+                     'Allow': 'GET',
+        }
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        content = json.loads(f.content)
+
+        self.assertEqual(3, len(json.loads(f.content)['data']['collection']))
+
+
     def test_ims(self):
         ''' retreive the user_utils.js file with old and new
             if-modified-since timestamps.

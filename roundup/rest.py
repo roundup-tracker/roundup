@@ -1040,6 +1040,11 @@ class RestfulInstance(object):
             raise Unauthorised(
                 'User does not have permission on "user.roles"')
 
+        self.client.setHeader(
+            "Allow",
+            "GET"
+        )
+
         return 200, {"collection":
                      [{"id": rolename,"name": rolename}
                       for rolename in list(self.db.security.role.keys())]}
