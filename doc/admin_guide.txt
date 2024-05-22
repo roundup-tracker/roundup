@@ -517,9 +517,9 @@ handlers.
 Classhelper Web Component
 =========================
 
-Version 2.4.0 provides a new classhelper popup written as a
-web component. By installing 3 files and adding a stanza to
-``interfaces.py`` you can enable the new component.
+Version 2.4.0 provides a new classhelper popup written as a web
+component. By installing 3 files and editing the tracker's templates
+you can enable the new component.
 
 The `development of this component was done by team-03
 <https://github.com/UMB-CS-682-Team-03/tracker>`_ of the
@@ -542,41 +542,6 @@ path value of the classic template. If the path value is
  /path/to/template/html/_generic.translation
 
 to your tracker's html directory.
-
-.. :
-    remove in 2.5 release if /data/user/roles endpoint
-    in rest.py is successful.
-
-    If you wish to search for user's by role, you have to do one more
-    step. Because roles are not an actual class (e.g. like status or
-    keyword), you have to set up a new REST endpoint for them. To do this,
-    copy::
-
-
-      from roundup.rest import Routing, RestfulInstance, _data_decorator
-
-      class RestfulInstance:
-
-	  @Routing.route("/roles", 'GET')
-	  @_data_decorator
-	  def get_roles(self, input):
-	      """Return all defined roles. The User class property
-		 roles is a string but simulate it as a MultiLink
-		 to an actual Roles class.
-	      """
-	      return 200, {"collection":
-		  [{"id": rolename,"name": rolename}
-		      for rolename in list(self.db.security.role.keys())]}
-
-    into the file ``interfaces.py`` in your tracker's home
-    directory. You can create this file if it doesn't exist.
-    See the `REST documentation <rest.html>`_ for details on
-    ``interfaces.py``.
-
-    The classic tracker does not have the ``/roles`` REST endpoint
-    configured. If you are creating a new tracker from the classic
-    template, it will show a text based search not a select/dropdown based
-    search. By modifying interfaces.py you will enable a dropdown search.
 
 Wrapping the Classic Classhelper
 --------------------------------
@@ -809,6 +774,24 @@ details refer to the `translation (i18n) section of the
 developers documentation
 <developers.html#extracting-translatable-messages>`_.
 
+The default title used for read only popups can be changed by using
+the translation mechanism. Use the following::
+
+  msgid "Info on {className} - {itemDesignator} - Classhelper"
+  msgstr "{itemDesignator} - info on {className}"
+
+in ``en.po`` to reformat the title for the English language. Note that
+``{classname}`` is only supported in the default title.
+
+In addition to the default template you can translate a title set
+using ``data-popup-title`` by matching the template as the msgid.
+Using an example above::
+
+  msgid "Nosy List Classhelper - {itemDesignator}"
+  msgstr "Nosy List Klassenhelfer - {itemDesignator}"
+
+placed in ``de.po`` will translate the title into German.
+
 Troubleshooting
 ---------------
 
@@ -830,6 +813,55 @@ the web component from starting up.
 Also you can set ``DISABLE_CLASSHELP = true`` at the top of
 classhelper.js to disable the classhelper without having to make any
 changes to your templates.
+
+Advanced Configuration
+----------------------
+
+The classhelper.js file has a few tweakable options for use
+by advanced users. The endpoint for the roles list requires
+the user to have Admin rights. You can add your own roles
+endpoint with a different authorization mechanism.  The
+following code can be added to your tracker's interfaces.py.
+You can create this file if it doesn't exist. This code
+creates a new REST endpoint at '/rest/roles'::
+
+  from roundup.rest import Routing, RestfulInstance, _data_decorator
+
+  class RestfulInstance:
+
+	  @Routing.route("/roles", 'GET')
+	  @_data_decorator
+	  def get_roles(self, input):
+	      """Return all defined roles. The User class property
+		 roles is a string but simulate it as a MultiLink
+		 to an actual Roles class.
+	      """
+	      return 200, {"collection":
+		  [{"id": rolename,"name": rolename}
+		      for rolename in list(self.db.security.role.keys())]}
+
+
+See the `REST documentation <rest.html>`_ for details on
+using ``interfaces.py`` to add new REST endpoints.
+
+The code above allows any user with REST access to see all
+the roles defined in the tracker.
+
+To make classhelper.js use this new endpoint, look for::
+
+
+  const ALTERNATIVE_DROPDOWN_PATHNAMES = {
+    "roles": "/rest/data/user/roles"
+  }
+
+and change it to::
+
+  const ALTERNATIVE_DROPDOWN_PATHNAMES = {
+    "roles": "/rest/roles"
+  }
+
+Users may have to perform a hard reload to cache this change
+on their system.
 
 Configuring native-fts Full Text Search
 =======================================
