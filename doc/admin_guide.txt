@@ -243,6 +243,8 @@ move the exsiting config.ini to config.bak and replace it with the
 roundup-server's config.ini. This will make the tracker in the
 directory fail to start util the original config.ini is restored.
 
+.. _configuring-compression:
+
 Configuring Compression
 =======================
 
@@ -621,6 +623,33 @@ wrap the classhelp span with ``<roundup-classhelper>`` like::
 The ``','.join(search.split(',')[:-1])`` removes the last element of
 the search string (``roles[]``) if the user does not have the Admin
 role.
+
+Loading the <roundup-classhelper> Script
+----------------------------------------
+
+To make the ``<roundup-classhelper>`` wrappers work, you
+have to load the classhelper.js script. Add the following
+html script tag in the head section of page.html::
+
+  <script type="text/javascript" src="@@file/classhelper.js">
+  </script>
+
+You can place it anywhere before ``</head>``. This will make
+it available on all pages.
+
+The script will also work if it is loaded at the end of the
+body. It can also be added to the ``more-javascript`` slot
+in one of the templates (see ``user.item.html`` for an
+example) if you don't want the overhead of loading the script
+on every page.
+
+You may want to minimize and precompress the file. Using
+dynamic compression, the file is 10k when compressed with
+gzip (8k with brotli). If you minimize the file first with
+`rjsmin <https://pypi.org/project/rjsmin/>`_ and then
+compress it, it's about 6k. See the information about using
+precompressed files in the :ref:`section on compression
+<configuring-compression>`.
 
 <roundup-classhelper> configuration
 -----------------------------------
