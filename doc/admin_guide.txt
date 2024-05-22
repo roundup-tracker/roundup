@@ -642,8 +642,10 @@ data-search-with:
     panel is not created to allow the user to search within
     the class.
   * Adding ``data-search-with`` specifies the fields that can
-    be used for searching.
-    E.G. ``data-search-with="title,status,keyword"``
+    be used for searching. For example when invoking the
+    classhelper for the issue class, using
+    ``data-search-with="title,status,keyword"`` wil enable
+    three search fields.
   * The search can be customized using the following syntax:
 
     * Adding ``[]`` at then end of a field (``"status[]"``)
@@ -668,15 +670,6 @@ data-search-with:
       ``keyword[]-name`` sorts the keyword dropdown in
       descending order by name. If the sort order is not
       specified, the default order for the class is used.
-
-.. :
-    remove in 2.5 release if /data/user/roles endpoint
-    in rest.py is successful.
-
-    * Note that the ``roles`` field for the user class is
-      special. If you have not modified ``interfaces.py``,
-      roles can not be displayed as a dropdown. It will be
-      displayed as a text search field instead.
 
 <roundup-classhelper> styling
 -----------------------------
