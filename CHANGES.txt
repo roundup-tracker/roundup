@@ -313,6 +313,10 @@ Fixed:
   than .../issue/4). (John Rouillard)
 - issue2551280 - sorted() method of MultilinkHTMLProperty is broken?
   (Gabor Nagy report and fix; commit John Rouillard)
+- issue2551352 - classic classhelper overwrites current
+  window if javascript is disabled. It now opens in a new
+  window (target=_blank). Without javascript it is in read
+  only mode but... (John Rouillard)
 
 Features:
 
