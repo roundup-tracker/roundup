@@ -1121,7 +1121,7 @@ to mimic a class collection.
 
 Unlike a real class collection endpoint, ``@total_size`` is not
 returned. Also it does not support and ignores any query options like:
-filtering, `@sort`, `@group`, `@verbose` etc. Note that the ``id``
+filtering, ``@sort``, ``@group``, ``@verbose`` etc. Note that the ``id``
 property is not numeric.
 
 This endpoint was introduced in release 2.4.0 to support a roles
