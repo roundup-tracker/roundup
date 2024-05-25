@@ -23,7 +23,7 @@ ARG source=local
 
 # parameterize the sha256 sum to pin version of python:3-alpine
 # Must use the same version in both build stages.
-ARG SHA256=ef097620baf1272e38264207003b0982285da3236a20ed829bf6bbf1e85fe3cb
+ARG SHA256=5365725a6cd59b72a927628fdda9965103e3dc671676c89ef3ed8b8b0e22e812
 
 # Set to any non-empy value to enable shell debugging for troubleshooting
 ARG VERBOSE=
