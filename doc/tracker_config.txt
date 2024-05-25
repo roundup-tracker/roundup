@@ -98,12 +98,9 @@
   error_messages_to = user
 
   # This setting should be left at the default value of html4.
-  # Support is ending for xhtml mode.
+  # Support for xhtml has been disabled.
   # HTML version to generate. The templates are html4 by default.
-  # If you wish to make them xhtml, then you'll need to change
-  # this setting to 'xhtml' too so all auto-generated HTML
-  # is compliant.
-  # Allowed values: html4, xhtml
+  # Allowed values: html4
   # Default: html4
   html_version = html4
 
