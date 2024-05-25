@@ -9,6 +9,8 @@
  tal:attributes="content string:text/html;; charset=${request/client/charset}" />
 <script tal:replace="structure request/base_javascript">
 </script>
+<script type="text/javascript" src="@@file/classhelper.js">
+</script>
 <metal:x define-slot="more-javascript" />
 
 </head>
@@ -241,8 +243,12 @@ See issue.search.html in the classic template for examples.
   <input tal:attributes="value python:request.form.getvalue(name) or nothing;
                          name name;
                          id name">
+  <roundup-classhelper
+    tal:define="data_search_with data_search_with | nothing;"
+    tal:attributes="data-search-with data_search_with">
   <span tal:replace="structure python:db[db_klass].classhelp(columns,
                                       property=name)" />
+  </roundup-classhelper>
 </td>
 
 <td metal:define-macro="search_select">
@@ -305,8 +311,12 @@ Could extend it (METAL 1.1 attribute "extend-macro")
   <input tal:attributes="value python:request.form.getvalue(name) or nothing;
                          name name;
                          id name">
+  <roundup-classhelper
+    tal:define="data_search_with data_search_with | nothing"
+    tal:attributes="data-search-with data_search_with">
   <span tal:replace="structure python:db[db_klass].classhelp(db_content,
                                         property=name, width='600')" />
+  </roundup-classhelper>
 </td>
 
 <td metal:define-macro="search_checkboxes">

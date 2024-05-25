@@ -1,0 +1,14 @@
+<tal xmlns:tal="http://xml.zope.org/namespaces/tal" tal:omit-tag="true"
+><tal:x tal:replace="python:request.client.additional_headers.update(
+    {'Content-Type':'application/vnd.roundup.translation+json'}
+    )"></tal:x>{
+   "RoundupTranslations": "RoundupTranslations"<tal:block
+	tal:condition="request/form/properties/value | false"
+	    ><tal:loop tal:repeat="field
+                 python:request.form['properties'].value.split(',')"
+              ><tal:x tal:condition="field" 
+                  tal:replace="python:',\n   \x22%s\x22: \x22%s\x22' % (
+                           field, i18n.gettext(field))"
+            /></tal:loop></tal:block>
+}
+</tal>

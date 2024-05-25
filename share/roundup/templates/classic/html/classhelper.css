@@ -1,0 +1,141 @@
+.popup-tablediv {
+    overflow: auto;
+}
+
+.popup-table {
+    table-layout: auto;
+    width: 100%;
+    font-size: .9em;
+}
+
+table th {
+    font-weight: normal;
+    text-align: left;
+    padding-left: .3em;
+    color: #444;
+    background-color: #efefef;
+    border-bottom: 1px solid #afafaf;
+    border-top: 1px solid #afafaf;
+    text-transform: uppercase;
+    vertical-align: middle;
+    line-height: 1.5em;
+}
+
+table td {
+    vertical-align: middle;
+    padding-left: .3em;
+    padding-right: .2em;
+    border-bottom: 1px solid #efefef;
+    text-align: left;
+    empty-cells: show;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+table.popup-table tr:hover {
+    background-color: #eee;
+    cursor: pointer;
+}
+
+.row-style {
+    cursor: pointer;
+}
+
+.table-header {
+    width: 15px;
+}
+
+/* Accumulator */
+
+.popup-control {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 8px;
+    padding: 8px;
+    border-top: 2px solid #444;
+    background-color: #eee;
+}
+
+button {
+    min-width: 3em;
+}
+
+@media (pointer: coarse) {
+    /* make min width 48px (3em*16px/em) on touch screens */
+  button {
+    min-height: 3em;
+  }
+  table td { padding-block: 2em; }
+}
+
+.popup-apply {
+    background-color: #c1cee6;
+    font-weight: bold;
+    min-width: 7em;
+}
+
+/* Pagination */
+
+.popup-pagination {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 8px;
+}
+
+.popup-pagination button {
+    min-width: 40px;
+    width: 30%;
+    cursor: pointer;
+    color: blue;
+}
+
+.popup-pagination button:disabled {
+    color: gray;
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Search */
+.popup-search {
+    border-bottom: 2px solid #444;
+}
+
+.search-label {
+    text-transform: capitalize;
+    font-weight: bold;
+}
+
+.search-button {
+    background-color: #c1cee6;
+    font-weight: bold;
+    min-width: 7em;
+}
+
+.reset-button {
+    margin-left: 60px;
+}
+
+.flex-container {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.separator {
+    flex-grow: 1;
+}
+
+.search-error input {
+    border: 2px solid red;
+}
+
+.search-error > .error-message {
+    color: red;
+    font-size: 14px;
+    margin-left: 4px;
+    padding-block-start: 0.25em;
+}
+
+*:focus-visible { outline-offset: 3px; }
