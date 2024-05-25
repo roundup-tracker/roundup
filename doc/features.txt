@@ -8,42 +8,45 @@
 Roundup Features
 ================
 
-Roundup is a simple-to-use and -install issue-tracking system with
-web, e-mail and command-line interfaces. It is based on the winning design
+Roundup is an easy-to-use and -install issue-tracking system with
+web, e-mail and command-line interfaces. Based on the winning design
 from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 
 *simple to install*
- - installation (including web interface) takes about 30 minutes
  - instant-gratification ``python demo.py`` takes less than 5 minutes :)
+ - installation (including web interface) takes about 30 minutes
  - five templates included in the distribution for you to base your tracker on
  - play with the demo, customise it and then use *it* as the template for
    your production tracker
- - requires *no* additional support software - python (2.7 or 3.6+) is
+ - requires *no* additional support software - python (3.6+ or 2.7) is
    enough to get you going
- - supports higher-performance storage backends like sqlite_,
-   mysql_ and postgresql_
+ - supports embedded databases like sqlite_ and dbm so you don't
+   need a separate database like mysql_ or postgresql_
 
 *simple to use*
  - accessible through the web (html, REST or XMLRPC), email,
    command-line or Python programs
- - may be used to track bugs, features, user feedback, sales opportunities,
-   milestones, ...
+ - use it to track bugs, features, user feedback, sales opportunities,
+   fleet maintenance requests, office issues, milestones, ...
+ - issues have their own mini mailing list (nosy list)
+ - indexed Full Text Search (FTS) gives fast responses to searches across all
+   messages and indexed string properties
+ - users may sign themselves up, there may be automatic signup for
+   incoming email and users may handle their own password reset requests
  - automatically keeps a full history of changes to issues with
    configurable verbosity and easy access to information about who created
    or last modified *any* item in the database
- - issues have their own mini mailing list (nosy list)
- - users may sign themselves up, there may be automatic signup for
-   incoming email and users may handle their own password reset requests
 
 *highly configurable*
  - web interface HTML is fully editable
  - database schema is also fully editable (only the "user" class is required)
    with a full set of data types (including dates and many-to-many relations)
    across all storages available
- - authorization is fine grained and can be based on the properties of
-   a user and resource (`ABAC, PBAC (Attribute or Policy/Purpose Based Access
-   Control <https://en.wikipedia.org/wiki/Attribute-based_access_control>`_))
- - customised automatic auditors and reactors may be written that perform
+ - fine grained authorization can be based on the properties of
+   a user and resource (`Attribute or Policy/Purpose Based Access
+   Control (ABAC or PBAC)
+   <https://en.wikipedia.org/wiki/Attribute-based_access_control>`_))
+ - customised automatic auditors and reactors to perform
    actions before and after changes are made to entries in the database,
    or may veto the creation or modification of items in the database
  - samples are provided for all manner of configuration changes and
@@ -55,8 +58,6 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
    with decent response times
  - database indexes are automatically added for those backends that
    support them (sqlite, mysql and postgresql)
- - indexed full text search (FTS) gives fast responses to searches across all
-   messages and indexed string properties
  - support for the Xapian, Whoosh, sqlite or postgres full-text
    indexing engines for large trackers
 
@@ -72,9 +73,9 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
    to register new users
  - authentication of user registration and user-driven password resetting
    using email and one time keys
- - may be run using WSGI or through CGI as a normal cgi script, as a
-   stand-alone web server, under mod_wsgi (mod_python is deprecated)
-   or through Zope
+ - may be run using a stand alone web server, WSGI (with mod_wsi or
+   the depricated mod_python under Apache), as a plain cgi script, or
+   through Zope
  - searching may be performed using many constraints, including a full-text
    search of messages attached to issues
  - file attachments (added through the web or email) are served up with the
@@ -108,8 +109,9 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 *command-line*
  - may be used to interactively manage roundup databases
  - may be scripted using standard shell scripting
- - roundup's API may also be used by other Python programs - a sample is
-   provided that runs once a day and emails people their assigned issues
+ - roundup's API may also be used by other Python programs - for
+   example a Python script torun daily email people their assigned
+   issues is provided
  - a variety of sample shell scripts are provided (weekly reports, issue
    generation, ...)
 
