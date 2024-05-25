@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Mon Apr 29 04:57:43 2024 -->
+<!-- CreationDate: Wed May 22 23:38:45 2024 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -96,7 +96,7 @@ a new empty classic tracker using the sqlite backend.</p>
 <p style="margin-left:22%; margin-top: 1em">Show the help
 message and exit</p>
 
-<p style="margin-left:11%;"><b>-b</b> <i>BIND_ADDRESS,</i>
+<p style="margin-left:11%;"><b>-B</b> <i>BIND_ADDRESS,</i>
 <b>--bind_address</b> <i>BIND_ADDRESS</i></p>
 
 <p style="margin-left:22%; margin-top: 1em">Choose address
@@ -121,6 +121,14 @@ availability on your system.</p>
 <p style="margin-left:22%; margin-top: 1em">Use specified
 template when building tracker. (*)</p>
 
+<p style="margin-left:11%;"><b>-h</b> <i>HOSTNAME</i>,
+<b>--hostname</b> <i>HOSTNAME</i></p>
+
+<p style="margin-left:22%; margin-top: 1em">Set the
+hostname used in the URL. This does not make the server
+listen at the hostname. Use the hostname with <b>-B</b> to
+listen on that IP address.</p>
+
 <p style="margin-left:11%;"><b>-p</b> <i>PORT</i>,
 <b>--port</b> <i>PORT</i></p>
 
@@ -128,13 +136,13 @@ template when building tracker. (*)</p>
 port. Default: search for open port starting at 8917.</p>
 
 <p style="margin-left:11%;"><b>-P</b> <i>URLPORT</i>,
-<b>--urlport</b> <i>URLPORT</i> When using</p>
+<b>--urlport</b> <i>URLPORT</i></p>
 
-<p style="margin-left:22%; margin-top: 1em">docker this
-option passes the docker external port to the demo instance.
-If using <b>docker ... -p 9090:8917 ...</b> this should be
-set to <b>-P 9090</b>. Default: as selected by
-<b>--port</b>.</p>
+<p style="margin-left:22%; margin-top: 1em">When using
+docker this option passes the docker external port to the
+demo instance. If using <b>docker ... -p 9090:8917 ...</b>
+this should be set to <b>-P 9090</b>. Default: as selected
+by <b>--port</b>.</p>
 
 <p style="margin-left:11%;"><b>-V</b>, <b>--version</b></p>
 
