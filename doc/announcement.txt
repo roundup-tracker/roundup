@@ -14,15 +14,16 @@ access the tracker.
 
 You can install it with::
 
-   pip install roundup
+   pip install roundup~=2.4.0b0
 
 (preferably in a virtual environment). To download it, use::
 
-   pip download roundup
+   pip download roundup~=2.4.0b0
 
 then unpack and test/install from the tarball.
 
-Among the notable improvements from the 2.3.0 release are:
+Among the notable improvements in 2.4.0 from the 2.3.0
+release are:
 
 * new classhelper component thanks to a team of students
   from CS682 at U-Mass Boston. This fixes many issues with
@@ -41,8 +42,8 @@ Among the notable improvements from the 2.3.0 release are:
   can share searches like: "My issues" as "my" will become
   the current logged in user.
 
-* login failures to the REST/Xmlrpc interfaces ae now rate
-  limited.
+* login failures to the REST/XML-RPC interfaces are now rate
+  limited to limit passowrd guessing attacks.
 
 * utf8mb4 is the default charset for MySQL. This requires
   migrating your database using the mysql client. You can
