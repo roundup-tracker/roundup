@@ -405,6 +405,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             if query:
                 url += '?' + query
             self.send_header('Location', url)
+            self.send_header('Content-Length', 17)
             self.end_headers()
             self.wfile.write(b'Moved Permanently')
             return
