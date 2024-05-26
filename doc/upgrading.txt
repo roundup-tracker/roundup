@@ -71,10 +71,11 @@ upgrade all your trackers at once.
 .. admonition:: Python 2 Support
 
   If you are running Roundup under Python 2, you should make plans to
-  switch to Python 3. The continuous Integration (CI) and other services
+  switch to Python 3. Release 2.5.0 (expected release Jul 2025)
+  will be the last release to support Python 2. The continuous
+  Integration (CI) and other services
   used for developing Roundup are dropping support for Python 2. Also
-  optional packages are dropping Python 2 support. As a result Python 2
-  may not be supported for many more release cycles.
+  optional packages are dropping Python 2 support.
 
 .. admonition:: XHTML Support Deprecation Notice
 
