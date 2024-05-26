@@ -283,7 +283,7 @@ Fixed:
 - Fix traceback if Origin header is missing. (John Rouillard)
 - issue2551250: Fix sorting of detectors even if there are two with the
   same name and priority (can happen if they are created in two
-  different files).
+  different files).  (Ralf Schlatterbeck)
 - Fix Traceback when a numeric order attribute is empty (Ralf
   Schlatterbeck)
 - Update some template schema files to assign Register permissions for the
