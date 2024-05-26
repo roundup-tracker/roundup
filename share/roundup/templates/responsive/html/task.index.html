@@ -37,7 +37,7 @@
  <tal:block tal:repeat="i batch" condition="true">
   <tr tal:define="group python:[r[1] for r in request.group]"
       tal:condition="python:group and batch.propchanged(*group)">
-   <th tal:attributes="colspan python:len(request.columns)" class="group">
+   <th tal:attributes="colspan python:len(request.columns) or 100" class="group">
     <tal:block tal:repeat="g group">
      <tal:block tal:content="python:str(i[g]) or '(no %s set)'%g"/>
     </tal:block>

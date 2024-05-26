@@ -70,7 +70,7 @@
 </tr>
 </tal:block>
  <tr tal:condition="batch">
-  <th tal:attributes="colspan python:len(request.columns)">
+  <th tal:attributes="colspan python:len(request.columns) or 100">
    <table>
     <tr class="navigation">
      <th>

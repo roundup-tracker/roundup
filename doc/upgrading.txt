@@ -356,6 +356,28 @@ schema.
 
 `You can see the diff in the Sourceforge web interface <https://sourceforge.net/p/roundup/code/ci/54eb12cd3be143b079809795dcb2f813f75a691c/tree/share/roundup/templates/devel/html/task.index.html?diff=c95870b2bbab822def6066498a4ef8634e76e0b3>`_.
 
+Make group headers span all columns (optional)
+----------------------------------------------
+
+In a number of index pages a version of the following TAL command
+appears::
+
+  <th tal:attributes="colspan python:len(request.columns)" class="group">
+
+If the ``@columns`` parameter (aka request.columns) is not set,
+all columns are shown. However the group header only spans the
+first column. Changing this to read::
+
+  <th tal:attributes="colspan python:len(request.columns) or 100" class="group">
+
+makes the group header span all the columns (if you have fewer
+than 100 columns). All of the supplied templates hae been
+upgraded with this change. `See issue 2551341 for details
+<https://issues.roundup-tracker.org/issue2551341>`_.
+
+Note the jinja2 template has the same issue, but the development
+team hasn't devised a solution.
+
 Use @current_user in Searches (optional)
 ----------------------------------------
 

@@ -151,6 +151,9 @@ Fixed:
 - make classhelper link open in a new window by setting
   target="_blank". This prevents overwriting of current page with the
   classhelper if javascript is disabled. (John Rouillard)
+- issue2551341 - if @columns missing from an index url, the
+  group headers colspan property = 0. Add "or 100" in
+  stanza's so headers span all rows (up to 100).
 
 Features:
 
