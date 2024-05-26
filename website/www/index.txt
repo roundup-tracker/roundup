@@ -86,8 +86,8 @@ Roundup is compatible with Python 2.7.12+ or 3.6+.
 
 .. admonition:: Python 2 Support
 
-   Despite the initial intention to provide support for Python 2 until
-   2025, several Continuous Integration (CI) services are
+   Python 2 support will end with release 2.5.0 (expected July 2025).
+   Several Continuous Integration (CI) services are
    discontinuing their resources for testing with Python 2. It is
    recommended to utilize Python 3 for the deployment of new trackers,
    while existing trackers should be `upgraded to use Python 3.
