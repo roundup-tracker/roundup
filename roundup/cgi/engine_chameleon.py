@@ -14,7 +14,12 @@ class Loader(TALLoaderBase):
         self.loader = chameleon.PageTemplateLoader(template_dir)
 
     def load(self, tplname):
-        src, filename = self._find(tplname)
+        try:
+            src, filename = self._find(tplname)
+        except TypeError as e:
+            raise ValueError("Unable to load template file basename: %s: %s" % (
+                tplname, e))
+
         return RoundupPageTemplate(self.loader.load(src))
 
 

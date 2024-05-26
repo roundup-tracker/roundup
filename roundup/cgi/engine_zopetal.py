@@ -22,7 +22,11 @@ class Loader(TALLoaderBase):
 
     def load(self, tplname):
         # find the source
-        src, filename = self._find(tplname)
+        try:
+            src, filename = self._find(tplname)
+        except TypeError as e:
+            raise ValueError("Unable to load template file basename: %s: %s" % (
+                tplname, e))
 
         # has it changed?
         try:
