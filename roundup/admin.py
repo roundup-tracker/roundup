@@ -2195,6 +2195,10 @@ Desc: %(description)s
             self.help_all()
             return 0
 
+        if command == 'htmlhelp':
+            self.help_commands_html()
+            return 0
+
         # figure what the command is
         try:
             functions = self.commands.get(command)
