@@ -224,6 +224,12 @@ Features:
   id. Tracker templates updated to use it. (John Rouillard from a
   patch by Jon C. Thomason)
 - Add a /rest/data/user/roles REST endpoint. (John Rouillard)
+- issue2551353 - Add roundup-classhelper for 2.4.0
+  release. Integrate new classhelper web component to wrap
+  existing classhelper link. This fixes a number of
+  outstanding bugs against the current classhelper using
+  current web features. (Patel Malav, Nikunj Thakkar,
+  Bharath Kanama with integration by John Rouillard)
 
 2023-07-13 2.3.0
 
