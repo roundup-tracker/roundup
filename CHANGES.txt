@@ -154,6 +154,11 @@ Fixed:
 - issue2551341 - if @columns missing from an index url, the
   group headers colspan property = 0. Add "or 100" in
   stanza's so headers span all rows (up to 100).
+- fix roundup-server response requiring a 301 redirect. Did
+  not set content length leading to hang/error. (John
+  Rouillard)
+- report basename of filename when template file is invalid
+  rather than reporting a TypeError. (John Rouillard)
 
 Features:
 
