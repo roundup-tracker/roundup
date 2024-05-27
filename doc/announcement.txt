@@ -43,7 +43,7 @@ release are:
   the current logged in user.
 
 * login failures to the REST/XML-RPC interfaces are now rate
-  limited to limit passowrd guessing attacks.
+  limited to limit password guessing attacks.
 
 * utf8mb4 is the default charset for MySQL. This requires
   migrating your database using the mysql client. You can
@@ -52,7 +52,7 @@ release are:
 * PostgreSQL services defined in pg_service.conf can be
   used.  PostgreSQL schemas are supported to eliminate the
   need for the roundup user to have database
-  creation/deletion privs.
+  creation/deletion privileges.
 
 * fix out of memory issue when importing larger trackers
   into PostgreSQL.
@@ -62,7 +62,7 @@ release are:
   output, command history. Also on windows, pyreadline3 is
   supported to provide an editable interactive command line.
 
-* an experimental wsgi performance improvment in 2.3.0 is
+* an experimental wsgi performance improvement in 2.3.0 is
   now now the default and is opt-out.
 
 * new template functions: utils.readfile and
@@ -84,7 +84,7 @@ release are:
 * sqlite version 1 and StructuredText support removed.
 
 The file CHANGES.txt has a detailed list of feature
-additions and bug fixes (58) for each release. The most
+additions and bug fixes (67) for each release. The most
 recent changes from there are at the end of this
 announcement. Also see the information in doc/upgrading.txt.
 
