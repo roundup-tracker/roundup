@@ -4,7 +4,7 @@ release, so make sure to read `docs/upgrading.txt
 <https://www.roundup-tracker.org/docs/upgrading.html>`_ to
 bring your tracker up to date.
 
-The changes, as usual, include some new features and many
+The 67 changes, as usual, include some new features and many
 bug fixes.
 
 Note that you should run ``roundup-admin ... migrate`` to

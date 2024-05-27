@@ -28,7 +28,10 @@ Release Manager: John Rouillard
 
 Developer activity by changesets::
 
-  TBD
+rouilj@ieee.org                               465  **************************
+rsc@runtux.com                                  2
+Marcus Preisch                                  1
+Norbert Schlemmer "Noschvie on github.com"      1
 
 Other contributers
 

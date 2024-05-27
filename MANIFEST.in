@@ -5,9 +5,10 @@ recursive-include scripts *.* *-*
 recursive-include scripts/Docker Dockerfile *.* *_*
 recursive-include tools *.* base64
 recursive-include test *.py *.txt
-recursive-include doc *.html *.png *.txt *.css *.example
+include test/pg_service.conf
+recursive-include doc *.html *.gif *.png *.txt *.css *.example
 recursive-include detectors *.py README.txt
 include demo.py *.txt
 global-exclude *.pyc *.pyo .DS_Store *.orig *.rej *~ \#* .flake8
-include doc/conf.py doc/roundup-favicon.ico
+include doc/conf.py doc/Makefile doc/requirements.pip doc/roundup-favicon.ico
 include locale/*.po locale/*.mo locale/roundup.pot locale/Makefile

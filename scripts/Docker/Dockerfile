@@ -225,7 +225,7 @@ ARG pip_mod
 LABEL "org.opencontainers.image.vendor"="Roundup Issue Tracker Team" \
       "org.opencontainers.image.title"="Roundup Issue Tracker" \
       "org.opencontainers.image.description"="Roundup Issue Tracker with multi-backend support installed via $source with python version $pythonversion" \
-      "org.opencontainers.image.version"="2.3.0" \
+      "org.opencontainers.image.version"="2.4.0b0" \
       "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net" \
       "org.opencontainers.image.licenses"="MIT AND ZPL-2.0 AND Python-2.0" \
       "org.opencontainers.image.documentation"="https://www.roundup-tracker.org/docs/installation.html" \
