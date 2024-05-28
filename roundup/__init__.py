@@ -67,6 +67,6 @@ much prettier cake :)
 '''
 __docformat__ = 'restructuredtext'
 
-__version__ = '2.4.0b1'
+__version__ = '2.4.0b2'
 
 # vim: set filetype=python ts=4 sw=4 et si

@@ -14,13 +14,16 @@ access the tracker.
 
 You can install it with::
 
-   pip install roundup~=2.4.0b1
+   pip install roundup~=2.4.0b2
 
 (preferably in a virtual environment). To download it, use::
 
-   pip download roundup~=2.4.0b1
+   pip download roundup~=2.4.0b2
 
 then unpack and test/install from the tarball.
+
+Beta 2 includes a small change to the classic tracker's
+classhelper.js to fix a bug found after beta 1 was released.
 
 Among the notable improvements in 2.4.0 from the 2.3.0
 release are:
