@@ -314,8 +314,8 @@ class ClassHelper extends HTMLElement {
             ClassHelper.translations[key] = key;
         }
 
-        let tracker = window.location.pathname.split('/')[1];
-        let url = new URL(window.location.origin + "/" + tracker + '/');
+        let tracker_path = window.location.pathname.split('/').slice(0,-1).join('/')
+        let url = new URL(window.location.origin + tracker_path + '/');
         url.searchParams.append("@template", "translation");
         url.searchParams.append("properties", Array.from(keys.values()).join(','));
 
