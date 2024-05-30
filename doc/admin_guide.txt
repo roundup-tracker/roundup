@@ -726,7 +726,7 @@ file in your browser and force refresh it. To do this:
       URL you should visit would be
       ``https://example.com/tracker/@@file/classhelper.css``.
 
-   3. This will open the `classhelper.css` file in your browser.
+   3. This will open the ``classhelper.css`` file in your browser.
 
    4. Press ``Ctrl+Shift+R`` (on Windows and Linux) or
       ``Cmd+Shift+R`` (on macOS). This triggers a hard
