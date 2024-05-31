@@ -1,4 +1,4 @@
-I'm proud to release version 2.4.0 beta 1 of the Roundup issue
+I'm proud to release version 2.4.0 of the Roundup issue
 tracker.  This release is a bugfix and feature
 release, so make sure to read `docs/upgrading.txt
 <https://www.roundup-tracker.org/docs/upgrading.html>`_ to
@@ -14,11 +14,11 @@ access the tracker.
 
 You can install it with::
 
-   pip install roundup~=2.4.0b2
+   pip install roundup
 
 (preferably in a virtual environment). To download it, use::
 
-   pip download roundup~=2.4.0b2
+   pip download roundup
 
 then unpack and test/install from the tarball.
 
