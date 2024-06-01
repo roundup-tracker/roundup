@@ -159,6 +159,8 @@ Fixed:
   Rouillard)
 - report basename of filename when template file is invalid
   rather than reporting a TypeError. (John Rouillard)
+- Make Last-Modified header use GMT not -0000 timezone. Fix error
+  reported by redbot testing. (John Rouillard)
 
 Features:
 

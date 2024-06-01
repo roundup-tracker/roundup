@@ -1984,7 +1984,8 @@ class Client:
         """
 
         # spit out headers
-        self.additional_headers['Last-Modified'] = email.utils.formatdate(lmt)
+        self.additional_headers['Last-Modified'] = email.utils.formatdate(lmt,
+	 usegmt=True)
 
         ims = None
         # see if there's an if-modified-since...
