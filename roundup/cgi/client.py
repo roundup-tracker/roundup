@@ -2355,7 +2355,8 @@ class Client:
         '''Vary header will include the new header. This will append
            if Vary exists.'''
 
-        if ('Vary' in self.additional_headers):
+        if ('Vary' in self.additional_headers and 
+            header not in self.additional_headers['Vary']):
             self.additional_headers['Vary'] += ", %s" % header
         else:
             self.additional_headers['Vary'] = header
@@ -2373,6 +2374,7 @@ class Client:
         # abort if already encoded (e.g. served from
         # precompressed file or cache on disk)
         if ('Content-Encoding' in self.additional_headers):
+            # Vary: 'Accept-Encoding' is set when Content-encoding set
             return byte_content
 
         # abort if file-type already compressed
@@ -2380,6 +2382,8 @@ class Client:
            (self.additional_headers['Content-Type'] in
                 self.precompressed_mime_types):
             return byte_content
+
+        self.setVary('Accept-Encoding')
 
         encoder = None
         # return same content if unable to compress
@@ -2419,7 +2423,6 @@ class Client:
             # and add Content-Encoding and Vary header.
             self.additional_headers['Content-Length'] = str(len(new_content))
             self.additional_headers['Content-Encoding'] = encoder
-            self.setVary('Accept-Encoding')
             try:
                 current_etag = self.additional_headers['ETag']
             except KeyError:
