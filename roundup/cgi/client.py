@@ -1999,10 +1999,15 @@ class Client:
             ims = email.utils.parsedate(ims)[:6]
             lmtt = time.gmtime(lmt)[:6]
             if lmtt <= ims:
-                if (self.determine_content_encoding()):
-                    # set vary header as though we were returning 200
-                    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
-                    self.setVary("Accept-Encoding")
+                # because we can compress, always set Accept-Encoding
+                # value. Otherwise caches can serve up the wrong info
+                # if their cached copy has no compression.
+                self.setVary("Accept-Encoding")
+                '''
+                  to solve issue2551356 I may need to determine
+                  the content encoding.
+                  if (self.determine_content_encoding()):
+                '''
                 raise NotModified
 
         # don't set until we are sure we are sending a response body.

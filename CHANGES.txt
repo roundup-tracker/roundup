@@ -166,6 +166,8 @@ Fixed:
   testing. (John Rouillard)
 - make If-None-Match work for static file (@@file) case. Found by
   Redbot testing (John Rouillard)
+- Send vary: accept-encoding for if-modified-since conditional
+  requests where the file is not modified. (John Rouillard)
 
 Features:
 
