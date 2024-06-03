@@ -2716,10 +2716,32 @@ class Client:
             # Hence the intermediate proxy should/must match
             # Accept-Encoding and ETag to determine whether to return
             # a 304 or report cache miss and fetch from origin server.
+            #
+            # RFC 9110 8.8.3.3 shows a different strong entity tag
+            # generated for gzip and non gzip replies.
             etag = '"%x-%x-%x"' % (stat_info[stat.ST_INO],
                                    length,
                                    stat_info[stat.ST_MTIME])
             self.setHeader("ETag", etag)
+
+            inm = self.request.headers.get('If-None-Match')
+            if (inm):
+                inm_etags = inm.split(',')
+                inm_etags = [tag.strip() for tag in inm_etags]
+                if etag in inm_etags:
+                    self.setHeader('ETag', etag)
+                    self.setVary('Accept-Encoding')
+                    raise NotModified
+
+                # need to check for etag-compression_code:
+                # a41932-8b5-664ce93d-zstd or a41932-8b5-664ce93d-gzip
+                tag_prefix = etag[:-1] + '-'
+                for inm_etag in inm_etags:
+                    if inm_etag.startswith(tag_prefix):
+                        self.setHeader('ETag', inm_etag)
+                        self.setVary('Accept-Encoding')
+                        raise NotModified
+
             # RFC 2616 14.5: Accept-Ranges
             #
             # Let the client know that we will accept range requests.

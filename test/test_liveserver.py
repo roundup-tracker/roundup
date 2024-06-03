@@ -707,9 +707,101 @@ class BaseTestCases(WsgiSetup):
 
         self.assertEqual(3, len(json.loads(f.content)['data']['collection']))
 
+    def test_inm(self):
+        '''retrieve the user_utils.js file without an if-none-match etag
+            header, a bad if-none-match header and valid single and
+            multiple values.
+        '''
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': self.js_mime_type,
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # use dict comprehension to remove fields like date,
+        # etag etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+        # use etag in previous response
+        etag = f.headers['etag']
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'If-None-Match': etag,
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 304)
+        expected = { 'Vary': 'Accept-Encoding',
+                     'Content-Length': '0',
+                     'ETag': etag,
+                     'Vary': 'Accept-Encoding'
+        }
+
+        # use dict comprehension to remove fields like date, server,
+        # etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        # test again with etag supplied w/o content-encoding
+        # and multiple etags
+        self.assertTrue(etag.endswith('-gzip"'))
+
+        # keep etag intact. Used below.
+        base_etag = etag[:-6] + '"'
+
+        all_etags = (
+            '"a41932-8b5-664ce93d", %s", "a41932-8b5-664ce93d-br"' %
+            base_etag
+        )
+
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'If-None-Match': base_etag,
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 304)
+        expected = { 'Vary': 'Accept-Encoding',
+                     'Content-Length': '0',
+                     'ETag': base_etag,
+                     'Vary': 'Accept-Encoding'
+        }
+
+        # use dict comprehension to remove fields like date, server,
+        # etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+
+        # test with bad etag
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'If-None-Match': '"a41932-8b5-664ce93d"',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': self.js_mime_type,
+                     'ETag': etag,
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # use dict comprehension to remove fields like date, server,
+        # etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
 
     def test_ims(self):
-        ''' retreive the user_utils.js file with old and new
+        ''' retrieve the user_utils.js file with old and new
             if-modified-since timestamps.
         '''
         from datetime import datetime
