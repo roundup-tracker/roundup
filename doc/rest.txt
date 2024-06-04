@@ -2076,8 +2076,9 @@ only been tested with python3)::
         def generate_jwt(self, input):
         """Create a JSON Web Token (jwt)
         """
-            import jwt
             import datetime
+            import jwt
+            from roundup.anypy.datetime_ import utcnow
             from roundup.anypy.strings import b2s
 
             # require basic auth to generate a token
@@ -2115,7 +2116,7 @@ only been tested with python3)::
             claim= { 'sub': self.db.getuid(),
                      'iss': self.db.config.TRACKER_WEB,
                      'aud': self.db.config.TRACKER_WEB,
-                     'iat': datetime.datetime.utcnow(),
+                     'iat': utcnow(),
                    }
 
             lifetime = 0
@@ -2130,7 +2131,7 @@ only been tested with python3)::
                 lifetime = datetime.timedelta(seconds=86400) # 1 day by default
 
             if lifetime: # if lifetime = 0 make unlimited by omitting exp claim
-                claim['exp'] = datetime.datetime.utcnow() + lifetime
+                claim['exp'] = utcnow() + lifetime
 
             newroles = []
             if 'roles' in input:
