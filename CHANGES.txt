@@ -168,6 +168,8 @@ Fixed:
   Redbot testing (John Rouillard)
 - Send vary: accept-encoding for if-modified-since conditional
   requests where the file is not modified. (John Rouillard)
+- Update JWT example in rest.py to use replacement for
+  datetime.datetime.utcnow(). (John Rouillard)
 
 Features:
 
