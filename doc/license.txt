@@ -1,8 +1,8 @@
 License
 =======
 
-Roundup is Free Software under the following license (from the file
-COPYING.txt in the software distribution):
+Roundup is Free Software under the following license (from the
+`file COPYING.txt <../COPYING.html>` in the software distribution):
 
 .. raw:: html
 
