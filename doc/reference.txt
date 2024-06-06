@@ -2154,6 +2154,35 @@ of files in there. The *minimal* template includes:
   coating for their content, using its "content" slot. It also defines
   the "head_title" and "body_title" slots to allow setting of the page
   title.
+
+  This page also defines macros for use in search pages.
+
+    * th_label - defines a label for a search field
+    * search_input - defines a text input field
+    * search_date - defines a text input field with popup calendar link
+    * search_popup - defines a text input with popup classhelper link
+    * search_select - defines a select/dropdown element for selecting
+      a single item from a class
+    * search_select_keywords - defines a dropdown with a keyword
+      search expression builder link
+    * search_select_translated - like search_Select but it translates
+      the items in the dropdown
+    * search_multiselect - text input with multiselect classhelper
+      popup link
+    * search_checkboxes - display selection items as checkbox items
+    * column_input - a checkbox element used to select an element for
+      display in a search result (sets the @columns property)
+    * sort_input - a radiobutton element used to select sorting
+    * group_input - a radiobutton element used to select grouping
+
+  and the user.item.html page:
+
+    * user_src_input - takes a long name and splits it into parts (first/last)
+    * user_normal_input - takes a name without splitting it for reuse
+    * user_pw_input - a password input for the user
+    * user_confirm_input - a password input marked so the back end
+      confirms it against the password submitted through the user_pw_input
+
 **home.html**
   the default page displayed when in `the "home" context`_ and no
   other page is requested using the ``@template`` parameter
