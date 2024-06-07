@@ -248,6 +248,11 @@ We can use assistance in getting these directions corrected or
 enhanced. The core Roundup developers don't use MySQL for their
 production workloads so we count on users to help us with this.
 
+References:
+
+  * https://mathiasbynens.be/notes/mysql-utf8mb4#utf8-to-utf8mb4
+  * https://adamhooper.medium.com/in-mysql-never-use-utf8-use-utf8mb4-11761243e434
+
 .. _issue2551282: https://issues.roundup-tracker.org/issue2551282
 .. _issue2551115: https://issues.roundup-tracker.org/issue2551115
 
