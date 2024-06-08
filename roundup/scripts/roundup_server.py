@@ -137,8 +137,18 @@ class SecureHTTPServer(http_.server.HTTPServer):
         self.socket = socket.socket(self.address_family, self.socket_type)
         if ssl_pem:
             ctx = SSL.Context(SSL.TLSv1_2_METHOD)
-            ctx.use_privatekey_file(ssl_pem)
-            ctx.use_certificate_file(ssl_pem)
+            try:
+                ctx.use_privatekey_file(ssl_pem)
+            except SSL.Error:
+                print(_("Unable to find/use key from file: %(pemfile)s") % {"pemfile": ssl_pem})
+                print(_("Does it have a private key surrounded by '-----BEGIN PRIVATE KEY-----' and\n  '-----END PRIVATE KEY-----' markers?"))
+                exit()
+            try:
+                ctx.use_certificate_file(ssl_pem)
+            except SSL.Error:
+                print(_("Unable to find/use certificate from file: %(pemfile)s") % {"pemfile": ssl_pem})
+                print(_("Does it have a certificate surrounded by '-----BEGIN CERTIFICATE-----' and\n  '-----END CERTIFICATE-----' markers?"))
+                exit()
         else:
             ctx = auto_ssl()
         self.ssl_context = ctx
@@ -677,8 +687,13 @@ class ServerConfig(configuration.Config):
             (configuration.BooleanOption, "ssl", "no",
                 "Enable SSL support (requires pyopenssl)"),
             (configuration.NullableFilePathOption, "pem", "",
-                "PEM file used for SSL. A temporary self-signed certificate\n"
-                "will be used if left blank."),
+                "PEM file used for SSL. The PEM file must include\n"
+                "both the private key and certificate with appropriate\n"
+                'headers (i.e. "-----BEGIN PRIVATE KEY-----",\n'
+                '"-----END PRIVATE KEY-----" and '
+                '"-----BEGIN CERTIFICATE-----",\n'
+                '"-----END CERTIFICATE-----". A temporary self-signed\n'
+                "certificate will be used if left blank."),
             (configuration.WordListOption, "include_headers", "",
                 "Comma separated list of extra headers that should\n"
                 "be copied into the CGI environment.\n"

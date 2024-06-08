@@ -59,9 +59,21 @@ roundup-server.
 \fB-e\fP \fIfile\fP
 Sets a filename containing the PEM file to use for SSL. The PEM file
 must include both the private key and certificate with appropriate
-headers (e.g. "-----BEGIN PRIVATE KEY-----", "-----END PRIVATE
-KEY-----" and "-----BEGIN CERTIFICATE-----", "-----END
-CERTIFICATE-----". If no file is specified, a temporary self-signed
+header/trailer markers:
+
+.EX
+-----BEGIN PRIVATE KEY-----
+-----END PRIVATE KEY-----
+.EE
+
+and
+
+.EX
+-----BEGIN CERTIFICATE-----
+-----END CERTIFICATE-----
+.EE
+
+If no file is specified, a temporary self-signed
 certificate will be used.
 .TP
 \fB-N\fP

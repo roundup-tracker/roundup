@@ -170,6 +170,10 @@ Fixed:
   requests where the file is not modified. (John Rouillard)
 - Update JWT example in rest.py to use replacement for
   datetime.datetime.utcnow(). (John Rouillard)
+- issue2551219 - document requirements of PEM file when using
+  roundup-server in SSL/TLS mode. Report better error messages
+  when PEM file is missing certificate or private key. (John
+  Rouillard)
 
 Features:
 
