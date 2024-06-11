@@ -157,7 +157,7 @@ not set. For example, the following searches on the issues:
 
 When entering the value for a constrained property you may have a
 helper (also called classhelper) available by clicking on a link
-usally displayed as ``(list)``. See the section `Using the
+usually displayed as ``(list)``. See the section `Using the
 Classhelper`_ for details.
 
 Date properties
