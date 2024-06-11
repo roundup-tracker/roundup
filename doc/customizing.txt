@@ -1034,6 +1034,11 @@ So you could reimplement this as something like::
         username = self.db.user.get(self.userid, 'username')
         # now verify the password supplied against the LDAP store
 
+Other External Databases
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+See examples for `Shibboleth`_ and info about using `OAUTH`_ in the
+Roundup Wiki.
 
 Changes to Tracker Behaviour
 ----------------------------
@@ -2438,11 +2443,13 @@ Even more examples of customisation have been contributed by
 users. They can be found on the `wiki
 <https://wiki.roundup-tracker.org/CustomisationExamples>`_.
 
+.. _change the rate limiting method: rest.html#creating-custom-rate-limits
 .. _`design documentation`: design.html
 .. _`developer's guide`: developers.html
-.. _`rest interface documentation`: rest.html#programming-the-rest-api
-.. _change the rate limiting method: rest.html#creating-custom-rate-limits
 .. _`directions in the rest interface documentation`: rest.html#enabling-the-rest-api
+.. _oauth: https://wiki.roundup-tracker.org/OauthAuthentication
+.. _`rest interface documentation`: rest.html#programming-the-rest-api
+.. _`shibboleth`: https://wiki.roundup-tracker.org/ShibbolethLogin
 .. _`xmlrpc interface documentation`: xmlrpc.html#through-roundup
 .. _`zxcvbn`: https://github.com/dwolfhub/zxcvbn-python
  
