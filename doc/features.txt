@@ -14,7 +14,7 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 
 **Installation and Setup**
 
-- Start using the software in `instant-gratifcation (demo) mode`_ with
+- Start using the software in `instant-gratification (demo) mode`_ with
   ``python demo.py`` or `a Docker container`_ in under 5 minutes. 
 - Choose from `five included templates`_ for your tracker.
 - `Customize`_ and use the demo as a template for your production tracker.
@@ -30,9 +30,9 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 **Issue Tracking and Management**
 
 - Manage your issues your way. Handle bugs, features, milestones, 
-  user feedback, fleet maintainance, office issues etc.
+  user feedback, fleet maintenance, office issues etc.
 - Searches on specific properties (e.g. open issues with a high
-  priorty) can be saved and reused or shared with outer users.
+  priority) can be saved and reused or shared with outer users.
 - Full Text Search for quick searches across messages.
 - Keeps a detailed history of issue changes.
 - Issues become a mini mailing list to keep everyone informed.
@@ -74,7 +74,7 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 
 **Email Integration and Automation**
 
-- Update issues via email with new messages and the abilility to
+- Update issues via email with new messages and the ability to
   change properties of issues (e.g. close an issue).
 - Secure email handling with features like TLS, APOP, IMAPS/OAUTH.
 - Optional auto-registration for email users.
@@ -100,7 +100,7 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 .. _`customize`: customizing.html
 .. _`external user database`: customizing.html#using-external-user-databases
 .. _`five included templates`: installation.html#choosing-your-template
-.. _`instant-gratifcation (demo) mode`:
+.. _`instant-gratification (demo) mode`:
      installation.html#for-the-really-impatient
 .. _`a Docker container`: installation.html#running-in-demo-mode-with-docker
 .. _mysql: https://pypi.org/project/MySQL-python/
