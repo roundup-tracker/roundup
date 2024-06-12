@@ -43,10 +43,14 @@ finally:
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx_sitemap', 'sphinx_tabs.tabs']
+extensions = ["sphinxext.opengraph", 'sphinx_sitemap', 'sphinx_tabs.tabs',]
 
 sphinx_tabs_valid_builders = ['linkcheck']
 sphinx_tabs_disable_tab_closing = True
+ogp_site_url = "https://www.roundup-tracker.org"
+ogp_image = "_images/index_logged_out.png"
+ogp_image_alt = "The front page of a tracker showing a table of issues and their properties."
+# ogp_description_length = 200
 
 # for sitemap default: "{lang}{version}subdir/{link}"
 sitemap_url_scheme = "{link}"
