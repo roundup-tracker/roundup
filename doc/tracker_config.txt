@@ -1,6 +1,6 @@
 
 .. index:: config.ini; sections main
-
+.. _`config-ini-section-main`:
 .. code:: ini
 
   [main]
@@ -184,7 +184,7 @@
   password_pbkdf2_default_rounds = 2000000
 
 .. index:: config.ini; sections tracker
-
+.. _`config-ini-section-tracker`:
 .. code:: ini
 
   [tracker]
@@ -231,7 +231,7 @@
   language = 
 
 .. index:: config.ini; sections web
-
+.. _`config-ini-section-web`:
 .. code:: ini
 
   [web]
@@ -595,8 +595,8 @@
   # as is. It removes any whitespace at the end of the
   # line, so a newline can be put in the file.
   # 
-  # Default: 3CpCdT9GrdQv7SCn24DTIQTwAoBguqhAopZnXRZA38w=
-  secret_key = 3CpCdT9GrdQv7SCn24DTIQTwAoBguqhAopZnXRZA38w=
+  # Default: DWmbKgVUy6fF5D2Y5TD5Az+dnHhMYKCCpJzIY3H8nsU=
+  secret_key = DWmbKgVUy6fF5D2Y5TD5Az+dnHhMYKCCpJzIY3H8nsU=
 
   # This is used to sign/validate json web tokens
   # (JWT). Even if you don't use JWTs it must not be
@@ -624,11 +624,13 @@
   jwt_secret = disabled
 
 .. index:: config.ini; sections rdbms
-
+.. _`config-ini-section-rdbms`:
 .. code:: ini
 
+  
   # Settings in this section (except for backend) are used
   #  by RDBMS backends only.
+
   [rdbms]
 
   # Database backend.
@@ -767,10 +769,12 @@
   serverside_cursor = yes
 
 .. index:: config.ini; sections sessiondb
-
+.. _`config-ini-section-sessiondb`:
 .. code:: ini
 
+  
   # Choose configuration for session and one time key storage.
+
   [sessiondb]
 
   # Set backend for storing one time key (otk) and session data.
@@ -800,7 +804,7 @@
   redis_url = redis://localhost:6379/0?health_check_interval=2
 
 .. index:: config.ini; sections logging
-
+.. _`config-ini-section-logging`:
 .. code:: ini
 
   [logging]
@@ -836,12 +840,14 @@
   disable_loggers = no
 
 .. index:: config.ini; sections mail
-
+.. _`config-ini-section-mail`:
 .. code:: ini
 
+  
   # Outgoing email options.
   # Used for nosy messages, password reset and registration approval
   # requests.
+
   [mail]
 
   # The email domain that admin_email, issue_tracker and
@@ -942,10 +948,12 @@
   add_authoremail = yes
 
 .. index:: config.ini; sections mailgw
-
+.. _`config-ini-section-mailgw`:
 .. code:: ini
 
+  
   # Roundup Mail Gateway options
+
   [mailgw]
 
   # Keep email citations when accepting messages.
@@ -1087,10 +1095,12 @@
   keep_real_from = no
 
 .. index:: config.ini; sections pgp
-
+.. _`config-ini-section-pgp`:
 .. code:: ini
 
+  
   # OpenPGP mail processing options
+
   [pgp]
 
   # Enable PGP processing. Requires gpg. If you're planning
@@ -1137,10 +1147,12 @@
   require_incoming = signed
 
 .. index:: config.ini; sections nosy
-
+.. _`config-ini-section-nosy`:
 .. code:: ini
 
+  
   # Nosy messages sending
+
   [nosy]
 
   # Send nosy messages to the author of the message.
@@ -1190,10 +1202,12 @@
   max_attachment_size = 9223372036854775807
 
 .. index:: config.ini; sections markdown
-
+.. _`config-ini-section-markdown`:
 .. code:: ini
 
+  
   # Markdown rendering options.
+
   [markdown]
 
   # If yes/true, render single new line characters in markdown
