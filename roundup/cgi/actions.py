@@ -1724,6 +1724,11 @@ class ExportCSVAction(Action):
                     repr_function = represent[name]
                 row.append(repr_function(klass.get(itemid, name)))
             self.client._socket_op(writer.writerow, row)
+
+        # force close of connection since we can't send a
+        # Content-Length header.
+        self.client.request.close_connection = True
+
         return '\n'
 
 
@@ -1835,6 +1840,10 @@ class ExportCSVWithIdAction(Action):
                     pass  # value is not sortable, probably str
                 row.append(str(value))
             self.client._socket_op(writer.writerow, row)
+
+        # force close of connection since we can't send a
+        # Content-Length header.
+        self.client.request.close_connection = True
 
         return '\n'
 

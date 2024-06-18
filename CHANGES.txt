@@ -177,6 +177,11 @@ Fixed:
 - Cleanup tracker index generation by roundup-server. Send
   correct Content-Length headers so HTTP/1.1 connections don't
   hang. (John Rouillard)
+- Fix delay when using csv export actions. The CSV file is written
+  incrementally, so we can't determine the Content-Length. When using
+  HTTP/1.1, this causes a delay while the browser waits for a timeout.
+  Forcing the connection to close after the CSV file is written
+  removes the delay. (John Rouillard)
 
 Features:
 
