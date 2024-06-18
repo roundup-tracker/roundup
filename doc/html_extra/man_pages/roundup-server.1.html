@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Sun May 26 03:41:33 2024 -->
+<!-- CreationDate: Tue Jun 18 02:08:18 2024 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -119,7 +119,10 @@ roundup.http.</p> </td></tr>
 <p style="margin-left:22%;">Sets a filename to use as a
 template for generating the tracker index page. The variable
 &quot;trackers&quot; is available to the template and is a
-dict of all configured trackers.</p>
+dict of all configured trackers. If you connect to the root
+of the server (without a tracker name), the default index
+page is shown. Using <b>-i</b> allows you to customize the
+index page.</p>
 
 <p style="margin-left:11%;"><b>-I</b>
 <i>header1[,header2,...]</i></p>
@@ -153,12 +156,22 @@ filter/rate limit/firewall requests to roundup-server.</p></td></tr>
 
 <p style="margin-left:22%;">Sets a filename containing the
 PEM file to use for SSL. The PEM file must include both the
-private key and certificate with appropriate headers (e.g.
-&quot;-----BEGIN PRIVATE KEY-----&quot;, &quot;-----END
-PRIVATE KEY-----&quot; and &quot;-----BEGIN
-CERTIFICATE-----&quot;, &quot;-----END
-CERTIFICATE-----&quot;. If no file is specified, a temporary
-self-signed certificate will be used.</p>
+private key and certificate with appropriate header/trailer
+markers:</p>
+
+<p style="margin-left:22%; margin-top: 1em">-----BEGIN
+PRIVATE KEY----- <br>
+-----END PRIVATE KEY-----</p>
+
+<p style="margin-left:22%; margin-top: 1em">and</p>
+
+<p style="margin-left:22%; margin-top: 1em">-----BEGIN
+CERTIFICATE----- <br>
+-----END CERTIFICATE-----</p>
+
+<p style="margin-left:22%; margin-top: 1em">If no file is
+specified, a temporary self-signed certificate will be
+used.</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
@@ -247,6 +260,13 @@ Make sure the name part doesn&rsquo;t include any url-unsafe
 characters like spaces, as these confuse the cookie handling
 in browsers like IE.</p>
 
+<p style="margin-left:11%; margin-top: 1em">If you connect
+to the root directory (I.E. you do not include the
+<b>name</b> component in the URL, the server will display an
+index page of trackers served by roundup-server if more than
+one tracker is defined. If only one tracker is defined it
+will redirect to the tracker.</p>
+
 <h2>EXAMPLES
 <a name="EXAMPLES"></a>
 </h2>
@@ -259,6 +279,10 @@ in browsers like IE.</p>
 <p style="margin-left:22%;">Start the server on port
 <b>9000</b> serving two trackers; one under <b>/bugs</b> and
 one under <b>/reqs</b>.</p>
+
+<p style="margin-left:11%; margin-top: 1em">If you connect
+to the server at the root level (http://host:9000/) it will
+display a list of the available trackers.</p>
 
 <h2>CONFIGURATION FILE
 <a name="CONFIGURATION FILE"></a>
