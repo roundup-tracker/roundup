@@ -373,6 +373,32 @@ class Client:
     except ImportError:
         pass
 
+    # everything not here is served as 'application/octet-stream'
+    # Moved to class so it can be modified from interfaces.py
+    # Adding:
+    #  from roundup.cgi.client import Client
+    #  Client.mime_type_allowlist.append('application/pdf')
+    # will permit pdf files to be displayed in the browser rather than
+    # downloaded to a file.
+
+    mime_type_allowlist = [
+        'text/plain',
+        'text/x-csrc',    # .c
+        'text/x-chdr',    # .h
+        'text/x-patch',   # .patch and .diff
+        'text/x-python',  # .py
+        'text/xml',
+        'text/csv',
+        'text/css',
+        'image/gif',
+        'image/jpeg',
+        'image/png',
+        'image/svg+xml',
+        'image/webp',
+        'audio/ogg',
+        'video/webm',
+    ]
+
     # mime types of files that are already compressed and should not be
     # compressed on the fly. Can be extended/reduced using interfaces.py.
     # This excludes types from being compressed. Should we have a list
@@ -1859,28 +1885,8 @@ class Client:
         # --- mime-type security
         # mime type detection is performed in cgi.form_parser
 
-        # everything not here is served as 'application/octet-stream'
-        mime_type_allowlist = [
-            'text/plain',
-            'text/x-csrc',    # .c
-            'text/x-chdr',    # .h
-            'text/x-patch',   # .patch and .diff
-            'text/x-python',  # .py
-            'text/xml',
-            'text/csv',
-            'text/css',
-            'application/pdf',
-            'image/gif',
-            'image/jpeg',
-            'image/png',
-            'image/svg+xml',
-            'image/webp',
-            'audio/ogg',
-            'video/webm',
-        ]
-
         if self.instance.config['WEB_ALLOW_HTML_FILE']:
-            mime_type_allowlist.append('text/html')
+            self.mime_type_allowlist.append('text/html')
 
         try:
             mime_type = klass.get(nodeid, 'type')
@@ -1890,7 +1896,7 @@ class Client:
         if not mime_type:
             mime_type = 'text/plain'
 
-        if mime_type not in mime_type_allowlist:
+        if mime_type not in self.mime_type_allowlist:
             mime_type = 'application/octet-stream'
 
         # --/ mime-type security

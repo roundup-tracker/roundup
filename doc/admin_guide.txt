@@ -324,6 +324,47 @@ get the gzip version and not a brotli compressed version. This
 mechanism allows the admin to allow use of brotli and zstd for
 dynamic content, but not for static content.
 
+.. _browser_handling_attached_files:
+
+.. index:: single: interfaces.py; Controlling browser handling of attached files
+
+Controlling Browser Handling of Attached Files
+==============================================
+
+You may be aware of the ``allow_html_file`` `config.ini setting
+<reference.html#config-ini-section-web>`_. When set to yes, it permits
+html files to be attached and displayed in the browser as html
+files. The underlying mechanism used to enable/disable attaching HTML
+is exposed using ``interfaces.py``.
+
+Similar to ``Client.precompressed_mime_types`` above, there is a
+``Client.mime_type_allowlist``. If a mime type is present in this
+list, an attachment with this mime type is served to the browser. If
+the mime type is not present, the mime type is set to
+``application/octet-stream`` which causes the browser to download the
+attachment to a file.
+
+In release 2.4.0, the mime type ``application/pdf`` was removed from
+the precompressed_mime_types list. This prevents the browser from
+executing scripts that may be included in the PDF file. If you trust
+the individuals uploading PDF files to your tracker and wish to allow
+viewing PDF files from your tracker, you can do so by editing your
+tracker's "interfaces.py" file. Adding::
+
+  from roundup.cgi.client import Client
+  Client.mime_type_allowlist.append('application/pdf')
+
+will permit the PDF files to be viewed in the browser rather than
+downloaded to a file.
+
+Similarly, you can remove a mime type (e.g. audio/oog) using::
+
+  from roundup.cgi.client import Client
+  Client.mime_type_allowlist.remove('audio/oog')
+
+which will force the browser to save the attachment to a file rather
+than playing the audio file.
+
 .. index:: single: interfaces.py; setting REST maximum result limit
 
 Configuring REST Maximum Result Limit
