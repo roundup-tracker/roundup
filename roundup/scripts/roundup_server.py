@@ -320,12 +320,14 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         if len(keys) == 1:
             self.send_response(302)
             self.send_header('Location', urllib_.quote(keys[0]) + '/index')
+            self.send_header('Content-Length', 0)
             self.end_headers()
-        else:
-            self.send_response(200)
+            return
 
-        self.send_header('Content-Type', 'text/html')
-        self.end_headers()
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        output = []
+
         w = self.wfile.write
 
         if self.CONFIG and self.CONFIG['TEMPLATE']:
@@ -336,16 +338,22 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                      'nothing': None,
                      'true': 1,
                      'false': 0}
-            w(s2b(pt.pt_render(extra_context=extra)))
+            output.append(s2b(pt.pt_render(extra_context=extra)))
         else:
-            w(s2b(_('<html><head><title>Roundup trackers index</title></head>\n'
-                    '<body><h1>Roundup trackers index</h1><ol>\n')))
+            output.append(s2b(_(
+                '<html><head><title>Roundup trackers index</title></head>\n'
+                '<body><h1>Roundup trackers index</h1><ol>\n')))
             keys.sort()
             for tracker in keys:
-                w(s2b('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n' % {
+                output.append(s2b('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n' % {
                     'tracker_url': urllib_.quote(tracker),
                     'tracker_name': html_escape(tracker)}))
-            w(b'</ol></body></html>')
+            output.append(b'</ol></body></html>\n')
+
+        write_output = b"\n".join(output)
+        self.send_header('Content-Length', len(write_output))
+        self.end_headers()
+        w(write_output)
 
     def inner_run_cgi(self):
         ''' This is the inner part of the CGI handling
