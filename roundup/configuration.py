@@ -1331,18 +1331,6 @@ Set this to 'no' to ignore the field and accept the post.
             """csrf_tokens have a limited lifetime. If they are not
 used they are purged from the database after this
 number of minutes. Default (20160) is 2 weeks."""),
-        (CsrfSettingOption, 'csrf_enforce_token', "yes",
-            """How do we deal with @csrf fields in posted forms.
-Set this to 'required' to block the post and notify
-    the user if the field is missing or invalid.
-Set this to 'yes' to block the post and notify the user
-    if the token is invalid, but accept the form if
-    the field is missing.
-Set this to 'logfailure' to log a notice to the roundup
-    log if the field is invalid or missing, but accept
-    the post.
-Set this to 'no' to ignore the field and accept the post.
-            """),
         (CsrfSettingOption, 'csrf_enforce_header_X-REQUESTED-WITH', "yes",
             """This is only used for xmlrpc and rest requests. This test is
 done after Origin and Referer headers are checked. It only
