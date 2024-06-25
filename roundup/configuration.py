@@ -1348,7 +1348,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing.
+    the header is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -1360,7 +1360,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing.
+    the header is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -1391,7 +1391,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing.
+    the header is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -1404,7 +1404,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing.
+    the header is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
