@@ -35,6 +35,10 @@ html: docs
 	cp robots.txt html/robots.txt
 	mkdir html/signatures && cp signatures/*.asc html/signatures
 	cp --no-clobber -r docs/html_extra/. html/docs/.
+	cp htaccess html/.htaccess
+	@echo; \
+          l=$$(find html -name '*.orig' -o -name '*~' | tee /dev/tty | wc -l);\
+         if [ $$l -ne 0 ]; then echo "Garbage files found" && false; fi
 
 linkcheck:
 	mkdir -p $(TMP)/linkcheck $(TMP)/doctrees
@@ -44,8 +48,30 @@ linkcheck:
 	      "or in .build/linkcheck/output.txt."
 
 sourceforge_dev_sync:
-	rsync -av html/. web.sourceforge.net:/home/project-web/roundup/htdocs/dev_docs/.
+        # --no-times makes _images/* and other files sync over every time
+        # so docs_backup-... is complete with all files and can be served
+        # as the docs tree. Without --no-times _static, _images and other
+        # directories are missing from the backup directory.
+	# Exclude docs_backup so it won't be deleted from sourceforge
+	# since:
+        #   --delete-exclude
+        # IS NOT (and must not be) SET
+	read -p "sync to dev_docs y/N? " resp; echo "$$resp" | grep -i "^y"
+	rsync -av --no-times --delete --exclude 'docs_backup*' \
+              --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
+              html/. \
+              web.sourceforge.net:/home/project-web/roundup/htdocs/dev_docs/.
 
 sourceforge_prod_sync:
 	read -p "sync to production y/N? " resp; echo "$$resp" | grep -i "^y"
-	rsync -av html/. web.sourceforge.net:/home/project-web/roundup/htdocs/.
+	rsync -av --no-times --delete --exclude 'docs_backup*' \
+              --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
+              html/. \
+              web.sourceforge.net:/home/project-web/roundup/htdocs/.
+
+sourceforge_home_sync:
+	read -p "sync to home y/N? " resp; echo "$$resp" | grep -i "^y"
+	rsync -av --no-times --delete --exclude 'docs_backup*' \
+              --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
+              html/. \
+              web.sourceforge.net:roundup_docs/.

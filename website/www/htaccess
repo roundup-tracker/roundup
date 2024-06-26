@@ -1,0 +1,4 @@
+RedirectMatch 404 /\.buildinfo$
+RedirectMatch 404 /docs_backup-.*
+RedirectMatch 404 \.orig$
+RedirectMatch 404 ~$
