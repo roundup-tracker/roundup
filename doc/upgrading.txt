@@ -89,8 +89,8 @@ your database.
   ``config.ini`` is ``xhtml``, you should plan to change your
   templates to use html (HTML5). If you are affected by this, please
   send email to the roundup-users mailing list (roundup-users at
-  lists.sourceforge.net). Version 2.3.0 is expected to be the last
-  version to support XHTML.
+  lists.sourceforge.net). Version 2.3.0 is the last version to support
+  XHTML.
 
 Contents:
 
