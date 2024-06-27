@@ -639,6 +639,8 @@ Deprecation Notices (info)
 
 Support for SQLite version 1 has been removed in 2.4.0.
 
+Support for SQLite version 2 will be removed in 2.5.0.
+
 Support for StructuredText has been removed in 2.4.0. Support for
 reStructuredText remains.
 
