@@ -33,11 +33,14 @@ General steps:
       versions starting at 1.5 and ending at 2.3. E.G.
       1.5.0 -> 1.5.1, 1.5.1 -> 1.6.0, ..., 2.1.0 -> 2.2.0,
       2.2.0 -> 2.3.0.
-   6. Run ``roundup-admin -i <tracker_home> migrate`` using the newer
-      version of Roundup for **all** the trackers you have
-      upgraded. This will update the database if it is required.
+   6. Run ``roundup-admin -i <tracker_home> migrate`` using
+      the newer version of Roundup for the instance you are
+      upgrading. This will update the database if it is
+      required.
    7. Bring your Roundup instance back online
    8. Test
+
+Repeat for each tracker instance.
 
 .. note::
    The v1.5.x releases of Roundup were the last to support
