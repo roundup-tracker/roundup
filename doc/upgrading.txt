@@ -48,18 +48,21 @@ General steps:
 
 Recent release notes have the following labels:
 
-* required - Roundup will not work properly if these steps are not done
-* recommended - Roundup will still work, but these steps can cause
+* **required** - Roundup will not work properly if these steps are not done
+* **recommended** - Roundup will still work, but these steps can cause
   security or stability issues if not done.
-* optional - new features or changes to existing features you might
+* **optional** - new features or changes to existing features you might
   want to use
-* info - important possibly visible changes in how things operate
+* **info** - important possibly visible changes in how things operate
 
-If you use virtual environments for your installation, you can run
-trackers with different versions of Roundup. So you can have one tracker
-using version 2.2.0 and another tracker using version 1.6.1. This
-allows you to upgrade trackers one at a time rather than having to
-upgrade all your trackers at once.
+If you use virtual environments for your installation, you
+can run trackers with different versions of Roundup. So you
+can have one tracker using version 2.2.0 and another tracker
+using version 1.6.1. This allows you to upgrade trackers one
+at a time rather than having to upgrade all your trackers at
+once. Note that downgrading may require restoring your
+database to an earlier version, so make sure you backed up
+your database.
 
 .. note::
 
