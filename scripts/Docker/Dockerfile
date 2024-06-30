@@ -23,7 +23,8 @@ ARG source=local
 
 # parameterize the sha256 sum to pin version of python:3-alpine
 # Must use the same version in both build stages.
-ARG SHA256=5365725a6cd59b72a927628fdda9965103e3dc671676c89ef3ed8b8b0e22e812
+ARG SHA256=ff870bf7c2bb546419aaea570f0a1c28c8103b78743a2b8030e9e97391ddf81b
+
 
 # Set to any non-empy value to enable shell debugging for troubleshooting
 ARG VERBOSE=
@@ -37,7 +38,7 @@ ARG appdir=/usr/src/app
 ARG pythonversion=3.12
 
 #FROM python:3-alpine via SHA256 sum
-FROM python@sha256:$SHA256 as build 
+FROM python@sha256:$SHA256 AS build 
 
 # Inherit global values https://github.com/moby/moby/issues/37345
 ARG appdir
