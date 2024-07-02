@@ -341,3 +341,11 @@ with: -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 and add back the preamble that describes where to find doc for
 it. Commmit new key to mercurial.
+
+SAVE TO KEYSERVER
+=================
+
+$ gpg --keyserver pgp.mit.edu --send-keys \
+     411E354B5D1AF26125D621221F2DD0CB756A76D8
+
+update it on the keysserver so users can download it.
