@@ -190,6 +190,8 @@ div[class^=highlight-], div[class^=highlight-] * { width:
     text-decoration-color: darkgrey;
 }
 
+:is(h1,h2,h3,h4) > :link:hover { text-underline-offset: -0.1em; }
+
 a.toc-backref { color: #000000; }
 
 .header h1 { margin-left: 1em; }
@@ -479,6 +481,13 @@ div.file_insert { /* use to insert COPYING into license.txt */
 }
 
 table.valign-top tbody td { vertical-align: top; }
+
+.footnote-list {
+  border: lightgrey dotted 2px;
+  font-size: smaller;
+  margin-inline: 2em;
+  padding-inline: 1em;
+}
 
 /* consider highlighting header element that is a target */
 /*
