@@ -1,11 +1,11 @@
 Roundup, exclusive of the Zope page templates, is `MIT licensed`_.
 
-.. _MIT licensed: https://opensource.org/license/mit/
+.. _MIT licensed: https://opensource.org/license/mit
 
 Roundup Licensing
 -----------------
 
-| Copyright (c) 2009-2024 Roundup-Team (https://opensource.org/license/mit/)
+| Copyright (c) 2009-2024 Roundup-Team (https://opensource.org/license/mit)
 | Copyright (c) 2003-2009 Richard Jones  (richard@mechanicalcat.net)
 | Copyright (c) 2002 eKit.com Inc
 | Copyright (c) 2001 Bizar Software Pty Ltd
