@@ -1189,7 +1189,7 @@ SSL certificate. `Securing Redis`_ has more details.
 
 .. _Redis: https://redis.io
 .. _redis-py: https://pypi.org/project/redis/
-.. _Securing Redis: https://redis.io/docs/manual/security/
+.. _Securing Redis: https://redis.io/docs/latest/operate/oss_and_stack/management/security/
 
 
 Users and Security
