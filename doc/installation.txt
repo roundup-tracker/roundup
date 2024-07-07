@@ -1844,7 +1844,7 @@ Configuring Roundup in the Container
   Docker modifies iptables firewall rules. This allows access to the
   container from your local network. `See the official documentation
   for details
-  <https://docs.docker.com/engine/reference/commandline/run/#publish>`_.
+  <https://docs.docker.com/reference/cli/docker/container/run/#publish>`_.
   UFW rules are known to be be ignored (see:
   https://github.com/moby/moby/issues/4737).  Use ``-p
   127.0.0.1:ext_port:container_port`` in your docker run commands or
