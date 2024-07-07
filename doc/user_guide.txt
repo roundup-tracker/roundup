@@ -628,6 +628,8 @@ items. At the end of the subject line, propname=value pairs can be
 specified in square brackets, using the same conventions as for the
 roundup set shell command.
 
+.. highlight:: text
+
 For example,
 
 - setting the priority of an issue::
@@ -645,6 +647,8 @@ For example,
 - removing yourself from a nosy list and setting the priority::
 
    Subject: Re: [ issue 2 ] we're out of widgets [nosy=-richard;priority=bug]
+
+.. highlight:: python3
 
 In all cases, the message relates to issue 2. The ``Re:`` prefix is
 stripped off.
