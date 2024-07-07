@@ -178,7 +178,7 @@
                 <fieldset>
                   <legend><i class='icon-user'></i>Login form</legend>
                   <input name="__login_name" type='text' placeholder='Username' i18n:attributes="placeholder" required>
-                  <input type="password" name="__login_password" placeholder='Password' i18n:attributes="placeholder" required>
+                  <input spellcheck="false" type="password" name="__login_password" placeholder='Password' i18n:attributes="placeholder" required>
 		  <input name="@csrf" type="hidden"
 			 tal:attributes="value python:utils.anti_csrf_nonce()">
                   <input type="hidden" name="@action" value="Login"/>
@@ -446,7 +446,7 @@ See user.item.html in the classic template for examples.
     tal:attributes="id name; name name; value value; readonly not:edit_ok"
     value="heinz"/>
 <!-- password: type; no initial value -->
-    <input metal:define-macro="user_pw_input" type="password"
+    <input metal:define-macro="user_pw_input" spellcheck="false" type="password"
     tal:attributes="id name; name name; readonly not:edit_ok" value=""/>
-    <input metal:define-macro="user_confirm_input" type="password"
+    <input metal:define-macro="user_confirm_input" spellcheck="false" type="password"
     tal:attributes="id string:confirm_$name; name string:@confirm@$name; readonly not:edit_ok" value=""/>

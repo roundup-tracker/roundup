@@ -262,6 +262,41 @@ References:
 .. _issue2551282: https://issues.roundup-tracker.org/issue2551282
 .. _issue2551115: https://issues.roundup-tracker.org/issue2551115
 
+Disable spellcheck on all password fields (recommended)
+-------------------------------------------------------
+
+All tracker templates have been updated to disable spell checking on
+password input fields. This can help prevent exposing the password to
+an external server that provides spell checking for a browser. Since
+passwords should not be real words in any language, spell checking
+serves no purpose.
+
+If you have modified your template with a "show password" option you
+should disable spell check.
+
+To implement this in your deployed trackers, add::
+
+   spellcheck="false"
+
+to make your password inputs look like::
+
+   <input type="password" spellcheck="false" name=....>
+
+The changed files in the classic/devel/responsive templates are:
+
+.. code-block:: text
+
+   html/page.html
+   html/user.item.html
+
+and in the jinja2 template the following files were changed:
+
+.. code-block:: text
+
+   html/user.item.html
+   html/user.register.html
+   html/layout/navigation.html
+
 Add new classhelper to your templates (optional)
 ------------------------------------------------
 

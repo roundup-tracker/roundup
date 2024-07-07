@@ -261,6 +261,9 @@ Features:
   outstanding bugs against the current classhelper using
   current web features. (Patel Malav, Nikunj Thakkar,
   Bharath Kanama with integration by John Rouillard)
+- disable spellcheck on all password fields to try to prevent
+  browser from exposing passwords to external servers. (John
+  Rouillard)
 
 2023-07-13 2.3.0
 
