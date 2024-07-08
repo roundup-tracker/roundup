@@ -20,24 +20,23 @@ User Guide
 Your Tracker in a Nutshell
 ==========================
 
-Your tracker holds information about issues in bundles we call *items*.
-An item may be an *issue* (a bug or feature request) or a *user*. The
-issue-ness or user-ness is called the item's *class*. So, for bug
+Your tracker holds information about issues in bundles called *items*.
+An item can be an *issue* (a bug or feature request) or a *user*. The
+issue-ness or user-ness is called the item's *class*. For bug
 reports and features, the class is "issue", and for users the class is
 "user".
 
-Each item in the tracker has an ID number that identifies it along with
-its item class. To identify a particular issue or user, we combine the
-class with the number to create a unique label, so that user 1 (who,
-incidentally, is *always* the "admin" user) is referred to as "user1".
-Issue number 315 is referred to as "issue315". We call that label the
-item's :term:`designator`.
+Each item in the tracker possesses an ID number that identifies it
+alongside its item class. The combination of the class and ID number
+into a label identifies a specific issue or user. For instance, user 1
+(who, by the way, always serves as the "admin" user) gets referred to
+as "user1". Issue number 315 gets denoted as "issue315". This label
+receives the designation of the item's :term:designator.
 
-Items in the database are never deleted, they're just "retired". You
-can still refer to them by ID - hence removing an item won't break
-references to the item. It's just that the item won't appear in any
-listings.
-
+Roundup never deletes items from the database. Instead, items get
+"retired". Viewing the item using its ID is still possible - thus,
+"removing" an item does not disrupt references to it. A retired item
+will not appear in the class listing.
 
 Accessing the Tracker
 ---------------------
@@ -58,11 +57,12 @@ Issue life cycles in Roundup
 
 New issues may be submitted via the web or e-mail.
 
-By default, the issue will have the status "unread". If another message
-is received for the issue, its status will change to "chatting".
+By default, the issue will have the status "unread". When the issue
+receives another message, its status will change to "chatting".
 
-The "home" page for a tracker will generally display all issues which
-are not "resolved".
+Often, the "home" page for a tracker display all open issues (closed
+issues have a status of resolved, or done-cbb (cbb - could be
+better)).
 
 If an issue is closed, and a new message is received then it'll be
 reopened to the state of "chatting".
@@ -101,6 +101,8 @@ The full set of **priority** and **status** values are:
    "resolved"    fix has been released
    ============= =====================================
 
+The tracker you are using may have different priorities and
+statuses. See your tracker admin for local details.
 
 .. _query-tracker:
 
@@ -112,11 +114,10 @@ This means the web interface for entering a new issue, the web interface
 for searching issues, the e-mail interface and even the command-line
 administration tool.
 
-
 String and Numeric properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These fields just take a simple text value, like ``It's broken``.
+These fields just take a plain text value, like ``It's broken``.
 
 
 Boolean properties
