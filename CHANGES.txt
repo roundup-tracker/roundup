@@ -16,6 +16,21 @@ python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 
 Fixed:
 
+- CVE-2024-39124 - The classhelpers (_generic.help.html) are
+  vulnerable to an XSS attack. A specially crafted URL that used
+  that endpoint would result in running a script embedded in the
+  URL. (Found/reported by Alec Romano (4rdr), fix/tests John
+  Rouillard)
+- CVE-2024-39125 - If the Referer header is set to a script tag,
+  it will be executed when the error in the Referer header is
+  reported. (Found/reported by Alec Romano (4rdr), fix/tests John
+  Rouillard)
+- CVE-2024-39126 - PDF, XML and SVG files attached to an issue can contain
+  embedded JavaScript. This JavaScript was executed when the file was
+  accessed. PDF files are now downloaded and not displayed in the
+  browser. A content security policy is added for all download files
+  which prevents code execution in SVG files.  (Found/reported by Alec
+  Romano (4rdr), fix/tests John Rouillard)
 - issue2551282 - MySQL utf8mb4 issues and
   issue2551115 - Use utf8mb4 as a default for MySQL instead of utf8
   The default database type and collations have been set to:

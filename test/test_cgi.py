@@ -978,7 +978,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         self.assertFalse('HTTP_PROXY' in cl.env)
         self.assertFalse('HTTP_PROXY' in os.environ)
 
-    def testCsrfProtection(self):
+    def testCsrfProtectionHtml(self):
         # need to set SENDMAILDEBUG to prevent
         # downstream issue when email is sent on successful
         # issue creation. Also delete the file afterwards
@@ -1055,6 +1055,17 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 2:", out[0])
         self.assertEqual(match_at, 0)
+        del(cl.env['HTTP_REFERER'])
+        del(out[0])
+
+        # verify that HTTP_REFERER does not result in an XSS reflection
+        cl.env['HTTP_REFERER'] = '<script>alert(1)</script>'
+        cl.main()
+        match_at=out[0].find('<script>')
+        match_encoded_at=out[0].find('&lt;script&gt;')
+        print("\n\nresult of subtest 2a:", out[0])
+        self.assertEqual(match_at, -1) # must not find unencoded script tag
+        self.assertEqual(match_encoded_at, 53) # must find encoded script tag
         del(cl.env['HTTP_REFERER'])
         del(out[0])
 

@@ -263,6 +263,24 @@ class BaseTestCases(WsgiSetup):
         self.assertTrue(b'Aufgabenliste' in f.content)
         self.assertTrue(b'dauerhaft anmelden?' in f.content)
 
+    def test_classhelper_reflection(self):
+        """ simple test that verifies that the generic classhelper
+            is escaping the url params correctly.
+        """
+        f = requests.get(self.url_base() + "/keyword?@startwith=0&@template=help&properties=name&property=keyword&form=itemSynopsis</script><script>%3balert(1)%2f%2f&type=checkbox&@sort=name&@pagesize=50")
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn(b"<script>;alert(1)//;\n", f.content)
+        self.assertIn(
+            b"itemSynopsis&lt;/script&gt;&lt;script&gt;;alert(1)//;\n",
+            f.content)
+
+        f = requests.get(self.url_base() + "/keyword?@startwith=0&@template=help&properties=name&property=keyword</script><script>%3balert(1)%2f%2f&form=itemSynopsis&type=checkbox&@sort=name&@pagesize=50")
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn(b"<script>;alert(1)//;\n", f.content)
+        self.assertIn(
+            b"keyword&lt;/script&gt;&lt;script&gt;;alert(1)//';</script>\n",
+            f.content)
+
     def test_byte_Ranges(self):
         """ Roundup only handles one simple two number range, or
             a single number to start from:
@@ -1308,6 +1326,7 @@ class BaseTestCases(WsgiSetup):
         f = session.get(self.url_base()+'/file%(file)s/text1.txt'%m.groupdict())
         self.assertEqual(f.text, file_content)
         self.assertEqual(f.headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(f.headers["Content-Security-Policy"], "script-src 'none'")
         print(f.text)
 
     def test_new_file_via_rest(self):

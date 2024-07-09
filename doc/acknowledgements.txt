@@ -40,6 +40,8 @@ Norbert Schlemmer - docker support
 Bharath Kanama, Nikunj Thakkar, Patel Malav - classhelper web
 component development.
 
+Alec Romano (4rdr) - identified multiple security issues
+
 2.3
 ---
 

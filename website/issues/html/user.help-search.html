@@ -6,11 +6,10 @@
     <title>Search input for user helper</title>
     <script language="Javascript" type="text/javascript"
         tal:attributes="nonce request/client/client_nonce"
-        tal:content="structure string:<!--
+        tal:content="string:
         // this is the name of the field in the original form that we're working on
         form  = parent.opener.document.${form};
-        field  = '${field}';
-        //-->">
+        field  = '${field}';">
     </script>
     <script type="text/javascript" src="@@file/help_controls.js"
 	    tal:attributes="nonce request/client/client_nonce"></script>

@@ -122,12 +122,290 @@ This will insert the bad API login rate limiting settings.
 Also if you have ``html_version`` set to ``xhtml``, you will get
 an error.
 
-Use of xhtml html_version disabled (required)
----------------------------------------------
+.. comment: _CVE-2024-39124:
 
-If you enabled xhtml formatted templates, you will need to
-change them to html (html4) format. Also change the value of
-``html_version`` from ``xhtml`` to ``html``.
+Fix for CVE-2024-39124 in help/calendar popups (recommended)
+------------------------------------------------------------
+
+Classhelper components accessed via URL using ``@template=help``,
+``@template=calendar`` or other template frame in the classhelper
+can run JavaScript embedded in the URL. If user clicks on a
+malicious URL that:
+
+  * arrives in an email,
+  * is embedded in a note left on a ticket [#markdown-note]_,
+  * left on some other web page
+
+the JavaScript code will be executed. This vulnerability seems to
+be limited to manually crafted URL's. It has not been generated
+by using Roundup's mechanism for generating classhelper URLs.
+
+The files that need to be changed to fix this depend on the
+template used to create the tracker.  Check the
+TEMPLATE-INFO.txt file in your tracker home. The template
+name is the first component of the ``Name`` field. For
+example trackers with Names like::
+
+   Name: classic-bugtracker
+
+   Name: devel-mytracker
+
+were derived from the ``classic`` and ``devel`` templates
+respectively. If your tracker is derived from the jinja2
+template, you may not be affected as it doesn't provide
+classhelpers by default. If you aren't sure which tracker
+template was used to create your tracker home, check the
+``html/help.html`` file for the word ``Javascript``. If your
+help.html is missing the word ``Javascript``, follow the
+directions for the classic template.
+
+If you have not modified the original tracker html
+templates, you can copy replacement files from the new
+templates supplied with release 2.4.0.  If you install 2.4.0
+in a `new virtual environment
+<installation.html#standard-installation>`_, you can use the
+command ``roundup-admin templates`` to find the installation
+path of the default templates.
+
+If your template was based on the classic template, replace the 
+following files in your tracker:
+
+  * html/_generic.calendar.html
+  * html/_generic.help-list.html
+  * html/_generic.help-submit.html
+  * html/_generic.help.html
+  * html/user.help-search.html
+  * html/user.help.html
+
+If your template was based on the minimal template, replace the 
+following files in your tracker:
+
+  * html/_generic.calendar.html
+  * html/_generic.help.html
+
+If your template was based on the responsive or devel templates,
+replace the following files in your tracker:
+
+  * html/_generic.calendar.html
+  * html/_generic.help-submit.html
+  * html/help.html
+  * html/user.help-search.html
+  * html/user.help.html
+
+As an example, assume Roundup's virtual environment is
+``/tools/roundup``. The classic tracker's default template will
+be in ``/tools/roundup/share/roundup/templates/classic``.
+Copy
+``/tools/roundup/share/roundup/templates/classic/html/_generic.calendar.html``
+to ``html/_generic.calendar.html`` in your tracker's home
+directory. Repeat for every one of the files that needs to
+be replaced.
+
+If you have made local changes to your popup/classhelper
+files or have created new help templates based on the
+existing ones, don't copy the default files. Instead, follow
+the directions below to modify each file as needed for your
+template.
+
+In the examples below, your script tag may differ. For
+example it could include::
+
+  tal:attributes="nonce request/client/client_nonce"
+
+If it does, keep the differences. You want to make changes
+to remove the structure option but keep the rest of the
+valid attributes.
+
+Most files have a small script that sets a few variables
+from the settings in the URL. You should change::
+
+       <script language="Javascript" type="text/javascript"
+           tal:content="structure string:
+           // this is the name of the field in the original form that we're working on
+           form  = window.opener.document.${request/form/form/value};
+           field  = '${request/form/property/value}';">
+
+to::
+
+       <script language="Javascript" type="text/javascript"
+           tal:content="string:
+           // this is the name of the field in the original form that we're working on
+           form  = window.opener.document.${request/form/form/value};
+           field  = '${request/form/property/value}';">
+
+by removing the ``structure`` keyword from the tal:content
+block. This will html escape the settings in the URL. This
+neutralizes an attempt to execute JavaScript by manipulating
+the URL. Most of the files use code similar to this.
+
+A few files have more extensive JavaScript embedded in the same
+script tag. To handle this you should split it into two scripts
+and encode the replaced strings. For example, change::
+
+      <script language="Javascript" type="text/javascript"
+          tal:content="structure string:<!--
+  // this is the name of the field in the original form that we're working on
+  form  = parent.opener.document.${request/form/form/value};
+  callingform=form
+  field  = '${request/form/property/value}';
+  var listform = null
+  function listPresent() {
+    return document.frm_help.cb_listpresent.checked
+  [more code skipped]
+
+to::
+
+      <script language="Javascript" type="text/javascript"
+          tal:content="string:
+  // this is the name of the field in the original form that we're working on
+  form  = parent.opener.document.${request/form/form/value};
+  callingform=form
+  field  = '${request/form/property/value}';">
+    </script>
+    <script language="Javascript" type="text/javascript"
+	    tal:content="string:
+  var listform = null
+  function listPresent() {
+    return document.frm_help.cb_listpresent.checked
+  [...]
+
+modifying the original by:
+
+ 1. removing the ``structure`` keyword and the HTML comment
+    marker ``<!--``. This encodes the replaced strings.
+ 2. adding ``">`` at the end of the line that sets ``field`` closes
+    the script tag.
+ 3. adding::
+
+      </script>
+            <script language="Javascript" type="text/javascript"
+	    tal:content="string:
+
+    after the line used in step 2, to ends the first script and
+    starts a new script.
+
+Just removing the ``structure`` directive is enough to fix the
+bug. Splitting the large script into two parts:
+
+ 1. one that has replaced strings with values taken from the URL
+ 2. one that has no replaced strings
+
+allows use of ``structure`` on the script with no replaced
+strings should it be required for your tracker.
+
+.. [#markdown-note] If you are using markdown formatting for your tracker's notes,
+   the user will see the markdown label rather than the long
+   (suspicious) URL. You may want to add something like::
+
+     a[href*=\@template]::after {
+         content: ' [' attr(href) ']';
+     }
+
+   to your css. This displays the URL inside square brackets if
+   the href has ``@template`` in it. It is placed after the link
+   label.
+
+Fix CVE in earlier versions of Roundup (recommended)
+----------------------------------------------------
+
+If you are upgrading to version 2.4.0, you can skip this
+section. These fixes are already present in 2.4.0.
+
+This section is for people who can not upgrade yet, and want
+to fix the issues.
+
+.. comment: _CVE-2024-39125:
+
+Referer value not escaped CVE-2024-39125
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Malicious JavaScript inserted into a page can change the value of
+the Referer header to include a script. If a link on that page
+points to a Roundup tracker, that script will be executed. The
+technique to change the header will result in a change of the URL
+in the browser's address bar, but this is easily missed.
+
+Fix this by editing ``cgi/client.py``, and change::
+
+  except (UsageError, Unauthorised) as msg:
+     csrf_ok = False
+     self.form_wins = True
+     self._error_message = msg.args
+
+to::
+
+  except (UsageError, Unauthorised) as msg:
+      csrf_ok = False
+      self.form_wins = True
+      self.add_error_message(' '.join(msg.args))
+
+This escapes the Referer value an prevents it from being
+executed.
+
+.. comment: _CVE-2024-39126:
+
+Stop JavaScript execution from attached files CVE-2024-39126
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If an SVG, XML or PDF file that includes malicious JavaScript is
+attached to an issue, downloading the file will cause the
+JavaScript to run.
+
+In ``cgi/client.py`` add the Content-Security-Policy line
+after the existing ``nosniff`` line so it looks like::
+
+  # exception handlers.
+  self.determine_language()
+  self.db.i18n = self.translator
+  self.setHeader("X-Content-Type-Options", "nosniff")
+  self.setHeader("Content-Security-Policy", "script-src 'none'")
+  self.serve_file(designator)
+
+(the example is reindented for display).
+
+This should prevent SVG and XML files with embedded scripts
+from running.
+
+If your version of Roundup is old enough that the ``nosniff``
+line is missing, search for ``serve_file(designator)`` and add
+both setHeader lines.
+
+.. warning::
+
+  If your users use older browsers that don't support Content
+  Security Policies (e.g. Internet Explorer), you must
+  remove ``text/xml`` and ``image/svg`` from
+  ``mime_type_allowlist`` as explained below for
+  ``application/pdf``.
+
+PDF files can also embed JavaScript. Many browsers include
+PDF viewers that may not support disabling scripting.  The
+safest way to handle this is to force a download of the PDF
+file and use a PDF viewer with scripting disabled. To force
+downloading, look in ``cgi/client.py`` for
+``mime_type_allowlist`` and remove the line for
+``application/pdf``.
+
+Version 2.4.0 allows you to `modify the mime_type_allowlist
+using interfaces.py
+<admin_guide.html#controlling-browser-handling-of-attached-files>`_.
+This will allow you to enable in-browser reading of PDF
+files when you upgrade to 2.4.0 if you wish.
+
+Note that a `Content Security Policy as documented in the admin
+guide
+<admin_guide.html#adding-a-web-content-security-policy-csp>`_ is
+not applied it to a direct download. This requires adding an
+explicit CSP header as above.
+
+.. comment: end of CVE include marker
+
+XHTML no longer supported (required)
+------------------------------------
+
+If your ``config.ini`` sets ``html_version`` to ``xhtml``,
+you need to change it to ``html``. Then you need to change
+your tracker's templates to html from xhtml.
 
 Note that the default Roundup templates use html4 so it is
 unlikely that your templates are xhtml based. See

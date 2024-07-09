@@ -15,11 +15,10 @@ field request/form/property/value">
       <script language="Javascript" type="text/javascript"
 	      tal:attributes="nonce request/client/client_nonce"
 	      tal:condition=false
-          tal:content="structure string:<!--
+          tal:content="string:
           // this is the name of the field in the original form that we're working on
           form  = window.opener.document.${form};
-          field  = '${field}';
-          //-->">
+          field  = '${field}';">
       </script>
       <script src="@@file/help_controls.js"
 	      tal:attributes="nonce request/client/client_nonce"

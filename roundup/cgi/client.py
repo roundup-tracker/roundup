@@ -835,7 +835,7 @@ class Client:
                 except (UsageError, Unauthorised) as msg:
                     csrf_ok = False
                     self.form_wins = True
-                    self._error_message = msg.args
+                    self.add_error_message(' '.join(msg.args))
 
                 # If csrf checks pass. Run actions etc.
                 # handle_action() may handle a form submit action.
@@ -873,7 +873,13 @@ class Client:
                 # exception handlers.
                 self.determine_language()
                 self.db.i18n = self.translator
+                # prevent application/octet-stream mime type in header
+                # from being changed to some other type by the browser
+                # when mime sniffing.
                 self.setHeader("X-Content-Type-Options", "nosniff")
+                # prevent script execution in downloaded SVG, XML files
+                # (or HTML files if enabled).
+                self.setHeader("Content-Security-Policy", "script-src 'none'")
                 self.serve_file(designator)
             except SendStaticFile as file:
                 self.serve_static_file(str(file))

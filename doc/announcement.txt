@@ -4,7 +4,7 @@ release, so make sure to read `docs/upgrading.txt
 <https://www.roundup-tracker.org/docs/upgrading.html>`_ to
 bring your tracker up to date.
 
-The 67 changes, as usual, include some new features and many
+The 79 changes, as usual, include some new features and many
 bug fixes.
 
 Note that you should run ``roundup-admin ... migrate`` to
@@ -22,11 +22,15 @@ You can install it with::
 
 then unpack and test/install from the tarball.
 
-Beta 2 includes a small change to the classic tracker's
-classhelper.js to fix a bug found after beta 1 was released.
-
 Among the notable improvements in 2.4.0 from the 2.3.0
 release are:
+
+* three CVE's have been fixed. One requires changes to your
+  tracker's home directory. The other two are fixed by
+  installing 2.4.0.  See
+  https://www.roundup-tracker.org/docs/security.html for
+  details and instructions on how to fix these in 2.4.0 and
+  earlier releases.
 
 * new classhelper component thanks to a team of students
   from CS682 at U-Mass Boston. This fixes many issues with
@@ -87,7 +91,7 @@ release are:
 * sqlite version 1 and StructuredText support removed.
 
 The file CHANGES.txt has a detailed list of feature
-additions and bug fixes (67) for each release. The most
+additions and bug fixes for each release. The most
 recent changes from there are at the end of this
 announcement. Also see the information in doc/upgrading.txt.
 

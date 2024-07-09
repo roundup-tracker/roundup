@@ -6,7 +6,7 @@
                   field request/form/property/value">
   <tal:block metal:fill-slot="more-javascript">
      <script language="javascript" type="text/javascript"
-     tal:content="structure string:form  = parent.opener.document.${form};
+     tal:content="string:form  = parent.opener.document.${form};
       callingform=form;
       field  = '${field}';"></script>
      <script language="Javascript" type="text/javascript">
