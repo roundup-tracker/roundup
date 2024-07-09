@@ -2850,7 +2850,7 @@ class TemplateHtmlRendering(unittest.TestCase, testFtsQuery):
         result = self.client.renderContext()
         print(result)
         # sha1sum of classic tracker user.item.template must be found
-        sha1sum = '<!-- SHA: 3b7ce7cbf24f77733c9b9f64a569d6429390cc3f -->'
+        sha1sum = '<!-- SHA: 952568414163cd12b2e89e91e59ef336da64fbbe -->'
         self.assertNotEqual(-1, result.index(sha1sum))
 
 
