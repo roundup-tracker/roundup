@@ -5,9 +5,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Roundup 2.4.0b1\n"
+"Project-Id-Version: Roundup 2.4.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2024-05-26 17:44-0400\n"
+"POT-Creation-Date: 2024-07-09 15:12-0400\n"
 "PO-Revision-Date: 2016-04-11 09:13+0200\n"
 "Last-Translator: Tobias Herp <tobias.herp@gmx.de>\n"
 "Language-Team: German Translators <roundup-devel@lists.sourceforge.net>\n"
@@ -2000,13 +2000,13 @@ msgstr "Ungültiger Benutzername"
 msgid "You do not have permission to login"
 msgstr "Sie sind nicht berechtigt, sich anzumelden"
 
-#: ../roundup/cgi/actions.py:1577 ../roundup/cgi/actions.py:1756
-#: ../roundup/cgi/actions.py:1577:1756
+#: ../roundup/cgi/actions.py:1577 ../roundup/cgi/actions.py:1761
+#: ../roundup/cgi/actions.py:1577:1761
 #, python-format
 msgid "Column \"%(column)s\" not found in %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1827
+#: ../roundup/cgi/actions.py:1832
 #, python-format
 msgid "You do not have permission to view %(class)s"
 msgstr "Sie sind nicht berechtigt, Einträge der Klasse \"%(class)s\" zu lesen"
@@ -2113,148 +2113,148 @@ msgstr ""
 "Admistratoren wurden benachrichtigt.</p>\n"
 "</body></html>"
 
-#: ../roundup/cgi/client.py:676 ../roundup/cgi/client.py:1590
-#: ../roundup/cgi/client.py:676:1590
+#: ../roundup/cgi/client.py:702 ../roundup/cgi/client.py:1622
+#: ../roundup/cgi/client.py:702:1622
 msgid "Required Header Missing"
 msgstr ""
 
-#: ../roundup/cgi/client.py:678
+#: ../roundup/cgi/client.py:704
 #, fuzzy
 msgid "Client is not allowed to use Rest Interface."
 msgstr "Gast-Benutzer sind nicht berechtigt, das Web-Interface zu benutzen."
 
-#: ../roundup/cgi/client.py:924
+#: ../roundup/cgi/client.py:956
 msgid "Form Error: "
 msgstr "Formular-Fehler: "
 
-#: ../roundup/cgi/client.py:1017
+#: ../roundup/cgi/client.py:1049
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Zeichensatz nicht erkannt: %r"
 
-#: ../roundup/cgi/client.py:1286 ../roundup/cgi/client.py:2263
-#: ../roundup/cgi/client.py:1286:2263
+#: ../roundup/cgi/client.py:1318 ../roundup/cgi/client.py:2281
+#: ../roundup/cgi/client.py:1318:2281
 msgid "broken form: multiple @action values submitted"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1303
+#: ../roundup/cgi/client.py:1335
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr "Gast-Benutzer sind nicht berechtigt, das Web-Interface zu benutzen."
 
-#: ../roundup/cgi/client.py:1451
+#: ../roundup/cgi/client.py:1483
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1455
+#: ../roundup/cgi/client.py:1487
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1484
+#: ../roundup/cgi/client.py:1516
 #, python-format
 msgid "csrf header %(header)s required but missing for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1488
+#: ../roundup/cgi/client.py:1520
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1496
+#: ../roundup/cgi/client.py:1528
 #, python-format
 msgid "csrf Referer header check failed for user%(userid)s. Value=%(referer)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1501
+#: ../roundup/cgi/client.py:1533
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
 msgstr "Ungültiger Benutzername"
 
-#: ../roundup/cgi/client.py:1516
+#: ../roundup/cgi/client.py:1548
 #, python-format
 msgid "csrf Origin header check failed for user%(userid)s. Value=%(origin)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1521
+#: ../roundup/cgi/client.py:1553
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Ungültiger Benutzername"
 
-#: ../roundup/cgi/client.py:1535
+#: ../roundup/cgi/client.py:1567
 #, python-format
 msgid ""
 "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1541
+#: ../roundup/cgi/client.py:1573
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1560
+#: ../roundup/cgi/client.py:1592
 #, python-format
 msgid "csrf HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1565
+#: ../roundup/cgi/client.py:1597
 #, fuzzy, python-format
 msgid "Invalid HOST %s"
 msgstr "Ungültige Anforderung"
 
-#: ../roundup/cgi/client.py:1573
+#: ../roundup/cgi/client.py:1605
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1574
+#: ../roundup/cgi/client.py:1606
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1587
+#: ../roundup/cgi/client.py:1619
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1628
+#: ../roundup/cgi/client.py:1660
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1630 ../roundup/cgi/client.py:1657
-#: ../roundup/cgi/client.py:1674 ../roundup/cgi/client.py:1630:1657:1674
+#: ../roundup/cgi/client.py:1662 ../roundup/cgi/client.py:1689
+#: ../roundup/cgi/client.py:1706 ../roundup/cgi/client.py:1662:1689:1706
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1634
+#: ../roundup/cgi/client.py:1666
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1646
+#: ../roundup/cgi/client.py:1678
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
 "session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1664
+#: ../roundup/cgi/client.py:1696
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %(curr_sess)s != stored session "
 "%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1856
+#: ../roundup/cgi/client.py:1888
 msgid "You are not allowed to view this file."
 msgstr "Sie sind nicht berechtigt, diese Seite anzuzeigen."
 
-#: ../roundup/cgi/client.py:2141
+#: ../roundup/cgi/client.py:2159
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sBenötigte Zeit: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2145
+#: ../roundup/cgi/client.py:2163
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -2263,7 +2263,7 @@ msgstr ""
 "%(starttag)sCache benutzt: %(cache_hits)d, verfehlt: %(cache_misses)d. "
 "Einträge laden: %(get_items)fs; filtern: %(filtering)fs.%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2682
+#: ../roundup/cgi/client.py:2703
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -3212,7 +3212,29 @@ msgstr ""
 msgid "WARNING: generating temporary SSL certificate"
 msgstr "WARNUNG: erzeuge temporäres SSL-Zertifikat"
 
-#: ../roundup/scripts/roundup_server.py:331
+#: ../roundup/scripts/roundup_server.py:143
+#, python-format
+msgid "Unable to find/use key from file: %(pemfile)s"
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:144
+msgid ""
+"Does it have a private key surrounded by '-----BEGIN PRIVATE KEY-----' and\n"
+"  '-----END PRIVATE KEY-----' markers?"
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:149
+#, python-format
+msgid "Unable to find/use certificate from file: %(pemfile)s"
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:150
+msgid ""
+"Does it have a certificate surrounded by '-----BEGIN CERTIFICATE-----' and\n"
+"  '-----END CERTIFICATE-----' markers?"
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:344
 msgid ""
 "<html><head><title>Roundup trackers index</title></head>\n"
 "<body><h1>Roundup trackers index</h1><ol>\n"
@@ -3220,62 +3242,62 @@ msgstr ""
 "<html><head><title>Roundup Tracker-Liste</title></head>\n"
 "<body><h1>Roundup Tracker-Liste</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:552
+#: ../roundup/scripts/roundup_server.py:570
 #, fuzzy, python-format
 msgid "Error: %(type)s: %(value)s"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/scripts/roundup_server.py:564
+#: ../roundup/scripts/roundup_server.py:582
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr ""
 "WARNUNG: die Option \"-g\" wird ignoriert, da Sie nicht Administrator sind"
 
-#: ../roundup/scripts/roundup_server.py:570
+#: ../roundup/scripts/roundup_server.py:588
 msgid "Can't change groups - no grp module"
 msgstr "Die Gruppe kann nicht gewechselt werden - das Modul grp fehlt"
 
-#: ../roundup/scripts/roundup_server.py:579
+#: ../roundup/scripts/roundup_server.py:597
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr "Die Gruppe %(group)s existiert nicht"
 
-#: ../roundup/scripts/roundup_server.py:591
+#: ../roundup/scripts/roundup_server.py:609
 msgid "Can't run as root!"
 msgstr ""
 "Dieser Prozess kann nicht unter dem Administrator-Konto (\"root\") laufen!"
 
-#: ../roundup/scripts/roundup_server.py:594
+#: ../roundup/scripts/roundup_server.py:612
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr ""
 "WARNUNG: die Option \"-u\" wird ignoriert, da Sie nicht Administrator sind"
 
-#: ../roundup/scripts/roundup_server.py:600
+#: ../roundup/scripts/roundup_server.py:618
 msgid "Can't change users - no pwd module"
 msgstr "Der Benutzer kann nicht gewechselt werden - das Modul pwd fehlt"
 
-#: ../roundup/scripts/roundup_server.py:609
+#: ../roundup/scripts/roundup_server.py:627
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr "Der Benutzer %(user)s existiert nicht"
 
-#: ../roundup/scripts/roundup_server.py:810
+#: ../roundup/scripts/roundup_server.py:833
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr ""
 "Der Multiprozessmodus \"%s\" ist nicht verfügbar, Einprozessmodus aktiviert"
 
-#: ../roundup/scripts/roundup_server.py:838
+#: ../roundup/scripts/roundup_server.py:861
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Start des Servers auf Port %s schlug fehl. Port bereits verwendet."
 
-#: ../roundup/scripts/roundup_server.py:842
+#: ../roundup/scripts/roundup_server.py:865
 #, fuzzy, python-format
 msgid ""
 "Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
 msgstr "Start des Servers auf Port %s schlug fehl. Port bereits verwendet."
 
-#: ../roundup/scripts/roundup_server.py:921
+#: ../roundup/scripts/roundup_server.py:944
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -3291,7 +3313,7 @@ msgstr ""
 "               Zudem müssen Sie die Logfile-Option aktivieren.\n"
 "               \"roundup-server -c help\" zeigt eine weitere Hilfe zum Thema."
 
-#: ../roundup/scripts/roundup_server.py:928
+#: ../roundup/scripts/roundup_server.py:951
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
@@ -3305,7 +3327,7 @@ msgstr ""
 "               die Prozess-ID in die Datei PIDDatei.\n"
 "               Die Option -l muss dann auch angegeben werden."
 
-#: ../roundup/scripts/roundup_server.py:935
+#: ../roundup/scripts/roundup_server.py:958
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -3427,21 +3449,21 @@ msgstr ""
 "   URLs Probleme bereiten könnten. Am besten verwenden Sie nur Buchstaben, \n"
 "   Zahlen und \"-_\".\n"
 
-#: ../roundup/scripts/roundup_server.py:1112
+#: ../roundup/scripts/roundup_server.py:1135
 msgid "Instances must be name=home"
 msgstr "Instanzen müssen als Tracker-Name=Tracker-Verzeichnis angegeben werden"
 
-#: ../roundup/scripts/roundup_server.py:1126
+#: ../roundup/scripts/roundup_server.py:1149
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Konfiguration in der Datei %s gespeichert"
 
-#: ../roundup/scripts/roundup_server.py:1144
+#: ../roundup/scripts/roundup_server.py:1167
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Auf diesem Betriebssystem kann der Server nicht als Hintergrundprozess laufen"
 
-#: ../roundup/scripts/roundup_server.py:1164
+#: ../roundup/scripts/roundup_server.py:1187
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Der Roundup-Server wurde unter %(HOST)s:%(PORT)s gestartet"
@@ -3484,7 +3506,7 @@ msgstr ""
 msgid "Please specify your search parameters!"
 msgstr "Bitte geben Sie Ihre Suchparameter an!"
 
-#: ../share/roundup/templates/classic/html/_generic.help-list.html:20
+#: ../share/roundup/templates/classic/html/_generic.help-list.html:19
 #: ../share/roundup/templates/classic/html/_generic.index.html:14
 #: ../share/roundup/templates/classic/html/_generic.item.html:12
 #: ../share/roundup/templates/classic/html/file.item.html:9
@@ -3535,7 +3557,7 @@ msgstr "Bitte geben Sie Ihre Suchparameter an!"
 msgid "You are not allowed to view this page."
 msgstr "Sie sind nicht berechtigt, diese Seite anzuzeigen."
 
-#: ../share/roundup/templates/classic/html/_generic.help-list.html:34
+#: ../share/roundup/templates/classic/html/_generic.help-list.html:33
 #: ../share/roundup/templates/devel/html/_generic.help-list.html:12
 #: ../share/roundup/templates/responsive/html/_generic.help-list.html:12
 msgid "1..25 out of 50"
@@ -3551,22 +3573,22 @@ msgstr ""
 "Die generische Vorlage ${template} bzw. die Version für die Klasse "
 "${classname} ist noch nicht implementiert"
 
-#: ../share/roundup/templates/classic/html/_generic.help-submit.html:57
+#: ../share/roundup/templates/classic/html/_generic.help-submit.html:59
 #: ../share/roundup/templates/classic/html/_generic.help.html:31
-#: ../share/roundup/templates/devel/html/_generic.help-submit.html:57
+#: ../share/roundup/templates/devel/html/_generic.help-submit.html:60
 #: ../share/roundup/templates/devel/html/user.help.html:103
 #: ../share/roundup/templates/minimal/html/_generic.help.html:31
-#: ../share/roundup/templates/responsive/html/_generic.help-submit.html:57
+#: ../share/roundup/templates/responsive/html/_generic.help-submit.html:60
 #: ../share/roundup/templates/responsive/html/user.help.html:103
 msgid " Cancel "
 msgstr " Abbrechen "
 
-#: ../share/roundup/templates/classic/html/_generic.help-submit.html:63
+#: ../share/roundup/templates/classic/html/_generic.help-submit.html:65
 #: ../share/roundup/templates/classic/html/_generic.help.html:34
-#: ../share/roundup/templates/devel/html/_generic.help-submit.html:63
+#: ../share/roundup/templates/devel/html/_generic.help-submit.html:66
 #: ../share/roundup/templates/devel/html/user.help.html:108
 #: ../share/roundup/templates/minimal/html/_generic.help.html:34
-#: ../share/roundup/templates/responsive/html/_generic.help-submit.html:63
+#: ../share/roundup/templates/responsive/html/_generic.help-submit.html:66
 #: ../share/roundup/templates/responsive/html/user.help.html:108
 msgid " Apply "
 msgstr " Anwenden "
@@ -3583,13 +3605,13 @@ msgstr "Hilfe zu \"${property}\" - ${tracker}"
 #: ../share/roundup/templates/classic/html/user.index.html:82
 #: ../share/roundup/templates/devel/html/_generic.help.html:42
 #: ../share/roundup/templates/devel/html/bug.index.html:94
-#: ../share/roundup/templates/devel/html/help.html:51
+#: ../share/roundup/templates/devel/html/help.html:50
 #: ../share/roundup/templates/devel/html/milestone.index.html:59
 #: ../share/roundup/templates/devel/html/task.index.html:85
 #: ../share/roundup/templates/devel/html/user.index.html:76
 #: ../share/roundup/templates/minimal/html/_generic.help.html:41
 #: ../share/roundup/templates/responsive/html/_generic.help.html:42
-#: ../share/roundup/templates/responsive/html/help.html:59
+#: ../share/roundup/templates/responsive/html/help.html:58
 #: ../share/roundup/templates/responsive/html/user.index.html:77
 msgid "&lt;&lt; previous"
 msgstr "&lt;&lt; zurück"
@@ -3600,13 +3622,13 @@ msgstr "&lt;&lt; zurück"
 #: ../share/roundup/templates/classic/html/user.index.html:90
 #: ../share/roundup/templates/devel/html/_generic.help.html:54
 #: ../share/roundup/templates/devel/html/bug.index.html:102
-#: ../share/roundup/templates/devel/html/help.html:58
+#: ../share/roundup/templates/devel/html/help.html:57
 #: ../share/roundup/templates/devel/html/milestone.index.html:67
 #: ../share/roundup/templates/devel/html/task.index.html:93
 #: ../share/roundup/templates/devel/html/user.index.html:84
 #: ../share/roundup/templates/minimal/html/_generic.help.html:53
 #: ../share/roundup/templates/responsive/html/_generic.help.html:54
-#: ../share/roundup/templates/responsive/html/help.html:66
+#: ../share/roundup/templates/responsive/html/help.html:65
 #: ../share/roundup/templates/responsive/html/user.index.html:85
 msgid "${start}..${end} out of ${total}"
 msgstr "${start}..${end} von ${total}"
@@ -3617,13 +3639,13 @@ msgstr "${start}..${end} von ${total}"
 #: ../share/roundup/templates/classic/html/user.index.html:93
 #: ../share/roundup/templates/devel/html/_generic.help.html:58
 #: ../share/roundup/templates/devel/html/bug.index.html:105
-#: ../share/roundup/templates/devel/html/help.html:62
+#: ../share/roundup/templates/devel/html/help.html:61
 #: ../share/roundup/templates/devel/html/milestone.index.html:70
 #: ../share/roundup/templates/devel/html/task.index.html:96
 #: ../share/roundup/templates/devel/html/user.index.html:87
 #: ../share/roundup/templates/minimal/html/_generic.help.html:57
 #: ../share/roundup/templates/responsive/html/_generic.help.html:58
-#: ../share/roundup/templates/responsive/html/help.html:70
+#: ../share/roundup/templates/responsive/html/help.html:69
 #: ../share/roundup/templates/responsive/html/user.index.html:88
 msgid "next &gt;&gt;"
 msgstr "weiter &gt;&gt;"
@@ -4445,13 +4467,13 @@ msgstr "Speichern unter**:"
 #: ../share/roundup/templates/classic/html/issue.search.html:218
 #: ../share/roundup/templates/classic/html/page.html:42
 #: ../share/roundup/templates/classic/html/page.html:94
-#: ../share/roundup/templates/classic/html/user.help-search.html:71
+#: ../share/roundup/templates/classic/html/user.help-search.html:70
 #: ../share/roundup/templates/classic/html/user.index.html:38
 #: ../share/roundup/templates/devel/html/bug.search.html:297
 #: ../share/roundup/templates/devel/html/page.html:79
 #: ../share/roundup/templates/devel/html/page.html:126
 #: ../share/roundup/templates/devel/html/task.search.html:297
-#: ../share/roundup/templates/devel/html/user.help-search.html:71
+#: ../share/roundup/templates/devel/html/user.help-search.html:70
 #: ../share/roundup/templates/devel/html/user.help.html:77
 #: ../share/roundup/templates/devel/html/user.index.html:37
 #: ../share/roundup/templates/minimal/html/page.html:40
@@ -4460,7 +4482,7 @@ msgstr "Speichern unter**:"
 #: ../share/roundup/templates/responsive/html/page.html:95
 #: ../share/roundup/templates/responsive/html/page.html:143
 #: ../share/roundup/templates/responsive/html/task.search.html:258
-#: ../share/roundup/templates/responsive/html/user.help-search.html:71
+#: ../share/roundup/templates/responsive/html/user.help-search.html:70
 #: ../share/roundup/templates/responsive/html/user.help.html:77
 #: ../share/roundup/templates/responsive/html/user.index.html:39
 msgid "Search"
@@ -4963,15 +4985,15 @@ msgstr ""
 "Danach wird eine Bestätigungs-E-Mail verschickt. Bitte folgen Sie den "
 "Anweisungen darin, um ihr Passwort zurückzusetzen."
 
-#: ../share/roundup/templates/classic/html/user.help-search.html:75
-#: ../share/roundup/templates/devel/html/user.help-search.html:75
+#: ../share/roundup/templates/classic/html/user.help-search.html:74
+#: ../share/roundup/templates/devel/html/user.help-search.html:74
 #: ../share/roundup/templates/devel/html/user.help.html:81
-#: ../share/roundup/templates/responsive/html/user.help-search.html:75
+#: ../share/roundup/templates/responsive/html/user.help-search.html:74
 #: ../share/roundup/templates/responsive/html/user.help.html:81
 msgid "Pagesize"
 msgstr "Einträge/Seite"
 
-#: ../share/roundup/templates/classic/html/user.help.html:43
+#: ../share/roundup/templates/classic/html/user.help.html:42
 msgid ""
 "Your browser is not capable of using frames; you should be redirected "
 "immediately, or visit ${link}."
