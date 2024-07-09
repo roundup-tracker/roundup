@@ -26,8 +26,12 @@ SYSSAVE = sys.path
 DOCROOT = os.path.abspath(os.path.dirname(__file__) + "/..")
 sys.path = [os.path.dirname(DOCROOT)]
 try:
-    from roundup import __version__ as VERSION
-    SHORTVER = '.'.join(VERSION.split('.', 2)[:2])
+    if "RELEASE_VERSION" in os.environ:
+        SHORTVER = '.'.join(os.environ['RELEASE_VERSION'].split('.', 2)[:2])
+        VERSION = os.environ['RELEASE_VERSION']
+    else:
+        from roundup import __version__ as VERSION
+        SHORTVER = '.'.join(VERSION.split('.', 2)[:2])
 except ImportError:
     VERSION = SHORTVER = '(unknown version)'
 finally:

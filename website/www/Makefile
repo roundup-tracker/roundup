@@ -11,9 +11,11 @@ help:
 	@echo "      production website"
 	@echo "  sourceforge_dev_sync sync html directory to sourceforce"
 	@echo "      /dev_docs subdirectory"
+	@echo "  sourceforge_home_sync sync html directory to"
+        @echo "      sourceforge:~/roundup_docs"
 	@echo "  clean remove all produced files"
 clean:
-	-rm -rf $(TMP) $(HTML) docs COPYING.txt
+	-rm -rf $(TMP) $(HTML) docs COPYING.txt templates.zip
 
 docs:
 	ln -s ../../doc ./docs
@@ -22,7 +24,7 @@ docs:
 # after upgrade to sphinx 1.8.5, search.html is missing load of searchtools.
 # fix that in postprocess
 # also sed index.html to properly format meta og:... entries.
-html: docs
+html: docs templates.zip
 	rm -rf html
 	mkdir -p $(TMP)/doctrees $(HTML)
 	sphinx-build -n -W -b html -d $(TMP)/doctrees . $(HTML)
@@ -39,6 +41,8 @@ html: docs
 	@echo; \
           l=$$(find html -name '*.orig' -o -name '*~' | tee /dev/tty | wc -l);\
          if [ $$l -ne 0 ]; then echo "Garbage files found" && false; fi
+	if [ -e templates.zip ]; then cp templates.zip \
+                                   html/CVE-2024-39124-templates.zip; fi
 
 linkcheck:
 	mkdir -p $(TMP)/linkcheck $(TMP)/doctrees
@@ -46,6 +50,11 @@ linkcheck:
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in .build/linkcheck/output.txt."
+
+templates.zip:
+	rm -f templates.zip
+	(cd ../../share/roundup; hg status -A templates | \
+           sed -ne '/^[AMC]/s/^..//p' | sort | zip -@ - ) > templates.zip
 
 sourceforge_dev_sync:
         # --no-times makes _images/* and other files sync over every time
