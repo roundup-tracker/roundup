@@ -122,7 +122,7 @@ This will insert the bad API login rate limiting settings.
 Also if you have ``html_version`` set to ``xhtml``, you will get
 an error.
 
-.. comment: _CVE-2024-39124:
+.. _CVE-2024-39124:
 
 Fix for CVE-2024-39124 in help/calendar popups (recommended)
 ------------------------------------------------------------
@@ -314,7 +314,7 @@ section. These fixes are already present in 2.4.0.
 This section is for people who can not upgrade yet, and want
 to fix the issues.
 
-.. comment: _CVE-2024-39125:
+.. _CVE-2024-39125:
 
 Referer value not escaped CVE-2024-39125
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -342,7 +342,7 @@ to::
 This escapes the Referer value an prevents it from being
 executed.
 
-.. comment: _CVE-2024-39126:
+.. _CVE-2024-39126:
 
 Stop JavaScript execution from attached files CVE-2024-39126
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

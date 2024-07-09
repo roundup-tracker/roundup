@@ -2,21 +2,26 @@
    This file is a temporary way to post CVE notifications before
    a release.
 
-   Document the CVE fix info in upgrading.txt. Publishing
-   upgrading.txt would push info on the next release not the current
-   release.
+   Document the CVE fix info in upgrading.txt. We extract the sections
+   from upgrading.txt that deal with the CVE into a separate CVE.html.
+   An updated docs/security.html and docs/CVE.html provide the details
+   on a between release CVE announcment.
 
-   So we comment out a reference anchor in upgrading.txt and use that
-   comment to extract the section from upgrading.txt into CVE.txt.
-   The extracted section gets the same anchor that is in upgrading.txt,
-   but is is not commented out.
+   Publishing upgrading.txt would include info on the to be released
+   roundup software and wouldn't match the rest of the release docs.
 
-   Then we add a summary to the list of CVE's in security.txt using a
-   :ref: to the anchor. If CVE.txt is part of the build and
-   upgrading.txt has a commented out anchor, security.txt entries link
-   to CVE.html in the generated documentation.
+   To extract the info from upgrading.txt to use in CVE.html, add a
+   commented out a reference anchor in upgrading.txt. Then in CVE.txt
+   we use an include directive with start-after and end-before options
+   to exract the sections from upgrading.txt into CVE.html.
 
-   In upgrading.txt add a
+   The extracted section in CVE.txt gets the same anchor that is in
+   upgrading.txt, but is is not commented out. This allows us to swap
+   out CVE.txt and uncomment the reference in upgrading.txt. Then
+   rerunning sphinx-build will make security.html point to the sections
+   in upgrading.html.
+
+   For example, in upgrading.txt add a
 
    .. comment: _CVE-2024-39124:
 
@@ -44,14 +49,17 @@
       :end-before: .. comment: end of CVE
 
    After building the docs, install docs/security.html and
-   docs/CVE.html on the web site. Use the security.html URL
-   on the web site to update the CVE report.
+   docs/CVE.html on the web site. Reference:
+
+       https://www.roundup-tracker.org/docs/security.html
+   
+   in the CVE announcement from Mitre.
 
    When the release is ready, replace 'comment: _CVE' with '_CVE' in
    upgrading.txt. This makes the anchors in upgrading.txt live.
 
-    Then disable CVE.txt by removing CVE.txt from contents.txt in the
-   toctree hidden section. Also add CVE.txt to exclude_patterns in
+   Then disable CVE.txt by removing CVE.txt from contents.txt in the
+   toctree hidden section. Also add docs/CVE.txt to exclude_patterns in
    conf.py.
 
    No change needs to happen to security.txt as it's using a :ref: and

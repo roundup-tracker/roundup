@@ -24,7 +24,7 @@ docs:
 # after upgrade to sphinx 1.8.5, search.html is missing load of searchtools.
 # fix that in postprocess
 # also sed index.html to properly format meta og:... entries.
-html: docs templates.zip
+html: docs
 	rm -rf html
 	mkdir -p $(TMP)/doctrees $(HTML)
 	sphinx-build -n -W -b html -d $(TMP)/doctrees . $(HTML)

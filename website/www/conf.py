@@ -101,6 +101,7 @@ exclude_patterns = ['docs/index.txt',
                     'robots.txt',
                     'docs/tracker_config.txt',
                     'COPYING.txt',
+                    'docs/CVE.txt',
                     '_tmp']
 
 # The reST default role (used for this markup: `text`) to use for all documents.

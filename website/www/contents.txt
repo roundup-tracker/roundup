@@ -23,4 +23,3 @@ Contents:
    :hidden:
 
    docs/announcement
-   docs/CVE
