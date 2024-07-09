@@ -32,10 +32,10 @@ Roundup Issue Tracker
 
      <!-- supported python versions: <img src="https://shields.io/pypi/pyversions/roundup"> -->
      <!-- license: <img src="https://img.shields.io/pypi/l/roundup"> -->
-     <!-- changes since 2.2.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.2.0/master?sort=semver"> -->
+     <!-- changes since 2.4.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.4.0/master?sort=semver"> -->
      <!-- status beta, stable, mature.... <img src="https://img.shields.io/pypi/status/roundup"> -->
      <!-- mozilla observatory <img src="https://img.shields.io/mozilla-observatory/grade/www.roundup-tracker.org?publish"> -->
-     <!-- commits from last named release: <img alt="GitHub commits difference between two branches/tags/commits" src="https://img.shields.io/github/commits-difference/roundup-tracker/roundup?base=2.2.0&head=master">a -->
+     <!-- commits from last named release: <img alt="GitHub commits difference between two branches/tags/commits" src="https://img.shields.io/github/commits-difference/roundup-tracker/roundup?base=2.4.0&head=master">a -->
      <!-- newest tag by date - use for alpha/beta release notifications?
      <img alt="GitHub tag (latest by date)" src="https://img.shields.io/github/v/tag/roundup-tracker/roundup"> -->
 

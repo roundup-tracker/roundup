@@ -28,12 +28,12 @@ Release Manager: John Rouillard
 
 Developer activity by changesets::
 
-  rouilj@ieee.org                               465  **************************
+  rouilj@ieee.org                               532 **************************
   rsc@runtux.com                                  2
   Marcus Preisch                                  1
   Norbert Schlemmer "Noschvie on github.com"      1
 
-Other contributers
+Other contributers:
 
 Norbert Schlemmer - docker support
 
