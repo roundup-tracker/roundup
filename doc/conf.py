@@ -101,7 +101,7 @@ language = 'en'
 # see https://issues.roundup-tracker.org/issue2550907:
 exclude_patterns = ['_build', 'tracker_config.txt',
                     'announcement.txt', 'whatsnew-0.7.txt',
-                    'whatsnew-0.8.txt']
+                    'whatsnew-0.8.txt', 'CVE.txt']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
