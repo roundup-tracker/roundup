@@ -993,8 +993,8 @@ languages are supported.
 2. tsquery - described at the beginning of `Parsing Queries`_ with
    to_tsquery. It is enabled by starting the search phrase with ``ts:``.
 
-.. _Parsing Queries: \
-   https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+.. _Parsing Queries:
+    https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
 
 Websearch provides a more natural style of search and supports:
 
@@ -1040,19 +1040,19 @@ requires reindexing.
 The `configuration list can be obtained using using psql's`_
 ``\dF`` command.
 
-.. _configuration list can be obtained using using psql's: \
+.. _configuration list can be obtained using using psql's:
     https://www.postgresql.org/docs/current/textsearch-psql.html
 
 Roundup includes a hardcoded list for all languages supported by
 PostgreSQL 14.1. The list includes 5 custom "languages"
 ``custom1`` ... ``custom5`` to allow you to set up your `own textsearch
-configuration`_ using one of the custom names. Depending on your
+configuration`_ using one of the custom names.  Depending on your
 PostgreSQL version, we may allow an invalid language to be configured.
 You will see an error about ``text search configuration ... does not
 exist``.
 
-.. _own textsearch configuration: \
-  https://www.postgresql.org/docs/current/textsearch-configuration.html
+.. _own textsearch configuration:
+    https://www.postgresql.org/docs/current/textsearch-configuration.html
 
 It may be possible to append to this list using the tracker's
 interfaces.py. For details, see ``test/test_indexer.py`` in the

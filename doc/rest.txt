@@ -327,7 +327,7 @@ may need to create the directory). Then this can be added to
 
    rest.dicttoxml = dtox
 
-.. _interfaces.py: customizing.html#interfaces-py-hooking-into-the-core-of-roundup
+.. _interfaces.py: reference.html#interfaces-py-hooking-into-the-core-of-roundup
 
 The rest interface accepts the http accept header and can include
 ``q`` values to specify the preferred mechanism. This is the preferred
