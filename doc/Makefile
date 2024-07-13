@@ -19,6 +19,8 @@ man_html: $(MAN_HTML)
 
 html_extra/man_pages/%.1.html: ../share/man/man1/%.1
 	man --html=cat $< > $@
+	# set max width for paragraphs
+	sed -i '/<style/,/<\/style/s/\(p\s* { \)margin/\1max-width: 65ch; margin/' $@
 	#man2html $< > $@
 
 clean:
