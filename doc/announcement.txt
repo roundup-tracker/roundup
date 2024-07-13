@@ -220,9 +220,9 @@ Fixed:
 - rename loop variable in 'for sendto in sendto:' (John Rouillard)
 - issue2551193 - Fix roundup for removal of cgi and cgitb standard
   python modules (and FieldStorage/MiniFieldStorage). Replaced imports
-  from cgi to use roundup.anypy.cgi_ which will load the system cgi
+  from cgi to use roundup.anypy.cgi\_ which will load the system cgi
   unless it is missing. Then it will load roundup.anypy.vendored.cgi
-  and make *FieldStroage symbols available. Roundp uses its own
+  and make \*FieldStorage symbols available. Roundup uses its own
   cgitb.py and not the system cgitb.py. It looks like it's the
   precursor to the system cgitb.py. (John Rouillard)
 - issue2551278 - datetime.datetime.utcnow deprecation. Replace
