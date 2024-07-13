@@ -79,71 +79,86 @@ in the Software Carpentry “Track” design competition.
 Roundup is highly customizable, allowing users to tailor the system to
 their specific needs and preferences.
 
-The latest stable version of Roundup is 2.3.0, which includes bug
-fixes and additional features compared to the previous 2.2.0 release.
+The latest stable version of Roundup is 2.4.0, which includes bug
+fixes and additional features compared to the previous 2.3.0 release.
 
 Roundup is compatible with Python 2.7.12+ or 3.6+.
 
 .. admonition:: Python 2 Support
 
-   Python 2 support will end with release 2.5.0 (expected July 2025).
+   Python 2 support ends with release 2.4.0 (July 2024).
    Several Continuous Integration (CI) services are
-   discontinuing their resources for testing with Python 2. It is
-   recommended to utilize Python 3 for the deployment of new trackers,
-   while existing trackers should be `upgraded to use Python 3.
+   discontinuing their resources for testing with Python 2.
+   Use Python 3 for the deployment of new trackers.
+   Existing trackers should be `upgraded to use Python 3.
    <docs/upgrading.html#python-3-support-info>`_
 
 Release Highlights
 ==================
 
-Some improvements from the 2.2.0 release are:
+Some improvements from the 2.3.0 release are:
 
-* Dockerfile demo mode implemented. This allows quick evaluation as
-  well as the ability to spin up a configured tracker to customise.
+* three CVE's have been fixed. One requires changes to your
+  tracker's home directory. The other two are fixed by
+  installing 2.4.0.  See
+  https://www.roundup-tracker.org/docs/security.html for
+  details and instructions on how to fix these in 2.4.0 and
+  earlier releases.
 
-* SQLite backends can use WAL mode to reduce blocking between readers
-  and writers improving concurrent use.
+* new classhelper component thanks to a team of students
+  from CS682 at U-Mass Boston. This fixes many issues with
+  the old classhelper. It is implemented as a web-component
+  and needs REST interface access. It will fall back to the
+  classic classhelper if REST is not available or if the
+  browser does not support web-components.
 
-* Redis can be used for session database with SQLite and dbm
-  backends. Provides a major performance improvement.
+* fix Windows Python installation using pip. It used to go
+  into an infinite loop during install or download. Also fix
+  installation of shared files (templates) so roundup-admin
+  can find them.
 
-* roundup-mailgw can use OAUTH authentication to SMTP
-  server. (roundup-mailgw command line options changed as a result.)
+* using ``@current_user`` as a value in a search URL for a
+  user property will use the current logged in user. Now you
+  can share searches like: "My issues" as "my" will become
+  the current logged in user.
 
-* Postgres full text index can now be enabled.
+* login failures to the REST/XML-RPC interfaces are now rate
+  limited to limit password guessing attacks.
 
-* Modifications to in-reply-to threading when there are multiple
-  matches resulting in more predictable handling of messages.
+* utf8mb4 is the default charset for MySQL. This requires
+  migrating your database using the mysql client. You can
+  choose to keep the older character set in config.ini.
 
-* Many updates to documentation to make it scannable, useful and
-  work on mobile.
+* PostgreSQL services defined in pg_service.conf can be
+  used.  PostgreSQL schemas are supported to eliminate the
+  need for the roundup user to have database
+  creation/deletion privileges.
 
-* Admin documentation includes a section on setting up Content
-  Security Policy (CSP) to better secure your Roundup trackers.
+* fix out of memory issue when importing larger trackers
+  into PostgreSQL.
 
-* REST now allows rate limiting headers to be accessed by client
-  JavaScript.
+* multiple roundup-admin improvements: display protected
+  properties (like creation date), better formatting of
+  output, command history. Also on windows, pyreadline3 is
+  supported to provide an editable interactive command line.
 
-* Default number of rounds for PBKDF2 updated to 2M to account for
-  improvements in password crackers and CPU power.
+* an experimental wsgi performance improvement in 2.3.0 is
+  now now the default and is opt-out.
 
-* Support PBKDF2 with SHA512 for password storage to improve
-  resistance to password crackers.
+* new template functions: utils.readfile and
+  utils.expandfile. Javascript that is included in the
+  Python core will be moved to external files and be able to
+  have values from Roundup substituted in the Javascript.
 
-* Deprecate SSHA password hash function.
+* allow content-type of a template to be set from inside the
+  template.  This allows returning json or xml from a
+  template without a .json or .xml extention.
 
-* roundup-admin reindex can be done in batches to manage load
-  incurred by reindexing.
+* fix import/export on windows to use Unix style line
+  endings fixing export/import on Windows and making exports
+  portable across platforms.
 
-* roundup-admin can list available templates and their installed
-  locations. This is useful when installing via pip or in a docker
-  container as supporting files are not stored in the usual locations
-  like /usr/share/roundup.
-
-* Crash fixes in detector handling, configuration handling, fix for
-  sorting of multilinks.
-
-More info on the 53 changes can be found in the `change notes`_.
+More info on the 79 changes can be found in the `change notes`_.
 
 Roundup Use Cases
 =================
@@ -177,17 +192,17 @@ install Roundup. After you've unpacked the source, just run "``python
 demo.py``" and load up the URL it prints out!
 
 Follow the source gratification mode with these steps (change the
-``-2.3.0`` version identifier to match your downloaded file).
+``-2.4.0`` version identifier to match your downloaded file).
 
 1. ``python3 -m pip download roundup``
-2. ``tar -xzvf roundup-2.3.0.tar.gz``
+2. ``tar -xzvf roundup-2.4.0.tar.gz``
 
    * if you don't have a tar command (e.g windows), use::
 
-       python -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.3.0.tar.gz
+       python -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.4.0.tar.gz
 
 
-3. ``cd roundup-2.3.0``
+3. ``cd roundup-2.4.0``
 4. ``python3 demo.py``
 
 (The source download can also be used to `create a custom Docker

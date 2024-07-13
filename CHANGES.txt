@@ -11,6 +11,7 @@ Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
 v2.7.2 or later are required to run newer releases of Roundup.
 Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
 python 3.6 or newer (3.4/3.5 might work, but they are not tested).
+Roundup 2.4.0 is the last release to support Python 2.
 
 2024-07-13 2.4.0
 
@@ -257,7 +258,7 @@ Features:
   your network using 'roundup-demo ... -B hostname -H hostname'. (John
   Rouillard)
 - issue2551347 - make _generic.help.html work without property
-  settings. THis applies to classic or minimal trackers. It allows use
+  settings. This applies to classic or minimal trackers. It allows use
   of classhelp without the property seting for informtion only
   (e.g. description of what a priority or status means) without being
   able to select the property in the classhelper.  Good for adding help

@@ -11,4 +11,5 @@ recursive-include detectors *.py README.txt
 include demo.py *.txt
 global-exclude *.pyc *.pyo .DS_Store *.orig *.rej *~ \#* .flake8
 include doc/conf.py doc/Makefile doc/requirements.pip doc/roundup-favicon.ico
+include doc/format_config.awk
 include locale/*.po locale/*.mo locale/roundup.pot locale/Makefile

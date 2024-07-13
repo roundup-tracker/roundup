@@ -1,11 +1,15 @@
 I'm proud to release version 2.4.0 of the Roundup issue
-tracker.  This release is a bugfix and feature
-release, so make sure to read `docs/upgrading.txt
+tracker.  This release is a bugfix and feature release, so
+make sure to read `docs/upgrading.txt
 <https://www.roundup-tracker.org/docs/upgrading.html>`_ to
 bring your tracker up to date.
 
 The 79 changes, as usual, include some new features and many
 bug fixes.
+
+Version 2.4.0 will be the last release to support Python
+2. The next minor release, planned for mid 2025, will occur
+5 years after Roundup started supporting Python 3.
 
 Note that you should run ``roundup-admin ... migrate`` to
 update the database schema version. Do this before you use
@@ -91,9 +95,9 @@ release are:
 * sqlite version 1 and StructuredText support removed.
 
 The file CHANGES.txt has a detailed list of feature
-additions and bug fixes for each release. The most
-recent changes from there are at the end of this
-announcement. Also see the information in doc/upgrading.txt.
+additions and bug fixes for each release. The most recent
+changes from there are at the end of this announcement. Also
+see the information in doc/upgrading.txt.
 
 If you find bugs, please report them to issues AT
 roundup-tracker.org or create an account at
@@ -113,13 +117,12 @@ all your trackers to update the database schema version. Do
 this before you use the web, command-line or mail interface
 and before any users access the tracker.
 
-Roundup requires Python 2 newer than version 2.7.12 or
-Python 3 newer than or equal to version 3.6 for correct
-operation. (Python 3.4 or 3.5 may work, but are not tested.)
-Note that Python 2 support is being removed from the CI
-platforms, so you should deploy new trackers with Python 3
-and plan on upgrading older trackers from Python 2 to Python
-3. See the upgrade guide.
+Roundup requires Python 2 newer than version 2.7.12 or Python 3
+newer than or equal to version 3.6 for correct operation. (Python
+3.4 or 3.5 may work, but are not tested.) Note that Roundup 2.4.0
+will be the last release to support Python 2. You should deploy
+new trackers with Python 3 and plan on upgrading older trackers
+from Python 2 to Python 3. See the upgrade guide.
 
 To give Roundup a try, just download (directions above),
 unpack and run::
@@ -181,4 +184,268 @@ Recent Changes
 
 From 2.3.0 to 2.4.0
 
-TBA
+Fixed:
+
+- CVE-2024-39124 - The classhelpers (_generic.help.html) are
+  vulnerable to an XSS attack. A specially crafted URL that used
+  that endpoint would result in running a script embedded in the
+  URL. (Found/reported by Alec Romano (4rdr), fix/tests John
+  Rouillard)
+- CVE-2024-39125 - If the Referer header is set to a script tag,
+  it will be executed when the error in the Referer header is
+  reported. (Found/reported by Alec Romano (4rdr), fix/tests John
+  Rouillard)
+- CVE-2024-39126 - PDF, XML and SVG files attached to an issue can contain
+  embedded JavaScript. This JavaScript was executed when the file was
+  accessed. PDF files are now downloaded and not displayed in the
+  browser. A content security policy is added for all download files
+  which prevents code execution in SVG files.  (Found/reported by Alec
+  Romano (4rdr), fix/tests John Rouillard)
+- issue2551282 - MySQL utf8mb4 issues and
+  issue2551115 - Use utf8mb4 as a default for MySQL instead of utf8
+  The default database type and collations have been set to:
+  utf8mb4, utf8mb4_unicode_ci and utf8mb4_0900_bin. They are (sadly)
+  configurable from config.ini. Require directions on upgrading the
+  MySQL db have been documented in upgrading.txt.
+- issue2551063 - Rest/Xmlrpc interfaces needs failed login protection.
+  Failed API login rate limiting with expiring lockout added. (John
+  Rouillard)
+- issue2551184 - improve i18n handling. Patch to test to make sure it
+  uses the test tracker's locale files and not other locale
+  files. (Marcus Priesch)
+- issue2551283 - fail if version 2.4.9 of markdown2 is used, it broke
+  [issue1](issue1) style links. Support markdown2 2.4.8 and earlier
+  and 2.4.10 with its new schema filtering method. (John Rouillard)
+- multiple flake8 fixes (John Rouillard)
+- rename loop variable in 'for sendto in sendto:' (John Rouillard)
+- issue2551193 - Fix roundup for removal of cgi and cgitb standard
+  python modules (and FieldStorage/MiniFieldStorage). Replaced imports
+  from cgi to use roundup.anypy.cgi_ which will load the system cgi
+  unless it is missing. Then it will load roundup.anypy.vendored.cgi
+  and make *FieldStroage symbols available. Roundp uses its own
+  cgitb.py and not the system cgitb.py. It looks like it's the
+  precursor to the system cgitb.py. (John Rouillard)
+- issue2551278 - datetime.datetime.utcnow deprecation. Replace
+  calls with equivalent that produces timezone aware dates rather than
+  naive dates. (John Rouillard)
+- when using "roundup-admin display" indent the listing only if
+  headers or protected fields are requested. This makes the output
+  look like it did previously to 2.3.0 if the new features aren't
+  used.  Roundup-admin output was never meant to be machine parsed, but
+  don't break it unless required. (John Rouillard)
+- issue2551290 - pip install roundup Hangs on Windows 10
+  The install under windows goes into an infinite loop using pip or
+  source install. (John Rouillard)
+- Document use of pyreadline3 to allow roundup-admin to have CLI editing
+  on windows. (John Rouillard)
+- issue2551293 - remove schema_hook from Tracker instance. Looks like
+  it was an obsolete hook used for testing. Never documented and not
+  accessible from schema.py.
+- Fix roundup-admin security command. Lowercase its optional
+  argument. Roles are indexed by lower case role name. So 'security
+  User' and 'security user' should generate the same output. (John
+  Rouillard from issue on mailing list by Chuck Cunningham)
+- make roundup-server exit more quickly on ^C. This seems to be
+  limited to windows. (John Rouillard)
+- Fix error handling so failure during import of a non-user item
+  doesn't cause a second traceback. (Found by Norbert Schlemmer, fix
+  John Rouillard)
+- Handle out of memory error when importing large trackers in
+  PostgreSQL. (Found by Norbert Schlemmer, extensive testing by
+  Norbert, fix John Rouillard)
+- use unittest.mock rather than mock for
+  test/test_hyperdbvals.py. (found by Ralf Schlatterbeck. Fix John
+  Rouillard)
+- disable proxy with wget in roundup_healthcheck. (Norbert Schlemmer
+  Noschvie on github.com)
+- support dicttoxml2.py for Roundup running on 3.7 and
+  newer. dicttoxml uses a type alias: collection.Iterator that is
+  dropped in Python 3.10. (found by Norbert Schlemmer, fix John
+  Rouillard)
+- fix duplicate html id 'password' in user.item.html in all templates except
+  jinja2. (John Rouillard)
+- fix unclosed file when saving index in indexer_dbm.py. (John Rouillard)
+- fix task index in devel tracker so it doesn't cause a crash if all
+  fields are selected. (John Rouillard)
+- fix windows install. When using pip share directory is installed in
+  a directory tree under the lib directory. Fix it so that Lib/share
+  is used to install the share tree. The lets Roundup find tracker
+  templates and translation files. (Found by Simon Eigeldinger, fix
+  John Rouillard)
+- fix roundup-demo, interactive mode would nuke an existing tracker.
+  (Found Tonu Mikk, fix John Rouillard)
+- fix detection/reporting when using a SQLite3 library without FTS5
+  support. Install docs updated to state that FTS5 support is required
+  when using SQLite for back end. (Found Tonu Mikk, fix John
+  Rouillard)
+- issue2551320: user.help-search.html doesn't respect
+  properties. Setting url parameter properties when using the
+  classhelp for users now shows the requested properties. (Found by
+  Patel Malav and Nikunj Thakkar of the UMass-Boston CS682 Spring
+  2024 class; fix John Rouillard)
+- use ast.eval_literal() rather than eval() to turn CSV exported
+  string values into Python object/values.
+- use template's guess at Content-Type in headers only if Content-Type
+  is not already set. This allows a template to set its own content
+  type. For example: _generic.translate can set content type (via
+  request.client.additional_headers) to application/json and return
+  json from the template. This json could access the 1i18n functions
+  for a javascript helper. (John Rouillard)
+- when template processing raises an exception the line number is
+  sometimes missing. This causes cgitb to raise a second exception
+  which clobbers the info about the template issue. As a stop-gap set
+  the line number to -1 so the original traceback can be seen. This
+  could be a bug in ZopeTAL. (John Rouillard)
+- issue2551328 - REST results show next link if number of results is a
+  multiple of page size. There should be no next link. (Found by Patel
+  Malav and Bharath Kanama of the UMass-Boston CS682 Spring 2024
+  class; fix John Rouillard)
+- issue2551264 - REST X-Total-Count header and @total_size count
+  incorrect when paginated - correct values are now returned.
+  (John Rouillard)
+- issue2551331 - Fix repeat first/last methods. (John Rouillard)
+- Fix import/export on windows. Use unix line terminating characters.
+  (John Rouillard)
+- Fix anydbm session/otks clear() method on windows when backed by
+  dumbdbm. Also make anydbm detect the initialized database when
+  using dumbdbm. (John Rouillard)
+- Use of '-' directory in static_files config option under windows
+  Python fixed. (John Rouillard)
+- issue2551334 - number of test bugs that prevented test suite from
+  running under Windows Python are fixed. WIP. (John Rouillard)
+- issue2551302 - Remove support for sqlite version 1 from
+  back_sqlite.py. We have been using sqlite3 for over a decade. (John
+  Rouillard)
+- issue2551285 - Remove StructuredText support. reStructuredText is
+  still supported. (John Rouillard)
+- Use roundup-demo -p option to set listening port. Was ignored
+  before. (John Rouillard)
+- issue2551346 - Classic tracker's statusauditor raises error if
+  detectors/config.ini missing
+  STATUSAUDITOR_CHATTING_REQUIRES_TWO_USERS.  The statusauditor.py for
+  jinja2 and classic templates has been changed to assume that this
+  option is off when the setting is missing from
+  detectors/config.ini. Other templates do not implement this option.
+  (John Rouillard)
+- issue2551350 - Python changes for 3.12 with roundup 2.3.0. Fixes for
+  cgitb.py crash due to pydoc.html.header() signature change. (Patch
+  by Andrew (kragacles), applied John Rouillard)
+- issue2551350 - Python changes for 3.12 with roundup 2.3.0. Fixes for
+  mailer.py crash due to change in starttls signature change. (Patch
+  by Andrew (kragacles), modified and applied John Rouillard)
+- make classhelper link open in a new window by setting
+  target="_blank". This prevents overwriting of current page with the
+  classhelper if javascript is disabled. (John Rouillard)
+- issue2551341 - if @columns missing from an index url, the
+  group headers colspan property = 0. Add "or 100" in
+  stanza's so headers span all rows (up to 100).
+- fix roundup-server response requiring a 301 redirect. Did
+  not set content length leading to hang/error. (John
+  Rouillard)
+- report basename of filename when template file is invalid
+  rather than reporting a TypeError. (John Rouillard)
+- Make Last-Modified header use GMT not -0000 timezone. Fix error
+  reported by redbot testing. (John Rouillard)
+- Send Vary: Accept-Encoding on any file that could be compressed
+  even if the file is not encoded/compressed. Found by Redbot
+  testing. (John Rouillard)
+- make If-None-Match work for static file (@@file) case. Found by
+  Redbot testing (John Rouillard)
+- Send vary: accept-encoding for if-modified-since conditional
+  requests where the file is not modified. (John Rouillard)
+- Update JWT example in rest.py to use replacement for
+  datetime.datetime.utcnow(). (John Rouillard)
+- issue2551219 - document requirements of PEM file when using
+  roundup-server in SSL/TLS mode. Report better error messages
+  when PEM file is missing certificate or private key. (John
+  Rouillard)
+- Cleanup tracker index generation by roundup-server. Send
+  correct Content-Length headers so HTTP/1.1 connections don't
+  hang. (John Rouillard)
+- Fix delay when using csv export actions. The CSV file is written
+  incrementally, so we can't determine the Content-Length. When using
+  HTTP/1.1, this causes a delay while the browser waits for a timeout.
+  Forcing the connection to close after the CSV file is written
+  removes the delay. (John Rouillard)
+
+Features:
+
+- issue2551323 - Remove XHTML support. Disabled option to set
+  html_version to xhtml. Running roundup commands with html_version
+  set to xhtml will result in an "Invalid value for HTML_VERSION:
+  'xhtml'" error. (John Rouillard)
+- issue2551103 - add pragma 'display_protected' to roundup-admin. If
+  true, print protected attributes like id, activity, actor...
+  when using display or specification subcommands. (John Rouillard)
+- add -P pragma=value command line option to roundup-admin. Allows
+  setting pragmas when using non-interactive mode. (John Rouillard)
+- issue685275 - add pragma show_retired to control display of retired
+  items when using list/table. Add pragma display_header to print
+  headers for display command. Header displays designator and
+  retired/active status. (John Rouillard)
+- issue2551299 - support config.ini rdbms option 'service'. Allow use
+  of a PostgreSQL connection service file (pg_service.conf) for
+  configuring database on a per-tracker basis. Also replaces use of
+  PGSERVICE env variable for single instance trackers. (From ML
+  question by ivanov. John Rouillard)
+- issue2550852 - support for specifying a PostgreSQL schema to use for
+  the Roundup database. (Patch by Stuart McGraw; slight modifications,
+  tests, docs: John Rouillard).
+- issue2551274: add configurable logging for REST API when something
+  fails, we now log status code and error message.
+  (Ralf Schlatterbeck)
+- issue2551317 - add some Jinja2 examples to customizing.txt
+  document. (John Rouillard)
+- multiple scripts/... updates - Python3, linting, enhancements:
+  weekly-report,schema-dump.py, roundup-reminder, copy-user.py,
+  dump_dbm_sessions_db.py, contributors.py (John Rouillard)
+- roundup/msgfile.py can now be called as 'python msgfmt.py de.po de.mo'
+  or 'python msgfmt.py -o de.mo de.po' to compile a translation file if
+  GNU msgfmt is missing. (John Rouillard)
+- save roundup-admin history between sessions. Load
+  ~/.roundup_admin_rlrc file to set history-size persistently. Add
+  pragma history_length to override for a session. (John Rouillard)
+- the roundup-admin history command now dumps the journal entries
+  in a more human readable format. Use the raw option to get the older
+  machine parsible output. (John Rouillard)
+- Multiple JWT secrets are supported to allow key rotation. See
+  an updated config.ini for details. (John Rouillard)
+- issue2551212 - wsgi performance improvement feature added in 2.2.0
+  is active by default. Can be turned off if needed. See upgrading.txt
+  for info. (John Rouillard)
+- issue2551270 - Better templating support for JavaScript. Add
+  utils.readfile(file, optional=False) and utils.expandfile(file,
+  token_dict=None, optional=False). Allows reading an external file
+  (e.g. JavaScript) and inserting it using tal:contents or equivalent
+  jinja function. expandfile allows setting a dictionary and tokens in
+  the file of the form "%(token_name)s" will be replaced in the file
+  with the values from the dict. (John Rouillard)
+- add @group to rest interface collection queries. Useful when using
+  optgroup in select elements. (John Rouillard)
+- roundup-demo can set the hostname in the URL using the -H
+  parameter. So you can start a demo tracker that is available from
+  your network using 'roundup-demo ... -B hostname -H hostname'. (John
+  Rouillard)
+- issue2551347 - make _generic.help.html work without property
+  settings. THis applies to classic or minimal trackers. It allows use
+  of classhelp without the property seting for informtion only
+  (e.g. description of what a priority or status means) without being
+  able to select the property in the classhelper.  Good for adding help
+  for Link properties. (John Rouilllard)
+- issue1525113 - notation to filter by logged-in user. Use
+  @current_user with properties that are a Link to the 'user' class to
+  match the currently logged in user. Allows sharing of queries like
+  "Issues I created" or "Issues I am assigned to" by removing the
+  hard coded user id number and replacing it with the current user's
+  id. Tracker templates updated to use it. (John Rouillard from a
+  patch by Jon C. Thomason)
+- Add a /rest/data/user/roles REST endpoint. (John Rouillard)
+- issue2551353 - Add roundup-classhelper for 2.4.0
+  release. Integrate new classhelper web component to wrap
+  existing classhelper link. This fixes a number of
+  outstanding bugs against the current classhelper using
+  current web features. (Patel Malav, Nikunj Thakkar,
+  Bharath Kanama with integration by John Rouillard)
+- disable spellcheck on all password fields to try to prevent
+  browser from exposing passwords to external servers. (John
+  Rouillard)

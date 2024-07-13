@@ -304,11 +304,8 @@ requests
 .. _Using Redis for Session Databases:
    admin_guide.html#using-redis-for-session-databases
 
-.. [3] Do not use Python 2 for new installs. The continuous
-       integration and other services used for developing Roundup
-       are dropping support for Python 2. Also optional packages
-       are dropping Python 2 support. As a result Python 2 may
-       not be supported for many more release cycles.
+.. [3] Do not use Python 2 for new installs. The next minor release
+       (2.5.0 expected summer 2025) will drop support for Python 2.
 
 Installing Roundup
 ==================
