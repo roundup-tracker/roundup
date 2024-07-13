@@ -95,7 +95,20 @@ Contents:
 .. contents::
    :local:
 
-.. index:: Upgrading; 2.2.0 to 2.3.0
+.. index:: Upgrading; 2.4.0 to 2.5.0
+
+Migrating from 2.4.0 to 2.5.0
+=============================
+
+Deprecation Notices (info)
+--------------------------
+
+Support for SQLite version 2 has been removed in 2.5.0.  Support for
+the `PySQLite <https://github.com/ghaering/pysqlite>`_ library has
+been removed in 2.5.0. Only the Python supplied sqlite3 library will
+be supported.
+
+.. index:: Upgrading; 2.3.0 to 2.4.0
 
 Migrating from 2.3.0 to 2.4.0
 =============================

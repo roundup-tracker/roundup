@@ -31,14 +31,7 @@ try:
     import sqlite3 as sqlite
     sqlite_version = 3
 except ImportError:
-    try:
-        from pysqlite2 import dbapi2 as sqlite
-        if sqlite.version_info < (2, 1, 0):
-            raise ValueError('pysqlite2 minimum version is 2.1.0+ '
-                             '- %s found' % sqlite.version)
-        sqlite_version = 2
-    except ImportError:
-        raise ValueError("Unable to import sqlite3 or sqlite 2.")
+    raise ValueError("Unable to import sqlite3.")
 
 
 def db_exists(config):

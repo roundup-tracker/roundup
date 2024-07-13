@@ -28,7 +28,7 @@ import sys
 _modules = {
     'mysql': ('MySQLdb',),
     'postgresql': ('psycopg2',),
-    'sqlite': ('pysqlite', 'pysqlite2', 'sqlite3', '_sqlite3', 'sqlite'),
+    'sqlite': ('sqlite3', '_sqlite3'),
 }
 
 def get_backend(name):

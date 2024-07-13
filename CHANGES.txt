@@ -16,6 +16,9 @@ Roundup 2.4.0 is the last release to support Python 2.
 2025-XX-XX 2.5.0
 
 Fixed:
+- issue2551343 - Remove support for PySQLite. It is unmaintained and
+  sqlite3 is used which is the default for a Python distribution.
+  (John Rouillard)
 
 Features:
 
