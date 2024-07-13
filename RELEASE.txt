@@ -156,7 +156,7 @@ Roundup release checklist:
 
      Move file to website/www/signature directory
 
-       mv <filename>.tar.gz.asc ../webite/www/signatures/.
+       mv <filename>.tar.gz.asc ../website/www/signatures/.
        hg add ../website/www/signature/<filename>.tar.gz.asc
        # commiting the file will be done in step 12
        cd ..
