@@ -133,6 +133,7 @@ with 1.6.0 have been moved and are linked below:
 
 .. rst-class:: multicol
 
+* `2.4.0 <../signatures/roundup-2.4.0.tar.gz.asc>`_
 * `2.4.0b2 <../signatures/roundup-2.4.0b2.tar.gz.asc>`_
 * `2.3.0 <../signatures/roundup-2.3.0.tar.gz.asc>`_
 * `2.3.0b2 <../signatures/roundup-2.3.0b2.tar.gz.asc>`_
