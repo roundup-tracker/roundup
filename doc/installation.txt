@@ -285,9 +285,18 @@ redis
   guide`_ for details.
 
 pyjwt
-  To use JWT (JSON web tokens) for login (experimental), install `pyjwt`_
-  (v1.7.1, v2.0.1 tested). If you don't have it installed, JWT's
-  are not supported.
+  To use JWT (JSON web tokens) for login (experimental), install
+  `pyjwt`_ (v1.7.1, v2.0.1 tested). If you don't have it
+  installed, JWT's are not supported.
+
+polib
+  Roundup includes translations in various languages. To extract
+  strings designated for translation from your tracker's HTML
+  templates, you can utilize `roundup-gettext`. However, if you
+  wish to extract translatable strings from the Python code in
+  tracker's detectors or extensions directories using
+  roundup-gettext, you must install polib_. See the `developer's
+  guide`_ for details on translating your tracker.
 
 pywin32 - Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
@@ -2361,6 +2370,7 @@ the test.
     https://dev.mysql.com/doc/refman/8.0/en/creating-accounts.html
 .. _apache: https://httpd.apache.org/
 .. _brotli: https://pypi.org/project/Brotli/
+.. _`developer's guide`: developers.html
 .. _docutils: https://pypi.org/project/docutils/
 .. _flup: https://pypi.org/project/flup/
 .. _gpg: https://www.gnupg.org/software/gpgme/index.html
@@ -2372,6 +2382,7 @@ the test.
 .. _mod_wsgi: https://pypi.org/project/mod-wsgi/
 .. _MySQLdb: https://pypi.org/project/mysqlclient/
 .. _Olson tz database: https://www.iana.org/time-zones
+.. _polib: https://polib.readthedocs.io
 .. _Psycopg2: https://www.psycopg.org/
 .. _pyjwt: https://pypi.org/project/PyJWT/
 .. _pyopenssl: https://pypi.org/project/pyOpenSSL/

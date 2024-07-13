@@ -540,11 +540,12 @@ For on-site i18n, Roundup provides command-line utility::
 
   roundup-gettext <tracker_home>
 
-extracting translatable messages from tracker's html templates.
+extracting translatable messages from tracker's html templates and
+detectors / extensions (assuming `polib`_ is installed) [2]_.
 This utility creates message template file ``messages.pot`` in
 ``locale`` subdirectory of the tracker home directory.  Translated
-messages may be put in *locale*.po files (where *locale* is selected
-locale name) in the same directory, e.g.: ``locale/ru.po``.
+messages may be put in *locale*.po files (where *locale* is the two
+character locale name) in the same directory, e.g.: ``locale/ru.po``.
 These message catalogs are searched prior to system-wide translations
 kept in the ``share`` directory.
 
@@ -561,6 +562,10 @@ If you use ``roundup-gettext`` it will add a full preamble including
 ``Content-Type``. If the preamble is missing, using characters outside
 of the ASCII range will cause Roundup to crash with a
 UnicodeDecodeError.
+
+.. [2] Note that it will not extract `deferred translations`_
+         from detectors or extensions. Those have to be manually
+         added to messages.pot.
 
 Translating Messages
 ^^^^^^^^^^^^^^^^^^^^
@@ -666,6 +671,7 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _po filetype plugin:
     https://www.vim.org/scripts/script.php?script_id=64
 .. _PO utilities: https://github.com/pinard/po-utils
+.. _polib: https://polib.readthedocs.io
 .. _poEdit: https://poedit.net/
 .. _pology: http://pology.nedohodnik.net/doc/user/en_US/ch-poformat.html
 .. _pylint: https://pylint.pycqa.org/en/latest/

@@ -2,12 +2,12 @@
 #
 # Copyright 2004 Richard Jones (richard@mechanicalcat.net)
 
-"""Extract translatable strings from tracker templates"""
+"""Extract translatable strings from tracker templates and detectors/extensions"""
 
 from __future__ import print_function
 import os
 import sys
-
+import tempfile
 
 # --- patch sys.path to make sure 'import roundup' finds correct version
 import os.path as osp
@@ -23,6 +23,38 @@ if (osp.exists(thisdir + '/__init__.py') and
 
 from roundup.i18n import _
 from roundup.cgi.TAL import talgettext
+from roundup.pygettext import make_escapes, TokenEater, tokenize
+
+try:
+    import polib
+except ImportError:
+    print(_("\nExtracting translatable strings from html templates.\n"
+            "Because the 'polib' module is missing, unable to extract\n"
+            "translations from detectors or extensions.\n"
+            "The 'polib' module can be installed with pip.\n"))
+    polib = None
+
+# from pygettext's main():
+class Options:
+    # constants
+    GNU = 1
+    SOLARIS = 2
+    # defaults
+    extractall = 0 # FIXME: currently this option has no effect at all.
+    escape = 0
+    keywords = ["_", "gettext", "ngettext", "ugettext"]
+    outpath = ''
+    outfile = ''
+    writelocations = 1
+    locationstyle = GNU
+    verbose = 0
+    width = 10
+    excludefilename = ''
+    docstrings = 0
+    nodocstrings = {}
+    toexclude = [] # TODO we should exclude all strings already found in some template
+
+tokeneater_options = Options()
 
 # name of message template file.
 # i don't think this will ever need to be changed, but still...
@@ -62,6 +94,48 @@ def run():
     # run
     talgettext.main()
 
+    if not polib:
+        return
+
+    # we have now everything from the templates in the TEMPLATE_FILE
+    # now we search in home/detectors and home/extensions *.py files for
+    # tokeneater_options.keywords
+    # this is partly assembled from pygettext's main()
+    make_escapes(not tokeneater_options.escape)
+
+    pyfiles = []
+    for source in ["detectors", "extensions"] :
+        for root, dirs, files in os.walk (os.path.join ("..", source)) :
+            pyfiles.extend ([os.path.join (root, f) for f in files if f.endswith (".py")])
+
+    eater = TokenEater (tokeneater_options)
+
+    for filename in pyfiles :
+        eater.set_filename (filename)
+        with open (filename, "r") as f:
+            try:
+                for token in tokenize.generate_tokens(f.readline):
+                    eater(*token)
+            except tokenize.TokenError as e:
+                print('%s: %s, line %d, column %d' % (
+                    e[0], filename, e[1][0], e[1][1]), file=sys.stderr)
+    
+    with tempfile.NamedTemporaryFile("w") as tf :
+        eater.write(tf)
+        tf.seek (0)
+        p1 = polib.pofile(TEMPLATE_FILE)
+        p2 = polib.pofile(tf.name)
+
+        p2_msg_ids = set([e.msgid for e in p2])
+        for e in p1 :
+            if e.msgid in p2_msg_ids :
+                p2_e = p2.find (e.msgid)
+                e.occurrences.extend (p2_e.occurrences)
+                p2_msg_ids.remove (e.msgid)
+
+        for msgid in p2_msg_ids :
+            p1.append (p2.find (msgid))
+        p1.save ()
 
 if __name__ == "__main__":
     run()

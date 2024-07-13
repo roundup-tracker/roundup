@@ -13,6 +13,18 @@ Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
 python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 Roundup 2.4.0 is the last release to support Python 2.
 
+2025-XX-XX 2.5.0
+
+Fixed:
+
+Features:
+
+- issue2551287 - Enhance roundup_gettext.py to extract strings from
+  detectors/extensions. If the polib module is available,
+  roundup-gettext will extract translatable strings from the tracker's
+  Python code. If polib is missing, it will print a warning. (Patch
+  Marcus Priesch, cleanup to remove python 2 issues, John Rouillard.)
+
 2024-07-13 2.4.0
 
 Fixed:
