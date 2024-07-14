@@ -23,6 +23,19 @@ try:
 except ImportError:
     _ = lambda s: s
 
+import getopt
+import glob
+import importlib
+import operator
+import os
+import sys
+import time
+import token
+import tokenize
+from functools import reduce
+
+__version__ = '1.5'
+
 __doc__ = _("""pygettext -- Python equivalent of xgettext(1)
 
 Many systems (Solaris, Linux, Gnu) provide extensive tools that ease the
@@ -158,20 +171,6 @@ Options:
 If `inputfile' is -, standard input is read.
 """)
 
-import os
-import importlib
-import sys
-import glob
-import time
-import getopt
-import token
-import tokenize
-import operator
-
-from functools import reduce
-
-__version__ = '1.5'
-
 default_keywords = ['_']
 DEFAULTKEYWORDS = ', '.join(default_keywords)
 
@@ -199,6 +198,7 @@ msgstr ""
 
 ''')
 
+
 def usage(code, msg=''):
     print(__doc__ % globals(), file=sys.stderr)
     if msg:
@@ -207,6 +207,7 @@ def usage(code, msg=''):
 
 
 escapes = []
+
 
 def make_escapes(pass_iso8859):
     global escapes
@@ -219,7 +220,7 @@ def make_escapes(pass_iso8859):
     else:
         mod = 256
     for i in range(mod):
-        if not(32 <= i <= 126):
+        if not (32 <= i <= 126):
             escapes[i] = "\\%03o" % i
     escapes[ord('\\')] = '\\\\'
     escapes[ord('\t')] = '\\t'
@@ -238,7 +239,7 @@ def escape(s):
 
 def safe_eval(s):
     # unwrap quotes, safely
-    return eval(s, {'__builtins__':{}}, {})
+    return eval(s, {'__builtins__': {}}, {})
 
 
 def normalize(s):
@@ -257,9 +258,10 @@ def normalize(s):
         s = '""\n"' + lineterm.join(lines) + '"'
     return s
 
-def containsAny(str, set):
+
+def containsAny(string, inset):
     """Check whether 'str' contains ANY of the chars in 'set'"""
-    return 1 in [c in str for c in set]
+    return 1 in [c in string for c in inset]
 
 
 def _get_modpkg_path(dotted_name, pathlist=None):
@@ -270,11 +272,11 @@ def _get_modpkg_path(dotted_name, pathlist=None):
     extension module.
     """
     pathname = None
-    r =  importlib.util.find_spec(dotted_name, pathlist)
+    r = importlib.util.find_spec(dotted_name, pathlist)
 
     if r.loader.is_package(dotted_name):
         pathname = r.submodule_search_locations[0]
-    elif issubclass(r.loader.__class__,(importlib.abc.SourceLoader)):
+    elif issubclass(r.loader.__class__, (importlib.abc.SourceLoader)):
         pathname = r.origin
     return pathname
 
@@ -287,10 +289,10 @@ def getFilesForName(name):
         # check for glob chars
         if containsAny(name, "*?[]"):
             files = glob.glob(name)
-            list = []
+            lst = []
             for file in files:
-                list.extend(getFilesForName(file))
-            return list
+                lst.extend(getFilesForName(file))
+            return lst
 
         # try to find module or package
         name = _get_modpkg_path(name)
@@ -299,7 +301,7 @@ def getFilesForName(name):
 
     if os.path.isdir(name):
         # find all python files in directory
-        list = []
+        lst = []
         # get extension for python source files
         if '_py_ext' not in globals():
             global _py_ext
@@ -309,16 +311,17 @@ def getFilesForName(name):
             if 'CVS' in dirs:
                 dirs.remove('CVS')
             # add all *.py files to list
-            list.extend(
+            lst.extend(
                 [os.path.join(root, file) for file in files
                  if os.path.splitext(file)[1] == _py_ext]
                 )
-        return list
+        return lst
     elif os.path.exists(name):
         # a single file
         return [name]
 
     return []
+
 
 class TokenEater:
     def __init__(self, options):
@@ -398,14 +401,14 @@ class TokenEater:
                 ) % {
                 'token': tstring,
                 'file': self.__curfile,
-                'lineno': self.__lineno
+                'lineno': self.__lineno,
                 }, file=sys.stderr)
             self.__state = self.__waiting
 
     def __addentry(self, msg, lineno=None, isdocstring=0):
         if lineno is None:
             lineno = self.__lineno
-        if not msg in self.__options.toexclude:
+        if msg not in self.__options.toexclude:
             entry = (self.__curfile, lineno)
             self.__messages.setdefault(msg, {})[entry] = isdocstring
 
@@ -506,8 +509,8 @@ def main():
         nodocstrings = {}
 
     options = Options()
-    locations = {'gnu' : options.GNU,
-                 'solaris' : options.SOLARIS,
+    locations = {'gnu': options.GNU,
+                 'solaris': options.SOLARIS,
                  }
 
     # parse options
@@ -628,6 +631,7 @@ def main():
     finally:
         if closep:
             fp.close()
+
 
 if __name__ == '__main__':
     main()
