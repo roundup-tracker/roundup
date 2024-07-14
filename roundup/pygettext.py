@@ -269,35 +269,13 @@ def _get_modpkg_path(dotted_name, pathlist=None):
     a package. Return None if the name is not found, or is a builtin or
     extension module.
     """
-    # split off top-most name
-    parts = dotted_name.split('.', 1)
+    pathname = None
+    r =  importlib.util.find_spec(dotted_name, pathlist)
 
-    if len(parts) > 1:
-        # we have a dotted path, import top-level package
-        try:
-            file, pathname, description = importlib.find_module(parts[0], pathlist)
-            if file: file.close()
-        except ImportError:
-            return None
-
-        # check if it's indeed a package
-        if description[2] == imp.PKG_DIRECTORY:
-            # recursively handle the remaining name parts
-            pathname = _get_modpkg_path(parts[1], [pathname])
-        else:
-            pathname = None
-    else:
-        # plain name
-        try:
-            file, pathname, description = imp.find_module(
-                dotted_name, pathlist)
-            if file:
-                file.close()
-            if description[2] not in [imp.PY_SOURCE, imp.PKG_DIRECTORY]:
-                pathname = None
-        except ImportError:
-            pathname = None
-
+    if r.loader.is_package(dotted_name):
+        pathname = r.submodule_search_locations[0]
+    elif issubclass(r.loader.__class__,(importlib.abc.SourceLoader)):
+        pathname = r.origin
     return pathname
 
 
@@ -325,8 +303,7 @@ def getFilesForName(name):
         # get extension for python source files
         if '_py_ext' not in globals():
             global _py_ext
-            _py_ext = [triple[0] for triple in imp.get_suffixes()
-                       if triple[2] == imp.PY_SOURCE][0]
+            _py_ext = importlib.machinery.SOURCE_SUFFIXES
         for root, dirs, files in os.walk(name):
             # don't recurse into CVS directories
             if 'CVS' in dirs:
