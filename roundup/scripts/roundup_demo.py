@@ -46,7 +46,6 @@ def usage(home, cli, msg=''):
 
 
 def ask_for_template(default_template, templates):
-    import pdb; pdb.set_trace()
     template = my_input(
         _('Enter tracker template to use (one of (%(template_list)s)) [%(default_template)s]: ') %
         {'template_list': ','.join(templates),
