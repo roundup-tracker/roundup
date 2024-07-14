@@ -18,11 +18,9 @@
 """
 __docformat__ = 'restructuredtext'
 
-import sys
-
-
 # --- patch sys.path to make sure 'import roundup' finds correct version
 import os.path as osp
+import sys
 
 thisdir = osp.dirname(osp.abspath(__file__))
 rootdir = osp.dirname(osp.dirname(thisdir))
