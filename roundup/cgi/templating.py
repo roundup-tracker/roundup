@@ -334,9 +334,10 @@ class TALLoaderBase(LoaderBase):
 
     def precompile(self):
         """ Precompile templates in load directory by loading them """
-        for filename in os.listdir(self.template_dir):
+        for dir_entry in os.scandir(self.template_dir):
+            filename = dir_entry.name
             # skip subdirs
-            if os.path.isdir(filename):
+            if dir_entry.is_dir():
                 continue
 
             # skip files without ".html" or ".xml" extension - .css, .js etc.

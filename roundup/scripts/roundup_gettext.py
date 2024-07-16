@@ -64,6 +64,8 @@ tokeneater_options = Options()
 TEMPLATE_FILE = "messages.pot"
 
 
+# FIXME: html directory can be specified in config.ini. Should be
+#        a parameter, or config.ini should be loaded.
 def run():
     # return unless command line arguments contain single directory path
     if (len(sys.argv) != 2) or (sys.argv[1] in ("-h", "--help")):
@@ -76,9 +78,9 @@ def run():
     if os.path.isdir(htmldir):
         # glob is not used because i want to match file names
         # without case sensitivity, and that is easier done this way.
-        htmlfiles = [filename for filename in os.listdir(htmldir)
-                     if os.path.isfile(os.path.join(htmldir, filename))
-                     and filename.lower().endswith(".html")]
+        htmlfiles = [e.name for e in os.scandir(htmldir)
+                     if e.is_file()
+                     and e.name.lower().endswith(".html")]
     else:
         htmlfiles = []
     # return if no html files found

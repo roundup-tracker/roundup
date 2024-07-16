@@ -188,7 +188,8 @@ class Tracker:
         dirpath = os.path.join(self.tracker_home, dirname)
         if os.path.isdir(dirpath):
             sys.path.insert(1, dirpath)
-            for name in os.listdir(dirpath):
+            for dir_entry in os.scandir(dirpath):
+                name = dir_entry.name
                 if not name.endswith('.py'):
                     continue
                 env = {}

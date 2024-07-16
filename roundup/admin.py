@@ -1226,8 +1226,9 @@ Command help:
             delimiter = ':'
 
         # import all the files
-        for file in os.listdir(import_dir):
-            classname, ext = os.path.splitext(file)
+        for dir_entry in os.scandir(import_dir):
+            filename = dir_entry.name
+            classname, ext = os.path.splitext(filename)
             # we only care about CSV files
             if ext != '.csv' or classname.endswith('-journals'):
                 continue
@@ -1235,7 +1236,7 @@ Command help:
             cl = self.get_class(classname)
 
             # ensure that the properties and the CSV file headings match
-            with open(os.path.join(import_dir, file), 'r') as f:
+            with open(os.path.join(import_dir, filename), 'r') as f:
                 reader = csv.reader(f, colon_separated, lineterminator='\n')
                 file_props = None
                 maxid = 1

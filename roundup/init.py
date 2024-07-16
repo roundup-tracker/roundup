@@ -44,7 +44,7 @@ def copytree(src, dst, symlinks=0):
     """
 
     # Prevent 'hidden' files (those starting with '.') from being considered.
-    names = [f for f in os.listdir(src) if not f.startswith('.')]
+    names = [f.name for f in os.scandir(src) if not f.name.startswith('.')]
     try:
         os.mkdir(dst)
     except OSError as error:
@@ -111,7 +111,7 @@ def install(instance_home, template, settings={}):
         config.save(config_ini_file)
 
 
-def listTemplates(dir):
+def listTemplates(directory):
     ''' List all the Roundup template directories in a given directory.
 
         Find all the dirs that contain a TEMPLATE-INFO.txt and parse it.
@@ -119,9 +119,8 @@ def listTemplates(dir):
         Return a list of dicts of info about the templates.
     '''
     ret = {}
-    for idir in os.listdir(dir):
-        idir = os.path.join(dir, idir)
-        ti = loadTemplateInfo(idir)
+    for dir_entry in os.scandir(directory):
+        ti = loadTemplateInfo(dir_entry.path)
         if ti:
             ret[ti['name']] = ti
     return ret
