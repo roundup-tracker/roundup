@@ -594,7 +594,7 @@ tools that may help you with this process:
  - `poEdit`_ by Vaclav Slavik.  Very nice cross-platform GUI editor.
 
  - `Lokalize`_. A replacement for KBabel. Being part of `KDE`_, it
-    works in X windows only. Haven't had much experience with it, though.
+   works in X windows only. Haven't had much experience with it, though.
 
  - ``po-mode`` for `emacs`_.  One of `GNU gettext`_ tools.  Very handy,
    definitely recommended if you are comfortable with emacs.  Cannot
