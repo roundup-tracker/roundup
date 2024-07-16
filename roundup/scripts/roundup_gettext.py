@@ -21,7 +21,7 @@ if (osp.exists(thisdir + '/__init__.py') and
     sys.path.insert(0, rootdir)
 # --/
 
-
+from roundup.anypy import scandir_
 from roundup import configuration
 from roundup.cgi.TAL import talgettext
 from roundup.i18n import _

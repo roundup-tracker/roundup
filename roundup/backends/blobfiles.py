@@ -22,6 +22,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 
+from roundup.anypy import scandir_
 
 def files_in_dir(dir):
     if not os.path.exists(dir):

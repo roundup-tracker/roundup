@@ -43,6 +43,7 @@ import sys
 
 from roundup import configuration, mailgw
 from roundup import hyperdb, backends, actions
+from roundup.anypy import scandir_
 from roundup.cgi import client, templating
 from roundup.cgi import actions as cgi_actions
 from roundup.exceptions import RoundupException

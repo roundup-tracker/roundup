@@ -26,6 +26,7 @@ import os
 
 
 from roundup import install_util
+from roundup.anypy import scandir_
 from roundup.configuration import CoreConfig
 from roundup.i18n import _
 
