@@ -22,6 +22,7 @@ if (osp.exists(thisdir + '/__init__.py') and
 # --/
 
 
+from roundup import configuration
 from roundup.cgi.TAL import talgettext
 from roundup.i18n import _
 from roundup.pygettext import TokenEater, make_escapes, tokenize
@@ -29,7 +30,7 @@ from roundup.pygettext import TokenEater, make_escapes, tokenize
 try:
     import polib
 except ImportError:
-    print(_("\nExtracting translatable strings from html templates.\n"
+    print(_("\nExtracting translatable strings only from html templates.\n"
             "Because the 'polib' module is missing, unable to extract\n"
             "translations from detectors or extensions.\n"
             "The 'polib' module can be installed with pip.\n"))
@@ -64,17 +65,17 @@ tokeneater_options = Options()
 TEMPLATE_FILE = "messages.pot"
 
 
-# FIXME: html directory can be specified in config.ini. Should be
-#        a parameter, or config.ini should be loaded.
 def run():
     # return unless command line arguments contain single directory path
     if (len(sys.argv) != 2) or (sys.argv[1] in ("-h", "--help")):
         print(_("Usage: %(program)s <tracker home>") %
               {"program": sys.argv[0]})
         return
-    # collect file paths of html templates
+
     home = os.path.abspath(sys.argv[1])
-    htmldir = os.path.join(home, "html")
+    # collect file paths of html templates from config
+    config = configuration.CoreConfig(home)
+    htmldir = config["TEMPLATES"]
     if os.path.isdir(htmldir):
         # glob is not used because i want to match file names
         # without case sensitivity, and that is easier done this way.
@@ -85,17 +86,21 @@ def run():
         htmlfiles = []
     # return if no html files found
     if not htmlfiles:
-        print(_("No tracker templates found in directory %s") % home)
+        print(_("No tracker templates found in directory %s") % htmldir)
         return
     # change to locale dir to have relative source references
     locale = os.path.join(home, "locale")
     if not os.path.isdir(locale):
         os.mkdir(locale)
     os.chdir(locale)
+
+    # compute relative path to template directory from locale directory
+    relpath = os.path.relpath(htmldir)
+
     # tweak sys.argv as this is the only way to tell talgettext what to do
     # Note: unix-style paths used instead of os.path.join deliberately
     sys.argv[1:] = ["-o", TEMPLATE_FILE] \
-        + ["../html/" + filename for filename in htmlfiles]
+        + [relpath + "/" + filename for filename in htmlfiles]
     # run
     talgettext.main()
 
