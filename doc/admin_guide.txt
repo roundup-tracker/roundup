@@ -2023,6 +2023,14 @@ used differently. You can't directly compare them.
     Importing and setting numbers. It's not a problem. However setting
     can (and must) always be higher than the Importing number.
 
+Interactive Help
+----------------
+
+The help command produces the following output for all the commands.
+
+
+.. raw:: html
+   :file: admin_help.html
 
 .. _`customisation documentation`: customizing.html
 .. _`reference documentation`: reference.html

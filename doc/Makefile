@@ -1,4 +1,4 @@
-all:  man_html tracker_config.txt
+all:  man_html tracker_config.txt admin_help.html
 	cd ..; ./setup.py build_doc
 
 tracker_config.txt: ../roundup/configuration.py
@@ -23,6 +23,10 @@ html_extra/man_pages/%.1.html: ../share/man/man1/%.1
 	sed -i '/<style/,/<\/style/s/\(p\s* { \)margin/\1max-width: 65ch; margin/' $@
 	#man2html $< > $@
 
+admin_help.html: ../roundup/admin.py
+	python3 ../roundup/scripts/roundup_admin.py htmlhelp > admin_help.py
+
 clean:
 	rm -f _temp_config.txt tracker_config.txt \
-	      html_extra/man_pages/*.1.html
+	      html_extra/man_pages/*.1.html \
+	      admin_help.py

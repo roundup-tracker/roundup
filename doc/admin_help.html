@@ -1,0 +1,496 @@
+<table>
+
+<tr><td valign=top><strong>commit</strong></td>
+    <td><tt>- commit</tt>
+<pre>
+Commit changes made to the database during an interactive session.
+
+The changes made during an interactive session are not
+automatically written to the database - they must be committed
+using this command.
+
+One-off commands on the command-line are automatically committed if
+they are successful.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>create</strong></td>
+    <td><tt>- create classname property=value ...</tt>
+<pre>
+Create a new entry of a given class.
+
+This creates a new entry of the given class using the property
+name=value arguments provided on the command line after the "create"
+command.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>display</strong></td>
+    <td><tt>- display designator[,designator]*</tt>
+<pre>
+Show the property values for the given node(s).
+
+A designator is a classname and a nodeid concatenated,
+eg. bug1, user10, ...
+
+This lists the properties and their associated values
+for the given node.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>export</strong></td>
+    <td><tt>- export [[-]class[,class]] export_dir</tt>
+<pre>
+Export the database and file content.
+
+Database content is exported to colon separated files.
+To exclude the files (e.g. for the msg or file class),
+use the exporttables command.
+
+Optionally limit the export to just the named classes
+or exclude the named classes, if the 1st argument
+starts with '-'.
+
+This action exports the current data from the database into
+colon-separated-value files that are placed in the nominated
+export_dir directory.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>exporttables</strong></td>
+    <td><tt>- exporttables [[-]class[,class]] export_dir</tt>
+<pre>
+Export only the database to files, no file content.
+
+Database content is exported to colon separated files.
+The files below $TRACKER_HOME/db/files/ (which can be
+archived separately) are not part of the export.
+To include the files, use the export command.
+
+Optionally limit the export to just the named classes
+or exclude the named classes, if the 1st argument
+starts with '-'.
+
+This action exports the current data from the database into
+colon-separated-value files that are placed in the export_dir
+destination directory.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>filter</strong></td>
+    <td><tt>- filter classname propname=value ...</tt>
+<pre>
+Find the nodes of the given class with a given property value.
+
+Find the nodes of the given class with a given property value.
+Multiple values can be specified by separating them with commas.
+If property is a string, all values must match. I.E. it's an
+'and' operation. If the property is a link/multilink any value
+matches. I.E. an 'or' operation.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>find</strong></td>
+    <td><tt>- find classname propname=value ...</tt>
+<pre>
+Find the nodes of the given class with a given link property value.
+
+Find the nodes of the given class with a given link property value.
+The value may be either the nodeid of the linked node, or its key
+value.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>genconfig</strong></td>
+    <td><tt>- genconfig filename</tt>
+<pre>
+Create a new tracker config file with default values in filename.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>get</strong></td>
+    <td><tt>- get property designator[,designator]*</tt>
+<pre>
+Get the given property of one or more designator(s).
+
+A designator is a classname and a nodeid concatenated,
+eg. bug1, user10, ...
+
+Retrieves the property value of the nodes specified
+by the designators.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>help</strong></td>
+    <td><tt>- help topic</tt>
+<pre>
+Give help about topic.
+
+commands  -- list commands
+&lt;command&gt; -- help specific to a command
+initopts  -- init command options
+all       -- all available help
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>history</strong></td>
+    <td><tt>- history designator [skipquiet] [raw]</tt>
+<pre>
+Show the history entries of a designator.
+
+A designator is a classname and a nodeid concatenated,
+eg. bug1, user10, ...
+
+Lists the journal entries viewable by the user for the node
+identified by the designator. If skipquiet is added, journal
+entries for quiet properties are not shown. If raw is added,
+the output is the raw representation of the journal entries.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>import</strong></td>
+    <td><tt>- import import_dir</tt>
+<pre>
+Import a database and file contents from the directory.
+
+The directory should have the same format as one containing
+the output of export. There are two files imported per class.
+The files used in the import are:
+
+&lt;class&gt;.csv
+  This must define the same properties as the class (including
+  having a "header" line with those property names.)
+&lt;class&gt;-journals.csv
+  This defines the journals for the items being imported.
+
+The imported nodes will have the same nodeid as defined in the
+import file, thus replacing any existing content.
+
+The new nodes are added to the existing database - if you want to
+create a new database using the imported data, then create a new
+database (or, tediously, retire all the old data.)
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>importtables</strong></td>
+    <td><tt>- importtables export_dir</tt>
+<pre>
+This imports the database tables exported using exporttables.
+
+It does not import the content of files like msgs and files.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>initialise</strong></td>
+    <td><tt>- initialise [adminpw]</tt>
+<pre>
+Initialise a new Roundup tracker.
+
+The administrator details will be set at this step.
+
+Execute the tracker's initialisation function dbinit.init()
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>install</strong></td>
+    <td><tt>- install [template [backend [key=val[,key=val]]]]</tt>
+<pre>
+Install a new Roundup tracker.
+
+The command will prompt for the tracker home directory
+(if not supplied through TRACKER_HOME or the -i option).
+The template and backend may be specified on the command-line
+as arguments, in that order.
+
+Command line arguments following the backend allows you to
+pass initial values for config options.  For example, passing
+"web_http_auth=no,rdbms_user=dinsdale" will override defaults
+for options http_auth in section [web] and user in section [rdbms].
+Please be careful to not use spaces in this argument! (Enclose
+whole argument in quotes if you need spaces in option value).
+
+The initialise command must be called after this command in order
+to initialise the tracker's database. You may edit the tracker's
+initial database contents before running that command by editing
+the tracker's dbinit.py module init() function.
+
+See also initopts help.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>list</strong></td>
+    <td><tt>- list classname [property]</tt>
+<pre>
+List the instances of a class.
+
+Lists all instances of the given class. If the property is not
+specified, the  "label" property is used. The label property is
+tried in order: the key, "name", "title" and then the first
+property, alphabetically.
+
+With -c, -S or -s print a list of item id's if no property
+specified.  If property specified, print list of that property
+for every class instance.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>migrate</strong></td>
+    <td><tt>- migrate</tt>
+<pre>
+Update a tracker's database to be compatible with the Roundup
+codebase.
+
+You should run the "migrate" command for your tracker once
+you've installed the latest codebase.
+
+Do this before you use the web, command-line or mail interface
+and before any users access the tracker.
+
+This command will respond with either "Tracker updated" (if
+you've not previously run it on an RDBMS backend) or "No
+migration action required" (if you have run it, or have used
+another interface to the tracker, or possibly because you are
+using anydbm).
+
+It's safe to run this even if it's not required, so just get
+into the habit.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>pack</strong></td>
+    <td><tt>- pack period | date</tt>
+<pre>
+Remove journal entries older than the date/period.
+
+A period is specified using the suffixes "y", "m", and "d". The
+suffix "w" (for "week") means 7 days.
+
+      "3y" means three years
+      "2y 1m" means two years and one month
+      "1m 25d" means one month and 25 days
+      "2w 3d" means two weeks and three days
+
+Date format is "YYYY-MM-DD" eg:
+    2001-01-01
+
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>perftest</strong></td>
+    <td><tt>- perftest [mode] [arguments]*</tt>
+<pre>
+Time operations in Roundup.
+
+Supported arguments:
+
+    [password] [rounds=&lt;integer&gt;] [scheme=&lt;scheme&gt;]
+
+'password' is the default mode.  The tracker's config.ini
+setting for 'password_pbkdf2_default_rounds' is the default
+value for 'rounds'. On the command line, 'rounds' can include
+thousands separator of ',' or '.'.  'scheme' is the default
+coded into Roundup. List supported schemes by using 'scheme='.
+
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>pragma</strong></td>
+    <td><tt>- pragma setting=value | 'list'</tt>
+<pre>
+Set internal admin settings to a value.
+
+For example:
+
+    pragma verbose=True
+    pragma verbose=yes
+    pragma verbose=on
+    pragma verbose=1
+
+ will turn on verbose mode for roundup-admin.
+
+    pragma list
+
+ will show all settings and their current values. If verbose
+ is enabled hidden settings and descriptions will be shown.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>reindex</strong></td>
+    <td><tt>- reindex [classname|classname:#-#|designator]*</tt>
+<pre>
+Re-generate a tracker's search indexes.
+
+This will re-generate the search indexes for a tracker.
+This will typically happen automatically.
+
+You can incrementally reindex using an argument like:
+
+    reindex issue:23-1000
+
+to reindex issue class items 23-1000. Missing items
+are reported but do not stop indexing of the range.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>restore</strong></td>
+    <td><tt>- restore designator[,designator]*</tt>
+<pre>
+Restore the retired node specified by designator.
+
+A designator is a classname and a nodeid concatenated,
+eg. bug1, user10, ...
+
+The given nodes will become available for users again.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>retire</strong></td>
+    <td><tt>- retire designator[,designator]*</tt>
+<pre>
+Retire the node specified by designator.
+
+A designator is a classname and a nodeid concatenated,
+eg. bug1, user10, ...
+
+This action indicates that a particular node is not to be retrieved
+by the list or find commands, and its key value may be re-used.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>rollback</strong></td>
+    <td><tt>- rollback</tt>
+<pre>
+Undo all changes that are pending commit to the database.
+
+The changes made during an interactive session are not
+automatically written to the database - they must be committed
+manually. This command undoes all those changes, so a commit
+immediately after would make no changes to the database.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>security</strong></td>
+    <td><tt>- security [Role name]</tt>
+<pre>
+Display the Permissions available to one or all Roles.
+
+Also validates that any properties defined in a
+permission are valid.
+
+Run this after changing your permissions to catch
+typos.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>set</strong></td>
+    <td><tt>- set items property=value [property=value ...]</tt>
+<pre>
+Set the given properties of one or more items(s).
+
+The items are specified as a class or as a comma-separated
+list of item designators (ie "designator[,designator,...]").
+
+A designator is a classname and a nodeid concatenated,
+eg. bug1, user10, ...
+
+This command sets the properties to the values for all
+designators given. If a class is used, the property will be
+set for all items in the class. If the value is missing
+(ie. "property=") then the property is un-set. If the property
+is a multilink, you specify the linked ids for the multilink
+as comma-separated numbers (ie "1,2,3").
+
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>specification</strong></td>
+    <td><tt>- specification classname</tt>
+<pre>
+Show the properties for a classname.
+
+This lists the properties for a given class.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>table</strong></td>
+    <td><tt>- table classname [property[,property]*]</tt>
+<pre>
+List the instances of a class in tabular form.
+
+Lists all instances of the given class. If the properties are not
+specified, all properties are displayed. By default, the column
+widths are the width of the largest value. The width may be
+explicitly defined by defining the property as "name:width".
+For example::
+
+  roundup&gt; table priority id,name:10
+  Id Name
+  1  fatal-bug
+  2  bug
+  3  usability
+  4  feature
+
+Also to make the width of the column the width of the label,
+leave a trailing : without a width on the property. For example::
+
+  roundup&gt; table priority id,name:
+  Id Name
+  1  fata
+  2  bug
+  3  usab
+  4  feat
+
+will result in a the 4 character wide "Name" column.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>templates</strong></td>
+    <td><tt>- templates [trace_search]</tt>
+<pre>
+List templates and their installed directories.
+
+With trace_search also list all directories that are
+searched for templates.
+
+</pre></td></tr>
+
+
+<tr><td valign=top><strong>updateconfig</strong></td>
+    <td><tt>- updateconfig &lt;filename&gt;</tt>
+<pre>
+Merge existing tracker config with new settings.
+
+Output the updated config file to &lt;filename&gt;. Use current
+settings from existing roundup tracker in tracker home.
+
+</pre></td></tr>
+
+</table>
