@@ -1807,6 +1807,24 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['msg'],
                          "Unable to process input of type application/jzot")
+        self.assertNotIn("Accept-Patch",
+                         self.server.client.additional_headers)
+        self.server.client.additional_headers = {}
+
+
+        # test with PATCH verb to verify Accept-Patch is correct
+        results = self.server.dispatch("PATCH",
+                            "/rest/data/issue",
+                            form)
+        self.assertEqual(self.server.client.response_code, 415)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['msg'],
+                         "Unable to process input of type application/jzot")
+        self.assertIn("Accept-Patch",
+                         self.server.client.additional_headers)
+        self.assertEqual(self.server.client.additional_headers["Accept-Patch"],
+                        "application/json, application/x-www-form-urlencoded" )
+        self.server.client.additional_headers = {}
 
         # Test GET as well. I am not sure if this should pass or not.
         # Arguably GET doesn't use any form/json input but....
@@ -1815,8 +1833,9 @@ class TestCase():
                             form)
         print(results)
         self.assertEqual(self.server.client.response_code, 415)
-
-
+        self.assertNotIn("Accept-Patch",
+                         self.server.client.additional_headers)
+        self.server.client.additional_headers = {}
 
     def testDispatchBadAccept(self):
         # simulate: /rest/data/issue expect failure unknown accept settings

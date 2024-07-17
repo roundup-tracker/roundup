@@ -2412,6 +2412,10 @@ class RestfulInstance(object):
                 except ValueError as msg:
                     output = self.error_obj(400, msg)
             else:
+                if method.upper() == "PATCH":
+                    self.client.setHeader("Accept-Patch",
+                                          "application/json, "
+                                          "application/x-www-form-urlencoded")
                 output = self.error_obj(415,
                                 "Unable to process input of type %s" %
                                 content_type_header)
