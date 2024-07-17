@@ -3401,7 +3401,7 @@ function like::
        empty string. Useful inlining JavaScript kept in an
        external file where you can use linters/minifiers and
 
-(Note: ``>>>``` is the Python REPL prompt. Don't type the ``>>>```.)
+(Note: ``>>>`` is the Python REPL prompt. Don't type the ``>>>``.)
 
 Batching
 ::::::::
