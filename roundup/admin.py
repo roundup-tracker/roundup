@@ -246,22 +246,25 @@ matches only one command, e.g. l == li == lis == list."""))
         """
         commands = sorted(iter(self.commands.values()),
                           key=operator.attrgetter('__name__'))
+        print("<table>")
         for command in commands:
             h = _(command.__doc__).split('\n')
             name = command.__name__[3:]
-            usage = h[0]
+            usage = h[0].replace('<','&lt;').replace('>','&gt;')[7:]
             print("""
 <tr><td valign=top><strong>%(name)s</strong></td>
-    <td><tt>%(usage)s</tt><p>
+    <td><tt>- %(usage)s</tt>
 <pre>""" % locals())
-            indent = indent_re.match(h[3])
+            indent = indent_re.match(h[1])
             if indent: indent = len(indent.group(1))  # noqa: E701
-            for line in h[3:]:
+            for line in h[1:]:
+                line = line.replace('<','&lt;').replace('>','&gt;')
                 if indent:
                     print(line[indent:])
                 else:
                     print(line)
             print('</pre></td></tr>\n')
+        print("</table>")
 
     def help_all(self):
         print(_("""
@@ -540,7 +543,6 @@ Command help:
 
     def do_display(self, args):
         ''"""Usage: display designator[,designator]*
-
         Show the property values for the given node(s).
 
         A designator is a classname and a nodeid concatenated,
@@ -585,16 +587,19 @@ Command help:
 
     def do_export(self, args, export_files=True):
         ''"""Usage: export [[-]class[,class]] export_dir
-        Export the database to colon-separated-value files.
+        Export the database and file content.
+
+        Database content is exported to colon separated files.
         To exclude the files (e.g. for the msg or file class),
         use the exporttables command.
 
         Optionally limit the export to just the named classes
-        or exclude the named classes, if the 1st argument starts with '-'.
+        or exclude the named classes, if the 1st argument
+        starts with '-'.
 
         This action exports the current data from the database into
         colon-separated-value files that are placed in the nominated
-        destination directory.
+        export_dir directory.
         """
         # grab the directory to export to
         if len(args) < 1:
@@ -697,15 +702,19 @@ Command help:
 
     def do_exporttables(self, args):
         ''"""Usage: exporttables [[-]class[,class]] export_dir
-        Export the database to colon-separated-value files, excluding the
-        files below $TRACKER_HOME/db/files/ (which can be archived separately).
+        Export only the database to files, no file content.
+
+        Database content is exported to colon separated files.
+        The files below $TRACKER_HOME/db/files/ (which can be
+        archived separately) are not part of the export.
         To include the files, use the export command.
 
         Optionally limit the export to just the named classes
-        or exclude the named classes, if the 1st argument starts with '-'.
+        or exclude the named classes, if the 1st argument
+        starts with '-'.
 
         This action exports the current data from the database into
-        colon-separated-value files that are placed in the nominated
+        colon-separated-value files that are placed in the export_dir
         destination directory.
         """
         return self.do_export(args, export_files=False)
@@ -835,9 +844,8 @@ Command help:
         return 0
 
     def do_genconfig(self, args, update=False):
-        ''"""Usage: genconfig <filename>
-        Generate a new tracker config file (ini style) with default
-        values in <filename>.
+        ''"""Usage: genconfig filename
+        Create a new tracker config file with default values in filename.
         """
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
@@ -1185,9 +1193,10 @@ Command help:
 
     def do_import(self, args, import_files=True):
         ''"""Usage: import import_dir
-        Import a database from the directory containing CSV files,
-        two per class to import.
+        Import a database and file contents from the directory.
 
+        The directory should have the same format as one containing
+        the output of export. There are two files imported per class.
         The files used in the import are:
 
         <class>.csv
@@ -1276,8 +1285,9 @@ Command help:
 
     def do_importtables(self, args):
         ''"""Usage: importtables export_dir
-
         This imports the database tables exported using exporttables.
+
+        It does not import the content of files like msgs and files.
         """
         return self.do_import(args, import_files=False)
 
@@ -1523,7 +1533,6 @@ Erase it? Y/N: """) % locals())
 
     def do_migrate(self, args):  # noqa: ARG002  - args unused
         ''"""Usage: migrate
-
         Update a tracker's database to be compatible with the Roundup
         codebase.
 
@@ -1553,9 +1562,7 @@ Erase it? Y/N: """) % locals())
 
     def do_pack(self, args):
         ''"""Usage: pack period | date
-
-        Remove journal entries older than a period of time specified or
-        before a certain date.
+        Remove journal entries older than the date/period.
 
         A period is specified using the suffixes "y", "m", and "d". The
         suffix "w" (for "week") means 7 days.
@@ -1592,8 +1599,9 @@ Erase it? Y/N: """) % locals())
 
     def do_perftest(self, args):
         ''"""Usage: perftest [mode] [arguments]*
+        Time operations in Roundup.
 
-        Time operations in Roundup. Supported arguments:
+        Supported arguments:
 
             [password] [rounds=<integer>] [scheme=<scheme>]
 
@@ -1665,7 +1673,9 @@ Erase it? Y/N: """) % locals())
 
     def do_pragma(self, args):
         ''"""Usage: pragma setting=value | 'list'
-        Set internal admin settings to a value. E.G.
+        Set internal admin settings to a value.
+
+        For example:
 
             pragma verbose=True
             pragma verbose=yes
@@ -1877,13 +1887,13 @@ Erase it? Y/N: """) % locals())
 
     def do_security(self, args):
         ''"""Usage: security [Role name]
+        Display the Permissions available to one or all Roles.
 
-             Display the Permissions available to one or all Roles.
-             Also validates that any properties defined in a
-             permission are valid.
+        Also validates that any properties defined in a
+        permission are valid.
 
-             Run this after changing your permissions to catch
-             typos.
+        Run this after changing your permissions to catch
+        typos.
         """
         if len(args) == 1:
             role = args[0]
@@ -2167,9 +2177,10 @@ Desc: %(description)s
 
     def do_updateconfig(self, args):
         ''"""Usage: updateconfig <filename>
-        Generate an updated tracker config file (ini style) in
-        <filename>. Use current settings from existing roundup
-        tracker in tracker home.
+        Merge existing tracker config with new settings.
+
+        Output the updated config file to <filename>. Use current
+        settings from existing roundup tracker in tracker home.
         """
         self.do_genconfig(args, update=True)
 
