@@ -2986,6 +2986,20 @@ There are several methods available on these wrapper objects:
 	      labelfirst (Boolean properties only)
 	        place the labels before the radio buttons
 
+              Other arguments are added as properties directly on the
+              input tag. For example::
+
+                  field(size=30, id='myid', required=None)
+
+              produces::
+
+                   <input id="myid" size="30" required>
+
+	      Note that using ``None`` as the value results in an
+	      attribute without a value. This is useful for boolean
+	      properties like ``required``.
+
+
   rst         only on String properties - render the value of the property
 	      as ReStructuredText (requires the :ref:`Docutils
 	      module to be installed separately<install/docutils>`).
