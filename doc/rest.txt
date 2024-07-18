@@ -151,6 +151,28 @@ burst count. On slower hardware, errors of up to 10% have been
 observed. Using redis, PostgreSQL, or MySQL for storing ephemeral data
 minimizes the loss.
 
+Limit Size of Returned Data
+---------------------------
+
+When selecting from the database, you can limit the number of rows
+returned by adding the following to `interfaces.py`_::
+
+  from roundup.rest import RestfulInstance
+  RestfulInstance.max_response_row_size = 26
+
+This will limit the setting of ``@page_size`` to 25 (one less than the
+value). If the url includes a ``@page_size`` pagination value greater
+than or equal to the ``max_response_row_size`` you will receive an
+error like::
+
+  {
+      "error": {
+	  "status": 400,
+	  "msg": "Page size 30 must be less than admin limit on query
+      result size: 26."
+      }
+  }
+
 Client API
 ==========
 
