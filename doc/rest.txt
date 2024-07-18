@@ -173,6 +173,8 @@ error like::
       }
   }
 
+The default value is 10 million and one rows.
+
 Client API
 ==========
 
