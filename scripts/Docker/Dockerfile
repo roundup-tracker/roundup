@@ -171,7 +171,7 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
             printf "Building with distribution: %s\n" "$dist"; \
             pip install --no-cache-dir "install/dist/$dist";; \
         *) \
-            printf "\n\ninvalid value for source: $source\n"; \
+            printf "\n\ninvalid value for source: %s\n" "$source"; \
 	    printf "must be local, pypi, pip_local or pip_sdist\n\n"; \
             exit 1;; \
     esac
