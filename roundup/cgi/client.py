@@ -26,6 +26,7 @@ except ImportError:
 
 import roundup.anypy.email_  # noqa: F401  -- patches for email library code
 from roundup import hyperdb, rest, xmlrpc
+
 # quality of random checked below
 from roundup.anypy import http_, random_, urllib_, xmlrpc_
 from roundup.anypy.cgi_ import cgi
@@ -33,13 +34,26 @@ from roundup.anypy.cookie_ import BaseCookie, CookieError, SimpleCookie, get_coo
 from roundup.anypy.html import html_escape
 from roundup.anypy.strings import b2s, bs2b, is_us, s2b, uchr
 from roundup.cgi import TranslationService, accept_language, actions, cgitb, templating
-from roundup.cgi.exceptions import DetectorError, FormError, \
-    IndexerQueryError, NotFound, NotModified, Redirect, SendFile, \
-    SendStaticFile, SeriousError
-
+from roundup.cgi.exceptions import (
+    DetectorError,
+    FormError,
+    IndexerQueryError,
+    NotFound,
+    NotModified,
+    Redirect,
+    SendFile,
+    SendStaticFile,
+    SeriousError,
+)
 from roundup.cgi.form_parser import FormParser
-from roundup.exceptions import LoginError, RateLimitExceeded, Reject, \
-    RejectRaw, Unauthorised, UsageError
+from roundup.exceptions import (
+    LoginError,
+    RateLimitExceeded,
+    Reject,
+    RejectRaw,
+    Unauthorised,
+    UsageError,
+)
 from roundup.mailer import Mailer, MessageSendError
 
 logger = logging.getLogger('roundup')
@@ -48,6 +62,7 @@ if not random_.is_weak:
     logger.debug("Importing good random generator")
 else:
     logger.warning("**SystemRandom not available. Using poor random generator")
+
 
 def initialiseSecurity(security):
     '''Create some Permissions and Roles on the security object
@@ -1130,7 +1145,6 @@ class Client:
             self.setHeader("WWW-Authenticate", "Basic")
             raise LoginError('Support for jwt disabled.')
 
-
         # If first ',' separated token is < 32, jwt is disabled.
         # If second or later tokens are < 32 chars, the config system
         # stops the tracker from starting so insecure tokens can not
@@ -1165,7 +1179,6 @@ class Client:
         self.setHeader("WWW-Authenticate", "Basic, Bearer")
         self.make_user_anonymous()
         raise LoginError(last_error)
-
 
     def determine_user(self, is_api=False):
         """Determine who the user is"""
