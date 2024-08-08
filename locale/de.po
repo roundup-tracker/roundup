@@ -421,7 +421,7 @@ msgstr ""
 #: ../roundup/admin.py:583
 #, fuzzy, python-format
 msgid "%(protected)s%(key)s: %(value)s"
-msgstr "%(key)s: %(value)s"
+msgstr "%(protected)s%(key)s: %(value)s"
 
 #. grab the directory to export to
 #: ../roundup/admin.py:586
@@ -509,7 +509,7 @@ msgstr ""
 #: ../roundup/admin.py:754
 #, fuzzy, python-format
 msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
-msgstr "Die Klasse \"%(classname)s\" hat keine Eigenschaft \"%(propname)s\""
+msgstr "Die Klasse \"%(curclassname)s\" hat keine Eigenschaft \"%(propname)s\""
 
 # ../roundup/admin.py:631 :669 :822 :834 :888
 #: ../roundup/admin.py:781 ../roundup/admin.py:830 ../roundup/admin.py:1505
@@ -685,7 +685,7 @@ msgstr ""
 #: ../roundup/admin.py:1082
 #, fuzzy, python-format
 msgid "added %(class)s%(item_id)s to %(propname)s"
-msgstr "Eigenschaft \"%(properties)s\" bei \"%(class)s %(id)s\" bearbeitet"
+msgstr "Eigenschaft \"%(propname)s\" bei \"%(class)s %(item_id)s\" bearbeitet"
 
 #. .Hint read as: assignedto was admin(1)
 #. where assignedto is the property
@@ -699,7 +699,7 @@ msgstr "%(propname)s (%(proptype)s): "
 #: ../roundup/admin.py:1109:1138
 #, fuzzy, python-format
 msgid "%(prop)s was %(value)s"
-msgstr "%(key)s: %(value)s"
+msgstr "%(prop)s: %(value)s"
 
 #: ../roundup/admin.py:1128
 #, python-format
@@ -1209,7 +1209,7 @@ msgstr "Der Eintrag \"%(designator)s\" existiert nicht"
 #: ../roundup/admin.py:1793
 #, fuzzy, python-format
 msgid "no such item \"%(class)s%(id)s\""
-msgstr "Der Eintrag \"%(designator)s\" existiert nicht"
+msgstr "Der Eintrag \"%(class)s%(id)s\" existiert nicht"
 
 #: ../roundup/admin.py:1805
 #, fuzzy
@@ -1695,7 +1695,7 @@ msgstr ""
 #: ../roundup/cgi/actions.py:118
 #, fuzzy, python-format
 msgid "Unrecognized scheme in %(url)s"
-msgstr "Zeichensatz nicht erkannt: %r"
+msgstr "Zeichensatz nicht erkannt: %(url)s"
 
 #: ../roundup/cgi/actions.py:122
 #, python-format
@@ -2168,7 +2168,7 @@ msgstr ""
 #: ../roundup/cgi/client.py:1533
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
-msgstr "Ungültiger Benutzername"
+msgstr "Ungültiger Benutzername %s"
 
 #: ../roundup/cgi/client.py:1548
 #, python-format
@@ -2178,7 +2178,7 @@ msgstr ""
 #: ../roundup/cgi/client.py:1553
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
-msgstr "Ungültiger Benutzername"
+msgstr "Ungültiger Benutzername %s"
 
 #: ../roundup/cgi/client.py:1567
 #, python-format
@@ -2199,7 +2199,7 @@ msgstr ""
 #: ../roundup/cgi/client.py:1597
 #, fuzzy, python-format
 msgid "Invalid HOST %s"
-msgstr "Ungültige Anforderung"
+msgstr "Ungültige Anforderung %s"
 
 #: ../roundup/cgi/client.py:1605
 msgid "Csrf: unable to verify sufficient headers"
@@ -2460,7 +2460,7 @@ msgstr ""
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr ""
-"Versuch, das Attribut %(attr)s eines nicht vorhandenen Werts abzufragen"
+"Versuch, das Attribut %(item)s eines nicht vorhandenen Werts abzufragen"
 
 #: ../roundup/cgi/templating.py:2582
 #, python-format
@@ -2516,8 +2516,8 @@ msgid ""
 "Not a date spec: %r (\"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" or "
 "\"yyyy-mm-dd.HH:MM:SS.SSS\")"
 msgstr ""
-"Kein gültiges Datum: \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" oder "
-"\"yyyy-mm-dd.HH:MM:SS.SSS\""
+"Kein gültiges Datum: %r \"yyyy-mm-dd\", \"mm-dd\", \"HH:MM\", \"HH:MM:SS\" "
+"oder \"yyyy-mm-dd.HH:MM:SS.SSS\""
 
 #: ../roundup/date.py:423
 msgid "Could not determine granularity"
@@ -2538,7 +2538,7 @@ msgid ""
 "Not an interval spec: \"%s\" ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date "
 "spec])"
 msgstr ""
-"Keine gültige Intervall-Angabe: [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] "
+"Keine gültige Intervall-Angabe: \"%s\" [+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] "
 "[Datum]"
 
 #: ../roundup/date.py:870
@@ -2685,7 +2685,7 @@ msgstr "Keine Eigenschaft: %s"
 #: ../roundup/hyperdb.py:1984
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a %(classname)s."
-msgstr "Der Wert \"%(value)s\" ist nicht in der Liste für \"%(propname)s\""
+msgstr "Der Wert \"%(value)s\" ist nicht in der Liste für \"%(property)s\""
 
 #: ../roundup/hyperdb.py:1990
 #, python-format
@@ -3013,7 +3013,7 @@ msgstr ""
 "\n"
 "Das Mail-Gateway ist nicht korrekt eingerichtet. Bitte wenden\n"
 "Sie sich an %(mailadmin)s und bitten Sie um Korrektur der\n"
-"fehlerhaften Klasse:  %(current_class)s\n"
+"fehlerhaften Klasse:  %(classname)s\n"
 
 #: ../roundup/mailgw.py:1856
 msgid "not of form [arg=value,value,...;arg=value,value,...]"
@@ -3034,7 +3034,7 @@ msgstr ""
 #: ../roundup/rest.py:1193
 #, fuzzy, python-format
 msgid "Invalid attribute %s"
-msgstr "Ungültiger Benutzername"
+msgstr "Ungültiger Benutzername %s"
 
 #: ../roundup/rest.py:2182
 #, python-format
@@ -3245,7 +3245,7 @@ msgstr ""
 #: ../roundup/scripts/roundup_server.py:570
 #, fuzzy, python-format
 msgid "Error: %(type)s: %(value)s"
-msgstr "%(key)s: %(value)s"
+msgstr "%(type)s: %(value)s"
 
 #: ../roundup/scripts/roundup_server.py:582
 msgid "WARNING: ignoring \"-g\" argument, not root"
@@ -3295,7 +3295,8 @@ msgstr "Start des Servers auf Port %s schlug fehl. Port bereits verwendet."
 #, fuzzy, python-format
 msgid ""
 "Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
-msgstr "Start des Servers auf Port %s schlug fehl. Port bereits verwendet."
+msgstr ""
+"Start des Servers auf Port %(port)s schlug fehl. Port bereits verwendet."
 
 #: ../roundup/scripts/roundup_server.py:944
 msgid ""
