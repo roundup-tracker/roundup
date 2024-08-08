@@ -23,8 +23,8 @@ msgstr ""
 msgid ""
 "You do not have permission to retire or restore the %(classname)s class."
 msgstr ""
-"Sie sind nicht berechtigt, die Aktion(en) %(action)s auf die Klasse "
-"%(classname)s anzuwenden."
+"Sie haben keine Berechtigung die %(classname)s Klasse als gelöscht zu "
+"markieren oder die Löschmarkierung aufzuheben."
 
 #: ../roundup/actions.py:65 ../roundup/cgi/actions.py:240
 msgid "You may not retire the admin or anonymous user"
