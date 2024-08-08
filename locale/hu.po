@@ -990,7 +990,7 @@ msgstr ""
 # ../roundup/admin.py:583 :983 :1032 :1054
 #: ../roundup/admin.py:1830
 #, fuzzy
-msgid "no such %(classname)s node \" % (nodeid)s\""
+msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "nincs \"%(nodeid)s\" %(classname)s csomópont"
 
 #: ../roundup/admin.py:1836

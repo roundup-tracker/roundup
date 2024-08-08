@@ -895,7 +895,7 @@ msgid ""
 msgstr ""
 
 #: ../roundup/admin.py:1830
-msgid "no such %(classname)s node \" % (nodeid)s\""
+msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr ""
 
 #: ../roundup/admin.py:1836

@@ -1233,7 +1233,7 @@ msgstr ""
 # ../roundup/admin.py:539 :951 :1000 :1022
 #: ../roundup/admin.py:1830
 #, fuzzy
-msgid "no such %(classname)s node \" % (nodeid)s\""
+msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr ""
 "Es existiert kein Eintrag der Klasse %(classname)s mit der ID \"%(nodeid)s\""
 

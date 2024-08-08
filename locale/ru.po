@@ -1227,7 +1227,7 @@ msgstr ""
 
 #: ../roundup/admin.py:1830
 #, fuzzy
-msgid "no such %(classname)s node \" % (nodeid)s\""
+msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "В классе %(classname)s нет объекта \"%(nodeid)s\""
 
 #: ../roundup/admin.py:1836

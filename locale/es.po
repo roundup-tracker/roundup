@@ -1249,7 +1249,7 @@ msgstr ""
 # ../roundup/admin.py:559 :957 :1006 :1028
 #: ../roundup/admin.py:1830
 #, fuzzy
-msgid "no such %(classname)s node \" % (nodeid)s\""
+msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "no existe nodo de clase %(classname)s llamado  \"%(nodeid)s\""
 
 #: ../roundup/admin.py:1836

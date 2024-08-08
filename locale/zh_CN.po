@@ -1156,7 +1156,7 @@ msgstr ""
 # ../roundup/admin.py:550 :945 :994 :1016
 #: ../roundup/admin.py:1830
 #, fuzzy
-msgid "no such %(classname)s node \" % (nodeid)s\""
+msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "没有这样的 %(classname)s 结点 \"%(nodeid)s\""
 
 #: ../roundup/admin.py:1836
