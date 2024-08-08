@@ -37,7 +37,7 @@ from functools import reduce
 
 __version__ = '1.5'
 
-__doc__ = _("""pygettext -- Python equivalent of xgettext(1)
+__doc__ = """pygettext -- Python equivalent of xgettext(1)
 
 Many systems (Solaris, Linux, Gnu) provide extensive tools that ease the
 internationalization of C programs. Most of these tools are independent of
@@ -170,7 +170,7 @@ Options:
         conjunction with the -D option above.
 
 If `inputfile' is -, standard input is read.
-""")
+"""
 
 default_keywords = ['_']
 DEFAULTKEYWORDS = ', '.join(default_keywords)
@@ -179,7 +179,7 @@ EMPTYSTRING = ''
 
 # The normal pot-file header. msgmerge and Emacs's po-mode work better if it's
 # there.
-pot_header = _('''\
+pot_header = '''\
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR ORGANIZATION
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
@@ -197,7 +197,7 @@ msgstr ""
 "Content-Transfer-Encoding: ENCODING\\n"
 "Generated-By: pygettext.py %(version)s\\n"
 
-''')
+'''
 
 
 def usage(code, msg=''):
