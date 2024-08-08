@@ -1840,7 +1840,7 @@ Erase it? Y/N: """) % locals())
                 raise UsageError(e.args[0])
             except IndexError:
                 raise UsageError(_('no such %(classname)s node '
-                                   '" % (nodeid)s"') % locals())
+                                   '"%(nodeid)s"') % locals())
         self.db_uncommitted = True
         return 0
 
