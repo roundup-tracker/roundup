@@ -2299,7 +2299,7 @@ to use ``jinja2`` rather than TAL. A number of trackers are running
 using ``jinja2`` templating so it is less experimental than
 Chameleon templating.
 
-.. _jinja2: https://palletsprojects.com/p/jinja/
+.. _jinja2: https://palletsprojects.com/projects/jinja/
 
 
 **NOTE1**: For historical reasons, examples given below assumes path

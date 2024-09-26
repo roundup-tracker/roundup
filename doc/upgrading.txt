@@ -1863,7 +1863,7 @@ will take longer but may be worth trying if the ``exporttables`` and
 
 Another way that should be faster, but is untested is to use mysql
 dump to dump the database.
-https://makandracards.com/makandra/595-dumping-and-importing-from-to-mysql-in-an-utf-8-safe-way
+https://makandracards.com/makandra/595-dumping-importing-mysql-utf-8-safe-way
 recommends:
 
    Note that when your MySQL server is not set to UTF-8 you need to do

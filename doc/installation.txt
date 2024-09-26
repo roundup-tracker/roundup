@@ -2374,7 +2374,7 @@ the test.
 .. _docutils: https://pypi.org/project/docutils/
 .. _flup: https://pypi.org/project/flup/
 .. _gpg: https://www.gnupg.org/software/gpgme/index.html
-.. _jinja2: https://palletsprojects.com/p/jinja/
+.. _jinja2: https://palletsprojects.com/projects/jinja/
 .. _markdown: https://python-markdown.github.io/
 .. _markdown2: https://github.com/trentm/python-markdown2
 .. _mistune: https://pypi.org/project/mistune/
