@@ -218,7 +218,8 @@ RUN apk --no-cache upgrade; \
            install -U $upgrades < /dev/null; \
     else \
         echo "Nothing to pip update"; \
-    fi
+    fi; \
+    test -s /usr/bin/dumb-init
 
 ARG source
 ARG pythonversion
