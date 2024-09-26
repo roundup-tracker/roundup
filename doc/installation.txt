@@ -746,7 +746,7 @@ or ``c:\winnt\system32\inetsrv\adminsamples\`` or
 
 See:
 
-   https://learn.microsoft.com/en-us/iis/web-dev-reference/server-variables
+   https://github.com/MicrosoftDocs/iis-docs/blob/main/iis/web-dev-reference/server-variables.md
 
 More information about ISS setup may be found at:
 
