@@ -21,6 +21,10 @@ html_extra/man_pages/%.1.html: ../share/man/man1/%.1
 	man --html=cat $< > $@
 	# set max width for paragraphs
 	sed -i '/<style/,/<\/style/s/\(p\s* { \)margin/\1max-width: 65ch; margin/' $@
+	# add link rel=cannonical $@(F) takes
+	# target $@ (html_extra/man_pages/x.1.html)
+	# and returns file part (x.1.html)
+	sed -i '/<head>/,/<\/head>/s#^<style#<link rel="canonical" href="https://www.roundup-tracker.org/docs/man_pages/$(@F)">\n<style#' $@
 	#man2html $< > $@
 
 admin_help.html: ../roundup/admin.py
