@@ -52,13 +52,14 @@ jobs:
         # Run in all these versions of Python
         python-version:
           # - "2.7"
-          - "3.12"
-          # - 3.6 run via include on ubunto 20.04
+          - "3.13"
+          # - 3.6 run via include on ubuntu 20.04
           # - "3.7"
           - "3.8"
           # - "3.9"
           - "3.10"
           - "3.11"
+          - "3.12"
 
         # use for multiple os or ubuntu versions
         #os: [ubuntu-latest, macos-latest, windows-latest]
@@ -72,9 +73,9 @@ jobs:
             # example: if 3.13 fails the jobs still succeeds
             # allow-prereleases in setup-python allows alpha/beta
             # releases to run
-            - python-version: 3.13
-              os: ubuntu-22.04
-              experimental: true
+            #- python-version: 3.13
+            #  os: ubuntu-22.04
+            #  experimental: true
             
             # 3.6 not available on new 22.04 runners, so run on 20.04 ubuntu
             - python-version: 3.6
@@ -203,8 +204,7 @@ jobs:
       - name: Install python db libraries
         run: |
           pip install mysqlclient
-          if [[ "$PYTHON_VERSION" != "3.14" ]]; then
-            pip install psycopg2; fi
+          pip install psycopg2
 
       - name: Install auxiliary packages
         run: |
