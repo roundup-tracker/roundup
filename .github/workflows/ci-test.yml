@@ -203,7 +203,7 @@ jobs:
       - name: Install python db libraries
         run: |
           pip install mysqlclient
-          if [[ "$PYTHON_VERSION" != "3.13" ]]; then
+          if [[ "$PYTHON_VERSION" != "3.14" ]]; then
             pip install psycopg2; fi
 
       - name: Install auxiliary packages
