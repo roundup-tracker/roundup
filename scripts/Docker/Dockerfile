@@ -49,7 +49,8 @@ WORKDIR $appdir
 RUN apk --no-cache upgrade
 
 # Add packages needed to compile mysql, pgsql and other python modules.
-# Can't use apk to add python packages as it installs 3.9 python version.
+# Can't use apk to add python packages as it installs for base image
+# in /usr.
 #        g++ installs cc1plus needed by pip install
 RUN apk --no-cache add \
     file \
