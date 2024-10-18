@@ -339,8 +339,6 @@ class Security:
            Permission.test() method.
 
         '''
-        if classname == 'status':
-            import pdb; pdb.set_trace()
         if itemid and classname is None:
             raise ValueError('classname must accompany itemid')
         # for each of the user's Roles, check the permissions
