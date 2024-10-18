@@ -184,12 +184,73 @@ class Role:
     def __init__(self, name='', description='', permissions=None):
         self.name = name.lower()
         self.description = description
+        # This is a dict of permission names each containing a dict of
+        # *class names*, with a special entry for non-class permissions
+        # where the key is None. In each class dict we have a dictionary
+        # with the values True and False for permission with and without
+        # a check method. These dicts each contain a list of permissions.
         if permissions is None:
-            permissions = []
-        self.permissions = permissions
+            self._permissions = {}
+        elif isinstance(permissions, list):
+            self._permissions = {}
+            for p in permissions:
+                self.addPermission(p)
+        else:
+            raise ValueError("Invalid permissions for Role: %s" % permissions)
 
     def __repr__(self):
-        return '<Role 0x%x %r,%r>' % (id(self), self.name, self.permissions)
+        pl = self.permission_list()
+        return '<Role 0x%x %r,%r>' % (id(self), self.name, pl)
+
+    def addPermission (self, *permissions):
+        for p in permissions:
+            pn = p.name
+            self._permissions.setdefault(pn, {})
+            cn = p.klass
+            if p.klass not in self._permissions[pn]:
+                self._permissions[pn][cn] = dict (((False, []), (True, [])))
+            self._permissions[pn][cn][bool(p.check)].append(p)
+
+    def hasPermission (self, db, perm, uid, classname, property, itemid, chk):
+        # if itemid is given a classname must, too, checked in caller
+        assert not itemid or classname
+        perms = self._permissions
+        if perm not in perms:
+            return False
+        # If we have a classname we also need to check permission with
+        # an empty classname (e.g. 'admin' has access on everything)
+        if classname is not None and None in perms[perm]:
+            for p in perms[perm][None][chk]:
+                # permission match?
+                if p.test(db, perm, classname, property, uid, itemid):
+                    return True
+        if classname not in perms[perm]:
+            return False
+        for p in perms[perm][classname][chk]:
+            # permission match?
+            if p.test(db, perm, classname, property, uid, itemid):
+                return True
+
+    def permission_list (self):
+        """ Used for reporting in admin tool """
+        l = []
+        for p in self._permissions:
+            for c in self._permissions[p]:
+                for cond in (False, True):
+                    l.extend (self._permissions[p][c][cond])
+        l.sort (key = lambda x: (x.klass or '', x.name))
+        return l
+
+    def searchable (self, classname, propname):
+        for perm in 'View', 'Search':
+            # Only permissions without a check method
+            if perm not in self._permissions:
+                continue
+            if classname not in self._permissions[perm]:
+                continue
+            for p in self._permissions[perm][classname][False]:
+                if p.searchable(classname, propname):
+                    return True
 
 
 class Security:
@@ -199,7 +260,7 @@ class Security:
         '''
         self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
 
-        # permssions are mapped by name to a list of Permissions by class
+        # Permissions are mapped by name to a list of Permissions by class
         self.permission = {}
 
         # roles are mapped by name to the Role
@@ -278,28 +339,30 @@ class Security:
            Permission.test() method.
 
         '''
+        if classname == 'status':
+            import pdb; pdb.set_trace()
         if itemid and classname is None:
             raise ValueError('classname must accompany itemid')
-        for rolename in self.db.user.get_roles(userid):
-            if not rolename or (rolename not in self.role):
-                continue
-            # for each of the user's Roles, check the permissions
-            for perm in self.role[rolename].permissions:
-                # permission match?
-                if perm.test(self.db, permission, classname, property,
-                             userid, itemid):
-                    return 1
-        return 0
+        # for each of the user's Roles, check the permissions
+        # Note that checks with a check method are typically a lot more
+        # expensive than the ones without. So we check the ones without
+        # a check method first
+        for has_check in False, True:
+            for rolename in self.db.user.get_roles(userid):
+                if not rolename or (rolename not in self.role):
+                    continue
+                r = self.role[rolename]
+                v = r.hasPermission(self.db, permission, userid, classname,
+                                    property, itemid, has_check)
+                if v:
+                    return v
+        return False
 
     def roleHasSearchPermission(self, classname, property, *rolenames):
         """ For each of the given roles, check the permissions.
             Property can be a transitive property.
         """
         perms = []
-        # pre-compute permissions
-        for rn in rolenames:
-            for perm in self.role[rn].permissions:
-                perms.append(perm)
         # Note: break from inner loop means "found"
         #       break from outer loop means "not found"
         cn = classname
@@ -319,8 +382,8 @@ class Security:
                 prop = cls.getprops()[propname]
             except KeyError:
                 break
-            for perm in perms:
-                if perm.searchable(cn, propname):
+            for rn in rolenames:
+                if self.role[rn].searchable(cn, propname):
                     break
             else:
                 break
@@ -334,8 +397,8 @@ class Security:
                     return 0
                 props = dict.fromkeys(('id', cls.labelprop(), cls.orderprop()))
                 for p in props.keys():
-                    for perm in perms:
-                        if perm.searchable(prop.classname, p):
+                    for rn in rolenames:
+                        if self.role[rn].searchable(prop.classname, p):
                             break
                     else:
                         return 0
@@ -409,7 +472,7 @@ class Security:
             permission = self.getPermission(permission, classname,
                                             properties, check, props_only)
         role = self.role[rolename.lower()]
-        role.permissions.append(permission)
+        role.addPermission(permission)
 
     # Convenience methods for removing non-allowed properties from a
     # filterspec or sort/group list

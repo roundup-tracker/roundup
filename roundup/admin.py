@@ -1920,7 +1920,7 @@ Erase it? Y/N: """) % locals())
         roles.sort()
         for _rolename, role in roles:
             sys.stdout.write(_('Role "%(name)s":\n') % role.__dict__)
-            for permission in role.permissions:
+            for permission in role.permission_list():
                 d = permission.__dict__
                 if permission.klass:
                     if permission.properties:
