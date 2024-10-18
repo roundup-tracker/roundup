@@ -310,7 +310,7 @@ class Security:
                                                                   classname))
 
     def hasPermission(self, permission, userid, classname=None,
-                      property=None, itemid=None):
+                      property=None, itemid=None, only_no_check=False):
         '''Look through all the Roles, and hence Permissions, and
            see if "permission" exists given the constraints of
            classname, property, itemid, and props_only.
@@ -345,7 +345,10 @@ class Security:
         # Note that checks with a check method are typically a lot more
         # expensive than the ones without. So we check the ones without
         # a check method first
-        for has_check in False, True:
+        checklist = (False, True)
+        if only_no_check:
+            checklist = (False,)
+        for has_check in checklist:
             for rolename in self.db.user.get_roles(userid):
                 if not rolename or (rolename not in self.role):
                     continue
