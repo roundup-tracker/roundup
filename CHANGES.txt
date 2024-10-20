@@ -26,6 +26,8 @@ Fixed:
 - issue2551131 - Return accept-patch if patch body not accepted
   (415 code). Accept-Patch returned with acceptable values. (John
   Rouillard)
+- issue2551074 - In "responsive" template: click on hide comment leads
+  to a red error msg. (Report by Ludwig Reiter; fix John Rouillard)
 
 Features:
 

@@ -108,6 +108,33 @@ the `PySQLite <https://github.com/ghaering/pysqlite>`_ library has
 been removed in 2.5.0. Only the Python supplied sqlite3 library will
 be supported.
 
+Update responsive template _generic.404.html and query.item.html (recommended)
+------------------------------------------------------------------------------
+
+This only applies if your tracker is based on the responsive
+template. Check the TEMPLATE-INFO.txt file in your tracker
+home. The template name is the first component of the ``Name``
+field. For example a Name like::
+
+   Name: responsive-bugtracker
+
+is based on the responsive template. If the Name doesn't start with
+``responsive`` no changes are needed.
+
+The ``_generic.404.html`` and ``query.item.html`` templates will crash
+when displayed because a missing macro is called. Change::
+
+  <tal:block metal:use-macro="templates/page/macros/icing">
+
+to::
+
+  <tal:block metal:use-macro="templates/page/macros/frame">
+
+at the top of both files. The icing macro used in other tracker
+templates was renamed to frame in this tracker template.
+
+
+
 .. index:: Upgrading; 2.3.0 to 2.4.0
 
 Migrating from 2.3.0 to 2.4.0
