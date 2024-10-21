@@ -3421,14 +3421,13 @@ function help_window(helpurl, width, height) {
     def batch(self, permission='View'):
         """ Return a batch object for results from the "current search"
         """
-        sec = self._client.db.security
-        check = sec.hasPermission
+        check = self._client.db.security.hasPermission
         userid = self._client.userid
         if not check('Web Access', userid):
             return Batch(self.client, [], self.pagesize, self.startwith,
                          classname=self.classname)
 
-        filterspec = self.filterspec
+        fspec = self.filterspec
         sort = self.sort
         group = self.group
 
@@ -3454,35 +3453,9 @@ function help_window(helpurl, width, height) {
             matches = None
 
         # filter for visibility
-        item_ids = klass.filter(matches, filterspec, sort, group)
-        cn = self.classname
-        if check(permission, userid, cn, only_no_check = True):
-            allowed = item_ids
-        else:
-            # Note that is_filterable returns True if no permissions are
-            # found. This makes it fail early (with an empty allowed list)
-            # instead of running through all ids with an empty
-            # permission list.
-            if sec.is_filterable(permission, userid, cn):
-                new_ids = set(item_ids)
-                confirmed = set()
-                for perm in sec.filter_iter(permission, userid, cn):
-                    fargs = perm.filter(self._client.db, userid, klass)
-                    for farg in fargs:
-                        farg.update(sort=sort, group=group, retired=False)
-                        result = klass.filter(list(new_ids), **farg)
-                        new_ids.difference_update(result)
-                        confirmed.update(result)
-                        # all allowed?
-                        if not new_ids:
-                            break
-                    # all allowed?
-                    if not new_ids:
-                        break
-                allowed = list(confirmed)
-            else:
-                allowed = [id for id in item_ids
-                           if check(permission, userid, cn, itemid=id)]
+        allowed = klass.filter_with_permissions(
+            matches, fspec, sort, group, permission=permission, userid=userid
+        )
 
         # return the batch object, using IDs only
         return Batch(self.client, allowed, self.pagesize, self.startwith,

@@ -1796,6 +1796,56 @@ class Class:
     # anyway).
     filter_iter = filter
 
+    def filter_with_permissions(self, search_matches, filterspec, sort=[],
+                                group=[], retired=False, exact_match_spec={},
+                                limit=None, offset=None,
+                                permission='View', userid=None):
+        """ Do the same as filter but return only the items the user is
+            entitled to see, running the results through security checks.
+            The userid defaults to the current database user.
+        """
+        if userid is None:
+            userid = self.db.getuid()
+        cn = self.classname
+        sec = self.db.security
+        filterspec = sec.filterFilterspec(userid, cn, filterspec)
+        sort = sec.filterSortspec(userid, cn, sort)
+        group = sec.filterSortspec(userid, cn, group)
+        item_ids = self.filter(search_matches, filterspec, sort, group,
+                               retired, exact_match_spec, limit, offset)
+        check = sec.hasPermission
+        if check(permission, userid, cn, only_no_check = True):
+            allowed = item_ids
+        else:
+            # Note that is_filterable returns True if no permissions are
+            # found. This makes it fail early (with an empty allowed list)
+            # instead of running through all ids with an empty
+            # permission list.
+            if sec.is_filterable(permission, userid, cn):
+                new_ids = set(item_ids)
+                confirmed = set()
+                for perm in sec.filter_iter(permission, userid, cn):
+                    fargs = perm.filter(self._client.db, userid, klass)
+                    for farg in fargs:
+                        farg.update(sort=[], group=[], retired=None)
+                        result = klass.filter(list(new_ids), **farg)
+                        new_ids.difference_update(result)
+                        confirmed.update(result)
+                        # all allowed?
+                        if not new_ids:
+                            break
+                    # all allowed?
+                    if not new_ids:
+                        break
+                # Need to sort again in database
+                allowed = self.filter(confirmed, {}, sort=sort, group=group,
+                                      retired=None)
+            else: # Last resort: filter in python
+                allowed = [id for id in item_ids
+                           if check(permission, userid, cn, itemid=id)]
+        return allowed
+
+
     def count(self):
         """Get the number of nodes in this class.
 
