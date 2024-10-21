@@ -18,6 +18,20 @@ class Permission:
         - properties (optional)
         - check function (optional)
         - props_only (optional, internal field is limit_perm_to_props_only)
+        - filter function (optional) returns filter arguments for
+          determining which records are visible by the user. The filter
+          function comes into play when determining if a set of nodes
+          found via a filter call of a class can be seen by the user --
+          the normal way would be to call the permissions for each item
+          found, the filter call performs this on the database for all
+          nodes.
+          Signature of the filter function:
+          filter(db, userid, klass)
+          The filter must return a list of dictionaries with filter parameters.
+          Note that sort and group parameters of the filter call should
+          not be set by filter method (they will be overwritten) and the
+          parameter search_matches must not be set.
+          An empty list returned means no access for this filter method.
 
         The klass may be unset, indicating that this permission is not
         locked to a particular class. That means there may be multiple
@@ -47,7 +61,7 @@ class Permission:
     limit_perm_to_props_only = False
 
     def __init__(self, name='', description='', klass=None,
-                 properties=None, check=None, props_only=None):
+                 properties=None, check=None, props_only=None, filter=None):
         from roundup.anypy import findargspec
         self.name = name
         self.description = description
@@ -55,6 +69,7 @@ class Permission:
         self.properties = properties
         self._properties_dict = support.TruthDict(properties)
         self.check = check
+        self.filter = filter
         if properties is not None:
             # Set to None unless properties are defined.
             # This means that:
@@ -211,6 +226,21 @@ class Role:
                 self._permissions[pn][cn] = dict (((False, []), (True, [])))
             self._permissions[pn][cn][bool(p.check)].append(p)
 
+    def filter_iter (self, permission, classname):
+        """ Loop over all permissions for the current role on the class
+            with a check method (and props_only False).
+        """
+        if permission not in self._permissions:
+            return
+        for c in (None, classname):
+            if c not in self._permissions[permission]:
+                continue
+            perms = self._permissions[permission][c][True]
+            for p in perms:
+                if p.limit_perm_to_props_only and p.properties:
+                    continue
+                yield p
+
     def hasPermission (self, db, perm, uid, classname, property, itemid, chk):
         # if itemid is given a classname must, too, checked in caller
         assert not itemid or classname
@@ -282,6 +312,17 @@ class Security:
         client.initialiseSecurity(self)
         from roundup import mailgw
         mailgw.initialiseSecurity(self)
+
+    def filter_iter(self, permission, userid, classname):
+        """ Loop over all permissions for the current user on the class
+            with a check method (and props_only False).
+        """
+        for rolename in self.db.user.get_roles(userid):
+            if not rolename or (rolename not in self.role):
+                continue
+            r = self.role[rolename]
+            for perm in r.filter_iter(permission, classname):
+                yield perm
 
     def getPermission(self, permission, classname=None, properties=None,
                       check=None, props_only=None):
@@ -358,6 +399,19 @@ class Security:
                 if v:
                     return v
         return False
+
+    def is_filterable(self, permission, userid, classname):
+        """ Check if all permissions for the current user on the class
+            with a check method (and props_only False) also have a
+            filter method. We only consider permissions with props_only
+            set to False. Note that this will return True if there are
+            no permissions with a check method found, the performed
+            checks later will find no matching records.
+        """
+        for perm in self.filter_iter (permission, userid, classname):
+            if not perm.filter:
+                return False
+        return True
 
     def roleHasSearchPermission(self, classname, property, *rolenames):
         """ For each of the given roles, check the permissions.
