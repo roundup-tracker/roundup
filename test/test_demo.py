@@ -92,10 +92,12 @@ class TestDemo(unittest.TestCase):
 
         # verify the default anydbm db is created
         db_file = self.home + normpath("/db/nodes.user")
+        db_file2 = db_file + '.db'
         db_file_dumbdbm = self.home + normpath("/db/nodes.user.dir")
         self.assertTrue(os.path.isfile(db_file) or
+                        os.path.isfile(db_file2) or
                         os.path.isfile(db_file_dumbdbm),
-                        "expected db file %s or %s does not exist" % (
+                        "expected db file %s[.db] or %s does not exist" % (
                             db_file, db_file_dumbdbm
                         ))
 
@@ -145,8 +147,9 @@ class TestDemo(unittest.TestCase):
 
         # verify the requested anydbm db file is created
         db_file = self.home + "/db/nodes.user"
-        self.assertTrue(os.path.isfile(db_file),
-                        "expected db file %s does not exist" % db_file)
+        db_file2 = db_file + '.db'
+        self.assertTrue(os.path.isfile(db_file) or os.path.isfile(db_file2),
+                        "expected db file %s[.db] does not exist" % db_file)
 
         # verify that template was set to jinja2 by reading config
         with open(self.home + "/config.ini", "r") as f:
