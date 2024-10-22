@@ -1809,6 +1809,9 @@ class Class:
         cn = self.classname
         sec = self.db.security
         filterspec = sec.filterFilterspec(userid, cn, filterspec)
+        if exact_match_spec:
+            exact_match_spec = sec.filterFilterspec(userid, cn,
+                                                    exact_match_spec)
         sort = sec.filterSortspec(userid, cn, sort)
         group = sec.filterSortspec(userid, cn, group)
         item_ids = self.filter(search_matches, filterspec, sort, group,
