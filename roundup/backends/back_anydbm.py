@@ -408,11 +408,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if db is None:
             db = self.getclassdb(classname)
         if nodeid not in db:
+            db.close()
             raise IndexError("no such %s %s" % (classname, nodeid))
 
         # check the uncommitted, destroyed nodes
         if (classname in self.destroyednodes and
                 nodeid in self.destroyednodes[classname]):
+            db.close()
             raise IndexError("no such %s %s" % (classname, nodeid))
 
         # decode
