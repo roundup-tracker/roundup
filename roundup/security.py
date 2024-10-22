@@ -155,11 +155,16 @@ class Permission:
         if self.klass is not None and self.klass != classname:
             return 0
 
-        # what about property?
-        if not self._properties_dict[property]:
+        # Do not allow access if we have a check method
+        if self.check:
             return 0
 
-        if self.check:
+        # Allow if we have access to *all* properties
+        if self.properties is None:
+            return 1
+
+        # what about property?
+        if not self._properties_dict[property]:
             return 0
 
         return 1
@@ -276,11 +281,17 @@ class Role:
             # Only permissions without a check method
             if perm not in self._permissions:
                 continue
-            if classname not in self._permissions[perm]:
+            p = self._permissions[perm]
+            if classname not in p and None not in p:
                 continue
-            for p in self._permissions[perm][classname][False]:
-                if p.searchable(classname, propname):
-                    return True
+            if None in p:
+                for p in p[None][False]:
+                    if p.searchable(classname, propname):
+                        return True
+            if classname in p:
+                for p in p[classname][False]:
+                    if p.searchable(classname, propname):
+                        return True
 
 
 class Security:
