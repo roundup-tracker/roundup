@@ -1518,7 +1518,7 @@ The ``addPermission`` method takes a three optional parameters:
 
   Note that the check option is not supported for the Search
   permission. When searching there is no item defined, so a check
-  function doesn not make any sense.
+  function does not make any sense.
 
 **properties**
   A sequence of property names that are the only properties to apply the
