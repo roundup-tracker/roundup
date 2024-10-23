@@ -1,3 +1,12 @@
+Getting started:
+For running the tests, you want to take a look at the documentation in
+doc/developer.txt, in particular the section "Testing Notes".
+For a test setup of the database backends, suitable documentation is
+found in in doc/postgresql.txt for the Postgres backend, in the section
+titled "Running the PostgreSQL unit tests". For the MySQL backend the
+file doc/doc/mysql.txt has the documentation in section "Running the
+MySQL tests".
+
 A number of tests uses the infrastructure of
 	db_test_base.py
 
