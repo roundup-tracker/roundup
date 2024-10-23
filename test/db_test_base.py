@@ -3033,6 +3033,22 @@ class DBTest(commonDBTest):
         # User may see own and public queries
         self.assertEqual(r, ['5', '6', '4', '3', '2', '1'])
 
+    def testFilteringWithPermissionFilterFunctionOff(self):
+        view_query = self.setupQuery()
+
+        def filter(db, userid, klass):
+            return [dict(filterspec = dict(private_for=['-1', userid]))]
+        perm = self.db.security.addPermission
+        p = perm(name='View', klass='query', check=view_query, filter=filter)
+        self.db.security.addPermissionToRole("User", p)
+        # Turn filtering off
+        self.db.config.RDBMS_DEBUG_FILTER = True
+        filt = self.db.query.filter_with_permissions
+
+        r = filt(None, {}, sort=[('+', 'name')])
+        # User may see own and public queries
+        self.assertEqual(r, ['5', '6', '4', '3', '2', '1'])
+
 # XXX add sorting tests for other types
 
     # nuke and re-create db for restore

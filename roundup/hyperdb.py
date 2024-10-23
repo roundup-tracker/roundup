@@ -1820,11 +1820,12 @@ class Class:
         if check(permission, userid, cn, only_no_check = True):
             allowed = item_ids
         else:
+            debug = self.db.config.RDBMS_DEBUG_FILTER
             # Note that is_filterable returns True if no permissions are
             # found. This makes it fail early (with an empty allowed list)
             # instead of running through all ids with an empty
             # permission list.
-            if sec.is_filterable(permission, userid, cn):
+            if not debug and sec.is_filterable(permission, userid, cn):
                 new_ids = set(item_ids)
                 confirmed = set()
                 for perm in sec.filter_iter(permission, userid, cn):

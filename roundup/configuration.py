@@ -1462,6 +1462,17 @@ always passes, so setting it less than 1 is not recommended."""),
     ("rdbms", (
         (DatabaseBackend, 'backend', NODEFAULT,
             "Database backend."),
+        (BooleanOption, "debug_filter", "no",
+	    "Filter debugging: Permissions can define additional filter\n"
+            "functions that are used when checking permissions on results\n"
+            "returned by the database. This is done to improve\n"
+            "performance since the filtering is done in the database\n"
+            "backend, not in python (at least for the SQL backends). The\n"
+            "user is responsible for making the filter return the same\n"
+            "set of results as the check function for a permission. So it\n"
+            "makes sense to aid in debugging (and performance\n"
+            "measurements) to allow turning off the usage of filter\n"
+            "functions using only the check functions."),
         (Option, 'name', 'roundup',
             "Name of the database to use. For Postgresql, this can\n"
             "be database.schema to use a specific schema within\n"
@@ -1545,8 +1556,8 @@ always passes, so setting it less than 1 is not recommended."""),
             "Set the database cursor for filter queries to serverside\n"
             "cursor, this avoids caching large amounts of data in the\n"
             "client. This option only applies for the postgresql backend."),
-    ), "Settings in this section (except for backend) are used\n"
-        " by RDBMS backends only.",
+    ), "Most settings in this section (except for backend and debug_filter)\n"
+       "are used by RDBMS backends only.",
     ),
     ("sessiondb", (
         (SessiondbBackendOption, "backend", "",
