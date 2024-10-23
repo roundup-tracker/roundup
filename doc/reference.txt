@@ -1482,7 +1482,7 @@ When adding a new Permission, you need to:
 4. check it in the appropriate hasPermission methods in your tracker's
    extensions/detectors/interfaces.py modules
 
-The ``addPermission`` method takes a three optional parameters:
+The ``addPermission`` method takes a four optional parameters:
 
 **check**
   A function to be executed which returns boolean determining whether
@@ -1564,6 +1564,16 @@ shows the use of ``ctx``.
         (View for "file": ('content', 'summary') only)
 
      **Invalid properties for file: ['summary']
+
+**filter
+  A function that complements a check function: It is used when
+  searching for viewable items. The filter function allows to filter in
+  SQL (for an SQL backend) rather than calling the check function for
+  each item after a query. It must return a list of dictionaries
+  containing parameters for the hyperdb.Class.filter method. An empty
+  list indicates no access. The signature of the filter function is::
+
+    def filter(db, userid, klass):
 
 
 Example Scenarios
