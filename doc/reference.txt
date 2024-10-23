@@ -1286,8 +1286,10 @@ For the "User" Role, the "classic" tracker defines:
 
 - Create, Edit and View issue, file, msg, query, keyword 
 - View priority, status
-- View user
+- View user (limited properties)
+- View their own user record
 - Edit their own user record
+- Search queries
 
 And the "Anonymous" Role has the following permissions:
 
@@ -1509,10 +1511,14 @@ The ``addPermission`` method takes a three optional parameters:
 
      ctx['permission'] the name of the permission (e.g. View, Edit...).
 
-The second form is preferred as it makes it easier to implement more
-complex permission schemes. An `example in upgrading.html
-<upgrading.html#enhancement-to-check-command-for-permissions>`_
-shows the use of ``ctx``.
+  The second form is preferred as it makes it easier to implement more
+  complex permission schemes. An `example in upgrading.html
+  <upgrading.html#enhancement-to-check-command-for-permissions>`_
+  shows the use of ``ctx``.
+
+  Note that the check option is not supported for the Search
+  permission. When searching there is no item defined, so a check
+  function doesn not make any sense.
 
 **properties**
   A sequence of property names that are the only properties to apply the
