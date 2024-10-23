@@ -1828,10 +1828,10 @@ class Class:
                 new_ids = set(item_ids)
                 confirmed = set()
                 for perm in sec.filter_iter(permission, userid, cn):
-                    fargs = perm.filter(self._client.db, userid, klass)
+                    fargs = perm.filter(self.db, userid, self)
                     for farg in fargs:
                         farg.update(sort=[], group=[], retired=None)
-                        result = klass.filter(list(new_ids), **farg)
+                        result = self.filter(list(new_ids), **farg)
                         new_ids.difference_update(result)
                         confirmed.update(result)
                         # all allowed?

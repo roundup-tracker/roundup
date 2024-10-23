@@ -2959,6 +2959,80 @@ class DBTest(commonDBTest):
                 ae(filt(None, {'title': ['one', 'two']}, ('+','id'),
                    retired=retire), r[retire][4])
 
+    def setupQuery(self):
+        self.filteringSetup()
+        self.db.user.set('3', roles='User')
+        self.db.user.set('4', roles='User')
+        self.db.user.set('5', roles='User')
+        self.db.commit()
+        self.db.close()
+        self.open_database('bleep')
+        setupSchema(self.db, 0, self.module)
+        cls = self.module.Class
+        query = cls(self.db, "query", klass=String(), name=String(),
+                    private_for=Link("user"))
+        self.db.post_init()
+        # Allow searching query
+        sec = self.db.security
+        p = sec.addPermission(name='Search', klass='query')
+        sec.addPermissionToRole('User', p)
+        # Queries user3
+        default = dict(klass='issue', private_for='3')
+        self.db.query.create(name='c5', **default)
+        self.db.query.create(name='c4', **default)
+        self.db.query.create(name='b4', **default)
+        self.db.query.create(name='b3', **default)
+        # public queries
+        d = dict(default,private_for=None)
+        self.db.query.create(name='a1', **d)
+        self.db.query.create(name='a2', **d)
+        # Queries user5
+        d = dict(default,private_for='5')
+        self.db.query.create(name='other_user1', **d)
+        self.db.query.create(name='other_user2', **d)
+
+        def view_query(db, userid, itemid):
+            q = db.query.getnode(itemid)
+            if q.private_for is None:
+                return True
+            if q.private_for == userid:
+                return True
+            return False
+
+        return view_query
+
+    def testFilteringWithoutPermissionCheck(self):
+        view_query = self.setupQuery()
+        filt = self.db.query.filter
+        r = filt(None, {}, sort=[('+', 'name')])
+        # Gets all queries
+        self.assertEqual(r, ['5', '6', '4', '3', '2', '1', '7', '8'])
+
+    def testFilteringWithPermissionNoFilterFunction(self):
+        view_query = self.setupQuery()
+        perm = self.db.security.addPermission
+        p = perm(name='View', klass='query', check=view_query)
+        self.db.security.addPermissionToRole("User", p)
+        filt = self.db.query.filter_with_permissions
+
+        r = filt(None, {}, sort=[('+', 'name')])
+        # User may see own and public queries
+        self.assertEqual(r, ['5', '6', '4', '3', '2', '1'])
+
+    def testFilteringWithPermissionFilterFunction(self):
+        view_query = self.setupQuery()
+
+        def filter(db, userid, klass):
+            return [dict(filterspec = dict(private_for=['-1', userid]))]
+        perm = self.db.security.addPermission
+        p = perm(name='View', klass='query', check=view_query, filter=filter)
+        self.db.security.addPermissionToRole("User", p)
+        filt = self.db.query.filter_with_permissions
+
+        r = filt(None, {}, sort=[('+', 'name')])
+        # User may see own and public queries
+        self.assertEqual(r, ['5', '6', '4', '3', '2', '1'])
+
 # XXX add sorting tests for other types
 
     # nuke and re-create db for restore
