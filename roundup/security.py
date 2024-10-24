@@ -122,6 +122,8 @@ class Permission:
             return 0
 
         # what about property?
+        # Note that _properties_dict always returns True if it was
+        # initialized with empty properties
         if property is not None and not self._properties_dict[property]:
             return 0
 
@@ -159,11 +161,9 @@ class Permission:
         if self.check:
             return 0
 
-        # Allow if we have access to *all* properties
-        if self.properties is None:
-            return 1
-
         # what about property?
+        # Note that _properties_dict always returns True if it was
+        # initialized with empty properties
         if not self._properties_dict[property]:
             return 0
 
@@ -362,7 +362,8 @@ class Security:
                                                                   classname))
 
     def hasPermission(self, permission, userid, classname=None,
-                      property=None, itemid=None, only_no_check=False):
+                      property=None, itemid=None,
+                      skip_permissions_with_check=False):
         '''Look through all the Roles, and hence Permissions, and
            see if "permission" exists given the constraints of
            classname, property, itemid, and props_only.
@@ -398,7 +399,7 @@ class Security:
         # expensive than the ones without. So we check the ones without
         # a check method first
         checklist = (False, True)
-        if only_no_check:
+        if skip_permissions_with_check:
             checklist = (False,)
         for has_check in checklist:
             for rolename in self.db.user.get_roles(userid):

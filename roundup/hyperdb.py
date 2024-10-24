@@ -1817,7 +1817,7 @@ class Class:
         item_ids = self.filter(search_matches, filterspec, sort, group,
                                retired, exact_match_spec, limit, offset)
         check = sec.hasPermission
-        if check(permission, userid, cn, only_no_check = True):
+        if check(permission, userid, cn, skip_permissions_with_check = True):
             allowed = item_ids
         else:
             debug = self.db.config.RDBMS_DEBUG_FILTER
