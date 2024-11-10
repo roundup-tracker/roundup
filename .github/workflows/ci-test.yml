@@ -221,6 +221,16 @@ jobs:
           pip install mysqlclient
           pip install psycopg2
 
+      # https://github.com/mxschmitt/action-tmate
+      # allow remote ssh into the CI container. I need this to debug
+      # some xfail cases 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        timeout-minutes: 10
+        with:
+          limit-access-to-actor: true
+
       - name: Install auxiliary packages
         run: |
           sudo apt-get install swig gpg gpgsm libgpgme-dev
