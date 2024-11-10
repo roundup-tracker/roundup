@@ -94,6 +94,8 @@ jobs:
             # skip all python versions on 20.04/24.04 except
             # explicitly included
             - os: ubuntu-20.04
+            # disable for testing when getting 24.04 running
+            - os: ubuntu-22.04
             - os: ubuntu-24.04
 
     # run the finalizer for coveralls even if one or more
