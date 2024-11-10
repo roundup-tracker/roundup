@@ -93,7 +93,8 @@ jobs:
         exclude:
             # skip all python versions on 20.04/24.04 except
             # explicitly included
-            - os: [ubuntu-20.04, ubuntu-24.04]
+            - os: ubuntu-20.04
+            - os: ubuntu-24.04
 
     # run the finalizer for coveralls even if one or more
     # experimental matrix runs fail.
@@ -218,7 +219,7 @@ jobs:
 
       - name: Install auxiliary packages
         run: |
-          sudo apt-get install swig gpgsm libgpgme-dev
+          sudo apt-get install swig gpgsm libgpgme-dev libgpgme-dev
           # pygments for markdown2 to highlight code blocks
           pip install markdown2 pygments
           # docutils for ReStructuredText
