@@ -219,7 +219,7 @@ jobs:
 
       - name: Install auxiliary packages
         run: |
-          sudo apt-get install swig gpgsm libgpgme-dev libgpgme-dev
+          sudo apt-get install swig gpgsm libgpgme-dev libgpgme
           # pygments for markdown2 to highlight code blocks
           pip install markdown2 pygments
           # docutils for ReStructuredText
