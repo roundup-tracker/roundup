@@ -221,7 +221,9 @@ jobs:
 
       - name: Install auxiliary packages
         run: |
-          sudo apt-get install swig gpgsm libgpgme-dev libgpgme11-dev
+          sudo apt-get install swig gpgsm libgpgme-dev
+          # required for pip install/build of gpg on ubuntu 24.04??
+          sudo apt-get install libgpgme11t64 || true
           # pygments for markdown2 to highlight code blocks
           pip install markdown2 pygments
           # docutils for ReStructuredText
