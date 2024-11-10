@@ -78,6 +78,10 @@ jobs:
             #  os: ubuntu-22.04
             #  experimental: true
             
+            # test on new default 24.04 runner 3.12 for 24.04
+            - python-version: 3.12
+              os: ubuntu-24.04
+
             # 3.6 not available on new 22.04 runners, so run on 20.04 ubuntu
             - python-version: 3.6
               os: ubuntu-20.04
@@ -86,17 +90,15 @@ jobs:
             - python-version: 3.8
               os: ubuntu-22.04
 
-              # test on new default 24.04 runner 3.12 for 24.04
-            - python-version: 3.12
-              os: ubuntu-24.04
-
         exclude:
             # skip all python versions on 20.04/24.04 except
             # explicitly included
             - os: ubuntu-20.04
-            # disable for testing when getting 24.04 running
-            - os: ubuntu-latest
             - os: ubuntu-24.04
+
+            # disable when testing ubuntu-24.04 to speed up
+            # runs.
+            # - os: ubuntu-latest
 
     # run the finalizer for coveralls even if one or more
     # experimental matrix runs fail.
@@ -232,7 +234,8 @@ jobs:
           # [ubunutu-latest, ubuntu-24.04].
           pip install gpg || ( save_status=$?; \
              if grep 24.04 /etc/os-release > /dev/null; then \
-                 exit 0; else exit $save_status; fi; )
+                 echo "Ignoring error ubuntu-24.04: issue2551368"; exit 0; \
+                 else exit $save_status; fi; )
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
