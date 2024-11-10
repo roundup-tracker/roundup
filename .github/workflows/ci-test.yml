@@ -222,13 +222,17 @@ jobs:
       - name: Install auxiliary packages
         run: |
           sudo apt-get install swig gpgsm libgpgme-dev
-          # required for pip install/build of gpg on ubuntu 24.04??
-          sudo apt-get install libgpgme11t64 || true
           # pygments for markdown2 to highlight code blocks
           pip install markdown2 pygments
           # docutils for ReStructuredText
-          pip install beautifulsoup4 brotli docutils gpg jinja2 \
+          pip install beautifulsoup4 brotli docutils jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
+          # gpg doesn't build on Ubuntu 24.04. Ignore failure on that
+          # platform only. Grep os-release to cover matrix.os in
+          # [ubunutu-latest, ubuntu-24.04].
+          pip install gpg || ( save_status=$?; \
+             if grep 24.04 /etc/os-release > /dev/null; then \
+                 exit 0; else exit $save_status; fi; )
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
