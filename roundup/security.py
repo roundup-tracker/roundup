@@ -89,6 +89,13 @@ class Permission:
 
         if check is None:
             self.check_version = 0
+            if filter is not None:
+                if klass is None:
+                    s = "Definition of a filter function" \
+                        " needs a check function if no klass is given"
+                    raise ValueError(s)
+                self.check = self.check_factory(klass, filter)
+                self.check_version = 1
         else:
             args = findargspec.findargspec(check)
             # args[2] is the keywords argument. Leave it as a subscript and
@@ -101,6 +108,18 @@ class Permission:
             else:
                 # function definition is function(db, userid, itemid, **other)
                 self.check_version = 2
+
+    def check_factory(self, klass, filter_function):
+        """ When a Permission defines a filter function but no check
+            function, we manufacture a check function here
+        """
+        def check(db, userid, itemid):
+            cls = db.getclass(klass)
+            args = filter_function(db, userid, cls)
+            for a in args:
+                if cls.filter([itemid], **a):
+                    return True
+        return check
 
     def test(self, db, permission, classname, property, userid, itemid):
         ''' Test permissions 5 args:
