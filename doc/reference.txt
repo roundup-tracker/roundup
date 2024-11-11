@@ -1514,6 +1514,82 @@ complex permission schemes. An `example in upgrading.html
 <upgrading.html#enhancement-to-check-command-for-permissions>`_
 shows the use of ``ctx``.
 
+**filter
+  A function to be executed on the results of a ``filter`` call of the
+  schema ``Class`` before displaying the results in an ``index``
+  template. Calling a ``filter`` method on all results is usually faster
+  than calling a ``check`` method (see previous paragraph) on *each
+  individual result*. The ``filter`` method has the signature::
+  
+    filter(db, userid, klass)
+  
+  where ``db`` is the database handle, ``userid`` is the user attempting
+  access and ``klass`` is the ``Class`` in the schema.
+  The ``filter`` function must return a list of dictionaries of
+  parameters of the `Class.filter`` call. Results found during a query
+  executed by an index template are passed through the filter calls
+  computed by the ``filter`` function. An empty list of filter
+  parameters indicates no access. Note that defining a ``filter``
+  function also needs the definition of a ``check`` function for
+  checking individual items for visibility. A ``check`` function is
+  manufactured automatically from a ``filter`` function in no ``check``
+  function is defined.
+
+  Note that the filter option is not supported for the Search
+  permission. Since the filter function is called *after* the search was
+  already performed a filter function does not make any sense.
+
+  An example ``filter`` function for the ``view_query`` check function
+  in the query checks above would look like::
+
+    def filter_query(db, userid, klass):
+        return [{'filterspec': {'private_for': ['-1', userid]}}]
+
+  This would be called by the framework for all queries found when
+  displaying queries. It filters for all queries where the
+  ``private_for`` field is the userid or empty. This matches the
+  definition of the ``view_query`` function above where permission is
+  granted if the ``private_for`` field indicates the query is owned by
+  the user, or the ``private_for`` field is empty indicating that the
+  query is public. If we want to modify the check to also allow acess if
+  the user is the ``creator`` of a query we would change the filter
+  function to::
+
+    def filter_query(db, userid, klass):
+        f1 = {'filterspec': {'private_for': ['-1', userid]}}
+        f2 = {'filterspec': {'creator': userid}}
+        return [f1, f2]
+
+  This is an example where we need multiple filter calls to model an
+  "or"  condition, the user has access if either the ``private_for``
+  check passes *or* the user is the creator of the query.
+
+  Now consider an example where we have a class ``organisation`` and the
+  ``issue`` class has a ``Link`` to ``organisation`` as has the ``user``
+  class.  Users may only see issues that belong to their own
+  ``organisation``. A ``check`` function for this would be::
+
+    def view_issue(db, userid, itemid):
+        user  = db.user.getnode(userid)
+        if not user.organisation:
+            return False
+        issue = db.issue.getnode(itemid)
+        if user.organisation == issue.organisation:
+            return True
+
+  The corresponding ``filter`` function::
+
+    def filter_issue(db, userid, klass):
+        user = db.user.getnode(userid)
+        if not user.organisation:
+            return []
+        return [{'filterspec': {'organisation': user.organisation}}]
+
+  This filters for all issues where the organisation is the same as the
+  organisation of the user. Note how the filter fails early returning an
+  empty list (meaning "no access") if the user happens to not have an
+  organisation.
+
 **properties**
   A sequence of property names that are the only properties to apply the
   new Permission to (eg. ``... klass='user', properties=('name',
@@ -1564,16 +1640,6 @@ shows the use of ``ctx``.
         (View for "file": ('content', 'summary') only)
 
      **Invalid properties for file: ['summary']
-
-**filter
-  A function that complements a check function: It is used when
-  searching for viewable items. The filter function allows to filter in
-  SQL (for an SQL backend) rather than calling the check function for
-  each item after a query. It must return a list of dictionaries
-  containing parameters for the hyperdb.Class.filter method. An empty
-  list indicates no access. The signature of the filter function is::
-
-    def filter(db, userid, klass):
 
 
 Example Scenarios
