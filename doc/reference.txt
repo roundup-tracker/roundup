@@ -1514,7 +1514,7 @@ complex permission schemes. An `example in upgrading.html
 <upgrading.html#enhancement-to-check-command-for-permissions>`_
 shows the use of ``ctx``.
 
-**filter
+**filter**
   A function to be executed on the results of a ``filter`` call of the
   schema ``Class`` before displaying the results in an ``index``
   template. Calling a ``filter`` method on all results is usually faster
@@ -1526,13 +1526,13 @@ shows the use of ``ctx``.
   where ``db`` is the database handle, ``userid`` is the user attempting
   access and ``klass`` is the ``Class`` in the schema.
   The ``filter`` function must return a list of dictionaries of
-  parameters of the `Class.filter`` call. Results found during a query
+  parameters of the ``Class.filter`` call. Results found during a query
   executed by an index template are passed through the filter calls
   computed by the ``filter`` function. An empty list of filter
   parameters indicates no access. Note that defining a ``filter``
   function also needs the definition of a ``check`` function for
   checking individual items for visibility. A ``check`` function is
-  manufactured automatically from a ``filter`` function in no ``check``
+  manufactured automatically from a ``filter`` function if no ``check``
   function is defined.
 
   Note that the filter option is not supported for the Search
