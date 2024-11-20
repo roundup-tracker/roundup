@@ -223,6 +223,12 @@ Fixed:
   HTTP/1.1, this causes a delay while the browser waits for a timeout.
   Forcing the connection to close after the CSV file is written
   removes the delay. (John Rouillard)
+- issue2551330 Add an optional 'filter' function to the Permission
+  objects and the addPermission method. This is used to optimize search
+  performance by not checking items returned from a database query
+  one-by-one (using the check function) but instead offload the
+  permission checks to the database. For SQL backends this performs the
+  filtering in the database.  (Ralf Schlatterbeck)
 
 Features:
 
