@@ -1549,7 +1549,9 @@ shows the use of ``ctx``.
   in the query checks above would look like::
 
     def filter_query(db, userid, klass):
-        return [{'filterspec': {'private_for': ['-1', userid]}}]
+        return [{'filterspec': {
+                     'private_for': ['-1', userid]
+               }}]
 
   This would be called by the framework for all queries found when
   displaying queries. It filters for all queries where the
@@ -1570,10 +1572,11 @@ shows the use of ``ctx``.
   "or"  condition, the user has access if either the ``private_for``
   check passes *or* the user is the creator of the query.
 
-  Now consider an example where we have a class ``organisation`` and the
-  ``issue`` class has a ``Link`` to ``organisation`` as has the ``user``
-  class.  Users may only see issues that belong to their own
-  ``organisation``. A ``check`` function for this would be::
+  Consider an example where we have a class structure where both the
+  ``issue`` class and the ``user`` class include a reference to an
+  ``organization`` class. Users are permitted to view only those
+  issues that are associated with their respective organizations. A
+  check function or this could look like::
 
     def view_issue(db, userid, itemid):
         user  = db.user.getnode(userid)
@@ -1589,7 +1592,9 @@ shows the use of ``ctx``.
         user = db.user.getnode(userid)
         if not user.organisation:
             return []
-        return [{'filterspec': {'organisation': user.organisation}}]
+        return [{'filterspec': {
+                     'organisation': user.organisation
+               }}]
 
   This filters for all issues where the organisation is the same as the
   organisation of the user. Note how the filter fails early returning an
