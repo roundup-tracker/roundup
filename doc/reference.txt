@@ -1515,25 +1515,31 @@ complex permission schemes. An `example in upgrading.html
 shows the use of ``ctx``.
 
 **filter**
-  A function to be executed on the results of a ``filter`` call of the
-  schema ``Class`` before displaying the results in an ``index``
-  template. Calling a ``filter`` method on all results is usually faster
-  than calling a ``check`` method (see previous paragraph) on *each
-  individual result*. The ``filter`` method has the signature::
+  This optional function returns parameters for the ``filter`` method
+  when getting ``Class`` items (users, issues etc.) from the
+  database. It filters items at the database level (using SQL where
+  possible).  This pre-filters the number of items returned from the
+  database when displaying results in an ``index`` template.  This
+  filtering is usually faster than calling a ``check`` method (see
+  previous argument) on *each individual result*.
+
+  The ``filter`` method has the signature::
   
     filter(db, userid, klass)
   
   where ``db`` is the database handle, ``userid`` is the user attempting
   access and ``klass`` is the ``Class`` in the schema.
-  The ``filter`` function must return a list of dictionaries of
-  parameters of the ``Class.filter`` call. Results found during a query
-  executed by an index template are passed through the filter calls
-  computed by the ``filter`` function. An empty list of filter
-  parameters indicates no access. Note that defining a ``filter``
-  function also needs the definition of a ``check`` function for
-  checking individual items for visibility. A ``check`` function is
-  manufactured automatically from a ``filter`` function if no ``check``
-  function is defined.
+
+  The ``filter`` function must return a *list* of dictionaries of
+  parameters of the
+  `Class.filter <design.html#:~:text=search_matches>`_ call. Results
+  found during a query executed by an index template are passed
+  through the filter calls computed by the ``filter`` function. An
+  empty list of filter parameters (``[]``) indicates no access. When
+  using a filter, a check function is still needed to test each
+  individual item for visibility. When the filter function is defined
+  but a check function is not defined, a check function is
+  manufactured automatically from the ``filter`` function.
 
   Note that the filter option is not supported for the Search
   permission. Since the filter function is called *after* the search was
