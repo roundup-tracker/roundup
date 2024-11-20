@@ -1532,9 +1532,14 @@ shows the use of ``ctx``.
 
   The ``filter`` function must return a *list* of dictionaries of
   parameters of the
-  `Class.filter <design.html#:~:text=search_matches>`_ call. Results
-  found during a query executed by an index template are passed
-  through the filter calls computed by the ``filter`` function. An
+  `Class.filter <design.html#:~:text=search_matches>`_ call.
+  This includes filterspec, retired and exact_match_specs.
+  Note that sort and group parameters of the filter call should
+  not be set by filter method (they will be overwritten) and the
+  parameter search_matches must not be set.
+
+  The query executed by an index template is modified by the
+  parameters computed by the ``filter`` function. An
   empty list of filter parameters (``[]``) indicates no access. When
   using a filter, a check function is still needed to test each
   individual item for visibility. When the filter function is defined
