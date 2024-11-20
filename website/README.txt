@@ -124,8 +124,16 @@ Roundup is run using gunicorn and wsgi.
 You have 'sudo -u roundup' access if you need to run things as the
 roundup user.
 
-The configuration is in the "website/issues" section of Roundup's
-Mercurical SCM repository and copied manually to the live tracker.
+The configuration is tracked in multiple places.
+The one used by PSF infrastrcuture is:
+
+   https://github.com/psf/bpo-tracker-roundup
+
+Contact ee-durbin (or psf infra) for an invite to their repo.
+
+Usually testing is done with: the "website/issues" section
+of Roundup's Mercurical SCM repository and copied manually to the live
+tracker.
 
   * get a working copy of roundup/website/issues from the SCM, either via
         hg clone https://hg.code.sf.net/p/roundup/code
@@ -135,7 +143,23 @@ Mercurical SCM repository and copied manually to the live tracker.
   * check the differences
       diff -ur /srv/roundup/trackers/roundup/ roundup/website/issues/
 
-Copy differences using 'sudo -u roundup ...'.
+Copy differences using 'sudo -u roundup ...' into production for testing.
+
+Restart the server with:
+
+ sudo service roundup-roundup restart
+
+The git version is what PSF uses if they have to rebuild/move our
+tracker. So it's important to keep it up to date.
+
+They also generate the config.ini from an ansible script. So if you
+need to change settings in config.ini (e.g. logging from ERROR to
+WARNING) and have it persist across (daily+) ansible runs you need to
+update:
+
+ pillar/base/bugs.sls
+
+in the https://github.com/python/psf-salt repo and then push it.
 
 Getting a user account
 ~~~~~~~~~~~~~~~~~~~~~~
