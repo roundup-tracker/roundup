@@ -3427,7 +3427,7 @@ function help_window(helpurl, width, height) {
             return Batch(self.client, [], self.pagesize, self.startwith,
                          classname=self.classname)
 
-        filterspec = self.filterspec
+        fspec = self.filterspec
         sort = self.sort
         group = self.group
 
@@ -3453,9 +3453,9 @@ function help_window(helpurl, width, height) {
             matches = None
 
         # filter for visibility
-        allowed = [itemid for itemid in klass.filter(matches, filterspec,
-                                                     sort, group)
-                   if check(permission, userid, self.classname, itemid=itemid)]
+        allowed = klass.filter_with_permissions(
+            matches, fspec, sort, group, permission=permission, userid=userid
+        )
 
         # return the batch object, using IDs only
         return Batch(self.client, allowed, self.pagesize, self.startwith,

@@ -1484,7 +1484,7 @@ When adding a new Permission, you need to:
 4. check it in the appropriate hasPermission methods in your tracker's
    extensions/detectors/interfaces.py modules
 
-The ``addPermission`` method takes a three optional parameters:
+The ``addPermission`` method takes a four optional parameters:
 
 **check**
   A function to be executed which returns boolean determining whether
@@ -1519,6 +1519,98 @@ The ``addPermission`` method takes a three optional parameters:
   Note that the check option is not supported for the Search
   permission. When searching there is no item defined, so a check
   function does not make any sense.
+
+**filter**
+  This optional function returns parameters for the ``filter`` method
+  when getting ``Class`` items (users, issues etc.) from the
+  database. It filters items at the database level (using SQL where
+  possible).  This pre-filters the number of items returned from the
+  database when displaying results in an ``index`` template.  This
+  filtering is usually faster than calling a ``check`` method (see
+  previous argument) on *each individual result*.
+
+  The ``filter`` method has the signature::
+  
+    filter(db, userid, klass)
+  
+  where ``db`` is the database handle, ``userid`` is the user attempting
+  access and ``klass`` is the ``Class`` in the schema.
+
+  The ``filter`` function must return a *list* of dictionaries of
+  parameters of the
+  `Class.filter <design.html#:~:text=search_matches>`_ call.
+  This includes filterspec, retired and exact_match_specs.
+  Note that sort and group parameters of the filter call should
+  not be set by filter method (they will be overwritten) and the
+  parameter search_matches must not be set.
+
+  The query executed by an index template is modified by the
+  parameters computed by the ``filter`` function. An
+  empty list of filter parameters (``[]``) indicates no access. When
+  using a filter, a check function is still needed to test each
+  individual item for visibility. When the filter function is defined
+  but a check function is not defined, a check function is
+  manufactured automatically from the ``filter`` function.
+
+  Note that the filter option is not supported for the Search
+  permission. Since the filter function is called *after* the search was
+  already performed a filter function does not make any sense.
+
+  An example ``filter`` function for the ``view_query`` check function
+  in the query checks above would look like::
+
+    def filter_query(db, userid, klass):
+        return [{'filterspec': {
+                     'private_for': ['-1', userid]
+               }}]
+
+  This would be called by the framework for all queries found when
+  displaying queries. It filters for all queries where the
+  ``private_for`` field is the userid or empty. This matches the
+  definition of the ``view_query`` function above where permission is
+  granted if the ``private_for`` field indicates the query is owned by
+  the user, or the ``private_for`` field is empty indicating that the
+  query is public. If we want to modify the check to also allow acess if
+  the user is the ``creator`` of a query we would change the filter
+  function to::
+
+    def filter_query(db, userid, klass):
+        f1 = {'filterspec': {'private_for': ['-1', userid]}}
+        f2 = {'filterspec': {'creator': userid}}
+        return [f1, f2]
+
+  This is an example where we need multiple filter calls to model an
+  "or"  condition, the user has access if either the ``private_for``
+  check passes *or* the user is the creator of the query.
+
+  Consider an example where we have a class structure where both the
+  ``issue`` class and the ``user`` class include a reference to an
+  ``organization`` class. Users are permitted to view only those
+  issues that are associated with their respective organizations. A
+  check function or this could look like::
+
+    def view_issue(db, userid, itemid):
+        user  = db.user.getnode(userid)
+        if not user.organisation:
+            return False
+        issue = db.issue.getnode(itemid)
+        if user.organisation == issue.organisation:
+            return True
+
+  The corresponding ``filter`` function::
+
+    def filter_issue(db, userid, klass):
+        user = db.user.getnode(userid)
+        if not user.organisation:
+            return []
+        return [{'filterspec': {
+                     'organisation': user.organisation
+               }}]
+
+  This filters for all issues where the organisation is the same as the
+  organisation of the user. Note how the filter fails early returning an
+  empty list (meaning "no access") if the user happens to not have an
+  organisation.
 
 **properties**
   A sequence of property names that are the only properties to apply the

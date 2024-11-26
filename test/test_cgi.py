@@ -1035,9 +1035,11 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         def hasPermission(s, p, classname=None, d=None, e=None, **kw):
             return True
         actions.Action.hasPermission = hasPermission
+        orig_HTMLItem_is_edit_ok = _HTMLItem.is_edit_ok
         e1 = _HTMLItem.is_edit_ok
         _HTMLItem.is_edit_ok = lambda x : True
         e2 = HTMLProperty.is_edit_ok
+        orig_HTMLProperty_is_edit_ok = HTMLProperty.is_edit_ok
         HTMLProperty.is_edit_ok = lambda x : True
 
         # test with no headers. Default config requires that 1 header
@@ -1227,6 +1229,9 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
         #raise ValueError
+        # Undo monkey patching
+        _HTMLItem.is_edit_ok = orig_HTMLItem_is_edit_ok
+        HTMLProperty.is_edit_ok = orig_HTMLProperty_is_edit_ok
 
     def testRestOriginValidationCredentials(self):
         import json

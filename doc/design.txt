@@ -1524,6 +1524,7 @@ The security module defines::
             - klass (optional)
             - properties (optional)
             - check function (optional)
+            - filter function (optional)
 
             The klass may be unset, indicating that this permission is
             not locked to a particular hyperdb class. There may be
@@ -1536,6 +1537,16 @@ The security module defines::
             If check function is set, permission is granted only when
             the function returns value interpreted as boolean true.
             The function is called with arguments db, userid, itemid.
+
+            A filter function complements a check function: It is used
+            when searching for viewable items. The filter function
+            allows to filter in SQL rather than calling the check
+            function for each item after a query. It must return a list
+            of dictionaries containing parameters for the hyperdb.Class.filter
+            method. An empty list indicates no access. The signature of
+            the filter function is::
+
+                def filter(db, userid, klass):
         '''
 
     class Role:

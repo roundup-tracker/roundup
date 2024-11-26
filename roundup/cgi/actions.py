@@ -1706,13 +1706,9 @@ class ExportCSVAction(Action):
         # generate the CSV output
         self.client._socket_op(writer.writerow, columns)
         # and search
-        for itemid in klass.filter(matches, filterspec, sort, group):
+        filter = klass.filter_with_permissions
+        for itemid in filter(matches, filterspec, sort, group):
             row = []
-            # don't put out a row of [hidden] fields if the user has
-            # no access to the issue.
-            if not self.hasPermission(self.permissionType, itemid=itemid,
-                                      classname=request.classname):
-                continue
             for name in columns:
                 # check permission for this property on this item
                 # TODO: Permission filter doesn't work for the 'user' class
@@ -1807,15 +1803,9 @@ class ExportCSVWithIdAction(Action):
         self.client._socket_op(writer.writerow, columns)
 
         # and search
-        for itemid in klass.filter(matches, filterspec, sort, group):
+        filter = klass.filter_with_permissions
+        for itemid in filter(matches, filterspec, sort, group):
             row = []
-            # FIXME should this code raise an exception if an item
-            # is included that can't be accessed? Enabling this
-            # check will just skip the row for the inaccessible item.
-            # This makes it act more like the web interface.
-            # if not self.hasPermission(self.permissionType, itemid=itemid,
-            #                          classname=request.classname):
-            #    continue
             for name in columns:
                 # check permission to view this property on this item
                 if not self.hasPermission(self.permissionType, itemid=itemid,

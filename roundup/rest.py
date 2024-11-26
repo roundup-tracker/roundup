@@ -953,7 +953,7 @@ class RestfulInstance(object):
             kw['limit'] = self.max_response_row_size
             if page['index'] is not None and page['index'] > 1:
                 kw['offset'] = (page['index'] - 1) * page['size']
-        obj_list = class_obj.filter(None, *l, **kw)
+        obj_list = class_obj.filter_with_permissions(None, *l, **kw)
 
         # Have we hit the max number of returned rows?
         # If so there may be more data that the client
@@ -973,10 +973,9 @@ class RestfulInstance(object):
         result['collection'] = []
         for item_id in obj_list:
             r = {}
-            if self.db.security.hasPermission(
-                'View', uid, class_name, itemid=item_id, property='id',
-            ):
-                r = {'id': item_id, 'link': class_path + item_id}
+            # No need to check permission on id here, as we have only
+            # security-checked results
+            r = {'id': item_id, 'link': class_path + item_id}
             if display_props:
                 # format_item does the permission checks
                 r.update(self.format_item(class_obj.getnode(item_id),

@@ -39,6 +39,12 @@ Features:
 - issue2551315 - Document use of
   RestfulInstance.max_response_row_size to limit data returned
   from rest request.
+- issue2551330 Add an optional 'filter' function to the Permission
+  objects and the addPermission method. This is used to optimize search
+  performance by not checking items returned from a database query
+  one-by-one (using the check function) but instead offload the
+  permission checks to the database. For SQL backends this performs the
+  filtering in the database.  (Ralf Schlatterbeck)
 
 2024-07-13 2.4.0
 
