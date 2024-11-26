@@ -190,8 +190,12 @@ class Session:
         self.session_db = client.db.getSessionManager()
 
         # parse cookies for session id
-        self.cookie_name = 'roundup_session_%s' % \
-            re.sub('[^a-zA-Z]', '', client.instance.config.TRACKER_NAME)
+        if self.client.secure:
+            cookie_template = '__Secure-roundup_session_%s'
+        else:
+            cookie_template = 'roundup_session_%s'
+        self.cookie_name = cookie_template % \
+                re.sub('[^a-zA-Z]', '', client.instance.config.TRACKER_NAME)
         cookies = LiberalCookie(client.env.get('HTTP_COOKIE', ''))
         if self.cookie_name in cookies:
             try:

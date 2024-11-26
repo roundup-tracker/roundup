@@ -176,6 +176,18 @@ class BaseTestCases(WsgiSetup):
             return session
         return session, response
 
+    def test_cookie_attributes(self):
+        session, _response = self.create_login_session()
+
+        cookie_box = session.cookies._cookies['localhost.local']['/']
+        cookie = cookie_box['roundup_session_Roundupissuetracker']
+
+        # check cookie attributes. This is an http session, so
+        # we can't check secure or see cookie with __Secure- prefix 8-(.
+        self.assertEqual(cookie.name, 'roundup_session_Roundupissuetracker')
+        self.assertEqual(cookie.expires, None)  # session cookie
+        self.assertEqual(cookie._rest['HttpOnly'], None)  # flag is present
+        self.assertEqual(cookie._rest['SameSite'], 'Lax')
 
     def test_query(self):
         current_user_query = (

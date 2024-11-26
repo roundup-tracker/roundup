@@ -45,6 +45,8 @@ Features:
   one-by-one (using the check function) but instead offload the
   permission checks to the database. For SQL backends this performs the
   filtering in the database.  (Ralf Schlatterbeck)
+- issue2551370 - mark roundup session cookie with __Secure-
+  prefix. (John Rouillard)
 
 2024-07-13 2.4.0
 

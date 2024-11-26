@@ -133,6 +133,21 @@ to::
 at the top of both files. The icing macro used in other tracker
 templates was renamed to frame in this tracker template.
 
+More secure session cookie handling (info)
+------------------------------------------
+
+This affects you if you are accessing a tracker via https.  The name
+for the cookie that you get when logging into the web interface has a
+new name. When upgrading to Roundup 2.5 all users will have to to log
+in again. The cookie now has a ``__Secure-`` prefix to prevent it
+from being exposed/used over http.
+
+If your tracker is using the unencrypted http protocol, nothing has
+changed.
+
+See
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#cookie_prefixes
+for details on this security measure.
 
 
 .. index:: Upgrading; 2.3.0 to 2.4.0
