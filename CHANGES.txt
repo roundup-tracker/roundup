@@ -47,6 +47,11 @@ Features:
   filtering in the database.  (Ralf Schlatterbeck)
 - issue2551370 - mark roundup session cookie with __Secure-
   prefix. (John Rouillard)
+- add -P flag to roundup-server to log client address from
+  X-Forwarded-For reverse proxy header rather than connecting
+  address. This logs the actual client address when
+  roundup-server is run behind a reverse proxy. It also appends a
+  + sign to the logged address/name. (John Rouillard)
 
 2024-07-13 2.4.0
 

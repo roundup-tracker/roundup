@@ -26,6 +26,7 @@ import getopt
 import io
 import logging
 import os
+import re
 import socket
 import sys     # modify sys.path when running in source tree
 import time
@@ -534,11 +535,27 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         tracker.Client(tracker, self, env).main()
 
     def address_string(self):
+        """Get IP address of client from:
+               left most element of X-Forwarded-For header element if set
+               client ip address otherwise.
+           if returned string is from X-Forwarded-For append + to string.
+        """
+        from_forwarded_header=""
+        forwarded_for = None
+        if 'X-FORWARDED-FOR' in self.headers:
+            forwarded_for = re.split(r'[,\s]',
+                                     self.headers['X-FORWARDED-FOR'],
+                                     maxsplit=1)[0]
+            from_forwarded_header="+"
         if self.LOG_IPADDRESS:
-            return self.client_address[0]
+            return "%s%s" % (forwarded_for or self.client_address[0],
+                             from_forwarded_header)
         else:
-            host, port = self.client_address
-            return socket.getfqdn(host)
+            if forwarded_for:
+                host = forwarded_for
+            else:
+                host, port = self.client_address
+            return "%s%s" % (socket.getfqdn(host), from_forwarded_header)
 
     def log_message(self, format, *args):
         ''' Try to *safely* log to stderr.
@@ -547,7 +564,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             logger = logging.getLogger('roundup.http')
 
             logger.info("%s - - [%s] %s" %
-                        (self.client_address[0],
+                        (self.address_string(),
                          self.log_date_time_string(),
                          format % args))
         else:
@@ -680,6 +697,11 @@ class ServerConfig(configuration.Config):
                 "If set to yes the python logging module is used with "
                 "qualname\n'roundup.http'. Otherwise logging is done to "
                 "stderr or the file\nspecified using the -l/logfile option."),
+            (configuration.BooleanOption, "log_proxy_header", "no",
+                "Use first element of reverse proxy header X-Forwarded-For "
+                "as client IP address.\nThis appends a '+' sign to the logged "
+                "host ip/name. Use only if server is\naccessible only via "
+                "trusted reverse proxy."),
             (configuration.NullableFilePathOption, "pidfile", "",
                 "File to which the server records "
                 "the process id of the daemon.\n"
@@ -734,6 +756,7 @@ class ServerConfig(configuration.Config):
         "multiprocess": "t:",
         "template": "i:",
         "loghttpvialogger": 'L',
+        "log_proxy_header": 'P',
         "ssl": "s",
         "pem": "e:",
         "include_headers": "I:",
@@ -952,7 +975,8 @@ def usage(message=''):
  -g <GID>      runs the Roundup web server as this GID
  -d <PIDfile>  run the server in the background and write the server's PID
                to the file indicated by PIDfile. The -l option *must* be
-               specified if -d is used.'''
+               specified if -d is used.
+ -D            run the server in the foreground even when -d is used.'''
     if message:
         message += '\n\n'
     print(_('''\n%(message)sUsage: roundup-server [options] [name=tracker home]*
@@ -974,6 +998,9 @@ Options:
  -m <children> maximum number of children to spawn in fork multiprocess mode
  -s            enable SSL
  -L            http request logging uses python logging (roundup.http)
+ -P            log client address/name using reverse proxy X-Forwarded-For
+               header and not the connection IP (which is the reverse proxy).
+               Appends a '+' sign to the logged address/name.
  -e <fname>    PEM file containing SSL key and certificate
  -t <mode>     multiprocess mode (default: %(mp_def)s).
                Allowed values: %(mp_types)s.

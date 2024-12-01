@@ -20,6 +20,9 @@ Run the server in the background and write the server's PID to the
 file indicated by PIDfile. The -l (or -L) option \fBmust\fP be
 specified if -d is used.
 .TP
+\fB-D\fP
+Run the server in the foreground even if -d is used.
+.TP
 \fB-t\fP \fBfork|thread|debug|none\fP
 Control multi-process mode. \fBdebug\fP and \fBnone\fP are always
 available. If an invalid mode is specified the server starts in
@@ -32,6 +35,17 @@ may need to be increased on a heavily loaded site.  Default 40.
 \fB-l\fP \fIfile\fP
 Sets a filename to log to (instead of stdout). This is required if the -d
 option is used.
+.TP
+\fB-P\fP
+If a reverse proxy is used in front of the roundup-server, the server
+will log the ip address of the proxy, not the client browser. Using -P
+logs the left most entry in the X-Forwarded-For http header as the
+IP address of the client. This address will be logged or resolved to a
+hostname (with \fB-N\fP) and a '+' character will be appended.
+\fB-P\fP should only be used when the
+roundup server is accessible only from trusted proxy hosts. See:
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
+for details and warnings about using the X-Forwarded-For header.
 .TP
 \fB-L\fP
 Have the server log using the Python logger with key roundup.http.
