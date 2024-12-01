@@ -698,9 +698,9 @@ class ServerConfig(configuration.Config):
                 "qualname\n'roundup.http'. Otherwise logging is done to "
                 "stderr or the file\nspecified using the -l/logfile option."),
             (configuration.BooleanOption, "log_proxy_header", "no",
-                "Use first element of reverse proxy header X-Forwarded-For "
-                "as client IP address.\nThis appends a '+' sign to the logged "
-                "host ip/name. Use only if server is\naccessible only via "
+                "Use first element of reverse proxy header X-Forwarded-For\n"
+                "as client IP address. This appends a '+' sign to the logged\n"
+                "host ip/name. Use only if server is accessible only via\n"
                 "trusted reverse proxy."),
             (configuration.NullableFilePathOption, "pidfile", "",
                 "File to which the server records "
