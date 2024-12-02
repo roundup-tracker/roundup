@@ -445,6 +445,42 @@ the supported format and features.
 
 .. _`documentation for configuring the native-fts`: admin_guide.html#configuring-native-fts-full-text-search
 
+Advanced Searching with Property Expressions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can create more advanced searches in your tracker by using Reverse
+Polish Notation (`RPN`_) to make property expressions. By default, when
+filtering by multiple items, the expression type is 'or'. For
+instance, if you filter the property assignedto by adding the query
+string element "assignedto=2,3,40", it matches users "2 or 3 or
+40". In RPN, this would be written as "2, 3, or, 4, or". Roundup uses
+negative numbers to represent operators. For example, using "-1" for a
+single value (e.g. the assignedto Link property, but not the keyword
+multivalued/MultiLink property) matches an issue where the property is
+'not set'.
+
+The operators and their corresponding numbers are:
+
+* 'not' is represented by -2
+* 'and' is represented by -3
+* 'or' is represented by -4
+
+So, "assignedto=2,3,40" is the same as
+"assignedto=2,3,-4,40,-4". While this example is the same as
+"2,3,40", the expression "keyword=1,2,-3,-2" filters issues that don't
+have both keywords 1 and 2.
+
+Another example is: ``creator=3,-2,1,-2,-3``. This is the same as the
+expression: ``(not user3) and (not user1)``. Using the rules of logic,
+this is the same as: ``not (user3 or user1)`` which is expressed in
+RPN as ``creator=3,1,-4,-2``. Compare this to ``creator=3,1,-2`` which
+returns issues created by user3 or any user other than user1.
+
+Typing these expressions manually can be tiresome, so there's an
+expression editor on the search page. You can access it by clicking on
+the ``(expr)`` link, which makes creating these expressions a bit
+easier.
+
 Using the Classhelper
 ---------------------
 
@@ -771,3 +807,4 @@ If the author of the message is also in the nosy list for the item that
 the message is attached to, then the config var ``MESSAGES_TO_AUTHOR``
 is queried to determine if they get a nosy list copy of the message too.
 
+.. _`RPN`: https://en.wikipedia.org/wiki/Reverse_Polish_notation

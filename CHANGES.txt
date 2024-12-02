@@ -28,6 +28,8 @@ Fixed:
   Rouillard)
 - issue2551074 - In "responsive" template: click on hide comment leads
   to a red error msg. (Report by Ludwig Reiter; fix John Rouillard)
+- issue2550698 - added documentation on filtering using RPN property
+  expressions. (John Rouillard)
 
 Features:
 
