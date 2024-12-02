@@ -2074,6 +2074,25 @@ class DBTest(commonDBTest):
             ae(filt(None, {a: ['1','-2','2','-2','-4']}, ('+',a)),
                 ['3','4','1','2'])
 
+    def NOtestFilteringLinkInvalid(self):
+        """Test invalid filter expressions.
+           Code must be written to generate an exception for these.
+           Then this code must be changed to test the exception.
+           See issue 2551374 in the roundup tracker.
+        """
+        ae, iiter = self.filteringSetup()
+        a = 'assignedto'
+        # filt(??, filter expression, sort order)
+        # ae = self.assertEqual(val1, val2)
+        for filt in iiter():
+            # -2 is missing an operand
+            ae(filt(None, {a: ['-2','2','-2','-4']},
+                    ('+',a)), [])
+            # 3 is left on the stack
+            ae(filt(None, {a: ['3','2','-2']},
+                    ('+',a)), [])
+
+
     def testFilteringRevLink(self):
         ae, iiter = self.filteringSetupTransitiveSearch('user')
         # We have

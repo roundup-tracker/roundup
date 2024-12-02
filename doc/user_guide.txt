@@ -449,15 +449,15 @@ Advanced Searching with Property Expressions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can create more advanced searches in your tracker by using Reverse
-Polish Notation (`RPN`_) to make property expressions. By default, when
-filtering by multiple items, the expression type is 'or'. For
+Polish Notation (`RPN`_) to make property expressions. By default,
+when filtering by multiple items, the expression type is 'or'. For
 instance, if you filter the property assignedto by adding the query
-string element "assignedto=2,3,40", it matches users "2 or 3 or
-40". In RPN, this would be written as "2, 3, or, 4, or". Roundup uses
-negative numbers to represent operators. For example, using "-1" for a
-single value (e.g. the assignedto Link property, but not the keyword
-multivalued/MultiLink property) matches an issue where the property is
-'not set'.
+string element ``assignedto=2,3,40``, it matches users numbered ``2 or
+3 or 40``. In RPN, this would be written as ``2, 3, or, 4,
+or``. Roundup uses negative numbers to represent operators. For
+example, using "-1" for a single value (e.g. the assignedto Link
+property, but not the keyword multivalued/MultiLink property) matches
+an issue where the property is 'not set'.
 
 The operators and their corresponding numbers are:
 
@@ -465,10 +465,10 @@ The operators and their corresponding numbers are:
 * 'and' is represented by -3
 * 'or' is represented by -4
 
-So, "assignedto=2,3,40" is the same as
-"assignedto=2,3,-4,40,-4". While this example is the same as
-"2,3,40", the expression "keyword=1,2,-3,-2" filters issues that don't
-have both keywords 1 and 2.
+So, ``assignedto=2,3,40`` is the same as
+``assignedto=2,3,-4,40,-4``. While this example is the same as
+``2,3,40``, the expression ``keyword=1,2,-3,-2`` filters issues that
+don't have both keywords 1 and 2.
 
 Another example is: ``creator=3,-2,1,-2,-3``. This is the same as the
 expression: ``(not user3) and (not user1)``. Using the rules of logic,
@@ -476,21 +476,27 @@ this is the same as: ``not (user3 or user1)`` which is expressed in
 RPN as ``creator=3,1,-4,-2``. Compare this to ``creator=3,1,-2`` which
 returns issues created by user3 or any user other than user1.
 
-Another example, useful when filtering issues, is:
+Another example, useful when filtering issues, is::
 
   keyword=-1,-2,1,8,-3,-2,-3
 
 which returns issues that have one or more keywords set and the issue
 does not have keyword1 and keyword8 both set. In more standard infix
-form:
+form::
 
   not empty and not (keyword1 and keyword8)
 
-Typing these expressions manually can be tiresome, so there's an
-expression editor on the search page. You can access it by clicking on
-the ``(expr)`` link, which makes creating these expressions a bit
-easier. But at least you can use this info to understand the search
-syntax in the URL.
+Typing these expressions manually can be tiresome and tricky. On the
+search page, there's an expression editor. You can access it by
+clicking on the ``(expr)`` link, which makes creating these
+expressions a bit easier.
+
+Note that errors in your expression (e.g. a missing operand) are
+silently ignored and a fallback search is conducted. This is
+`considered a bug <https://issues.roundup-tracker.org/issue2551374>`_
+and will hopefully be fixed in the future. But at least you can use
+this info to understand the search syntax in the URL if you see
+something strange.
 
 Using the Classhelper
 ---------------------
