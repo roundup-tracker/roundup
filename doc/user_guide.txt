@@ -476,10 +476,21 @@ this is the same as: ``not (user3 or user1)`` which is expressed in
 RPN as ``creator=3,1,-4,-2``. Compare this to ``creator=3,1,-2`` which
 returns issues created by user3 or any user other than user1.
 
+Another example, useful when filtering issues, is:
+
+  keyword=-1,-2,1,8,-3,-2,-3
+
+which returns issues that have one or more keywords set and the issue
+does not have keyword1 and keyword8 both set. In more standard infix
+form:
+
+  not empty and not (keyword1 and keyword8)
+
 Typing these expressions manually can be tiresome, so there's an
 expression editor on the search page. You can access it by clicking on
 the ``(expr)`` link, which makes creating these expressions a bit
-easier.
+easier. But at least you can use this info to understand the search
+syntax in the URL.
 
 Using the Classhelper
 ---------------------
