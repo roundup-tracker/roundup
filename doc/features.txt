@@ -26,6 +26,9 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 - Can be run in a container like Docker or kubernetes.
 - Deploy in your network as a standalone web server or `through
   various methods`_ like WSGI, FastCGI, plain CGI, etc.
+- Essential tracking features depend on the Python standard
+  library. Supplementary packages from PyPI are optional and can be
+  tailored to fit your unique threat model and security needs.
 
 **Issue Tracking and Management**
 
