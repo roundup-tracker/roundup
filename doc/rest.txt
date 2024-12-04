@@ -68,7 +68,7 @@ explicitly set.)
 Preventing CSRF Attacks
 -----------------------
 
-Clients should set the header X-REQUESTED-WITH to any value and the
+Clients should set the header ``X-REQUESTED-WITH`` to any value and the
 tracker's config.ini should have ``csrf_enforce_header_x-requested-with
 = yes`` or ``required``.
 
@@ -76,6 +76,12 @@ If you want to allow Roundup's api to be accessed by an application
 that is not hosted at the same origin as Roundup, you must permit
 the origin using the ``allowed_api_origins`` setting in
 ``config.ini``.
+
+If you access the REST interface with a method other than ``GET``, you
+must also supply an origin header with a value that is either the
+default origin (the URL of the tracker without the path component set in
+the config file as ``web`` in section ``[tracker]``) or one that is
+permitted by ``allowed_api_origins``.
 
 Rate Limiting API Failed Logins
 -------------------------------

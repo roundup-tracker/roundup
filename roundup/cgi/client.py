@@ -719,8 +719,10 @@ class Client:
         if not self.is_origin_header_ok(api=True):
             if 'HTTP_ORIGIN' not in self.env:
                 msg = self._("Required Header Missing")
+                err = 'Origin header missing'
             else:
                 msg = self._("Client is not allowed to use Rest Interface.")
+                err = 'Unauthorized for REST request'
 
             # Use code 400. Codes 401 and 403 imply that authentication
             # is needed or authenticated person is not authorized.
@@ -730,6 +732,7 @@ class Client:
             self.reject_request(output,
                                 message_type="application/json",
                                 status=400)
+            logger.error(err)
             return
 
         # Handle CORS preflight request. We know rest is enabled

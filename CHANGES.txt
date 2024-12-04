@@ -30,6 +30,9 @@ Fixed:
   to a red error msg. (Report by Ludwig Reiter; fix John Rouillard)
 - issue2550698 - added documentation on filtering using RPN property
   expressions. (John Rouillard)
+- issue2551372 - Better document necessary headers for REST and fix
+  logging to log missing Origin header (Ralf Schlatterbeck with
+  suggestions on documentation by John Rouillard)
 
 Features:
 
