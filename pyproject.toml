@@ -100,6 +100,8 @@ ignore = [
    "SIM105",
 ]
 
+[tool.ruff.lint.mccabe]
+max-complexity = 50
 
 [tool.ruff.lint.per-file-ignores]
 "roundup/anypy/*.py" = ["RET505", "RET506"]
@@ -108,12 +110,10 @@ ignore = [
 "roundup/support.py" = ["E401"]
 "roundup/security.py" = ["E701"]
 "roundup/date.py" = ["E231", "E701"]
-"roundup/backends/back_sqlite.py" = [ "E203" ]
+"roundup/backends/back_sqlite.py" = ["E203"]
 
-[too.ruff.lint.pylint]
+[tool.ruff.lint.pylint]
 max-args = 6
-max-branches=20
+max-branches = 20
 max-statements = 100
 
-[tool.ruff.lint.mccabe]
-max-complexity = 50
