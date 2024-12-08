@@ -7,6 +7,7 @@ from time import sleep
 from datetime import datetime, timedelta
 from roundup.anypy.cgi_ import cgi
 from roundup.anypy.datetime_ import utcnow
+from roundup.date import Date
 from roundup.exceptions import UsageError
 from roundup.test.tx_Source_detector import init as tx_Source_init
 
@@ -102,6 +103,29 @@ class TestCase():
 
         self.db.user.set('1', address="admin@admin.com")
         self.db.user.set('2', address="anon@admin.com")
+
+        # set up some more stuff for testing
+        self.db.msg.create(
+            author="1",
+            date=Date(),
+            summary="stuff",
+            content="abcdefghi\njklmnop",
+            type="text/markdown"
+        )
+
+        self.db.msg.create(
+            author="1",
+            date=Date(),
+            summary="stuff",
+            content="abcdefghi\njklmnop",
+        )
+
+        self.db.file.create(
+            name="afile",
+            content="PNG\x01abcdefghi\njklmnop",
+            type="image/png"
+        )
+
         self.db.commit()
         self.db.close()
         self.db = self.instance.open('joe')
@@ -1947,7 +1971,7 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 400)
         self.assertEqual(output_type, None)
         self.assertEqual(uri, "/rest/data/issue")
-        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */* application/json', error['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/json', error['error']['msg'])
 
         # test 5 accept mimetype is ok, param is not
         headers={"accept": "*/*; foo",
@@ -1969,7 +1993,298 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 400)
         self.assertEqual(output_type, None)
         self.assertEqual(uri, "/rest/data/issue")
-        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */* application/json', error['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', error['error']['msg'])
+
+        # test 6: test paths:
+        #
+        test_suite = [
+            (# use binary_content on a class that doesn't support it
+                {"path": "/rest/data/issue/1/binary_content",
+                 "accept": "",
+                 "response_code": "",
+                 "output_type": None,
+                 "uri": "/rest/data/issue/1/binary_content",
+                 "error": None
+                }),
+            (# use invalid class
+                {"path": "/rest/data/notissue/1/binary_content",
+                 "accept": "",
+                 "response_code": "",
+                 "output_type": None,
+                 "uri": "/rest/data/notissue/1/binary_content",
+                 "error": None
+                }),
+            (# use invalid id
+                {"path": "/rest/data/issue/99/binary_content",
+                 "accept": "",
+                 "response_code": "",
+                 "output_type": None,
+                 "uri": "/rest/data/issue/99/binary_content",
+                 "error": None
+                }),
+        ]
+             
+        for test in test_suite:
+            self.server.client.response_code = ""
+            env = { "CONTENT_TYPE": "application/json",
+                    "CONTENT_LENGTH": len(body),
+                    "REQUEST_METHOD": "GET"
+            }
+            self.server.client.env.update(env)
+            headers={"accept": test["accept"] or
+                     "application/zot; version=1; q=0.75, "
+                     "application/json; version=1; q=0.5",
+                     "content-type": env['CONTENT_TYPE'],
+                     "content-length": env['CONTENT_LENGTH'],
+            }
+
+            self.headers=headers
+            # we need to generate a FieldStorage the looks like
+            #  FieldStorage(None, None, 'string') rather than
+            #  FieldStorage(None, None, [])
+            body_file=BytesIO(body)  # FieldStorage needs a file
+            form = client.BinaryFieldStorage(
+                body_file,
+                headers=headers,
+                environ=env)
+            self.server.client.request.headers.get=self.get_header
+            (output_type, uri, error) = dof(test["path"])
+
+            self.assertEqual(self.server.client.response_code,
+                             test["response_code"])
+            self.assertEqual(output_type, test["output_type"])
+            self.assertEqual(uri, test["uri"])
+            self.assertEqual(error, test["error"])
+
+        # test 7: test paths:
+        #
+        test_suite = [
+            (# use wildcard accept on item and get back json output
+                {"path": "/rest/data/file/1",
+                 "accept": "*/*",
+                 "response_code": "",
+                 "output_type": "json",
+                 "uri": "/rest/data/file/1",
+                 "error": None,
+                 "has_nosniff": False,
+                }),
+            (# use wildcard accept and get back file's actual mime type
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "*/*",
+                 "response_code": "",
+                 "output_type": "image/png",
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+
+                }),
+            (# use json accept and get back json
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/json",
+                 "response_code": "",
+                 "output_type": "json",
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": None,
+                 "has_nosniff": False,
+                }),
+            (# use json accept with invalid number version and get back error
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/json; q=0.5; version=22",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": {'error': {'status': 406, 'msg': 'Unrecognized api version: 22. See /rest without specifying api version for supported versions.'}},
+                 "has_nosniff": False,
+                }),
+            (# use json accept with invalid string version and get back error
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/json; q=0.5; version=z",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": {'error': {'status': 406, 'msg': 'Unrecognized api version: z. See /rest without specifying api version for supported versions.'}},
+                 "has_nosniff": False,
+                }),
+            (# use octet-stream accept and get back octet-stream mime type
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/octet-stream; q=0.9, */*; q=0.5",
+                 "response_code": "",
+                 "output_type": "application/octet-stream",
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use image/png accept and get back image/png mime type
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/octet-stream; q=0.9, image/png",
+                 "response_code": "",
+                 "output_type": "image/png",
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use invalid accept and get back error
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "image/svg+html",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": {'error': 
+                           {'status': 406, 'msg': "Requested content type(s) 'image/svg+html' not available.\nAcceptable mime types are: */*, application/octet-stream, image/png"}},
+                 "has_nosniff": False,
+                }),
+            (# use wildcard accept and get back msg's actual mime type
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "*/*",
+                 "response_code": "",
+                 "output_type": "text/markdown",
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use octet-stream accept and get back octet-stream mime type
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "application/octet-stream; q=0.9, */*; q=0.5",
+                 "response_code": "",
+                 "output_type": "application/octet-stream",
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+
+            (# use wildcard text accept and get back msg's actual mime type
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "text/*",
+                 "response_code": "",
+                 "output_type": "text/markdown",
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use wildcard text accept and get back file's actual mime type
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "text/markdown",
+                 "response_code": "",
+                 "output_type": "text/markdown",
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use text/plain accept and get back test/plain
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "text/plain",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": {'error':
+                           {'status': 406, 'msg':
+                            "Requested content type(s) 'text/plain' not available.\nAcceptable mime types are: */*, application/octet-stream, text/*, text/markdown"}},
+                 "has_nosniff": False,
+                }),
+            (# use wildcard accept and get back default msg mime type
+                {"path": "/rest/data/msg/2/binary_content",
+                 "accept": "*/*",
+                 "response_code": "",
+                 "output_type": "text/*",
+                 "uri": "/rest/data/msg/2/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use text/* and get back text/*
+                {"path": "/rest/data/msg/2/binary_content",
+                 "accept": "text/*",
+                 "response_code": "",
+                 "output_type": "text/*",
+                 "uri": "/rest/data/msg/2/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use text/markdown and get back error
+                {"path": "/rest/data/msg/2/binary_content",
+                 "accept": "text/markdown",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/msg/2/binary_content",
+                 "error": {'error': 
+                           {'status': 406, 'msg':
+                            "Requested content type(s) 'text/markdown' not available.\nAcceptable mime types are: */*, application/octet-stream, text/*"}},
+                 "has_nosniff": False,
+                }),
+            (# use error accept and get back error
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "text/markdown, q=2",
+                 "response_code": 400,
+                 "output_type": None,
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": {'error':
+                           {'status': 400, 'msg':
+                            'Unable to parse Accept Header. Invalid media type: q=2. Acceptable types: */*, application/json'}},
+                 "has_nosniff": False,
+                 }),
+            (# use text/* but override with extension of .json get back json
+                {"path": "/rest/data/msg/2/binary_content.json",
+                 "accept": "text/*",
+                 "response_code": "",
+                 "output_type": "json",
+                 "uri": "/rest/data/msg/2/binary_content",
+                 "error": None,
+                 "has_nosniff": False,
+                }),
+            (# use text/* but override with extension of .jon get back error
+                {"path": "/rest/data/msg/2/binary_content.jon",
+                 "accept": "text/*",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/msg/2/binary_content.jon",
+                 "error": {'error':
+                           {'status': 406, 'msg':
+                            "Content type 'jon' requested in URL is not available.\nAcceptable types: json\n"}},
+                 "has_nosniff": False,
+                }),
+        ]
+             
+        for test in test_suite:
+            print(test)
+            self.server.client.response_code = ""
+            self.server.client.additional_headers = {}
+            env = { "CONTENT_TYPE": "application/json",
+                    "CONTENT_LENGTH": len(body),
+                    "REQUEST_METHOD": "GET"
+            }
+            self.server.client.env.update(env)
+            headers={"accept": test["accept"] or
+                     "application/zot; version=1; q=0.75, "
+                     "application/json; version=1; q=0.5",
+                     "content-type": env['CONTENT_TYPE'],
+                     "content-length": env['CONTENT_LENGTH'],
+            }
+
+            self.headers=headers
+            # we need to generate a FieldStorage the looks like
+            #  FieldStorage(None, None, 'string') rather than
+            #  FieldStorage(None, None, [])
+            body_file=BytesIO(body)  # FieldStorage needs a file
+            form = client.BinaryFieldStorage(
+                body_file,
+                headers=headers,
+                environ=env)
+            self.server.client.request.headers.get=self.get_header
+            (output_type, uri, error) = dof(test["path"])
+
+            self.assertEqual(self.server.client.response_code,
+                             test["response_code"])
+            self.assertEqual(output_type, test["output_type"])
+            self.assertEqual(uri, test["uri"])
+            print(error)
+            self.assertEqual(error, test["error"])
+            if test["has_nosniff"]:
+                self.assertIn("X-Content-Type-Options", 
+                              self.server.client.additional_headers)
+                self.assertEqual("nosniff",
+                                 self.server.client.additional_headers['X-Content-Type-Options'])
+            else:
+                self.assertNotIn("X-Content-Type-Options", 
+                              self.server.client.additional_headers)
 
     def testDispatchBadAccept(self):
         # simulate: /rest/data/issue expect failure unknown accept settings
@@ -2086,7 +2401,7 @@ class TestCase():
         print(results)
         self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
-        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */* application/json', json_dict['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/json', json_dict['error']['msg'])
 
         # test 5 accept mimetype is ok, param is not
         headers={"accept": "*/*; foo",
@@ -2110,7 +2425,7 @@ class TestCase():
         print(results)
         self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
-        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */* application/json', json_dict['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', json_dict['error']['msg'])
 
     def testStatsGen(self):
         # check stats being returned by put and get ops
@@ -3354,8 +3669,7 @@ class TestCase():
         results = self.server.get_element('file', fileid, self.empty_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(results['attributes']['content'],
-            {'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/file1/'})
+        self.assertIn("link", results['attributes']['content'])
 
         # File content is only shown with verbose=3
         form = cgi.FieldStorage()

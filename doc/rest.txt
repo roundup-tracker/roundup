@@ -368,7 +368,7 @@ extension ``.json`` or ``.xml`` to the path component of the url. This
 will force json or xml (if supported) output. If you use an extension
 it takes priority over any accept headers. Note the extension does not
 work for the ``/rest`` or ``/rest/data`` paths. In these cases it
-returs a 404 error. Adding the header ``Accept: application/xml``
+returns a 404 error. Adding the header ``Accept: application/xml``
 allows these paths to return xml data.
 
 The rest interface returns status 406 if you use an unrecognized
@@ -378,6 +378,8 @@ the accept header are available or if the accept header is invalid.
 Note: ``dicttoxml2.py`` is an updated version of ``dicttoxml.py``. If
 you are still using Python 2.7 or 3.6, you can use ``dicttoxml.py``.
 
+Also the ``/binary_content`` attribute endpoint can be used to
+retrieve raw file data in many formats.
 
 General Guidelines
 ------------------
@@ -905,6 +907,86 @@ You can retreive a message with a url like
         "@etag": "\"584f82231079e349031bbb853747df1c\""
      }
   }
+
+With Roundup 2.5 you can retrieve the data directly from the rest
+interface using the ``Accept`` header value to select a structured (json
+or optional xml) representation (as above) or a stream with just the
+content data.
+
+Using the wildcard type ``*/*`` in the ``Accept`` header with the url
+``.../binary_content`` will return the raw data and the recorded mime
+type of the the data as the ``Content-Type``. Using ``*/*`` with
+another end point will return ``json`` data. An ``Accept`` value of
+``application/octet-stream`` matches any mime type and retrieves the
+raw data as ``Content-Type: application/octet-stream``.
+
+To access the contents of a PNG image file (in file23), you use the
+following link:
+``https://.../demo/rest/data/file/23/binary_content``. To find out the
+mime type, you can check this URL:
+``https://.../demo/rest/data/file/23/type``.
+
+By setting the header to ``Accept: application/octet-stream; q=1.0,
+application/json; q=0.5``, you will receive the binary PNG file with
+the header ``Content-Type: application/octet-stream``. If you switch
+the ``q`` values, you will receive the encoded JSON version::
+
+  {
+    "data": {
+        "id": "23",
+        "type": "<class 'bytes'>",
+        "link": "https://.../demo/rest/data/file/23/binary_content",
+        "data": "b'\\x89PNG\\r\\n\\x1a\\n\\x00[...]0\\x00\\x00\\x00IEND\\xaeB`\\x82'",
+        "@etag": "\"db6adc1b09d95b0388d79c7905bc7982\""
+    }
+  }
+
+with ``Content-Type: application/json`` and a (4x larger) json encoded
+representation of the binary data.
+
+If you want it returned with a ``Content-Type: image/png`` header,
+you can use ``image/png`` or ``*/*`` in the Accept header.
+
+For message files, you can use
+``https://.../demo/rest/data/msg/23/binary_content`` with ``Accept:
+application/octet-stream; q=0.5, application/json; q=0.4, image/png;
+q=0.495, text/*``. It will return the plain text of the message.
+
+Most message files are not stored with a mime type. Getting
+``https://.../demo/rest/data/msg/23/type`` returns::
+
+  {
+    "data": {
+        "id": "23",
+        "type": "<class 'NoneType'>",
+        "link": "https://.../demo/rest/data/msg/23/type",
+        "data": null,
+        "@etag": "\"ba98927a8bb4c56f6cfc31a36f94ad16\""
+    }
+  }
+
+The data attribute will usually be null/empty. As a result, mime type
+matching for an item without a mime type is forgiving.
+
+Messages are meant to be human readable, so the mime type ``text/*``
+can be used to access any text style mime type (``text/plain``,
+``text/x-rst``, ``text/markdown``, ``text/html``, ...) or an empty
+mime type. If the item's type is not empty, it will be used as the
+Content-Type (similar to ``*/*``). Otherwise ``text/*`` will be the
+Content-Type. If your tracker supports markup languages
+(e.g. markdown), you should set the mime type (e.g. ``text/markdown``)
+when storing your message.
+
+Note that the header ``X-Content-Type-Options: nosniff`` is returned
+with a non javascript or xml binary_content response to prevent the
+browser from trying to interpret the returned data.
+
+Legacy Method (HTML interface)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With the addition of file binary content streaming in the rest
+interface to Roundup 2.5.0, this method (using the html interface) is
+considered legacy but still works.
 
 To retreive the content, you can use the content link property:
 ``https://.../demo/msg11/``. The trailing / is required. Without the

@@ -433,7 +433,6 @@ class RestfulInstance(object):
     __default_patch_op = "replace"  # default operator for PATCH method
     __accepted_content_type = {
         "application/json": "json",
-        "*/*": "json",
     }
     __default_accept_type = "json"
 
@@ -2232,6 +2231,8 @@ class RestfulInstance(object):
              3) if empty or missing Accept header
                 return self.__default_accept_type
              4) match and return best Accept header/version
+                  this includes matching mime types for file downloads
+                       using the binary_content property
                   if version error found in matching type return 406 error
              5) if no requested format is supported return 406
                 error
@@ -2281,9 +2282,9 @@ class RestfulInstance(object):
             self.client.response_code = 406
             return (None, uri, self.error_obj(
                 400, _("Unable to parse Accept Header. %(error)s. "
-                       "Acceptable types: %(acceptable_types)s") % {
+                       "Acceptable types: */*, %(acceptable_types)s") % {
                            'error': e.args[0],
-                           'acceptable_types': " ".join(sorted(
+                           'acceptable_types': ", ".join(sorted(
                                self.__accepted_content_type.keys()))}))
 
         if not accept_header:
@@ -2291,11 +2292,45 @@ class RestfulInstance(object):
             return (self.__default_accept_type, uri, None)
 
         accept_type = ""
+        valid_binary_content_types = []
+        if uri.endswith("/binary_content"):
+            request_path = uri
+            request_class, request_id = request_path.split('/')[-3:-1]
+            try:
+                designator_type = self.db.getclass(
+                    request_class).get(request_id, "type")
+            except (KeyError, IndexError):
+                # class (KeyError) or
+                # id (IndexError) does not exist
+                # Return unknown mime type and no error.
+                # The 400/404 error will be thrown by other code.
+                return (None, uri, None)
+
+            if designator_type:
+                # put this first as we usually require exact mime
+                # type match and this will be matched most often.
+                # Also for text/* Accept header it will be returned.
+                valid_binary_content_types.append(designator_type)
+
+            if not designator_type or designator_type.startswith('text/'):
+                # allow text/* as msg items can have empty type field
+                # also match text/* for text/plain, text/x-rst,
+                # text/markdown, text/html etc.
+                valid_binary_content_types.append("text/*")
+
+            # Octet-stream should be allowed for any content.
+            # client.py sets 'X-Content-Type-Options: nosniff'
+            # for file downloads (sendfile) via the html interface,
+            # so we should be able to set it in this code as well.
+            valid_binary_content_types.append("application/octet-stream")
+
         for part in accept_header:
             if accept_type:
                 # we accepted the best match, stop searching for
                 # lower quality matches.
                 break
+
+            # check for structured rest return types (json xml)
             if part[0] in self.__accepted_content_type:
                 accept_type = self.__accepted_content_type[part[0]]
                 # Version order:
@@ -2311,6 +2346,8 @@ class RestfulInstance(object):
                 # use default if version = None
                 try:
                     self.api_version = int(part[1]['version'])
+                    if self.api_version not in self.__supported_api_versions:
+                        raise ValueError
                 except KeyError:
                     self.api_version = None
                 except (ValueError, TypeError):
@@ -2323,17 +2360,45 @@ class RestfulInstance(object):
                     return (None, uri,
                            self.error_obj(406, msg))
 
+            if part[0] == "*/*":
+                if valid_binary_content_types:
+                    self.client.setHeader("X-Content-Type-Options", "nosniff")
+                    accept_type = valid_binary_content_types[0]
+                else:
+                    accept_type = "json"
+
+            # check type of binary_content
+            if part[0] in valid_binary_content_types:
+                self.client.setHeader("X-Content-Type-Options", "nosniff")
+                accept_type = part[0]
+            # handle text wildcard
+            if ((part[0] in 'text/*') and
+                "text/*" in valid_binary_content_types):
+                self.client.setHeader("X-Content-Type-Options", "nosniff")
+                # use best choice of mime type, try not to use
+                # text/* if there is a real text mime type/subtype.
+                accept_type = valid_binary_content_types[0]
+
         # accept_type will be empty only if there is an Accept header
         # with invalid values.
         if accept_type:
             return (accept_type, uri, None)
 
-        self.client.response_code = 400
+        if valid_binary_content_types:
+            return (None, uri,
+                    self.error_obj(
+                        406,
+                        _("Requested content type(s) '%s' not available.\n"
+                          "Acceptable mime types are: */*, %s") %
+                        (self.client.request.headers.get('Accept'),
+                         ", ".join(sorted(
+                             valid_binary_content_types)))))
+
         return (None, uri,
                 self.error_obj(
                     406,
                     _("Requested content type(s) '%s' not available.\n"
-                      "Acceptable mime types are: %s") %
+                      "Acceptable mime types are: */*, %s") %
                     (self.client.request.headers.get('Accept'),
                      ", ".join(sorted(
                          self.__accepted_content_type.keys())))))
@@ -2597,14 +2662,20 @@ class RestfulInstance(object):
 
             output = '<?xml version="1.0" encoding="UTF-8" ?>\n' + \
                      b2s(dicttoxml(output, root=False))
+        elif accept_mime_type:
+            self.client.setHeader("Content-Type", accept_mime_type)
+            # do not send etag when getting binary_content. The ETag
+            # is for the item not the content of the item. So the ETag
+            # can change even though the content is the same. Since
+            # content is immutable by default, the client shouldn't
+            # need the etag for writing.
+            self.client.setHeader("ETag", None)
+            return output['data']['data']
         else:
-            # FIXME?? consider moving this earlier. We should
-            # error out before doing any work if we can't
-            # display acceptable output.
-            self.client.response_code = 406
-            output = ("Requested content type '%s' is not available.\n"
-                      "Acceptable types: %s" % (accept_mime_type,
-                      ", ".join(sorted(self.__accepted_content_type.keys()))))
+            self.client.response_code = 500
+            output = _("Internal error while formatting response.\n"
+                       "accept_mime_type is not defined. This should\n"
+                       "never happen\n")
 
         # Make output json end in a newline to
         # separate from following text in logs etc..
