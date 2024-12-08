@@ -149,6 +149,18 @@ See
 https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#cookie_prefixes
 for details on this security measure.
 
+Invalid accept header now prevents operation (info)
+---------------------------------------------------
+
+In earlier versions, the rest interface checked for an incorrect
+"Accept" header, "@apiver", or the ".json" mime type only after
+processing the request. This would lead to a 406 error, but the
+requested change would still be completed.
+
+In this release, the validation of the output format and version
+occurs before any database changes are made. Now, all errors related
+to the data format (mime type, API version) will return 406 errors,
+where some previously resulted in 400 errors.
 
 .. index:: Upgrading; 2.3.0 to 2.4.0
 

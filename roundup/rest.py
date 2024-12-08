@@ -268,6 +268,8 @@ def parse_accept_header(accept):
 
     Default `q` for values that are not specified is 1.0
 
+    If q value > 1.0, it is parsed as a very small value.
+
     # Based on https://gist.github.com/samuraisam/2714195
     # Also, based on a snipped found in this project:
     #   https://github.com/martinblech/mimerender
@@ -2206,6 +2208,136 @@ class RestfulInstance(object):
             # human may read it
         ), None)
 
+    def determine_output_format(self, uri):
+        """Returns tuple of:
+
+            (format for returned output,
+             possibly modified uri,
+             output error object (if error else None))
+
+           Verify that client is requesting an output we can produce
+           with a version we support.
+
+           Only application/json and application/xml (optional)
+           are currently supported. .vcard might be useful
+           in the future for user objects.
+
+           Find format for returned output:
+
+             1) Get format from url extension (.json, .xml) and return
+                 if invalid return (None, uri, 406 error)
+                 if not found continue
+             2) Parse Accept header obeying q values
+                 if header unparsible return 400 error object.
+             3) if empty or missing Accept header
+                return self.__default_accept_type
+             4) match and return best Accept header/version
+                  if version error found in matching type return 406 error
+             5) if no requested format is supported return 406
+                error
+
+        """
+        # get the request format for response
+        # priority : extension from uri (/rest/data/issue.json)
+        #              only json or xml valid at this time.
+        #            header (Accept: application/json, application/xml)
+        #            default (application/json)
+        ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
+
+        # Check to see if the extension matches a value in
+        # self.__accepted_content_type. In the future other output
+        # such as .vcard for downloading user info can be
+        # supported. This method also allow detection of mistyped
+        # types like jon for json. Limit extension length to less than
+        # 10 characters to allow passing JWT via URL path. Could be
+        # useful for magic link login method or account recovery workflow,
+        # using a JWT with a short expiration time and limited rights
+        # (e.g. only password change permission))
+        if ext_type and (len(ext_type) < 10):
+            if ext_type not in list(self.__accepted_content_type.values()):
+                self.client.response_code = 406
+                return (None, uri,
+                        self.error_obj(
+                            406,
+                            _("Content type '%s' requested in URL is "
+                             "not available.\nAcceptable types: %s\n") %
+                            (ext_type,
+                             ", ".join(sorted(
+                                 set(self.__accepted_content_type.values()))))))
+
+            # strip extension so uri makes sense.
+            # E.G. .../issue.json -> .../issue
+            uri = uri[:-(len(ext_type) + 1)]
+            return (ext_type, uri, None)
+
+        # parse Accept header and get the content type
+        # Acceptable types ordered with preferred one (by q value)
+        # first in list.
+        try:
+            accept_header = parse_accept_header(
+                self.client.request.headers.get('Accept')
+            )
+        except UsageError as e:
+            self.client.response_code = 406
+            return (None, uri, self.error_obj(
+                400, _("Unable to parse Accept Header. %(error)s. "
+                       "Acceptable types: %(acceptable_types)s") % {
+                           'error': e.args[0],
+                           'acceptable_types': " ".join(sorted(
+                               self.__accepted_content_type.keys()))}))
+
+        if not accept_header:
+            # we are using the default
+            return (self.__default_accept_type, uri, None)
+
+        accept_type = ""
+        for part in accept_header:
+            if accept_type:
+                # we accepted the best match, stop searching for
+                # lower quality matches.
+                break
+            if part[0] in self.__accepted_content_type:
+                accept_type = self.__accepted_content_type[part[0]]
+                # Version order:
+                #  1) accept header version=X specifier
+                #     application/vnd.x.y; version=1
+                #  2) from type in accept-header type/subtype-vX
+                #     application/vnd.x.y-v1
+                #  3) from @apiver in query string to make browser
+                #     use easy
+                # This code handles 1 and 2. Set api_version to none
+                # to trigger @apiver parsing below
+                # Places that need the api_version info should
+                # use default if version = None
+                try:
+                    self.api_version = int(part[1]['version'])
+                except KeyError:
+                    self.api_version = None
+                except (ValueError, TypeError):
+                    self.client.response_code = 406
+                    # TypeError if int(None)
+                    msg = _("Unrecognized api version: %s. "
+                           "See /rest without specifying api version "
+                           "for supported versions.") % (
+                               part[1]['version'])
+                    return (None, uri,
+                           self.error_obj(406, msg))
+
+        # accept_type will be empty only if there is an Accept header
+        # with invalid values.
+        if accept_type:
+            return (accept_type, uri, None)
+
+        self.client.response_code = 400
+        return (None, uri,
+                self.error_obj(
+                    406,
+                    _("Requested content type(s) '%s' not available.\n"
+                      "Acceptable mime types are: %s") %
+                    (self.client.request.headers.get('Accept'),
+                     ", ".join(sorted(
+                         self.__accepted_content_type.keys())))))
+
     def dispatch(self, method, uri, input):
         """format and process the request"""
         output = None
@@ -2248,75 +2380,15 @@ class RestfulInstance(object):
                     'Ignoring X-HTTP-Method-Override using %s request on %s',
                     method.upper(), uri)
 
-        # parse Accept header and get the content type
-        # Acceptable types ordered with preferred one first
-        # in list.
-        try:
-            accept_header = parse_accept_header(headers.get('Accept'))
-        except UsageError as e:
-            output = self.error_obj(406, _("Unable to parse Accept Header. %(error)s. "
-                      "Acceptable types: %(acceptable_types)s") % {
-                          'error': e.args[0],
-                          'acceptable_types': " ".join(sorted(self.__accepted_content_type.keys()))})
-            accept_header = []
+        # FIXME: when this method is refactored, change
+        # determine_output_format to raise an exception. Catch it here
+        # and return early. Also set self.client.response_code from
+        # error object['error']['status'] and remove from
+        # determine_output_format.
+        (output_format, uri, error) = self.determine_output_format(uri)
+        if error:
+            output = error
 
-        if not accept_header:
-            accept_type = self.__default_accept_type
-        else:
-            accept_type = None
-        for part in accept_header:
-            if accept_type:
-                # we accepted the best match, stop searching for
-                # lower quality matches.
-                break
-            if part[0] in self.__accepted_content_type:
-                accept_type = self.__accepted_content_type[part[0]]
-                # Version order:
-                #  1) accept header version=X specifier
-                #     application/vnd.x.y; version=1
-                #  2) from type in accept-header type/subtype-vX
-                #     application/vnd.x.y-v1
-                #  3) from @apiver in query string to make browser
-                #     use easy
-                # This code handles 1 and 2. Set api_version to none
-                # to trigger @apiver parsing below
-                # Places that need the api_version info should
-                # use default if version = None
-                try:
-                    self.api_version = int(part[1]['version'])
-                except KeyError:
-                    self.api_version = None
-                except (ValueError, TypeError):
-                    # TypeError if int(None)
-                    msg = ("Unrecognized api version: %s. "
-                           "See /rest without specifying api version "
-                           "for supported versions." % (
-                               part[1]['version']))
-                    output = self.error_obj(400, msg)
-
-        # get the request format for response
-        # priority : extension from uri (/rest/data/issue.json),
-        #            header (Accept: application/json, application/xml)
-        #            default (application/json)
-        ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
-
-        # Check to see if the length of the extension is less than 6.
-        # this allows use of .vcard for a future use in downloading
-        # user info. It also allows passing through larger items like
-        # JWT that has a final component > 6 items. This method also
-        # allow detection of mistyped types like jon for json.
-        if ext_type and (len(ext_type) < 6):
-            # strip extension so uri make sense
-            # .../issue.json -> .../issue
-            uri = uri[:-(len(ext_type) + 1)]
-        else:
-            ext_type = None
-
-        # headers.get('Accept') is never empty if called here.
-        # accept_type will be set to json if there is no Accept header
-        # accept_type wil be empty only if there is an Accept header
-        # with invalid values.
-        data_type = ext_type or accept_type or headers.get('Accept') or "invalid"
         if method.upper() == 'OPTIONS':
             # add access-control-allow-* access-control-max-age to support
             # CORS preflight
@@ -2441,6 +2513,9 @@ class RestfulInstance(object):
                "See /rest without specifying api version "
                "for supported versions.")
         try:
+            # FIXME: the version priority here is different
+            # from accept header. accept mime type in url
+            # takes priority over Accept header. Opposite here.
             if not self.api_version:
                 self.api_version = int(input['@apiver'].value)
         # Can also return a TypeError ("not indexable")
@@ -2448,7 +2523,7 @@ class RestfulInstance(object):
         except (KeyError, TypeError):
             self.api_version = None
         except ValueError:
-            output = self.error_obj(400, msg % input['@apiver'].value)
+            output = self.error_obj(406, msg % input['@apiver'].value)
 
         # by this time the API version is set. Error if we don't
         # support it?
@@ -2459,7 +2534,7 @@ class RestfulInstance(object):
             #    Use default if not specified for now.
             self.api_version = self.__default_api_version
         elif self.api_version not in self.__supported_api_versions:
-            output = self.error_obj(400, msg % self.api_version)
+            output = self.error_obj(406, msg % self.api_version)
 
         # sadly del doesn't work on FieldStorage which can be the type of
         # input. So we have to ignore keys starting with @ at other
@@ -2479,19 +2554,23 @@ class RestfulInstance(object):
             output = self.error_obj(405, msg.args[0])
             self.client.setHeader("Allow", msg.args[1])
 
-        return self.format_dispatch_output(data_type, output, pretty_output)
+        return self.format_dispatch_output(output_format,
+                                           output,
+                                           pretty_output)
 
     def format_dispatch_output(self, accept_mime_type, output,
                                pretty_print=True):
         # Format the content type
-        if accept_mime_type.lower() == "json":
+        # if accept_mime_type is None, the client specified invalid
+        # mime types so we default to json output.
+        if accept_mime_type == "json" or accept_mime_type is None:
             self.client.setHeader("Content-Type", "application/json")
             if pretty_print:
                 indent = 4
             else:
                 indent = None
             output = RoundupJSONEncoder(indent=indent).encode(output)
-        elif accept_mime_type.lower() == "xml" and dicttoxml:
+        elif accept_mime_type == "xml" and dicttoxml:
             self.client.setHeader("Content-Type", "application/xml")
             if 'error' in output:
                 # capture values in error with types unsupported

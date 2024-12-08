@@ -33,6 +33,9 @@ Fixed:
 - issue2551372 - Better document necessary headers for REST and fix
   logging to log missing Origin header (Ralf Schlatterbeck with
   suggestions on documentation by John Rouillard)
+- issue2551289 - Invalid REST Accept header with post/put performs
+  change before returning 406. Error before making any changes to the
+  db if we can't respond with requested format. (John Rouillard)
 
 Features:
 
