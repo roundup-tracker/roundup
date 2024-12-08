@@ -78,6 +78,12 @@ def get_prefix():
         if prefix_arg:
             prefix = a
             break
+
+        # argv[0] can be a PosixPath when setup.py
+        # is invoked by setuptools-py2cfg
+        if not isinstance(a, str):
+            continue
+
         # is there a short form -p or something for this??
         if a.startswith('--prefix'):
             if a == '--prefix':
