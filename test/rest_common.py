@@ -3052,6 +3052,28 @@ class TestCase():
 
         del(self.headers)
 
+        # TEST #11
+        # GET: test that /binary_content can be downloaded
+        form = cgi.FieldStorage()
+
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
+
+        headers={"accept": "*/*" }
+        self.headers=headers
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('GET',
+                            "/rest/data/file/1/binary_content", form)
+
+        self.assertEqual(results, b'PNG\x01abcdefghi\njklmnop')
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         'image/png')
+        self.assertNotIn("ETag", self.server.client.additional_headers)
+        self.assertEqual(
+            self.server.client.additional_headers["X-Content-Type-Options"],
+            "nosniff")
+
+        print("11: " + b2s(results))
+
     def testAcceptHeaderParsing(self):
         self.server.client.env['REQUEST_METHOD'] = 'GET'
 
