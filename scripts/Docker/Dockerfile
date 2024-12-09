@@ -23,7 +23,7 @@ ARG source=local
 
 # parameterize the sha256 sum to pin version of python:3-alpine
 # Must use the same version in both build stages.
-ARG SHA256=06ec926ba48a761e10e429c9091000863f7b91ef42296d10303c5da6c01e25ad
+ARG SHA256=8287ca207e905649e9f399b5f91a119e5e9051d8cd110d5f8c3b4bd9458ebd1d
 
 
 # Set to any non-empy value to enable shell debugging for troubleshooting
@@ -35,7 +35,7 @@ ARG appdir=/usr/src/app
 # Python version as a.b Used as path component for 
 # installation directory and COPY from install dir
 # in second build stage.
-ARG pythonversion=3.12
+ARG pythonversion=3.13
 
 #FROM python:3-alpine via SHA256 sum
 FROM python@sha256:$SHA256 AS build 
