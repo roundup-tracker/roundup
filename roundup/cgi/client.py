@@ -2045,7 +2045,7 @@ class Client:
                 inm = self.request.headers.get('if-none-match')
             elif 'HTTP_IF_NONE_MATCH' in self.env:
                 # maybe the cgi will put the header in the env var
-                inm = self.env['HTTP_ETAG']
+                inm = self.env['HTTP_IF_NONE_MATCH']
             if inm and etag == inm:
                 # because we can compress, always set Accept-Encoding
                 # value. Otherwise caches can serve up the wrong info
