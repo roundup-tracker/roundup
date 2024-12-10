@@ -36,6 +36,9 @@ Fixed:
 - issue2551289 - Invalid REST Accept header with post/put performs
   change before returning 406. Error before making any changes to the
   db if we can't respond with requested format. (John Rouillard)
+- issue2551356 - Add etag header when If-Modified-Since GET request
+  returns not-modified (304). Breaking change to function signature
+  for client.py-Client::_serve_file(). (John Rouillard)
 
 Features:
 

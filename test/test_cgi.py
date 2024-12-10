@@ -18,7 +18,7 @@ from os.path import normpath
 
 from roundup.anypy.cgi_ import cgi
 from roundup.cgi import client, actions, exceptions
-from roundup.cgi.exceptions import FormError, NotFound, Redirect
+from roundup.cgi.exceptions import FormError, NotFound, Redirect, NotModified
 from roundup.exceptions import UsageError, Reject
 from roundup.cgi.templating import HTMLItem, HTMLRequest, NoTemplate
 from roundup.cgi.templating import HTMLProperty, _HTMLItem, anti_csrf_nonce
@@ -1942,6 +1942,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         if nodeid is not None:
             cl.nodeid = nodeid
         cl.db = self.db
+        cl.request = MockNull()
         cl.db.Otk =  cl.db.getOTKManager()
         #cl.db.Otk = MockNull()
         #cl.db.Otk.data = {}
@@ -2382,6 +2383,83 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
 
+    def testserve_static_files_cache_headers(self):
+        """Note for headers the real headers class is case
+           insensitive.
+        """
+        # make a client instance
+        cl = self._make_client({})
+        # Make local copy in cl to not modify value in class
+        cl.Cache_Control = copy.copy (cl.Cache_Control)
+
+        # TEMPLATES dir is searched by default. So this file exists.
+        # Check the returned values.
+        cl.serve_static_file("style.css")
+
+        # gather the conditional request headers from the 200 response
+        inm =  cl.additional_headers['ETag']
+        ims =  cl.additional_headers['Last-Modified']
+
+
+        # loop over all header value possibilities that will
+        # result in not modified.
+        for headers in [
+                {'if-none-match' : inm},
+                {'if-modified-since' : ims},
+                {'if-none-match' : inm, 'if-modified-since' : ims },
+                {'if-none-match' : inm, 'if-modified-since' : "fake" },
+                {'if-none-match' : "fake", 'if-modified-since' : ims },
+        ]:
+            print(headers)
+
+            # Request same file with if-modified-since header
+            # expect NotModified with same ETag and Last-Modified headers.
+            cl.request.headers = headers
+            cl.response_code = None
+            cl.additional_headers = {}
+
+            with self.assertRaises(NotModified) as cm:
+                cl.serve_static_file("style.css")
+
+            self.assertEqual(cm.exception.args, ())
+
+            self.assertEqual(cl.response_code, None)
+            self.assertEqual(cl.additional_headers['ETag'], inm)
+            self.assertEqual(cl.additional_headers['Last-Modified'], ims)
+
+
+        ## run two cases that should not return NotModified
+        for headers in [
+                {},
+                {'if-none-match' : "fake", 'if-modified-since' : "fake" },
+        ]:
+            cl.request.headers = headers
+            cl.response_code = None
+            cl.additional_headers = {}
+
+            cl.serve_static_file("style.css")
+
+            self.assertEqual(cl.response_code, None)
+            self.assertEqual(cl.additional_headers['ETag'], inm)
+            self.assertEqual(cl.additional_headers['Last-Modified'], ims)
+
+        ## test pure cgi case
+        # headers attribute does not exist
+        cl.request = None
+        cl.response_code = None
+        cl.additional_headers = {}
+
+        cl.env["HTTP_IF_MODIFIED_SINCE"] = ims
+
+        with self.assertRaises(NotModified) as cm:
+            cl.serve_static_file("style.css")
+
+        self.assertEqual(cm.exception.args, ())
+
+        self.assertEqual(cl.response_code, None)
+        self.assertEqual(cl.additional_headers['ETag'], inm)
+        self.assertEqual(cl.additional_headers['Last-Modified'], ims)
+
     def testserve_static_files(self):
         # make a client instance
         cl = self._make_client({})
@@ -2390,8 +2468,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         # hijack _serve_file so I can see what is found
         output = []
-        def my_serve_file(a, b, c, d):
-            output.append((a,b,c,d))
+        def my_serve_file(a, b, c, d, e):
+            output.append((a,b,c,d,e))
         cl._serve_file = my_serve_file
 
         # check case where file is not found.
@@ -2401,8 +2479,9 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # TEMPLATES dir is searched by default. So this file exists.
         # Check the returned values.
         cl.serve_static_file("issue.index.html")
-        self.assertEqual(output[0][1], "text/html")
-        self.assertEqual(output[0][3],
+        print(output)
+        self.assertEqual(output[0][2], "text/html")
+        self.assertEqual(output[0][4],
                          normpath('_test_cgi_form/html/issue.index.html'))
         del output[0] # reset output buffer
 
@@ -2415,8 +2494,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # explicitly allow html directory
         cl.instance.config['STATIC_FILES'] = 'html -'
         cl.serve_static_file("issue.index.html")
-        self.assertEqual(output[0][1], "text/html")
-        self.assertEqual(output[0][3],
+        self.assertEqual(output[0][2], "text/html")
+        self.assertEqual(output[0][4],
                          normpath('_test_cgi_form/html/issue.index.html'))
         del output[0] # reset output buffer
 
@@ -2425,15 +2504,15 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         # find file in first directory
         cl.serve_static_file("messagesummary.py")
-        self.assertEqual(output[0][1], "text/x-python")
-        self.assertEqual(output[0][3],
+        self.assertEqual(output[0][2], "text/x-python")
+        self.assertEqual(output[0][4],
                          normpath( "_test_cgi_form/detectors/messagesummary.py"))
         del output[0] # reset output buffer
 
         # find file in second directory
         cl.serve_static_file("README.txt")
-        self.assertEqual(output[0][1], "text/plain")
-        self.assertEqual(output[0][3],
+        self.assertEqual(output[0][2], "text/plain")
+        self.assertEqual(output[0][4],
                          normpath("_test_cgi_form/extensions/README.txt"))
         del output[0] # reset output buffer
 
@@ -2448,16 +2527,16 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         f = open('_test_cgi_form/detectors/README.txt', 'a').close()
         # find file now in first directory
         cl.serve_static_file("README.txt")
-        self.assertEqual(output[0][1], "text/plain")
-        self.assertEqual(output[0][3],
+        self.assertEqual(output[0][2], "text/plain")
+        self.assertEqual(output[0][4],
                          normpath("_test_cgi_form/detectors/README.txt"))
         del output[0] # reset output buffer
 
         cl.instance.config['STATIC_FILES'] = ' detectors extensions '
         # make sure lack of trailing - allows searching TEMPLATES
         cl.serve_static_file("issue.index.html")
-        self.assertEqual(output[0][1], "text/html")
-        self.assertEqual(output[0][3],
+        self.assertEqual(output[0][2], "text/html")
+        self.assertEqual(output[0][4],
                          normpath("_test_cgi_form/html/issue.index.html"))
         del output[0] # reset output buffer
 
@@ -2465,8 +2544,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.instance.config['STATIC_FILES'] = 'detectors'
         # find file now in first directory
         cl.serve_static_file("messagesummary.py")
-        self.assertEqual(output[0][1], "text/x-python")
-        self.assertEqual(output[0][3],
+        self.assertEqual(output[0][2], "text/x-python")
+        self.assertEqual(output[0][4],
                          normpath("_test_cgi_form/detectors/messagesummary.py"))
         del output[0] # reset output buffer
 
@@ -2475,8 +2554,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         f = open('_test_cgi_form/detectors/css/README.css', 'a').close()
         # use subdir in filename
         cl.serve_static_file("css/README.css")
-        self.assertEqual(output[0][1], "text/css")
-        self.assertEqual(output[0][3],
+        self.assertEqual(output[0][2], "text/css")
+        self.assertEqual(output[0][4],
                          normpath("_test_cgi_form/detectors/css/README.css"))
         del output[0] # reset output buffer
         
@@ -2486,18 +2565,19 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         os.mkdir('_test_cgi_form/html/css')
         f = open('_test_cgi_form/html/css/README1.css', 'a').close()
         cl.serve_static_file("README1.css")
-        self.assertEqual(output[0][1], "text/css")
-        self.assertEqual(output[0][3],
+        self.assertEqual(output[0][2], "text/css")
+        self.assertEqual(output[0][4],
                          normpath("_test_cgi_form/html/css/README1.css"))
         self.assertTrue( "Cache-Control" in cl.additional_headers )
         self.assertEqual( cl.additional_headers,
                           {'Cache-Control': 'public, max-age=3600'} )
+        print(cl.additional_headers)
         del output[0] # reset output buffer
 
         cl.Cache_Control['README1.css'] = 'public, max-age=60'
         cl.serve_static_file("README1.css")
-        self.assertEqual(output[0][1], "text/css")
-        self.assertEqual(output[0][3],
+        self.assertEqual(output[0][2], "text/css")
+        self.assertEqual(output[0][4],
                          normpath("_test_cgi_form/html/css/README1.css"))
         self.assertTrue( "Cache-Control" in cl.additional_headers )
         self.assertEqual( cl.additional_headers,

@@ -1949,7 +1949,7 @@ class Client:
 
         lmt = klass.get(nodeid, 'activity').timestamp()
 
-        self._serve_file(lmt, mime_type, content, filename)
+        self._serve_file(lmt, None, mime_type, content, filename)
 
     def serve_static_file(self, file):
         """ Serve up the file named from the templates dir
@@ -1989,9 +1989,6 @@ class Client:
         if filename is None:  # we didn't find a filename
             raise NotFound(file)
 
-        # last-modified time
-        lmt = os.stat(filename)[stat.ST_MTIME]
-
         # detemine meta-type
         file = str(file)
         mime_type = mimetypes.guess_type(file)[0]
@@ -2009,28 +2006,59 @@ class Client:
             self.additional_headers['Cache-Control'] = \
                             self.Cache_Control[mime_type]
 
-        self._serve_file(lmt, mime_type, '', filename)
+        self._serve_file(None, None, mime_type, '', filename)
 
-    def _serve_file(self, lmt, mime_type, content=None, filename=None):
-        """ guts of serve_file() and serve_static_file()
+    def _serve_file(self, lmt, etag, mime_type, content=None, filename=None):
+        """guts of serve_file() and serve_static_file()
+
+            if lmt or etag are None, derive them from file filename.
+
+            Handles if-modified-since and if-none-match etag
+            conditional gets.
+
+            It produces an raw etag header without encoding suffix.
+            But it adds Accept-Encoding to the vary header.
+
         """
+        if filename:
+            stat_info = os.stat(filename)
 
-        # spit out headers
-        self.additional_headers['Last-Modified'] = email.utils.formatdate(lmt,
-	 usegmt=True)
+            if lmt is None:
+                # last-modified time
+                lmt = stat_info[stat.ST_MTIME]
+            if etag is None:
+                # FIXME: maybe etag should depend on encoding.
+                # it is an apache compatible etag without encoding.
+                etag = '"%x-%x-%x"' % (stat_info[stat.ST_INO],
+                                       stat_info[stat.ST_SIZE],
+                                       stat_info[stat.ST_MTIME])
 
-        ims = None
-        # see if there's an if-modified-since...
-        #    used if this is run behind a non-caching http proxy
-        if hasattr(self.request, 'headers'):
-            ims = self.request.headers.get('if-modified-since')
-        elif 'HTTP_IF_MODIFIED_SINCE' in self.env:
-            # cgi will put the header in the env var
-            ims = self.env['HTTP_IF_MODIFIED_SINCE']
-        if ims:
-            ims = email.utils.parsedate(ims)[:6]
-            lmtt = time.gmtime(lmt)[:6]
-            if lmtt <= ims:
+            # spit out headers for conditional request
+            self.setHeader("ETag", etag)
+            self.additional_headers['Last-Modified'] = \
+                email.utils.formatdate(lmt, usegmt=True)
+
+            inm = None
+            # ETag is a more strict check than modified date. Use etag
+            # check if available. Skip testing modified data.
+            if hasattr(self.request, 'headers'):
+                inm = self.request.headers.get('if-none-match')
+            elif 'HTTP_IF_NONE_MATCH' in self.env:
+                # maybe the cgi will put the header in the env var
+                inm = self.env['HTTP_ETAG']
+            if inm and etag == inm:
+                # because we can compress, always set Accept-Encoding
+                # value. Otherwise caches can serve up the wrong info
+                # if their cached copy has no compression.
+                self.setVary("Accept-Encoding")
+                '''
+                to solve issue2551356 I may need to determine
+                the content encoding.
+                if (self.determine_content_encoding()):
+                '''
+                raise NotModified
+
+            if self.if_not_modified_since(lmt):
                 # because we can compress, always set Accept-Encoding
                 # value. Otherwise caches can serve up the wrong info
                 # if their cached copy has no compression.
@@ -2050,6 +2078,27 @@ class Client:
         else:
             self.additional_headers['Content-Length'] = str(len(content))
             self.write(content)
+
+    def if_not_modified_since(self, lmt):
+        ims = None
+        # see if there's an if-modified-since...
+        if hasattr(self.request, 'headers'):
+            ims = self.request.headers.get('if-modified-since')
+        elif 'HTTP_IF_MODIFIED_SINCE' in self.env:
+            # cgi will put the header in the env var
+            ims = self.env['HTTP_IF_MODIFIED_SINCE']
+
+        if ims:
+            datestamp = email.utils.parsedate(ims)
+            if datestamp is not None:
+                ims = datestamp[:6]
+            else:
+                # set to beginning of time so whole file will be sent
+                ims = (0, 0, 0, 0, 0, 0)
+            lmtt = time.gmtime(lmt)[:6]
+            return lmtt <= ims
+
+        return False
 
     def send_error_to_admin(self, subject, html, txt):
         """Send traceback information to admin via email.
