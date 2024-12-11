@@ -173,7 +173,7 @@ def openapi_doc(d):
     return wrapper
 
 
-def calculate_etag(node, key, classname="Missing", id="0",
+def calculate_etag(node, key, classname="Missing", node_id="0",
                    repr_format="json"):
     '''given a hyperdb node generate a hashed representation of it to be
     used as an etag.
@@ -194,19 +194,19 @@ def calculate_etag(node, key, classname="Missing", id="0",
     Note that repr() is chosen for the node rather than str() since
     repr is meant to be an unambiguous representation.
 
-    classname and id are used for logging only.
+    classname and node_id are used for logging only.
     '''
 
     items = node.items(protected=True)  # include every item
     etag = hmac.new(bs2b(key), bs2b(repr_format +
                                     repr(sorted(items))), md5).hexdigest()
-    logger.debug("object=%s%s; tag=%s; repr=%s", classname, id,
+    logger.debug("object=%s%s; tag=%s; repr=%s", classname, node_id,
                  etag, repr(node.items(protected=True)))
     # Quotes are part of ETag spec, normal headers don't have quotes
     return '"%s"' % etag
 
 
-def check_etag(node, key, etags, classname="Missing", id="0",
+def check_etag(node, key, etags, classname="Missing", node_id="0",
                repr_format="json"):
     '''Take a list of etags and compare to the etag for the given node.
 
@@ -218,7 +218,7 @@ def check_etag(node, key, etags, classname="Missing", id="0",
     '''
     have_etag_match = False
 
-    node_etag = calculate_etag(node, key, classname, id,
+    node_etag = calculate_etag(node, key, classname, node_id,
                                repr_format=repr_format)
 
     for etag in etags:
@@ -245,11 +245,13 @@ def check_etag(node, key, etags, classname="Missing", id="0",
         return False
 
 
-def obtain_etags(headers, input):
-    '''Get ETags value from headers or payload data'''
+def obtain_etags(headers, input_payload):
+    '''Get ETags value from headers or payload data
+       Only supports one etag value not list.
+    '''
     etags = []
-    if '@etag' in input:
-        etags.append(input['@etag'].value)
+    if '@etag' in input_payload:
+        etags.append(input_payload['@etag'].value)
     etags.append(headers.get("If-Match", None))
     return etags
 
@@ -390,8 +392,8 @@ class Routing(object):
         return decorator
 
     @classmethod
-    def execute(cls, instance, path, method, input):
-        # format the input, note that we may not lowercase the path
+    def execute(cls, instance, path, method, input_payload):
+        # format the input_payload, note that we may not lowercase the path
         # here, URL parameters are case-sensitive
         path = path.strip('/')
         if path == 'rest':
@@ -422,7 +424,7 @@ class Routing(object):
 
                 # zip the varlist into a dictionary, and pass it to the caller
                 args = dict(zip(list_vars, match_obj.groups()))
-                args['input'] = input
+                args['input'] = input_payload
                 return func(instance, **args)
         raise NotFound('Nothing matches the given URI')
 
@@ -668,13 +670,14 @@ class RestfulInstance(object):
 
         return result
 
-    def raise_if_no_etag(self, class_name, item_id, input, repr_format="json"):
+    def raise_if_no_etag(self, class_name, item_id, input_payload,
+                         repr_format="json"):
         class_obj = self.db.getclass(class_name)
         if not check_etag(class_obj.getnode(item_id),
                           self.db.config.WEB_SECRET_KEY,
-                          obtain_etags(self.client.request.headers, input),
-                          class_name,
-                          item_id, repr_format=repr_format):
+                          obtain_etags(self.client.request.headers,
+                                       input_payload), class_name, item_id,
+                          repr_format=repr_format):
             raise PreconditionFailed(
                 "If-Match is missing or does not match."
                 " Retrieve asset and retry modification if valid.")
@@ -699,20 +702,20 @@ class RestfulInstance(object):
             # pn = propname
             for pn in sorted(props):
                 ok = False
-                id = item_id
+                working_id = item_id
                 nd = node
                 cn = class_name
                 for p in pn.split('.'):
                     if not self.db.security.hasPermission(
-                            'View', uid, cn, p, id
+                            'View', uid, cn, p, working_id
                     ):
                         break
                     cl = self.db.getclass(cn)
-                    nd = cl.getnode(id)
-                    id = v = getattr(nd, p)
+                    nd = cl.getnode(working_id)
+                    working_id = v = getattr(nd, p)
                     # Handle transitive properties where something on
                     # the road is None (empty Link property)
-                    if id is None:
+                    if working_id is None:
                         prop = None
                         ok = True
                         break
@@ -728,11 +731,11 @@ class RestfulInstance(object):
                     if verbose and v:
                         if isinstance(v, type([])):
                             r = []
-                            for id in v:
-                                d = dict(id=id, link=cp + id)
+                            for working_id in v:
+                                d = dict(id=working_id, link=cp + working_id)
                                 if verbose > 1:
                                     label = linkcls.labelprop()
-                                    d[label] = linkcls.get(id, label)
+                                    d[label] = linkcls.get(working_id, label)
                                 r.append(d)
                             result[pn] = r
                         else:
@@ -768,7 +771,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>", 'GET')
     @_data_decorator
-    def get_collection(self, class_name, input):
+    def get_collection(self, class_name, input_payload):
         """GET resource from class URI.
 
         This function returns only items have View permission
@@ -776,7 +779,7 @@ class RestfulInstance(object):
 
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -806,7 +809,7 @@ class RestfulInstance(object):
         display_props = set()
         sort = []
         group = []
-        for form_field in input.value:
+        for form_field in input_payload.value:
             key = form_field.name
             value = form_field.value
             if key.startswith("@page_"):  # serve the paging purpose
@@ -1021,7 +1024,7 @@ class RestfulInstance(object):
                     'uri': "%s/%s?@page_index=%s&" % (self.data_path,
                                                       class_name, index) +
                            '&'.join(["%s=%s" % (field.name, field.value)
-                                     for field in input.value
+                                     for field in input_payload.value
                                      if field.name != "@page_index"])})
 
         result['@total_size'] = total_len
@@ -1031,7 +1034,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/user/roles", 'GET')
     @_data_decorator
-    def get_roles(self, input):
+    def get_roles(self, input_payload):
         """Return all defined roles for users with Admin role.
            The User class property roles is a string but simulate
            it as a MultiLink to an actual Roles class.
@@ -1051,7 +1054,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'GET')
     @_data_decorator
-    def get_element(self, class_name, item_id, input):
+    def get_element(self, class_name, item_id, input_payload):
         """GET resource from object URI.
 
         This function returns only properties have View permission
@@ -1062,7 +1065,7 @@ class RestfulInstance(object):
             item_id (string): id of the resource (Ex: 12, 15)
                 or (if the class has a key property) this can also be
                 the key name, e.g. class_name = status, item_id = 'open'
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -1112,7 +1115,7 @@ class RestfulInstance(object):
         props = None
         protected = False
         verbose = 1
-        for form_field in input.value:
+        for form_field in input_payload.value:
             key = form_field.name
             value = form_field.value
             if key == "@fields" or key == "@attrs":
@@ -1153,7 +1156,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'GET')
     @_data_decorator
-    def get_attribute(self, class_name, item_id, attr_name, input):
+    def get_attribute(self, class_name, item_id, attr_name, input_payload):
         """GET resource from attribute URI.
 
         This function returns only attribute has View permission
@@ -1163,7 +1166,7 @@ class RestfulInstance(object):
             class_name (string): class name of the resource (Ex: issue, msg)
             item_id (string): id of the resource (Ex: 12, 15)
             attr_name (string): attribute of the resource (Ex: title, nosy)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -1205,7 +1208,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>", 'POST')
     @_data_decorator
-    def post_collection(self, class_name, input):
+    def post_collection(self, class_name, input_payload):
         """POST a new object to a class
 
         If the item is successfully created, the "Location" header will also
@@ -1213,7 +1216,7 @@ class RestfulInstance(object):
 
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 201 (Created)
@@ -1221,29 +1224,29 @@ class RestfulInstance(object):
                 id: id of the object
                 link: path to the object
         """
-        return self.post_collection_inner(class_name, input)
+        return self.post_collection_inner(class_name, input_payload)
 
     @Routing.route("/data/<:class_name>/@poe", 'POST')
     @_data_decorator
-    def get_post_once_exactly(self, class_name, input):
+    def get_post_once_exactly(self, class_name, input_payload):
         """Get the Post Once Exactly token to create a new instance of class
            See https://tools.ietf.org/html/draft-nottingham-http-poe-00"""
         otks = self.db.Otk
         poe_key = otks.getUniqueKey()
 
         try:
-            lifetime = int(input['lifetime'].value)
+            lifetime = int(input_payload['lifetime'].value)
         except KeyError:
             lifetime = 30 * 60  # 30 minutes
         except ValueError:
-            raise UsageError("Value 'lifetime' must be an integer specify lifetime in seconds. Got %s." % input['lifetime'].value)
+            raise UsageError("Value 'lifetime' must be an integer specify lifetime in seconds. Got %s." % input_payload['lifetime'].value)
 
         if lifetime > 3600 or lifetime < 1:
-            raise UsageError("Value 'lifetime' must be between 1 second and 1 hour (3600 seconds). Got %s." % input['lifetime'].value)
+            raise UsageError("Value 'lifetime' must be between 1 second and 1 hour (3600 seconds). Got %s." % input_payload['lifetime'].value)
 
         try:
             # if generic tag exists, we don't care about the value
-            is_generic = input['generic']
+            is_generic = input_payload['generic']
             # we generate a generic POE token
             is_generic = True
         except KeyError:
@@ -1269,7 +1272,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/@poe/<:post_token>", 'POST')
     @_data_decorator
-    def post_once_exactly_collection(self, class_name, post_token, input):
+    def post_once_exactly_collection(self, class_name, post_token, input_payload):
         """Post exactly one to the resource named by class_name"""
         otks = self.db.Otk
 
@@ -1308,9 +1311,9 @@ class RestfulInstance(object):
             raise UsageError("POE token '%s' not valid for %s, was generated for class %s" % (post_token, class_name, cn))
 
         # handle this as though they POSTed to /rest/data/class
-        return self.post_collection_inner(class_name, input)
+        return self.post_collection_inner(class_name, input_payload)
 
-    def post_collection_inner(self, class_name, input):
+    def post_collection_inner(self, class_name, input_payload):
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
         if not self.db.security.hasPermission(
@@ -1321,7 +1324,7 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
 
         # convert types
-        props = self.props_from_args(class_obj, input.value)
+        props = self.props_from_args(class_obj, input_payload.value)
 
         # check for the key property
         key = class_obj.getkey()
@@ -1367,7 +1370,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'PUT')
     @_data_decorator
-    def put_element(self, class_name, item_id, input):
+    def put_element(self, class_name, item_id, input_payload):
         """PUT a new content to an object
 
         Replace the content of the existing object
@@ -1375,7 +1378,7 @@ class RestfulInstance(object):
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
             item_id (string): id of the resource (Ex: 12, 15)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -1390,7 +1393,7 @@ class RestfulInstance(object):
             raise NotFound('Class %s not found' % class_name)
         class_obj = self.db.getclass(class_name)
 
-        props = self.props_from_args(class_obj, input.value, item_id)
+        props = self.props_from_args(class_obj, input_payload.value, item_id)
         for p in props:
             if not self.db.security.hasPermission(
                 'Edit', self.db.getuid(), class_name, p, item_id
@@ -1400,7 +1403,7 @@ class RestfulInstance(object):
                     (p, class_name, item_id)
                 )
         try:
-            self.raise_if_no_etag(class_name, item_id, input)
+            self.raise_if_no_etag(class_name, item_id, input_payload)
             result = class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -1420,14 +1423,14 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'PUT')
     @_data_decorator
-    def put_attribute(self, class_name, item_id, attr_name, input):
+    def put_attribute(self, class_name, item_id, attr_name, input_payload):
         """PUT an attribute to an object
 
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
             item_id (string): id of the resource (Ex: 12, 15)
             attr_name (string): attribute of the resource (Ex: title, nosy)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -1450,12 +1453,12 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
         props = {
             attr_name: self.prop_from_arg(
-                class_obj, attr_name, input['data'].value, item_id
+                class_obj, attr_name, input_payload['data'].value, item_id
             )
         }
 
         try:
-            self.raise_if_no_etag(class_name, item_id, input)
+            self.raise_if_no_etag(class_name, item_id, input_payload)
             result = class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -1476,14 +1479,14 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>", 'DELETE')
     @_data_decorator
-    def delete_collection(self, class_name, input):
+    def delete_collection(self, class_name, input_payload):
         """DELETE (retire) all objects in a class
            There is currently no use-case, so this is disabled and
            always returns Unauthorised.
 
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -1526,13 +1529,13 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'DELETE')
     @_data_decorator
-    def delete_element(self, class_name, item_id, input):
+    def delete_element(self, class_name, item_id, input_payload):
         """DELETE (retire) an object in a class
 
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
             item_id (string): id of the resource (Ex: 12, 15)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -1549,7 +1552,7 @@ class RestfulInstance(object):
                 'Permission to retire %s %s denied' % (class_name, item_id)
             )
 
-        self.raise_if_no_etag(class_name, item_id, input)
+        self.raise_if_no_etag(class_name, item_id, input_payload)
         class_obj.retire(item_id)
         self.db.commit()
         result = {
@@ -1560,14 +1563,14 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'DELETE')
     @_data_decorator
-    def delete_attribute(self, class_name, item_id, attr_name, input):
+    def delete_attribute(self, class_name, item_id, attr_name, input_payload):
         """DELETE an attribute in a object by setting it to None or empty
 
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
             item_id (string): id of the resource (Ex: 12, 15)
             attr_name (string): attribute of the resource (Ex: title, nosy)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -1603,7 +1606,7 @@ class RestfulInstance(object):
             props[attr_name] = None
 
         try:
-            self.raise_if_no_etag(class_name, item_id, input)
+            self.raise_if_no_etag(class_name, item_id, input_payload)
             class_obj.set(item_id, **props)
             self.db.commit()
         except (TypeError, IndexError, ValueError) as message:
@@ -1621,7 +1624,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'PATCH')
     @_data_decorator
-    def patch_element(self, class_name, item_id, input):
+    def patch_element(self, class_name, item_id, input_payload):
         """PATCH an object
 
         Patch an element using 3 operators
@@ -1632,7 +1635,7 @@ class RestfulInstance(object):
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
             item_id (string): id of the resource (Ex: 12, 15)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -1646,19 +1649,19 @@ class RestfulInstance(object):
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
         try:
-            op = input['@op'].value.lower()
+            op = input_payload['@op'].value.lower()
         except KeyError:
             op = self.__default_patch_op
         class_obj = self.db.getclass(class_name)
 
-        self.raise_if_no_etag(class_name, item_id, input)
+        self.raise_if_no_etag(class_name, item_id, input_payload)
 
         # if patch operation is action, call the action handler
         action_args = [class_name + item_id]
         if op == 'action':
             # extract action_name and action_args from form fields
             name = None
-            for form_field in input.value:
+            for form_field in input_payload.value:
                 key = form_field.name
                 value = form_field.value
                 if key == "@action_name":
@@ -1684,7 +1687,7 @@ class RestfulInstance(object):
             }
         else:
             # else patch operation is processing data
-            props = self.props_from_args(class_obj, input.value, item_id,
+            props = self.props_from_args(class_obj, input_payload.value, item_id,
                                          skip_protected=False)
 
             required_props = class_obj.get_required_props()
@@ -1722,7 +1725,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'PATCH')
     @_data_decorator
-    def patch_attribute(self, class_name, item_id, attr_name, input):
+    def patch_attribute(self, class_name, item_id, attr_name, input_payload):
         """PATCH an attribute of an object
 
         Patch an element using 3 operators
@@ -1734,7 +1737,7 @@ class RestfulInstance(object):
             class_name (string): class name of the resource (Ex: issue, msg)
             item_id (string): id of the resource (Ex: 12, 15)
             attr_name (string): attribute of the resource (Ex: title, nosy)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -1748,7 +1751,7 @@ class RestfulInstance(object):
         if class_name not in self.db.classes:
             raise NotFound('Class %s not found' % class_name)
         try:
-            op = input['@op'].value.lower()
+            op = input_payload['@op'].value.lower()
         except KeyError:
             op = self.__default_patch_op
 
@@ -1767,11 +1770,11 @@ class RestfulInstance(object):
                 raise AttributeError("Attribute '%s' can not be updated "
                                      "for class %s." % (attr_name, class_name))
 
-        self.raise_if_no_etag(class_name, item_id, input)
+        self.raise_if_no_etag(class_name, item_id, input_payload)
 
         props = {
             prop: self.prop_from_arg(
-                class_obj, prop, input['data'].value, item_id
+                class_obj, prop, input_payload['data'].value, item_id
             )
         }
 
@@ -1799,7 +1802,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>", 'OPTIONS')
     @_data_decorator
-    def options_collection(self, class_name, input):
+    def options_collection(self, class_name, input_payload):
         """OPTION return the HTTP Header for the class uri
 
         Returns:
@@ -1821,7 +1824,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'OPTIONS')
     @_data_decorator
-    def options_element(self, class_name, item_id, input):
+    def options_element(self, class_name, item_id, input_payload):
         """OPTION return the HTTP Header for the object uri
 
         Returns:
@@ -1846,7 +1849,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'OPTIONS')
     @_data_decorator
-    def option_attribute(self, class_name, item_id, attr_name, input):
+    def option_attribute(self, class_name, item_id, attr_name, input_payload):
         """OPTION return the HTTP Header for the attribute uri
 
         Returns:
@@ -1962,7 +1965,7 @@ class RestfulInstance(object):
     )
     @Routing.route("/")
     @_data_decorator
-    def describe(self, input):
+    def describe(self, input_payload):
         """Describe the rest endpoint. Return direct children in
            links list.
         """
@@ -1999,7 +2002,7 @@ class RestfulInstance(object):
 
     @Routing.route("/", 'OPTIONS')
     @_data_decorator
-    def options_describe(self, input):
+    def options_describe(self, input_payload):
         """OPTION return the HTTP Header for the root
 
         Returns:
@@ -2018,7 +2021,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data")
     @_data_decorator
-    def data(self, input):
+    def data(self, input_payload):
         """Describe the subelements of data
 
            One entry for each class the user may view
@@ -2032,7 +2035,7 @@ class RestfulInstance(object):
 
     @Routing.route("/data", 'OPTIONS')
     @_data_decorator
-    def options_data(self, input):
+    def options_data(self, input_payload):
         """OPTION return the HTTP Header for the /data element
 
         Returns:
@@ -2051,7 +2054,7 @@ class RestfulInstance(object):
 
     @Routing.route("/summary")
     @_data_decorator
-    def summary(self, input):
+    def summary(self, input_payload):
         """Get a summary of resource from class URI.
 
         This function returns only items have View permission
@@ -2059,7 +2062,7 @@ class RestfulInstance(object):
 
         Args:
             class_name (string): class name of the resource (Ex: issue, msg)
-            input (list): the submitted form of the user
+            input_payload (list): the submitted form of the user
 
         Returns:
             int: http status code 200 (OK)
@@ -2403,7 +2406,7 @@ class RestfulInstance(object):
                      ", ".join(sorted(
                          self.__accepted_content_type.keys())))))
 
-    def dispatch(self, method, uri, input):
+    def dispatch(self, method, uri, input_payload):
         """format and process the request"""
         output = None
 
@@ -2525,12 +2528,12 @@ class RestfulInstance(object):
             "OPTIONS, GET, POST, PUT, DELETE, PATCH"
         )
 
-        # Is there an input.value with format json data?
+        # Is there an input_payload.value with format json data?
         # If so turn it into an object that emulates enough
         # of the FieldStorge methods/props to allow a response.
         content_type_header = headers.get('Content-Type', None)
         # python2 is str type, python3 is bytes
-        if type(input.value) in (str, bytes) and content_type_header:
+        if type(input_payload.value) in (str, bytes) and content_type_header:
             # the structure of a content-type header
             # is complex: mime-type; options(charset ...)
             # for now we just accept application/json.
@@ -2544,7 +2547,7 @@ class RestfulInstance(object):
             # for example.
             if content_type_header.lower() == "application/json":
                 try:
-                    input = SimulateFieldStorageFromJson(b2s(input.value))
+                    input_payload = SimulateFieldStorageFromJson(b2s(input_payload.value))
                 except ValueError as msg:
                     output = self.error_obj(400, msg)
             else:
@@ -2558,7 +2561,7 @@ class RestfulInstance(object):
 
         # check for pretty print
         try:
-            pretty_output = not input['@pretty'].value.lower() == "false"
+            pretty_output = not input_payload['@pretty'].value.lower() == "false"
         # Can also return a TypeError ("not indexable")
         # In case the FieldStorage could not parse the result
         except (KeyError, TypeError):
@@ -2567,7 +2570,7 @@ class RestfulInstance(object):
         # check for runtime statistics
         try:
             # self.report_stats initialized to False
-            self.report_stats = input['@stats'].value.lower() == "true"
+            self.report_stats = input_payload['@stats'].value.lower() == "true"
         # Can also return a TypeError ("not indexable")
         # In case the FieldStorage could not parse the result
         except (KeyError, TypeError):
@@ -2582,13 +2585,13 @@ class RestfulInstance(object):
             # from accept header. accept mime type in url
             # takes priority over Accept header. Opposite here.
             if not self.api_version:
-                self.api_version = int(input['@apiver'].value)
+                self.api_version = int(input_payload['@apiver'].value)
         # Can also return a TypeError ("not indexable")
         # In case the FieldStorage could not parse the result
         except (KeyError, TypeError):
             self.api_version = None
         except ValueError:
-            output = self.error_obj(406, msg % input['@apiver'].value)
+            output = self.error_obj(406, msg % input_payload['@apiver'].value)
 
         # by this time the API version is set. Error if we don't
         # support it?
@@ -2602,17 +2605,17 @@ class RestfulInstance(object):
             output = self.error_obj(406, msg % self.api_version)
 
         # sadly del doesn't work on FieldStorage which can be the type of
-        # input. So we have to ignore keys starting with @ at other
+        # input_payload. So we have to ignore keys starting with @ at other
         # places in the code.
         # else:
-        #     del(input['@apiver'])
+        #     del(input_payload['@apiver'])
 
         # Call the appropriate method
         try:
             # If output was defined by a prior error
             # condition skip call
             if not output:
-                output = Routing.execute(self, uri, method, input)
+                output = Routing.execute(self, uri, method, input_payload)
         except NotFound as msg:
             output = self.error_obj(404, msg)
         except Reject as msg:
