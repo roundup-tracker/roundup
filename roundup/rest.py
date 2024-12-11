@@ -818,7 +818,7 @@ class RestfulInstance(object):
                 page[key] = value
             elif key == "@verbose":
                 verbose = int(value)
-            elif key == "@fields" or key == "@attrs":
+            elif key in ["@fields", "@attrs"]:
                 f = value.split(",")
                 if len(f) == 1:
                     f = value.split(":")
@@ -1118,7 +1118,7 @@ class RestfulInstance(object):
         for form_field in input_payload.value:
             key = form_field.name
             value = form_field.value
-            if key == "@fields" or key == "@attrs":
+            if key in ["@fields", "@attrs"]:
                 if props is None:
                     props = set()
                 # support , or : separated elements
