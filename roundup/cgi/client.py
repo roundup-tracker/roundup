@@ -597,7 +597,7 @@ class Client:
         # Pull the raw XML out of the form.  The "value" attribute
         # will be the raw content of the POST request.
         assert self.form.file
-        input = self.form.value
+        input_data = self.form.value
         # So that the rest of Roundup can query the form in the
         # usual way, we create an empty list of fields.
         self.form.list = []
@@ -660,7 +660,7 @@ class Client:
                                                self.instance.actions,
                                                self.translator,
                                                allow_none=True)
-            output = handler.dispatch(input)
+            output = handler.dispatch(input_data)
 
         self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
