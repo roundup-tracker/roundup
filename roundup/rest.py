@@ -360,7 +360,7 @@ class Routing(object):
 
         if isinstance(methods, basestring):  # convert string to tuple
             methods = (methods,)
-        methods = set(item.upper() for item in methods)
+        methods = {item.upper() for item in methods}
 
         # convert a rule to a compiled regex object
         # so /data/<:class>/<:id> will become
