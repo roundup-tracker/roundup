@@ -1165,11 +1165,10 @@ class Client:
 
         for secret in self.db.config.WEB_JWT_SECRET:
             try:  # handle jwt exceptions
-                token = jwt.decode(challenge, secret,
-                                   algorithms=['HS256'],
-                                   audience=self.db.config.TRACKER_WEB,
-                                   issuer=self.db.config.TRACKER_WEB)
-                return (token)
+                return jwt.decode(challenge, secret,
+                                  algorithms=['HS256'],
+                                  audience=self.db.config.TRACKER_WEB,
+                                  issuer=self.db.config.TRACKER_WEB)
 
             except jwt.exceptions.InvalidSignatureError as err:
                 # Try more signatures.
@@ -2438,7 +2437,7 @@ class Client:
         '''Vary header will include the new header. This will append
            if Vary exists.'''
 
-        if ('Vary' in self.additional_headers and 
+        if ('Vary' in self.additional_headers and
             header not in self.additional_headers['Vary']):
             self.additional_headers['Vary'] += ", %s" % header
         else:
