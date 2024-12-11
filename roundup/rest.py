@@ -55,7 +55,7 @@ except ImportError:
 
 # Py3 compatible basestring
 try:
-    basestring
+    basestring  # noqa: B018
 except NameError:
     basestring = str
     unicode = str
