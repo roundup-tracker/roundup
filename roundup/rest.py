@@ -2561,7 +2561,7 @@ class RestfulInstance(object):
 
         # check for pretty print
         try:
-            pretty_output = not input_payload['@pretty'].value.lower() == "false"
+            pretty_output = input_payload['@pretty'].value.lower() != "false"
         # Can also return a TypeError ("not indexable")
         # In case the FieldStorage could not parse the result
         except (KeyError, TypeError):
@@ -2726,7 +2726,7 @@ class SimulateFieldStorageFromJson():
             self.json_dict = json.loads(json_string,
                                     parse_constant=raise_error_on_constant)
             self.value = [self.FsValue(index, self.json_dict[index])
-                          for index in self.json_dict.keys()]
+                          for index in self.json_dict]
         except ValueError:
             self.json_dict = {}
             self.value = None
