@@ -2645,15 +2645,15 @@ class RestfulInstance(object):
                 import collections
                 for key, val in output['error'].items():
                     if isinstance(val, numbers.Number) or type(val) in \
-                       (str, unicode):
+                       (str, unicode):  # noqa: SIM114
                         pass
-                    elif hasattr(val, 'isoformat'):  # datetime
+                    elif hasattr(val, 'isoformat'):  # datetime # noqa: SIM114
                         pass
-                    elif type(val) is bool:
+                    elif type(val) is bool:  # noqa: SIM114
                         pass
-                    elif isinstance(val, dict):
+                    elif isinstance(val, dict):  # noqa: SIM114
                         pass
-                    elif isinstance(val, collections.Iterable):
+                    elif isinstance(val, collections.Iterable):  # noqa: SIM114
                         pass
                     elif val is None:
                         pass
