@@ -7,8 +7,6 @@ and/or modify under the same terms as Python.
 
 from __future__ import print_function
 
-from datetime import timedelta
-from hashlib import md5
 import hmac
 import json
 import logging
@@ -17,20 +15,20 @@ import re
 import sys
 import time
 import traceback
+from datetime import timedelta
+from hashlib import md5
 
 try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
 
-from roundup import actions
-from roundup import date
-from roundup import hyperdb
-from roundup.anypy.strings import bs2b, b2s, u2s, is_us
-from roundup.cgi.exceptions import NotFound, Unauthorised, PreconditionFailed
+from roundup import actions, date, hyperdb
+from roundup.anypy.strings import b2s, bs2b, is_us, u2s
+from roundup.cgi.exceptions import NotFound, PreconditionFailed, Unauthorised
 from roundup.exceptions import Reject, UsageError
 from roundup.i18n import _
-from roundup.rate_limit import RateLimit, Gcra
+from roundup.rate_limit import Gcra, RateLimit
 
 logger = logging.getLogger('roundup.rest')
 
@@ -2641,8 +2639,8 @@ class RestfulInstance(object):
                 # capture values in error with types unsupported
                 # by dicttoxml e.g. an exception, into something it
                 # can handle
-                import numbers
                 import collections
+                import numbers
                 for key, val in output['error'].items():
                     if isinstance(val, numbers.Number) or type(val) in \
                        (str, unicode):  # noqa: SIM114
