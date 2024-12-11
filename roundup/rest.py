@@ -2649,7 +2649,7 @@ class RestfulInstance(object):
                         pass
                     elif hasattr(val, 'isoformat'):  # datetime
                         pass
-                    elif type(val) == bool:
+                    elif type(val) is bool:
                         pass
                     elif isinstance(val, dict):
                         pass
