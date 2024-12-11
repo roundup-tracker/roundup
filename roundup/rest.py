@@ -424,7 +424,7 @@ class Routing(object):
 
                 # zip the varlist into a dictionary, and pass it to the caller
                 args = dict(zip(list_vars, match_obj.groups()))
-                args['input'] = input_payload
+                args['input_payload'] = input_payload
                 return func(instance, **args)
         raise NotFound('Nothing matches the given URI')
 
