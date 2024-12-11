@@ -916,7 +916,7 @@ class RestfulInstance(object):
                     else:
                         vals = []
                     for p in value.split(","):
-                        dig = p and p.isdigit() or \
+                        dig = (p and p.isdigit()) or \
                             (p[0] in ('-', '+') and p[1:].isdigit())
                         if prop.try_id_parsing and dig:
                             vals.append(p)
