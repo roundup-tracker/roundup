@@ -709,9 +709,8 @@ class Client:
             return
         except RateLimitExceeded as err:
             output = s2b("%s" % str(err))
-            # PYTHON2:FIXME http_.client.TOO_MANY_REQUESTS missing
-            # python2 so use numeric code.
-            self.reject_request(output, status=429)
+            self.reject_request(output,
+                                status=http_.client.TOO_MANY_REQUESTS)
             return
 
         # verify Origin is allowed on all requests including GET.
@@ -1156,7 +1155,8 @@ class Client:
         # If second or later tokens are < 32 chars, the config system
         # stops the tracker from starting so insecure tokens can not
         # be used.
-        if len(self.db.config.WEB_JWT_SECRET[0]) < 32:
+        CHARS_FOR_256_BIT_KEY = 32
+        if len(self.db.config.WEB_JWT_SECRET[0]) < CHARS_FOR_256_BIT_KEY:
             # no support for jwt, this is fine.
             self.setHeader("WWW-Authenticate", "Basic")
             raise LoginError('Support for jwt disabled by admin.')
