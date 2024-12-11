@@ -241,8 +241,7 @@ def check_etag(node, key, etags, classname="Missing", node_id="0",
 
     if have_etag_match:  # noqa: SIM103  leave for coverage reports
         return True
-    else:
-        return False
+    return False
 
 
 def obtain_etags(headers, input_payload):
@@ -1591,9 +1590,8 @@ class RestfulInstance(object):
             if attr_name in class_obj.getprops(protected=True):
                 raise AttributeError("Attribute '%s' can not be deleted "
                                      "for class %s." % (attr_name, class_name))
-            else:
-                raise UsageError("Attribute '%s' not valid for class %s." % (
-                    attr_name, class_name))
+            raise UsageError("Attribute '%s' not valid for class %s." % (
+                attr_name, class_name))
         if attr_name in class_obj.get_required_props():
             raise UsageError("Attribute '%s' is required by class %s and can not be deleted." % (
                 attr_name, class_name))
@@ -1764,8 +1762,8 @@ class RestfulInstance(object):
 
         prop = attr_name
         class_obj = self.db.getclass(class_name)
-        if attr_name not in class_obj.getprops(protected=False):
-            if attr_name in class_obj.getprops(protected=True):
+        if (attr_name not in class_obj.getprops(protected=False) and
+            attr_name in class_obj.getprops(protected=True)):
                 raise AttributeError("Attribute '%s' can not be updated "
                                      "for class %s." % (attr_name, class_name))
 
@@ -2127,9 +2125,9 @@ class RestfulInstance(object):
         interval = self.db.config.WEB_API_INTERVAL_IN_SEC
         if calls and interval:
             return RateLimit(calls, timedelta(seconds=interval))
-        else:
-            # disable rate limiting if either parameter is 0
-            return None
+
+        # disable rate limiting if either parameter is 0
+        return None
 
     def handle_apiRateLimitExceeded(self, apiRateLimit):
         """Determine if the rate limit is exceeded.

@@ -1335,7 +1335,7 @@ class Client:
         if isinstance(action, list):
             raise SeriousError(
                 self._('broken form: multiple @action values submitted'))
-        elif action != '':
+        if action != '':
             # '' is value when no action parameter was found so run
             # this to extract action string value when action found.
             action = action.value.lower()
@@ -1548,7 +1548,7 @@ class Client:
                     logger.error(logmsg)
                     raise Unauthorised(self._("Invalid Referer: %s") % (
                         referer))
-                elif enforce == 'logfailure':
+                if enforce == 'logfailure':
                     logger.warning(logmsg)
             else:
                 header_pass += 1
@@ -1567,7 +1567,7 @@ class Client:
                 if enforce in ('required', 'yes'):
                     logger.error(logmsg)
                     raise Unauthorised(self._("Invalid Origin %s" % origin))
-                elif enforce == 'logfailure':
+                if enforce == 'logfailure':
                     logger.warning(logmsg)
             else:
                 header_pass += 1
@@ -1587,7 +1587,7 @@ class Client:
                         logger.error(logmsg)
                         raise Unauthorised(self._(
                             "Invalid X-FORWARDED-HOST %s") % host)
-                    elif enforce == 'logfailure':
+                    if enforce == 'logfailure':
                         logger.warning(logmsg)
                 else:
                     header_pass += 1
@@ -1611,7 +1611,7 @@ class Client:
                     if enforce in ('required', 'yes'):
                         logger.error(logmsg)
                         raise Unauthorised(self._("Invalid HOST %s") % host)
-                    elif enforce == 'logfailure':
+                    if enforce == 'logfailure':
                         logger.warning(logmsg)
                 else:
                     header_pass += 1
@@ -1677,7 +1677,7 @@ class Client:
                 raise UsageError(self._(
                     ''"We can't validate your session (csrf failure). "
                     ''"Re-enter any unsaved data and try again."))
-            elif enforce == 'logfailure':
+            if enforce == 'logfailure':
                 # FIXME include url
                 logger.warning(self._("csrf field not supplied by user%s"),
                                current_user)
@@ -1704,7 +1704,7 @@ class Client:
                 raise UsageError(self._(
                     ''"We can't validate your session (csrf failure). "
                     ''"Re-enter any unsaved data and try again."))
-            elif enforce == 'logfailure':
+            if enforce == 'logfailure':
                 logger.warning(logmsg)
 
         if current_session != nonce_session:
@@ -1721,7 +1721,7 @@ class Client:
                 raise UsageError(self._(
                     ''"We can't validate your session (csrf failure). "
                     ''"Re-enter any unsaved data and try again."))
-            elif enforce == 'logfailure':
+            if enforce == 'logfailure':
                 logger.warning(logmsg)
 
         # we are done and the change can occur.
@@ -1833,11 +1833,11 @@ class Client:
             return
         if path[0] in ('_file', '@@file'):
             raise SendStaticFile(os.path.join(*path[1:]))
-        else:
-            self.classname = path[0]
-            if len(path) > 1:
-                # send the file identified by the designator in path[0]
-                raise SendFile(path[0])
+
+        self.classname = path[0]
+        if len(path) > 1:
+            # send the file identified by the designator in path[0]
+            raise SendFile(path[0])
 
         # see if we got a designator
         m = dre.match(self.classname)
@@ -1974,9 +1974,9 @@ class Client:
                 filename = os.path.normpath(os.path.join(p, file))
                 if os.path.isfile(filename) and filename.startswith(p):
                     break  # inner loop over list of directories
-                else:
-                    # reset filename to None as sentinel for use below.
-                    filename = None
+
+                # reset filename to None as sentinel for use below.
+                filename = None
 
             # break out of outer loop over options
             if filename:
@@ -2344,8 +2344,8 @@ class Client:
         if isinstance(action, list):
             raise SeriousError(
                 self._('broken form: multiple @action values submitted'))
-        else:
-            action = action.value.lower()
+        
+        action = action.value.lower()
 
         try:
             action_klass = self.get_action_class(action)
@@ -2354,8 +2354,8 @@ class Client:
             if isinstance(action_klass, type('')):
                 # old way of specifying actions
                 return getattr(self, action_klass)()
-            else:
-                return action_klass(self).execute()
+
+            return action_klass(self).execute()
         except (ValueError, Reject) as err:
             escape = not isinstance(err, RejectRaw)
             self.add_error_message(str(err), escape=escape)
@@ -2420,8 +2420,8 @@ class Client:
                    (enc in accept_encoding):
                     if not list_all:
                         return enc
-                    else:
-                        encoding_list.append(enc)
+
+                    encoding_list.append(enc)
 
         # Return value must evaluate to false in boolean context if no
         # acceptable encoding is found. If an (non-identity) encoding
@@ -2430,8 +2430,7 @@ class Client:
         #   Maybe raise a 406 from here?
         if not list_all:
             return None
-        else:
-            return encoding_list
+        return encoding_list
 
     def setVary(self, header):
         '''Vary header will include the new header. This will append
