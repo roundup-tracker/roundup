@@ -1399,8 +1399,6 @@ class Client:
         return (allowed_origins and allowed_origins[0] == '*'
                 and not credentials)
 
-        return False
-
     def is_referer_header_ok(self, api=False):
         referer = self.env['HTTP_REFERER']
         # parse referer and create an origin
