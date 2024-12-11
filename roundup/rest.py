@@ -460,7 +460,7 @@ class RestfulInstance(object):
         # would include too many actions that do not make sense in the
         # REST-API context, so for now we only permit the retire and
         # restore actions.
-        self.actions = dict(retire=actions.Retire, restore=actions.Restore)
+        self.actions = {"retire": actions.Retire, "restore": actions.Restore}
 
         # note TRACKER_WEB ends in a /
         self.base_path = '%srest' % (self.db.config.TRACKER_WEB)
@@ -731,14 +731,15 @@ class RestfulInstance(object):
                         if isinstance(v, type([])):
                             r = []
                             for working_id in v:
-                                d = dict(id=working_id, link=cp + working_id)
+                                d = {"id": working_id,
+                                     "link": cp + working_id}
                                 if verbose > 1:
                                     label = linkcls.labelprop()
                                     d[label] = linkcls.get(working_id, label)
                                 r.append(d)
                             result[pn] = r
                         else:
-                            result[pn] = dict(id=v, link=cp + v)
+                            result[pn] = {"id": v, "link": cp + v}
                             if verbose > 1:
                                 label = linkcls.labelprop()
                                 result[pn][label] = linkcls.get(v, label)
@@ -751,7 +752,7 @@ class RestfulInstance(object):
                     if verbose < 3:
                         u = self.db.config.TRACKER_WEB
                         p = u + '%s%s/' % (class_name, node.id)
-                        result[pn] = dict(link=p)
+                        result[pn] = {"link": p}
                     else:
                         result[pn] = v
                 elif isinstance(prop, hyperdb.Password):
@@ -2028,7 +2029,7 @@ class RestfulInstance(object):
         uid = self.db.getuid()
         for cls in sorted(self.db.classes):
             if self.db.security.hasPermission('View', uid, cls):
-                result[cls] = dict(link=self.base_path + '/data/' + cls)
+                result[cls] = {"link": self.base_path + '/data/' + cls}
         return 200, result
 
     @Routing.route("/data", 'OPTIONS')
