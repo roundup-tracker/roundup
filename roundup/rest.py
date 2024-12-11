@@ -1137,8 +1137,8 @@ class RestfulInstance(object):
         if props is None:
             props = set(class_obj.getprops(protected=protected))
         elif verbose > 1:
-                lp = class_obj.labelprop()
-                props.add(lp)
+            lp = class_obj.labelprop()
+            props.add(lp)
 
         result = {
             'id': itemid,
