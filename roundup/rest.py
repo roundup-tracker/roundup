@@ -520,7 +520,7 @@ class RestfulInstance(object):
             elif key not in unprotected_class_props:
                 # report bad props as this is an error.
                 raise UsageError("Property %s not found in class %s" % (key,
-                                        cl.classname))  # noqa: E128
+                                        cl.classname))
             props[key] = self.prop_from_arg(cl, key, value, itemid)
 
         return props

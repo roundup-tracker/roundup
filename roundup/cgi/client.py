@@ -2344,7 +2344,7 @@ class Client:
         if isinstance(action, list):
             raise SeriousError(
                 self._('broken form: multiple @action values submitted'))
-        
+
         action = action.value.lower()
 
         try:
