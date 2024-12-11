@@ -1396,9 +1396,8 @@ class Client:
         # allowing credentials. See:
         # https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
         # under Credentials Requests and Wildcards
-        if (allowed_origins and allowed_origins[0] == '*'
-            and not credentials):
-            return True
+        return (allowed_origins and allowed_origins[0] == '*'
+                and not credentials)
 
         return False
 

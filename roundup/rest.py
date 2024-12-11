@@ -239,7 +239,7 @@ def check_etag(node, key, etags, classname="Missing", node_id="0",
                 return False
             have_etag_match = True
 
-    if have_etag_match:
+    if have_etag_match:  # noqa: SIM103  leave for coverage reports
         return True
     else:
         return False
