@@ -2236,6 +2236,8 @@ class RestfulInstance(object):
                 error
 
         """
+        MAX_MIME_EXTENSION_LENGTH = 11  # application in /etc/mime.types
+
         # get the request format for response
         # priority : extension from uri (/rest/data/issue.json)
         #              only json or xml valid at this time.
@@ -2248,11 +2250,12 @@ class RestfulInstance(object):
         # such as .vcard for downloading user info can be
         # supported. This method also allow detection of mistyped
         # types like jon for json. Limit extension length to less than
-        # 10 characters to allow passing JWT via URL path. Could be
-        # useful for magic link login method or account recovery workflow,
-        # using a JWT with a short expiration time and limited rights
-        # (e.g. only password change permission))
-        if ext_type and (len(ext_type) < 10):
+        # MAX_MIME_EXTENSION_LENGTH characters to allow passing JWT
+        # via URL path. Could be useful for magic link login method or
+        # account recovery workflow, using a JWT with a short
+        # expiration time and limited rights (e.g. only password
+        # change permission))
+        if ext_type and (len(ext_type) < MAX_MIME_EXTENSION_LENGTH):
             if ext_type not in list(self.__accepted_content_type.values()):
                 self.client.response_code = 406
                 return (None, uri,
