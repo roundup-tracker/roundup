@@ -119,7 +119,7 @@ def _data_decorator(func):
             }
         else:
             if hasattr(self.db, 'stats') and self.report_stats:
-                self.db.stats['elapsed'] = time.time()-self.start
+                self.db.stats['elapsed'] = time.time() - self.start
                 data['@stats'] = self.db.stats
             result = {
                 'data': data
@@ -574,7 +574,7 @@ class RestfulInstance(object):
                 for pn in p.split('.'):
                     # Tried to dereference a non-Link property
                     if cn is None:
-                        raise UsageError("Property %(base)s can not be dereferenced in %(p)s." % {"base": p[:-(len(pn)+1)], "p": p})
+                        raise UsageError("Property %(base)s can not be dereferenced in %(p)s." % {"base": p[:-(len(pn) + 1)], "p": p})
                     cls = self.db.getclass(cn)
                     # This raises a KeyError for unknown prop:
                     try:
@@ -1049,7 +1049,7 @@ class RestfulInstance(object):
         )
 
         return 200, {"collection":
-                     [{"id": rolename,"name": rolename}
+                     [{"id": rolename, "name": rolename}
                       for rolename in list(self.db.security.role.keys())]}
 
     @Routing.route("/data/<:class_name>/<:item_id>", 'GET')
@@ -1189,7 +1189,7 @@ class RestfulInstance(object):
         class_obj = self.db.getclass(class_name)
         node = class_obj.getnode(item_id)
         etag = calculate_etag(node, self.db.config.WEB_SECRET_KEY,
-                              class_name, item_id,  repr_format="json")
+                              class_name, item_id, repr_format="json")
         try:
             data = node.__getattr__(attr_name)
         except AttributeError:
