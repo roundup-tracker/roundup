@@ -1027,7 +1027,7 @@ class Client:
 
            Do it only once an hour.
         """
-        hour = 60*60
+        hour = 60 * 60
         now = time.time()
 
         # XXX: hack - use OTK table to store last_clean time information
@@ -2176,7 +2176,7 @@ class Client:
             else:
                 # try path/class.view
                 tplname = '%s/%s.%s' % (
-                    view[:slash_loc], name, view[slash_loc+1:])
+                    view[:slash_loc], name, view[slash_loc + 1:])
 
         if loader.check(tplname):
             return tplname
@@ -2189,7 +2189,7 @@ class Client:
         if slash_loc == -1:
             generic = '_generic.%s' % view
         else:
-            generic = '%s/_generic.%s' % (view[:slash_loc], view[slash_loc+1:])
+            generic = '%s/_generic.%s' % (view[:slash_loc], view[slash_loc + 1:])
         if loader.check(generic):
             return generic
 
@@ -2223,7 +2223,7 @@ class Client:
                     timings = {'starttag': '<!-- ', 'endtag': ' -->'}
                 else:
                     timings = {'starttag': '<p>', 'endtag': '</p>'}
-                timings['seconds'] = time.time()-self.start
+                timings['seconds'] = time.time() - self.start
                 s = self._(
                     '%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n'
                 ) % timings
@@ -2305,20 +2305,20 @@ class Client:
 
     # these are the actions that are available
     actions = (
-        ('edit',        actions.EditItemAction),
-        ('editcsv',     actions.EditCSVAction),
-        ('new',         actions.NewItemAction),
-        ('register',    actions.RegisterAction),
-        ('confrego',    actions.ConfRegoAction),
-        ('passrst',     actions.PassResetAction),
-        ('login',       actions.LoginAction),
-        ('logout',      actions.LogoutAction),
-        ('search',      actions.SearchAction),
-        ('restore',     actions.RestoreAction),
-        ('retire',      actions.RetireAction),
-        ('show',        actions.ShowAction),
-        ('export_csv',  actions.ExportCSVAction),
-        ('export_csv_id',  actions.ExportCSVWithIdAction),
+        ('edit',        actions.EditItemAction),  # noqa: E241
+        ('editcsv',     actions.EditCSVAction),  # noqa: E241
+        ('new',         actions.NewItemAction),  # noqa: E241
+        ('register',    actions.RegisterAction),  # noqa: E241
+        ('confrego',    actions.ConfRegoAction),  # noqa: E241
+        ('passrst',     actions.PassResetAction),  # noqa: E241
+        ('login',       actions.LoginAction),  # noqa: E241
+        ('logout',      actions.LogoutAction),  # noqa: E241
+        ('search',      actions.SearchAction),  # noqa: E241
+        ('restore',     actions.RestoreAction),  # noqa: E241
+        ('retire',      actions.RetireAction),  # noqa: E241
+        ('show',        actions.ShowAction),  # noqa: E241
+        ('export_csv',  actions.ExportCSVAction),  # noqa: E241
+        ('export_csv_id',  actions.ExportCSVWithIdAction),  # noqa: E241
     )
 
     def handle_action(self):
@@ -2913,7 +2913,7 @@ class Client:
         if self.debug:
             self.headers_sent = headers
 
-    def add_cookie(self, name, value, expire=86400*365, path=None):
+    def add_cookie(self, name, value, expire=86400 * 365, path=None):
         """Set a cookie value to be sent in HTTP headers
 
         Parameters:
