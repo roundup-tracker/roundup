@@ -652,9 +652,8 @@ class RestfulInstance(object):
                     result = []
                 elif isinstance(new_val, list):
                     result = [x for x in old_val if x not in new_val]
-                else:
-                    if new_val in old_val:
-                        old_val.remove(new_val)
+                elif new_val in old_val:
+                    old_val.remove(new_val)
             elif isinstance(old_val, dict):
                 if new_val is None:
                     result = {}
@@ -1137,8 +1136,7 @@ class RestfulInstance(object):
         result = {}
         if props is None:
             props = set(class_obj.getprops(protected=protected))
-        else:
-            if verbose > 1:
+        elif verbose > 1:
                 lp = class_obj.labelprop()
                 props.add(lp)
 
