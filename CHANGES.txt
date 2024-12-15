@@ -39,6 +39,8 @@ Fixed:
 - issue2551356 - Add etag header when If-Modified-Since GET request
   returns not-modified (304). Breaking change to function signature
   for client.py-Client::_serve_file(). (John Rouillard)
+- issue2551381 - roundup-server parses URI's with multiple '?"
+  incorrectly. (John Rouillard)
 
 Features:
 
