@@ -26,7 +26,7 @@ try:
 
     # ruff: noqa: E402
     from hypothesis import example, given, settings
-    from hypothesis.strategies import binary, characters, none, one_of, sampled_from, text
+    from hypothesis.strategies import binary, characters, emails, none, one_of, sampled_from, text
 
 except ImportError:
     from .pytest_patcher import mark_class
@@ -48,7 +48,7 @@ except ImportError:
     # define the decorator functions
     example = given = settings = noop_decorators_with_args
     # and stratgies using in decorators
-    binary = characters = none = one_of = sampled_from = text = noop_strategy
+    binary = characters = emails, none = one_of = sampled_from = text = noop_strategy
 
 
 try:
@@ -213,6 +213,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
 
     @given(sampled_from(['@verbose', '@page_size', '@page_index']),
            one_of(characters(),text(min_size=1)))
+    @example("@verbose", "1#")
     @settings(max_examples=_max_examples,
               deadline=10000) # 10000ms
     def test_class_url_param_accepting_integer_values(self, param, value):
@@ -224,10 +225,13 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
         query = '%s=%s'  % (param, value)
         f = session.get(url, params=query)
         try:
+            # test case '0#'
+            if len(value) > 1 and value[-1] in ('#', '&'):
+                value = value[:-1]
             if int(value) >= 0:
                 self.assertEqual(f.status_code, 200)
         except ValueError:
-            if value in ['#', '&']:
+            if value in ('#', '&'):
                 self.assertEqual(f.status_code, 200)
             else:
                 # invalid value for param
@@ -235,6 +239,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
 
     @given(sampled_from(['@verbose']),
            one_of(characters(),text(min_size=1)))
+    @example("@verbose", "1#")
     @settings(max_examples=_max_examples,
               deadline=10000) # 10000ms
     def test_element_url_param_accepting_integer_values(self, param, value):
@@ -246,6 +251,9 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
         query = '%s=%s'  % (param, value)
         f = session.get(url, params=query)
         try:
+            # test case '0#'
+            if len(value) > 1 and value[-1] in ('#', '&'):
+                value = value[:-1]
             if int(value) >= 0:
                 self.assertEqual(f.status_code, 200)
         except ValueError:
@@ -254,7 +262,6 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
             else:
                 # invalid value for param
                 self.assertEqual(f.status_code, 400)
-
 
 @skip_requests
 class BaseTestCases(WsgiSetup, ClientSetup):
