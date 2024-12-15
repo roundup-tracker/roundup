@@ -41,6 +41,8 @@ Fixed:
   for client.py-Client::_serve_file(). (John Rouillard)
 - issue2551381 - roundup-server parses URI's with multiple '?"
   incorrectly. (John Rouillard)
+- issue2551382 - invalid @verbose, @page_* values in rest uri's
+  generate 409 not 400 error. (John Rouillard)
 
 Features:
 

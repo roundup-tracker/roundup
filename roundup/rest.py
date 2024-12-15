@@ -811,10 +811,18 @@ class RestfulInstance(object):
             value = form_field.value
             if key.startswith("@page_"):  # serve the paging purpose
                 key = key[6:]
-                value = int(value)
+                try:
+                    value = int(value)
+                except ValueError as e:
+                    raise UsageError("When using @page_%s: %s" %
+                                     (key, e.args[0]))
                 page[key] = value
             elif key == "@verbose":
-                verbose = int(value)
+                try:
+                    verbose = int(value)
+                except ValueError as e:
+                    raise UsageError("When using @verbose: %s" %
+                                     (e.args[0]))
             elif key in ["@fields", "@attrs"]:
                 f = value.split(",")
                 if len(f) == 1:
@@ -1129,7 +1137,11 @@ class RestfulInstance(object):
                 # used only if no @fields/@attrs
                 protected = value.lower() == "true"
             elif key == "@verbose":
-                verbose = int(value)
+                try:
+                    verbose = int(value)
+                except ValueError as e:
+                    raise UsageError("When using @verbose: %s" %
+                                     (e.args[0]))
 
         result = {}
         if props is None:

@@ -21,6 +21,37 @@ except ImportError:
         reason='Skipping liveserver tests: requests library not available'))
 
 try:
+    import hypothesis
+    skip_hypothesis = lambda func, *args, **kwargs: func
+
+    # ruff: noqa: E402
+    from hypothesis import example, given, settings
+    from hypothesis.strategies import binary, characters, none, one_of, sampled_from, text
+
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_hypothesis = mark_class(pytest.mark.skip(
+        reason='Skipping hypothesis liveserver tests: hypothesis library not available'))
+
+    # define a dummy decorator that can take args
+    def noop_decorators_with_args(*args, **kwargs): 
+        def noop_decorators(func):
+            def internal():
+                pass
+            return internal
+        return noop_decorators
+
+    # define a dummy strategy
+    def noop_strategy(*args, **kwargs):
+        pass
+
+    # define the decorator functions
+    example = given = settings = noop_decorators_with_args
+    # and stratgies using in decorators
+    binary = characters = none = one_of = sampled_from = text = noop_strategy
+
+
+try:
     import brotli
     skip_brotli = lambda func, *args, **kwargs: func
 except ImportError:
@@ -149,11 +180,9 @@ class WsgiSetup(LiveServerTestCase):
             # doesn't support the max bytes to read argument.
             return RequestDispatcher(self.dirname)
 
-
-@skip_requests
-class BaseTestCases(WsgiSetup):
-    """Class with all tests to run against wsgi server. Is reused when
-       wsgi server is started with various feature flags
+class ClientSetup():
+    """ Utility programs for the client querying a server.
+        Just a login session at the moment but more to come I am sure.
     """
 
     def create_login_session(self, username="admin", password="sekrit",
@@ -175,6 +204,63 @@ class BaseTestCases(WsgiSetup):
         if not return_response:
             return session
         return session, response
+
+
+@skip_hypothesis
+class FuzzGetUrls(WsgiSetup, ClientSetup):
+
+    _max_examples = 100
+
+    @given(sampled_from(['@verbose', '@page_size', '@page_index']),
+           one_of(characters(),text(min_size=1)))
+    @settings(max_examples=_max_examples,
+              deadline=10000) # 10000ms
+    def test_class_url_param_accepting_integer_values(self, param, value):
+        """Tests all integer args for rest url. @page_* is the
+           same code for all *.
+        """
+        session, _response = self.create_login_session()
+        url = '%s/rest/data/status' % (self.url_base())
+        query = '%s=%s'  % (param, value)
+        f = session.get(url, params=query)
+        try:
+            if int(value) >= 0:
+                self.assertEqual(f.status_code, 200)
+        except ValueError:
+            if value in ['#', '&']:
+                self.assertEqual(f.status_code, 200)
+            else:
+                # invalid value for param
+                self.assertEqual(f.status_code, 400)
+
+    @given(sampled_from(['@verbose']),
+           one_of(characters(),text(min_size=1)))
+    @settings(max_examples=_max_examples,
+              deadline=10000) # 10000ms
+    def test_element_url_param_accepting_integer_values(self, param, value):
+        """Tests all integer args for rest url. @page_* is the
+           same code for all *.
+        """
+        session, _response = self.create_login_session()
+        url = '%s/rest/data/status/1' % (self.url_base())
+        query = '%s=%s'  % (param, value)
+        f = session.get(url, params=query)
+        try:
+            if int(value) >= 0:
+                self.assertEqual(f.status_code, 200)
+        except ValueError:
+            if value in ['#', '&']:
+                self.assertEqual(f.status_code, 200)
+            else:
+                # invalid value for param
+                self.assertEqual(f.status_code, 400)
+
+
+@skip_requests
+class BaseTestCases(WsgiSetup, ClientSetup):
+    """Class with all tests to run against wsgi server. Is reused when
+       wsgi server is started with various feature flags
+    """
 
     def test_cookie_attributes(self):
         session, _response = self.create_login_session()
