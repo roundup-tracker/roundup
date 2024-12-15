@@ -398,7 +398,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
 
             return
 
-        i = self.path.rfind('?')
+        i = self.path.find('?')
         if i >= 0:
             # rest starts with /, query is without ?
             rest, query = self.path[:i], self.path[i+1:]
