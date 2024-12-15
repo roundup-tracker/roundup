@@ -1080,7 +1080,7 @@ gets a dictionary of keys/values for the new item. It returns the same
 parameters as the GET method after successful creation.
 
 If you perform a get on an item with ``@verbose=0``, it is in the
-correct form to use as a the payload of a post.
+correct form to use as the payload of a post.
 
 
 Safely Re-sending POST
