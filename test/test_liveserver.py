@@ -48,7 +48,7 @@ except ImportError:
     # define the decorator functions
     example = given = reproduce_failure = settings = noop_decorators_with_args
     # and stratgies using in decorators
-    binary = characters = emails, none = one_of = sampled_from = text = noop_strategy
+    binary = characters = emails = none = one_of = sampled_from = text = noop_strategy
 
 
 try:
