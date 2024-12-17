@@ -212,8 +212,9 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
     _max_examples = 100
 
     @given(sampled_from(['@verbose', '@page_size', '@page_index']),
-           one_of(characters(),text(min_size=1)))
+           text(min_size=1))
     @example("@verbose", "1#")
+    @example("@verbose", "#1stuff")
     @settings(max_examples=_max_examples,
               deadline=10000) # 10000ms
     def test_class_url_param_accepting_integer_values(self, param, value):
@@ -225,38 +226,42 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
         query = '%s=%s'  % (param, value)
         f = session.get(url, params=query)
         try:
-            # test case '0#'
-            if len(value) > 1 and value[-1] in ('#', '&'):
-                value = value[:-1]
-            if int(value) >= 0:
+            # test case '0#' '12345#stuff' '12345&stuff'
+            match = re.match('(^[0-9]*)[#&]', value)
+            if match is not None:
+                value = match[1]
+            elif int(value) >= 0:
                 self.assertEqual(f.status_code, 200)
         except ValueError:
-            if value in ('#', '&'):
+            # test case '#' '#0', '&', '&anything here really'
+            if value[0] in ('#', '&'):
                 self.assertEqual(f.status_code, 200)
             else:
                 # invalid value for param
                 self.assertEqual(f.status_code, 400)
 
     @given(sampled_from(['@verbose']), text(min_size=1))
-    @example("@verbose", "1#")
+    @example("@verbose", "10#")
+    @example("@verbose", u'Ø\U000dd990')
     @settings(max_examples=_max_examples,
               deadline=10000) # 10000ms
     def test_element_url_param_accepting_integer_values(self, param, value):
-        """Tests all integer args for rest url. @page_* is the
-           same code for all *.
+        """Tests args accepting int for rest url.
         """
         session, _response = self.create_login_session()
         url = '%s/rest/data/status/1' % (self.url_base())
         query = '%s=%s'  % (param, value)
         f = session.get(url, params=query)
         try:
-            # test case '0#'
-            if len(value) > 1 and value[-1] in ('#', '&'):
-                value = value[:-1]
-            if int(value) >= 0:
+            # test case '0#' '12345#stuff' '12345&stuff'
+            match = re.match('(^[0-9]*)[#&]', value)
+            if match is not None:
+                value = match[1]
+            elif int(value) >= 0:
                 self.assertEqual(f.status_code, 200)
         except ValueError:
-            if value in ['#', '&']:
+            # test case '#' '#0', '&', '&anything here really'
+            if value[0] in ('#', '&'):
                 self.assertEqual(f.status_code, 200)
             else:
                 # invalid value for param
