@@ -25,7 +25,7 @@ try:
     skip_hypothesis = lambda func, *args, **kwargs: func
 
     # ruff: noqa: E402
-    from hypothesis import example, given, settings
+    from hypothesis import example, given, reproduce_failure, settings
     from hypothesis.strategies import binary, characters, emails, none, one_of, sampled_from, text
 
 except ImportError:
@@ -46,7 +46,7 @@ except ImportError:
         pass
 
     # define the decorator functions
-    example = given = settings = noop_decorators_with_args
+    example = given = reproduce_failure = settings = noop_decorators_with_args
     # and stratgies using in decorators
     binary = characters = emails, none = one_of = sampled_from = text = noop_strategy
 
@@ -237,8 +237,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
                 # invalid value for param
                 self.assertEqual(f.status_code, 400)
 
-    @given(sampled_from(['@verbose']),
-           one_of(characters(),text(min_size=1)))
+    @given(sampled_from(['@verbose']), text(min_size=1))
     @example("@verbose", "1#")
     @settings(max_examples=_max_examples,
               deadline=10000) # 10000ms
