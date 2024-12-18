@@ -1,6 +1,7 @@
 import pytest
 import unittest
 import shutil
+import sys
 import errno
 
 from time import sleep
@@ -62,6 +63,13 @@ except ImportError:
     jwt = None
     skip_jwt = mark_class(pytest.mark.skip(
         reason='Skipping JWT tests: jwt library not available'))
+
+if sys.version_info[0] > 2:
+    skip_on_py2 = lambda func, *args, **kwargs: func
+else:
+    from .pytest_patcher import mark_class
+    skip_on_py2 =mark_class(pytest.mark.skip(
+        reason='Skipping test on Python 2'))
 
 NEEDS_INSTANCE = 1
 
@@ -2427,6 +2435,7 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', json_dict['error']['msg'])
 
+    @skip_on_py2
     def testBadJson(self):
         '''Run some JSON we don't accept through the wringer
         '''
@@ -2508,7 +2517,6 @@ class TestCase():
                             form)
 
         self.assertEqual(json.loads(results), expected)
-
 
     def testStatsGen(self):
         # check stats being returned by put and get ops

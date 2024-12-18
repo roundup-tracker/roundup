@@ -19,6 +19,11 @@ from datetime import timedelta
 from hashlib import md5
 
 try:
+    from json import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
+
+try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
@@ -2747,7 +2752,7 @@ class SimulateFieldStorageFromJson():
                                     parse_constant=raise_error_on_constant)
             self.value = [self.FsValue(index, self.json_dict[index])
                           for index in self.json_dict]
-        except (json.decoder.JSONDecodeError, ValueError) as e:
+        except (JSONDecodeError, ValueError) as e:
             raise ValueError(e.args[0] + ". JSON is: " + json_string)
 
 
