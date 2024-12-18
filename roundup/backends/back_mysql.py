@@ -145,10 +145,7 @@ class Database(rdbms_common.Database):
     implements_intersect = 0
 
     # Backend for MySQL to use.
-    # InnoDB is faster, but if you're running <4.0.16 then you'll need to
-    # use BDB to pass all unit tests.
     mysql_backend = 'InnoDB'
-    # mysql_backend = 'BDB'
 
     hyperdb_to_sql_datatypes = {
         hyperdb.String:   'TEXT',
