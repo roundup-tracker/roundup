@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import shutil, errno, pytest, json, gzip, mimetypes, os, re
 
 from roundup import date as rdate
