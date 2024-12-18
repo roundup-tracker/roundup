@@ -216,7 +216,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
     @example("@verbose", "1#")
     @example("@verbose", "#1stuff")
     @settings(max_examples=_max_examples,
-              deadline=10000) # 10000ms
+              deadline=10000) # in ms
     def test_class_url_param_accepting_integer_values(self, param, value):
         """Tests all integer args for rest url. @page_* is the
            same code for all *.
@@ -244,7 +244,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
     @example("@verbose", "10#")
     @example("@verbose", u'Ø\U000dd990')
     @settings(max_examples=_max_examples,
-              deadline=10000) # 10000ms
+              deadline=10000) # in ms
     def test_element_url_param_accepting_integer_values(self, param, value):
         """Tests args accepting int for rest url.
         """
@@ -266,6 +266,39 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
             else:
                 # invalid value for param
                 self.assertEqual(f.status_code, 400)
+
+    @given(emails())
+    @settings(max_examples=_max_examples,
+              deadline=10000) # in ms
+    def test_email_param(self,email):
+        session, _response = self.create_login_session()
+        url = '%s/rest/data/user/1/address' % (self.url_base())
+        headers = {"Accept": "application/json",
+                   "Content-Type": "application/json",
+                   "x-requested-with": "rest",
+                   "Origin": self.url_base(),
+                   "Referer": self.url_base()
+                   }
+
+                   #--header 'If-Match: "e2e6cc43c3475a4a3d9e5343617c11c3"' \
+        
+        f = session.get(url)
+        stored_email = f.json()['data']['data']
+        headers['If-Match'] = f.headers['etag']
+
+        payload = {'data': email}
+        f = session.put(url, json=payload, headers=headers)
+
+        self.assertEqual(f.status_code, 200)
+
+        if stored_email == email:
+            # if the email we are setting is the same as present, we
+            # don't make a change so the attribute dict is empty aka false.
+            self.assertEqual(f.json()['data']['attribute'], {})
+        else:
+            self.assertEqual(f.json()['data']['attribute']['address'],
+                         email)
+
 
 @skip_requests
 class BaseTestCases(WsgiSetup, ClientSetup):

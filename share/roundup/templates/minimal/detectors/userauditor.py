@@ -68,6 +68,10 @@ def audit_user_fields(db, cl, nodeid, newvalues):
             raise ValueError('Email address syntax is invalid "%s"'%address)
 
         check_main = db.user.stringFind(address=address)
+        # allow user to set same address via rest
+        if check_main:
+            check_main = nodeid not in check_main
+
         # make sure none of the alts are owned by anyone other than us (x!=nodeid)
         check_alts = [x for x in db.user.filter(None, {'alternate_addresses' : address}) if x != nodeid]
         if check_main or check_alts:

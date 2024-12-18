@@ -1392,10 +1392,12 @@ Other Supported Methods for Items
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The method ``PUT`` is allowed on individual items, e.g.
-``/data/issue/42`` On success it returns the same parameters as the
-respective ``GET`` method. Note that for ``PUT`` an Etag has to be
-supplied, either in the request header or as an @etag parameter. An
-example::
+``/data/issue/42`` On success it returns a data structure similar to
+the respective ``GET`` method. However it is only concerned with the
+changes that have occurred. Since it is not a full ``GET`` request, it
+doesn't include an etag or unchanged attributes. Note that for ``PUT``
+an Etag has to be supplied, either in the request header or as an
+@etag parameter. An example::
 
   curl -u admin:admin -X PUT \
      --header 'Referer: https://example.com/demo/' \
@@ -1615,7 +1617,22 @@ Other Supported Methods for fields
 
 The method ``PUT`` is allowed on a property e.g.,
 ``/data/issue/42/title``. On success it returns the same parameters as
-the respective ``GET`` method. Note that for ``PUT`` an Etag has to be
+the respective ``PUT`` method on the item. For example::
+
+  {
+    "data": {
+        "id": "42",
+        "type": "issue",
+        "link": "https://.../demo/rest/data/issue/42",
+        "attribute": {
+            "title": "this is a new title"
+        }
+    }
+  }
+
+If the new value for the title was the same as on the server, the
+attribute property would be empty since the value was not changed.
+Note that for ``PUT`` an Etag has to be
 supplied, either in the request header or as an @etag parameter.
 Example using multipart/form-data rather than json::
 
@@ -2438,3 +2455,16 @@ Rate limit tests::
 
 will show you the number of remaining requests to the REST interface
 for the user identified by password.
+
+
+Notes V2 API
+~~~~~~~~~~~~
+
+These may never be implemented but, some nits to consider.
+
+The shape of a GET and PUT/PATCH responses are different. "attributes"
+is used for GET and "attribute" is used with PATCH/PUT. A PATCH or a
+PUT can update multiple properties when used with an item endpoint.
+"attribute" kind of makes sense when used with a property endpoint
+but.... Maybe standardize on one shape so the client doesn't have to
+special case?

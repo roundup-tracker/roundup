@@ -2427,6 +2427,89 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', json_dict['error']['msg'])
 
+    def testBadJson(self):
+        '''Run some JSON we don't accept through the wringer
+        '''
+        body=b'{ "title": "Joe Doe has problems", \
+                 "nosy": [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": Infinity }'
+
+        expected={ "error":
+                   {"status": 400,
+                    "msg": ("Unacceptable number: Infinity. JSON is: "
+                            + b2s(body)),
+                   }
+        }
+
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "PUT"
+        }
+        self.server.client.env.update(env)
+        headers={"accept": "application/zot; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue/1",
+                            form)
+
+        self.assertEqual(json.loads(results), expected)
+
+        body=b'{ "title": "Joe Doe has problems", \
+                 nosy: [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": Infinity }'
+        self.maxDiff = None
+        expected={ "error":
+                   {"status": 400,
+                    "msg": ("Expecting property name enclosed in double "
+                            "quotes: line 1 column 53 (char 52). JSON is: "
+                            + b2s(body)),
+                   }
+        }
+
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "PUT"
+        }
+        self.server.client.env.update(env)
+        headers={"accept": "application/zot; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue/1",
+                            form)
+
+        self.assertEqual(json.loads(results), expected)
+
+
     def testStatsGen(self):
         # check stats being returned by put and get ops
         # using dispatch which parses the @stats query param
@@ -2835,27 +2918,20 @@ class TestCase():
         etag = calculate_etag(self.db.issue.getnode("1"),
                               self.db.config['WEB_SECRET_KEY'])
         etagb = etag.strip ('"')
-        env = {"CONTENT_TYPE": "application/json",
-               "CONTENT_LEN": 0,
-               "REQUEST_METHOD": "DELETE" }
+        env = {"REQUEST_METHOD": "DELETE" }
         self.server.client.env.update(env)
         # use text/plain header and request json output by appending
         # .json to the url.
         headers={"accept": "text/plain",
-                 "content-type": env['CONTENT_TYPE'],
                  "if-match": '"%s"'%etagb,
                  "content-length": 0,
         }
         self.headers=headers
-        body_file=BytesIO(b'')  # FieldStorage needs a file
-        form = client.BinaryFieldStorage(body_file,
-                                headers=headers,
-                                environ=env)
         self.server.client.request.headers.get=self.get_header
         self.db.setCurrentUser('admin') # must be admin to delete issue
         results = self.server.dispatch('DELETE',
                             "/rest/data/issue/1.json",
-                            form)
+                            self.empty_form)
         self.assertEqual(self.server.client.response_code, 200)
         print(results)
         json_dict = json.loads(b2s(results))
@@ -3213,7 +3289,6 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
-        body_file=BytesIO(body)  # FieldStorage needs a file
         self.server.client.request.headers.get=self.get_header
         for method in ( "GET", "PUT", "PATCH" ):
             headers={"accept": "application/json; version=1",
@@ -3221,6 +3296,8 @@ class TestCase():
                      "content-length": len(body),
                      "x-http-method-override": "DElETE",
                  }
+            body_file=BytesIO(body)  # FieldStorage needs a file
+
             self.headers=headers
             form = client.BinaryFieldStorage(body_file,
                                          headers=headers,

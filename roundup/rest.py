@@ -2729,17 +2729,27 @@ class SimulateFieldStorageFromJson():
 
     '''
     def __init__(self, json_string):
-        ''' Parse the json string into an internal dict. '''
+        '''Parse the json string into an internal dict.
+
+            Because spec for rest post once exactly (POE) shows
+            posting empty content. An empty string results in an empty
+            dict, not a json parse error.
+        '''
         def raise_error_on_constant(x):
             raise ValueError("Unacceptable number: %s" % x)
+        if json_string == "":
+            self.json_dict = {}
+            self.value = None
+            return
+
         try:
             self.json_dict = json.loads(json_string,
                                     parse_constant=raise_error_on_constant)
             self.value = [self.FsValue(index, self.json_dict[index])
                           for index in self.json_dict]
-        except ValueError:
-            self.json_dict = {}
-            self.value = None
+        except (json.decoder.JSONDecodeError, ValueError) as e:
+            raise ValueError(e.args[0] + ". JSON is: " + json_string)
+
 
     class FsValue:
         '''Class that does nothing but response to a .value property '''

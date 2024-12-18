@@ -133,6 +133,32 @@ to::
 at the top of both files. The icing macro used in other tracker
 templates was renamed to frame in this tracker template.
 
+Update userauditor.py detector (recommended)
+--------------------------------------------
+
+When using the REST interface, setting the address property of the
+user to the same value it currently has resulted in an error.
+
+If you have not changed your userauditor, you can copy one from any of
+the supplied templates in the ``detectors/userauditor.py`` file. Use
+``roundup-admin templates`` to find a list of template directories.
+
+If you have changed your userauditor from the stock version, apply the
+following diff::
+
+               raise ValueError('Email address syntax is invalid
+               "%s"'%address)
+  
+           check_main = db.user.stringFind(address=address)
+  +        # allow user to set same address via rest
+  +        if check_main:
+  +            check_main = nodeid not in check_main
+  +
+         # make sure none of the alts are owned by anyone other than us (x!=nodeid)
+
+add the lines marked with ``+`` in the file in the location after
+check_main is assigned.
+
 More secure session cookie handling (info)
 ------------------------------------------
 

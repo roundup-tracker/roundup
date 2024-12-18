@@ -43,6 +43,12 @@ Fixed:
   incorrectly. (John Rouillard)
 - issue2551382 - invalid @verbose, @page_* values in rest uri's
   generate 409 not 400 error. (John Rouillard)
+- fix issues with rest doc and use of PUT on a property item. Response
+  is similar to use of PUT on the item, not a GET on the
+  item. Discovered while fuzz testing. (John Rouillard)
+- issue2551383 - Setting same address via REST PUT command results in
+  an error. Now the userauditor does not trigger an error if a user
+  sets the primary address to the existing value. (John Rouillard)
 
 Features:
 
@@ -71,7 +77,10 @@ Features:
   endpoint. Raw file/msg data can be retrieved using the
   /binary_content attribute and an Accept header to select the mime
   type for the data (e.g. image/png for a png file). The existing html
-  interface method still works and is supported, but is legacy.
+  interface method still works and is supported, but is legacy. (John
+  Rouillard) 
+- added fuzz testing for some code. Found issue2551382 and
+  others. (John Rouillard)
 
 2024-07-13 2.4.0
 
