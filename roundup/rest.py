@@ -95,7 +95,7 @@ def _data_decorator(func):
             code = 402  # nothing to pay, just a mark for debugging purpose
             data = 'Method under development'
         except:  # noqa: E722
-            exc, val, tb = sys.exc_info()
+            _exc, val, _tb = sys.exc_info()
             code = 400
             ts = time.ctime()
             if getattr(self.client.request, 'DEBUG_MODE', None):
@@ -295,12 +295,12 @@ def parse_accept_header(accept):
         # check for a + in the sub-type
         if '+' in subtyp:
             # if it exists, determine if the subtype is a vendor-specific type
-            vnd, sep, extra = subtyp.partition('+')
+            vnd, _sep, extra = subtyp.partition('+')
             if vnd.startswith('vnd'):
                 # and then... if it ends in something like "-v1.1" parse the
                 # version out
                 if '-v' in vnd:
-                    vnd, sep, rest = vnd.rpartition('-v')
+                    vnd, _sep, rest = vnd.rpartition('-v')
                     if len(rest):
                         # add the version as a media param
                         try:
