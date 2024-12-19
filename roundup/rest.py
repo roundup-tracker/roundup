@@ -695,7 +695,7 @@ class RestfulInstance(object):
         # support version 1 at this time. Set it as
         # placeholder for later use.
         if self.api_version is None:
-            version = self.__default_api_version  # noqa: F841
+            version = self.__default_api_version
         else:
             version = self.api_version  # noqa: F841
 
@@ -901,7 +901,7 @@ class RestfulInstance(object):
                 # Call this for the side effect of validating the key
                 # use _discard as _ is apparently a global for the translation
                 # service.
-                _discard = self.transitive_props(class_name, [key])  # noqa: F841
+                _discard = self.transitive_props(class_name, [key])
 
                 # We drop properties without search permission silently
                 # This reflects the current behavior of other roundup
