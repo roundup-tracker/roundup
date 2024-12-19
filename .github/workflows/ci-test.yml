@@ -86,7 +86,7 @@ jobs:
             - python-version: 3.8
               os: ubuntu-22.04
 
-        exclude:
+        #exclude:
             # skip all python versions on explicit 20.04/24.04 unless
             # explicitly included
             #- os: ubuntu-20.04
