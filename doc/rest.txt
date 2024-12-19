@@ -1171,7 +1171,8 @@ but is available if a use case requires it.
 
 This example also changes the lifetime of the POE url.  This link has
 a lifetime of 15 minutes (900 seconds). Using it after 16 minutes will
-result in a 400 error. A lifetime up to 1 hour can be specified.
+result in a 400 error. A lifetime up to 3600 seconds (1 hour) can be
+specified.
 
 POE url's are an optional mechanism. If:
 
