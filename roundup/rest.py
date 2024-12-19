@@ -2755,7 +2755,6 @@ class SimulateFieldStorageFromJson():
         except (JSONDecodeError, ValueError) as e:
             raise ValueError(e.args[0] + ". JSON is: " + json_string)
 
-
     class FsValue:
         '''Class that does nothing but response to a .value property '''
         def __init__(self, name, val):
