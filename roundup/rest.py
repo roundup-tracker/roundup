@@ -109,7 +109,8 @@ def _data_decorator(func):
 
         # decorate it
         self.client.response_code = code
-        if code >= 400:  # any error require error format
+        ERROR_CODE_LOWER_BOUND = 400
+        if code >= ERROR_CODE_LOWER_BOUND:  # any error require error format
             logmethod = getattr(logger, self.db.config.WEB_REST_LOGGING, None)
             if logmethod:
                 logmethod("statuscode: %s" % code)
@@ -751,7 +752,8 @@ class RestfulInstance(object):
                     # Do not show the (possibly HUGE) content prop
                     # unless very verbose, we display the standard
                     # download link instead
-                    if verbose < 3:
+                    MIN_VERBOSE_LEVEL_SHOW_CONTENT = 3
+                    if verbose < MIN_VERBOSE_LEVEL_SHOW_CONTENT:
                         u = self.db.config.TRACKER_WEB
                         p = u + '%s%s/' % (class_name, node.id)
                         result[pn] = {"link": p}
@@ -1254,7 +1256,7 @@ class RestfulInstance(object):
         except ValueError:
             raise UsageError("Value 'lifetime' must be an integer specify lifetime in seconds. Got %s." % input_payload['lifetime'].value)
 
-        if lifetime > 3600 or lifetime < 1:
+        if lifetime > 3600 or lifetime < 1:  # noqa: PLR2004
             raise UsageError("Value 'lifetime' must be between 1 second and 1 hour (3600 seconds). Got %s." % input_payload['lifetime'].value)
 
         try:
