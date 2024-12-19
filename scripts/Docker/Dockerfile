@@ -89,11 +89,11 @@ ARG pythonversion
 
 RUN [ -z "${VERBOSE}" ] || set -xv; \
     CWD="$PWD" && \
-    upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
+    upgrades=$(python3 -m pip --no-cache-dir --disable-pip-version-check \
 	list --outdated | awk 'NR > 2 {print $1}'); \
     if [ -n "$upgrades" ]; then \
         echo "Pip updating $upgrades"; \
-        python -m pip --no-cache --disable-pip-version-check \
+        python -m pip --no-cache-dir --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
         echo "Nothing to pip update"; \
@@ -211,11 +211,11 @@ RUN apk --no-cache upgrade; \
      libstdc++ \
      libxapian \
      zstd-libs; \
-    upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
+    upgrades=$(python3 -m pip --no-cache-dir --disable-pip-version-check \
 	list --outdated | awk 'NR > 2 {print $1}'); \
     if [ -n "$upgrades" ]; then \
         echo "Pip updating $upgrades"; \
-        python -m pip --no-cache --disable-pip-version-check \
+        python -m pip --no-cache-dir --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
         echo "Nothing to pip update"; \
