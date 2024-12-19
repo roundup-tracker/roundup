@@ -1245,29 +1245,8 @@ Command help:
 
             cl = self.get_class(classname)
 
-            # ensure that the properties and the CSV file headings match
-            with open(os.path.join(import_dir, filename), 'r') as f:
-                reader = csv.reader(f, colon_separated, lineterminator='\n')
-                file_props = None
-                maxid = 1
-                # loop through the file and create a node for each entry
-                for n, r in enumerate(reader):
-                    if file_props is None:
-                        file_props = r
-                        continue
-
-                    if self.verbose:
-                        sys.stdout.write('\rImporting %s - %s' % (classname, n))
-                        sys.stdout.flush()
-
-                    # do the import and figure the current highest nodeid
-                    nodeid = cl.import_list(file_props, r)
-                    if hasattr(cl, 'import_files') and import_files:
-                        cl.import_files(import_dir, nodeid)
-                    maxid = max(maxid, int(nodeid))
-
-                # (print to sys.stdout here to allow tests to squash it .. ugh)
-                print(file=sys.stdout)
+            maxid = self.import_class(dir_entry.path, colon_separated, cl,
+                         import_dir, import_files)
 
             # import the journals
             with open(os.path.join(import_dir, classname + '-journals.csv'), 'r') as f:
@@ -1282,6 +1261,46 @@ Command help:
 
         self.db_uncommitted = True
         return 0
+
+    def import_class(self, filepath, csv_format_class, hyperdb_class,
+                     import_dir, import_files):
+        """Import class given csv class filepath, csv_format_class and
+           hyperdb_class, directory for import, and boolean to import
+           files.
+
+           Optionally import files as well if import_files is True
+           otherwise just import database data.
+
+           Returns: maxid seen in csv file
+        """
+
+        maxid = 1
+
+        # ensure that the properties and the CSV file headings match
+        with open(filepath, 'r') as f:
+            reader = csv.reader(f, csv_format_class, lineterminator='\n')
+            file_props = None
+            # loop through the file and create a node for each entry
+            for n, r in enumerate(reader):
+                if file_props is None:
+                    file_props = r
+                    continue
+
+                if self.verbose:
+                    sys.stdout.write('\rImporting %s - %s' % (
+                        hyperdb_class.classname, n))
+                    sys.stdout.flush()
+
+                # do the import and figure the current highest nodeid
+                nodeid = hyperdb_class.import_list(file_props, r)
+                if hasattr(hyperdb_class, 'import_files') and import_files:
+                    hyperdb_class.import_files(import_dir, nodeid)
+                    maxid = max(maxid, int(nodeid))
+
+                # (print to sys.stdout here to allow tests to squash it .. ugh)
+                print(file=sys.stdout)
+
+        return maxid
 
     def do_importtables(self, args):
         ''"""Usage: importtables export_dir
