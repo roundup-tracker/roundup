@@ -65,7 +65,7 @@ jobs:
         #os: [ubuntu-latest, macos-latest, windows-latest]
         # ubuntu latest 22.04 12/2022
         # ubuntu latest 24.04 12/2024
-        os: [ubuntu-24.04, ubuntu-latest, ubuntu-20.04]
+        os: [ubuntu-latest]
 
         # if the ones above fail. fail the build
         experimental: [ false ]
@@ -78,10 +78,6 @@ jobs:
             #  os: ubuntu-22.04
             #  experimental: true
             
-            # test on new default 24.04 runner 3.12 for 24.04
-            - python-version: 3.12
-              os: ubuntu-24.04
-
             # 3.6 not available on new 22.04 runners, so run on 20.04 ubuntu
             - python-version: 3.6
               os: ubuntu-20.04
@@ -91,10 +87,10 @@ jobs:
               os: ubuntu-22.04
 
         exclude:
-            # skip all python versions on 20.04/24.04 except
+            # skip all python versions on explicit 20.04/24.04 unless
             # explicitly included
-            - os: ubuntu-20.04
-            - os: ubuntu-24.04
+            #- os: ubuntu-20.04
+            #- os: ubuntu-24.04
 
             # disable when testing ubuntu-24.04 to speed up
             # runs.
@@ -256,10 +252,6 @@ jobs:
               pip install Markdown; fi
 
       - name: Install xapian
-        # comment the if: line out once we start running on
-        # ubuntu-24.04. 24.04 has xapian 1.4.22 which builds
-        # correctly with python 3.13.
-        if: matrix.python-version != '3.13'
         run: |
           set -xv
           sudo apt-get install libxapian-dev
