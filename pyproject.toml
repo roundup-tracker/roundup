@@ -80,6 +80,8 @@ select = [
 ignore = [ 
    # raise from except hander with none or chaining; only python3
    "B904",
+   # trailing commas are getting a bit excessive
+   "COM812",
    # ### before comments is fine
    "E266",
    # ignore double vs. single quotes
@@ -95,6 +97,8 @@ ignore = [
    #"RET506",
    # use *list to expand; only python 3
    "RUF005",
+   # not using typing, so not marking mutable class values
+   "RUF012",
    # do not use contextlib.suppress rather than except: pass to suppress
    # exception. contextlib doesn't work in python2 and is slower
    "SIM105",
@@ -106,7 +110,9 @@ max-complexity = 50
 [tool.ruff.lint.per-file-ignores]
 "roundup/anypy/*.py" = ["RET505", "RET506"]
 "roundup/dehtml.py" = ["E501"]
-"roundup/rest.py" = ["E501"]
+# ruff is reporting unused parameters. Standard calling sequence
+# for all methods means some won't be used. Suppress alert ARG002.
+"roundup/rest.py" = ["ARG002", "E501"]
 "roundup/support.py" = ["E401"]
 "roundup/security.py" = ["E701"]
 "roundup/date.py" = ["E231", "E701"]
