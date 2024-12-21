@@ -127,7 +127,7 @@ file = FileClass(db, "file",
                 description=String(indexme='yes'))
 
 # Patch
-patches = FileClass(db, "patches",
+patch = FileClass(db, "patch",
                   name=String(),
                   description=String(indexme='yes'),
                   repository=String(),
@@ -144,7 +144,6 @@ bug_type.setkey('name')
 #   title = String()
 #   messages = Multilink("msg")
 #   files = Multilink("file")
-#   patches = Multilink("patches")
 #   nosy = Multilink("user")
 #   superseder = Multilink("issue")
 bug = IssueClass(db, "bug",
@@ -159,7 +158,7 @@ bug = IssueClass(db, "bug",
                  resolution=Link('resolution'),
                  superseder=Link('bug'),
                  keywords=Multilink('keyword'),
-                 patches=Multilink('patches'))
+                 patches=Multilink('patch'))
 
 # Task Type
 task_type = Class(db, 'task_type',
@@ -208,6 +207,7 @@ for r in 'User', 'Developer', 'Coordinator':
     db.security.addPermissionToRole(r, 'Email Access')
     db.security.addPermissionToRole(r, 'Rest Access')
     db.security.addPermissionToRole(r, 'Xmlrpc Access')
+
 
 ##########################
 # User permissions
@@ -299,7 +299,7 @@ for cl in ('bug_type', 'task_type', 'severity', 'component',
 # if you don't want them to
 p = db.security.addPermission(name='View', klass='user',
     properties=('id', 'organisation', 'phone', 'realname', 'timezone',
-    'vcs_name', 'username'))
+    'username', 'vcs_name'))
 db.security.addPermissionToRole('User', p)
 db.security.addPermissionToRole('Developer', p)
 

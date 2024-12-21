@@ -144,7 +144,6 @@ bug_type.setkey('name')
 #   title = String()
 #   messages = Multilink("msg")
 #   files = Multilink("file")
-#   patches = Multilink("patches")
 #   nosy = Multilink("user")
 #   superseder = Multilink("issue")
 bug = IssueClass(db, "bug",
@@ -158,7 +157,8 @@ bug = IssueClass(db, "bug",
                  status=Link('status'),
                  resolution=Link('resolution'),
                  superseder=Link('bug'),
-                 keywords=Multilink('keyword'))
+                 keywords=Multilink('keyword'),
+                 patches=Multilink('patch'))
 
 # Task Type
 task_type = Class(db, 'task_type',
