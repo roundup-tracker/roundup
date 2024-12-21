@@ -34,15 +34,18 @@ db.security.addPermissionToRole('User', 'Xmlrpc Access')
 
 # May users view other user information?
 # Comment these lines out if you don't want them to
-p = db.security.addPermission(name='View', klass='user', 
+p = db.security.addPermission(name='View', klass='user',
     properties=('id', 'username'))
 db.security.addPermissionToRole('User', p)
+
 
 # Users should be able to edit their own details -- this permission is
 # limited to only the situation where the Viewed or Edited item is their own.
 def own_record(db, userid, itemid):
     '''Determine whether the userid matches the item being accessed.'''
     return userid == itemid
+
+
 p = db.security.addPermission(name='View', klass='user', check=own_record,
     description="User is allowed to view their own user details")
 db.security.addPermissionToRole('User', p)

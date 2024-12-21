@@ -27,7 +27,6 @@ repository=Link('vcs_repo'),
 revision=String())
 
 
-
 # Component
 component = Class(db, 'component',
                   name=String(),
@@ -76,7 +75,7 @@ keyword = Class(db, "keyword",
                 name=String(),
                 description=String())
 keyword.setkey("name")
-                
+
 
 # User-defined saved searches
 query = Class(db, "query",
@@ -209,7 +208,7 @@ for r in 'User', 'Developer', 'Coordinator':
     db.security.addPermissionToRole(r, 'Rest Access')
     db.security.addPermissionToRole(r, 'Xmlrpc Access')
 
-    
+
 ##########################
 # User permissions
 ##########################
@@ -225,10 +224,11 @@ for cl in ('severity', 'component',
            'version', 'priority', 'status', 'resolution',
            'bug_type', 'bug', 'file', 'msg'):
     db.security.addPermissionToRole('User', 'Create', cl)
-    
+
 
 def may_edit_file(db, userid, itemid):
     return userid == db.file.get(itemid, "creator")
+
 
 p = db.security.addPermission(name='Edit', klass='file', check=may_edit_file,
     description="User is allowed to remove their own files")
@@ -297,7 +297,7 @@ for cl in ('bug_type', 'task_type', 'severity', 'component',
 
 # May users view other user information? Comment these lines out
 # if you don't want them to
-p = db.security.addPermission(name='View', klass='user', 
+p = db.security.addPermission(name='View', klass='user',
     properties=('id', 'organisation', 'phone', 'realname', 'timezone',
     'username', 'vcs_name'))
 db.security.addPermissionToRole('User', p)
@@ -310,11 +310,14 @@ db.security.addPermissionToRole('Coordinator', 'View', 'user')
 db.security.addPermissionToRole('Coordinator', 'Edit', 'user')
 db.security.addPermissionToRole('Coordinator', 'Web Roles')
 
+
 # Users should be able to edit their own details -- this permission is
 # limited to only the situation where the Viewed or Edited item is their own.
 def own_record(db, userid, itemid):
     '''Determine whether the userid matches the item being accessed.'''
     return userid == itemid
+
+
 p = db.security.addPermission(name='View', klass='user', check=own_record,
     description="User is allowed to view their own user details")
 for r in 'User', 'Developer', 'Coordinator':
@@ -326,9 +329,10 @@ p = db.security.addPermission(name='Edit', klass='user', check=own_record,
                 'phone', 'organisation',
                 'alternate_addresses',
                 'queries',
-                'timezone')) # Note: 'roles' excluded - users should not be able to edit their own roles. 
+                'timezone')) # Note: 'roles' excluded - users should not be able to edit their own roles.
 for r in 'User', 'Developer':
     db.security.addPermissionToRole(r, p)
+
 
 # Users should be able to edit and view their own queries. They should also
 # be able to view any marked as not private. They should not be able to
@@ -337,8 +341,12 @@ def view_query(db, userid, itemid):
     private_for = db.query.get(itemid, 'private_for')
     if not private_for: return True
     return userid == private_for
+
+
 def edit_query(db, userid, itemid):
     return userid == db.query.get(itemid, 'creator')
+
+
 p = db.security.addPermission(name='View', klass='query', check=view_query,
     description="User is allowed to view their own and public queries")
 p = db.security.addPermission(name='Search', klass='query')
@@ -387,7 +395,7 @@ for cl in 'bug', 'severity', 'status', 'resolution', 'msg', 'file':
 # anonymous, you should remove this entry as it can be used to perform
 # a username guessing attack against a roundup install.
 p = db.security.addPermission(name='Search', klass='user')
-db.security.addPermissionToRole ('Anonymous', p)
+db.security.addPermissionToRole('Anonymous', p)
 
 # [OPTIONAL]
 # Allow anonymous users access to create or edit "issue" items (and the
