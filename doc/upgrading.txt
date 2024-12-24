@@ -2885,12 +2885,13 @@ If you haven't modified you query.item.html template, simply copy the
 query.item.html template from one of the above default templates to
 your tracker's html directory.
 
-Enhancement to check command for Permissions
---------------------------------------------
-
+Enhancement to check command for Permissions (optional)
+-------------------------------------------------------
 A new form of check function is permitted in permission definitions.
-The three argument form is still supported and will work the same
-as it always has (although it may be depricated in the future).
+An example check function is ``own_record(db, userid, itemid)`` in the
+file schema.py. The three argument form is still supported and will
+work the same as it always has (although it may be depricated in the
+future).
 
 If the check function is defined as::
 
@@ -2935,6 +2936,9 @@ It is suggested that you change your checks to use the ``**ctx``
 parameter. This is expected to be the preferred form in the future.
 You do not need to use the ``ctx`` parameter in the function if you do
 not need it.
+
+If the new four argument form is required in the future, there will be
+required (not optional) directions on upgrading your schema.
 
 Changes to property permissions
 -------------------------------
