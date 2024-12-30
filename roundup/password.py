@@ -331,7 +331,7 @@ class JournalPassword:
         version only reads the encryption scheme from the given
         encrypted password.
     """
-    default_scheme = 'PBKDF2'        # new encryptions use this scheme
+    default_scheme = 'PBKDF2S5'        # new encryptions use this scheme
     pwre = re.compile(r'{(\w+)}(.+)')
 
     def __init__(self, encrypted=''):
@@ -394,12 +394,12 @@ class Password(JournalPassword):
     1
     """
 
-    deprecated_schemes = ["SSHA", "SHA", "MD5", "plaintext"]
+    deprecated_schemes = ["PBKDF2", "SSHA", "SHA", "MD5", "plaintext"]
     if crypt:
         # place just before plaintext if crypt is available
         deprecated_schemes.insert(-1, "crypt")
-    experimental_schemes = ["PBKDF2S5"]
-    known_schemes = ["PBKDF2"] + experimental_schemes + \
+    experimental_schemes = []
+    known_schemes = ["PBKDF2S5"] + experimental_schemes + \
         deprecated_schemes
 
     def __init__(self, plaintext=None, scheme=None, encrypted=None,
@@ -442,6 +442,19 @@ class Password(JournalPassword):
                     new_rounds = 1000
             if rounds < int(new_rounds):
                 return True
+
+        if (self.scheme == "PBKDF2S5"):
+            new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+            if ("pytest" in sys.modules and
+                "PYTEST_CURRENT_TEST" in os.environ):
+                if ("PYTEST_USE_CONFIG" in os.environ):
+                    new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+                else:
+                    # for testing
+                    new_rounds = 1000
+            if rounds < int(new_rounds):
+                return True
+
         return False
 
     def unpack(self, encrypted, scheme=None, strict=False, config=None):

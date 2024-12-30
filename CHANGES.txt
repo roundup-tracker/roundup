@@ -49,6 +49,13 @@ Fixed:
 - issue2551383 - Setting same address via REST PUT command results in
   an error. Now the userauditor does not trigger an error if a user
   sets the primary address to the existing value. (John Rouillard)
+- issue2551253 - Modify password PBKDF2 method to use SHA512. The
+  default password hashing algorithm has been upgraded to
+  PBKDF2-SHA512 from PBKDF2-SHA1. The default pbkdf2 rounds in the
+  config file has been changed to 250000. The admin should change it
+  manually if it is at 2 million. PBKDF2-SHA512 (PBKDF2S5) has been
+  available since release 2.3, but it required a manual step to make
+  it the default. (John Rouillard)
 
 Features:
 

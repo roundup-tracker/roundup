@@ -1139,10 +1139,11 @@ SETTINGS = (
             "get the error 'Error: field larger than field limit' during\n"
             "import."),
         (IntegerNumberGeqZeroOption, 'password_pbkdf2_default_rounds',
-         '2000000',
+         '250000',
             "Sets the default number of rounds used when encoding passwords\n"
-            "using the PBKDF2 scheme. Set this to a higher value on faster\n"
-            "systems which want more security.\n"
+            "using any PBKDF2 scheme. Set this to a higher value on faster\n"
+            "systems which want more security. Use a minimum of 250000\n"
+            "for PBKDF2-SHA512 which is the default hash in Roundup 2.5.\n"
             "PBKDF2 (Password-Based Key Derivation Function) is a\n"
             "password hashing mechanism that derives hash from the\n"
             "password and a random salt. For authentication this process\n"

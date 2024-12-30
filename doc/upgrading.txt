@@ -159,6 +159,41 @@ following diff::
 add the lines marked with ``+`` in the file in the location after
 check_main is assigned.
 
+Modify config.ini password_pbkdf2_default_rounds setting (recommended)
+----------------------------------------------------------------------
+
+The method for hashing and storing passwords has been updated to use
+PBKDF2 with SHA512 hash. This change was first introduced in Roundup
+2.3 and is now the standard. If you previously added code in
+interfaces.py for a `PBKDF2 upgrade`_ to enable PBKDF2S5, you can
+remove that code now.
+
+SHA512 is a more secure hash, it requires fewer rounds to ensure
+safety. The older PBKDF2-SHA1 needed around 2 million rounds.
+
+You should update the ``password_pbkdf2_default_rounds`` setting in
+``config.ini`` to 250000. This value is higher than the OWASP
+recommendation of 210000 from three years ago. If you don’t make this
+change, logins will be slow, especially for REST or XMLRPC calls.
+
+See `PBKDF2 upgrade`_ for details on how to test the algorithm's
+speed. We do not recommend reverting to the older SHA1 PBKDF2. If you
+have to do so due to a slow CPU, you can add the following to your
+tracker's ``interfaces.py``::
+
+  from roundup.password import Password
+  ## Use PBDKF2 (PBKDF2-SHA1) as default hash for passwords.
+  # That scheme is at the start of the deprecated_schemes list and ha
+  # to be removed.
+  Password.default_scheme = Password.deprecated_schemes.pop(0)
+  # Add PBKDF2S5 (PBKDF2-SHA512) as a valid scheme. Passwords
+  # using it will be rehashed to use PBDKF2.
+  Password.experimental_schemes[0] = "PBKDF2S5"
+
+If you proceed with this, you should set
+``password_pbkdf2_default_rounds`` to 2 million or more rounds to keep
+your hashed password database secure in case it gets stolen.
+
 Defusedxml support improves XMLRPC security (optional)
 ------------------------------------------------------
 
@@ -1291,6 +1326,8 @@ You should find out how to make the import succeed. You may need to
 install an OS vendor package or some other library.
 
 .. _recommended setting of 1,300,000: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
+
+.. _PBKDF2 upgrade:
 
 Upgrade to PBKDF2-SHA512 from current PBKDF2-SHA1 (recommended)
 ---------------------------------------------------------------
