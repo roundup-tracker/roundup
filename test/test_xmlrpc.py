@@ -35,6 +35,13 @@ else:
     
     skip_defusedxml_used = lambda func, *args, **kwargs: func
 
+if sys.version_info[0] > 2:
+    skip_python2 = lambda func, *args, **kwargs: func
+else:
+    skip_python2 = mark_class(pytest.mark.skip(
+        reason='Skipping test under python 2'))
+
+
 class XmlrpcTest(object):
 
     backend = None
@@ -327,10 +334,12 @@ class XmlrpcTest(object):
         for n, r in enumerate(result):
             self.assertEqual(r, results[n])
 
+    @skip_python2
     @skip_defusedxml
     def testDefusedXmlBomb(self):
         self.XmlBomb(expectIn=b"defusedxml.common.EntitiesForbidden")
 
+    @skip_python2
     @skip_defusedxml_used
     def testNonDefusedXmlBomb(self):
         self.XmlBomb(expectIn=b"1234567890"*511)
