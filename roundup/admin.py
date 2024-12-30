@@ -1633,6 +1633,7 @@ Erase it? Y/N: """) % locals())
         """
         from roundup.anypy.time_ import perf_counter
 
+        # default rounds from db.config is an int not str
         props = {"rounds": self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
                  "scheme": password.Password.default_scheme}
 
@@ -1649,7 +1650,9 @@ Erase it? Y/N: """) % locals())
         if args[0] == "password":
             try:
                 # convert 10,000,000 or 10.000.000 to 10000000
-                r = int(re.sub('[,.]', '', props['rounds']))
+                r = int(re.sub('[,.]', '', props['rounds'])) \
+                    if  not isinstance(props['rounds'], int) \
+                        else props['rounds']
                 if r < 1000:
                     print(_("Invalid 'rounds'. Must be larger than 999."))
                     return

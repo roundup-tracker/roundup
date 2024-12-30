@@ -56,6 +56,8 @@ Fixed:
   manually if it is at 2 million. PBKDF2-SHA512 (PBKDF2S5) has been
   available since release 2.3, but it required a manual step to make
   it the default. (John Rouillard)
+- fixed a crash with roundup-admin perftest password when rounds not set
+  on command line. (John Rouillard)
 
 Features:
 
