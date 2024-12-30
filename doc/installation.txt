@@ -255,6 +255,11 @@ jinja2
   its TEMPLATE-INFO.txt file) you need
   to have the jinja2_ template engine installed.
 
+defusedxml
+  If you are going to enable and use the XMLRPC endpoint, you should
+  install the defusedxml_ module. It will still work with the default
+  xmlrpc standard library, but it will log a warning when used.
+
 .. _install/docutils:
 
 docutils
@@ -2371,6 +2376,7 @@ the test.
 .. _apache: https://httpd.apache.org/
 .. _brotli: https://pypi.org/project/Brotli/
 .. _`developer's guide`: developers.html
+.. _defusedxml: https://pypi.org/project/defusedxml/
 .. _docutils: https://pypi.org/project/docutils/
 .. _flup: https://pypi.org/project/flup/
 .. _gpg: https://www.gnupg.org/software/gpgme/index.html

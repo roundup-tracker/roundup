@@ -159,6 +159,36 @@ following diff::
 add the lines marked with ``+`` in the file in the location after
 check_main is assigned.
 
+Defusedxml support improves XMLRPC security (optional)
+------------------------------------------------------
+
+This release adds support for the defusedxml_ module. If it is
+installed it will be automatically used. The default xmlrpc module in
+the standard library has known issues when parsing crafted XML. It can
+take a lot of CPU time and consume large amounts of memory with small
+payloads.
+
+When the XMLRPC endpoint is used without defusedxml, it will log a
+warning to the log file. The log entry can be disabled by adding::
+
+
+    from roundup.cgi import client
+    client.WARN_FOR_MISSING_DEFUSEDXML = False
+
+to the ``interfaces.py`` file in the tracker home. (Create the file if
+it is missing.)
+
+XMLRPC access is enabled by default in the classic and other trackers.
+Upgrading to defusedxml is considered optional because the XMLRPC
+endpoint can be disabled in the tracker's ``config.ini``. Also
+``Xmlrpc Access`` can be removed from the ``Users`` role by commenting
+out a line in ``schema.py``.
+
+If you have enabled the xmlrpc endpoint, you should install
+defusedxml.
+
+.. _defusedxml: https://pypi.org/project/defusedxml/
+
 More secure session cookie handling (info)
 ------------------------------------------
 

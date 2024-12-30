@@ -101,6 +101,9 @@ def add_message(msg_list, msg, escape=True):
     msg_list.append(msg)
     return msg_list  # for unittests
 
+# if set to False via interfaces.py do not log a warning when
+# xmlrpc is used and defusedxml is not installed.
+WARN_FOR_MISSING_DEFUSEDXML = True
 
 default_err_msg = ''"""<html><head><title>An error has occurred</title></head>
 <body><h1>An error has occurred</h1>
@@ -656,6 +659,8 @@ class Client:
             csrf_ok = False  # we had an error, failed check
 
         if csrf_ok is True:
+            if WARN_FOR_MISSING_DEFUSEDXML and (not xmlrpc_.client.defusedxml):
+                logger.warning(self._("XMLRPC endpoint is not using defusedxml. Improve security by installing defusedxml."))
             handler = xmlrpc.RoundupDispatcher(self.db,
                                                self.instance.actions,
                                                self.translator,
