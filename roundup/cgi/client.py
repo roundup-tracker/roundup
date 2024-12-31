@@ -54,6 +54,9 @@ from roundup.exceptions import (
     Unauthorised,
     UsageError,
 )
+
+from roundup.mlink_expr import ExpressionError
+
 from roundup.mailer import Mailer, MessageSendError
 
 logger = logging.getLogger('roundup')
@@ -2216,6 +2219,9 @@ class Client:
                 result = pt.render(self, None, None, **args)
             except IndexerQueryError as e:
                 result = self.renderError(e.args[0])
+            except ExpressionError as e:
+                self.add_error_message(str(e))
+                result = self.renderError(str(e))
 
             if 'Content-Type' not in self.additional_headers:
                 self.additional_headers['Content-Type'] = pt.content_type

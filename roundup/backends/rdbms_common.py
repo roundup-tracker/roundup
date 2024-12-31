@@ -72,7 +72,7 @@ from roundup.date import Range
 from roundup.hyperdb import String, Password, Date, Interval, Link, \
     Multilink, DatabaseError, Boolean, Number, Integer
 from roundup.i18n import _
-from roundup.mlink_expr import compile_expression
+from roundup.mlink_expr import compile_expression, ExpressionError
 
 # dummy value meaning "argument not passed"
 _marker = []
@@ -2594,6 +2594,10 @@ class Class(hyperdb.Class):
                     values.append(n.x)
             expr.visit(collect_values)
             return w, values
+        except ExpressionError as e:
+            e.context['class'] = pln
+            e.context['attr'] = prp
+            raise
         except:
             pass
         # Fallback to original code
@@ -2671,6 +2675,10 @@ class Class(hyperdb.Class):
             expr.visit(collect_values)
 
             return intron, values
+        except ExpressionError as e:
+            e.context['class'] = classname
+            e.context['attr'] = proptree.name
+            raise
         except:
             # fallback behavior when expression parsing above fails
             orclause = ''

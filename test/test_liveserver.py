@@ -351,6 +351,41 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         # of the footer is missing.
         self.assertNotIn('out of', f.text)
 
+    def test_broken_query(self):
+        # query link item
+        current_user_query = (
+            "@columns=title,id,activity,status,assignedto&"
+            "@sort=activity&@group=priority&@filter=creator&"
+            "@pagesize=50&@startwith=0&creator=-2&"
+            "@dispname=Test1")
+
+        session, _response = self.create_login_session()
+        f = session.get(self.url_base()+'/issue?' + current_user_query)
+
+        # verify the query has run by looking for the query name
+        # print(f.text)
+        self.assertIn('Error when searching issue by creator using: '
+                      '[-2]. The operator -2 (not) at position 1 has '
+                      'too few arguments.',
+                      f.text)
+
+    def test_broken_multiink_query(self):
+        # query multilink item
+        current_user_query = (
+            "@columns=title,id,activity,status,assignedto"
+            "&keyword=-3&@sort=activity&@group=priority"
+            "&@pagesize=50&@startwith=0&@template=index|search"
+            "&@action=search")
+        session, _response = self.create_login_session()
+        f = session.get(self.url_base()+'/issue?' + current_user_query)
+
+        # verify the query has run by looking for the query name
+        print(f.text)
+        self.assertIn('Error when searching issue by keyword using: '
+                      '[-3]. The operator -3 (and) at position 1 has '
+                      'too few arguments.',
+                      f.text)
+
     def test_start_page(self):
         """ simple test that verifies that the server can serve a start page.
         """

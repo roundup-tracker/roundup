@@ -41,6 +41,7 @@ from roundup.cgi import client, actions
 from roundup.cgi.engine_zopetal import RoundupPageTemplate
 from roundup.cgi.templating import HTMLItem
 from roundup.exceptions import UsageError, Reject
+from roundup.mlink_expr import ExpressionError
 
 from roundup.anypy.strings import b2s, s2b, u2s
 from roundup.anypy.cmp_ import NoneAndDictComparable
@@ -2048,6 +2049,43 @@ class DBTest(commonDBTest):
             ae(filt(None, {a: ['-1', None]}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: ['1', None]}, ('+','id'), grp), ['1', '3','4'])
 
+    def testFilteringBrokenLinkExpression(self):
+        ae, iiter = self.filteringSetup()
+        a = 'assignedto'
+        for filt in iiter():
+            with self.assertRaises(ExpressionError) as e:
+                filt(None, {a: ['1', '-3']}, ('+','status'))
+            self.assertIn("position 2", str(e.exception))
+            # verify all tokens are consumed
+            self.assertNotIn("%", str(e.exception))
+            self.assertNotIn("%", repr(e.exception))
+
+            with self.assertRaises(ExpressionError) as e:
+                filt(None, {a: ['0', '1', '2', '3', '-3', '-4']},
+                     ('+','status'))
+            self.assertIn("values on the stack are: [Value 0,",
+                          str(e.exception))
+            self.assertNotIn("%", str(e.exception))
+            self.assertNotIn("%", repr(e.exception))
+
+            with self.assertRaises(ExpressionError) as e:
+                # expression tests _repr_ for every operator and
+                # three values
+                filt(None, {a: ['-1', '1', '2', '3', '-3', '-2', '-4']},
+                     ('+','status'))
+            result = str(e.exception)
+            self.assertIn(" AND ", result)
+            self.assertIn(" OR ", result)
+            self.assertIn("NOT(", result)
+            self.assertIn("ISEMPTY(-1)", result)
+            # trigger a KeyError and verify fallback format
+            # is correct. It includes the template with %(name)s tokens,
+            del(e.exception.context['class'])
+            self.assertIn("values on the stack are: %(stack)s",
+                          str(e.exception))
+            self.assertIn("values on the stack are: %(stack)s",
+                          repr(e.exception))
+
     def testFilteringLinkExpression(self):
         ae, iiter = self.filteringSetup()
         a = 'assignedto'
@@ -2073,25 +2111,6 @@ class DBTest(commonDBTest):
             ae(filt(None, {a: ['1','-2','2','-2','-3']}, ('+',a)), ['3','4'])
             ae(filt(None, {a: ['1','-2','2','-2','-4']}, ('+',a)),
                 ['3','4','1','2'])
-
-    def NOtestFilteringLinkInvalid(self):
-        """Test invalid filter expressions.
-           Code must be written to generate an exception for these.
-           Then this code must be changed to test the exception.
-           See issue 2551374 in the roundup tracker.
-        """
-        ae, iiter = self.filteringSetup()
-        a = 'assignedto'
-        # filt(??, filter expression, sort order)
-        # ae = self.assertEqual(val1, val2)
-        for filt in iiter():
-            # -2 is missing an operand
-            ae(filt(None, {a: ['-2','2','-2','-4']},
-                    ('+',a)), [])
-            # 3 is left on the stack
-            ae(filt(None, {a: ['3','2','-2']},
-                    ('+',a)), [])
-
 
     def testFilteringRevLink(self):
         ae, iiter = self.filteringSetupTransitiveSearch('user')
@@ -2227,6 +2246,56 @@ class DBTest(commonDBTest):
             ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
             ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
                 ('-', 'deadline')), ['4', '3'])
+
+    def testFilteringBrokenMultilinkExpression(self):
+        ae, iiter = self.filteringSetup()
+        kw1 = self.db.keyword.create(name='Key1')
+        kw2 = self.db.keyword.create(name='Key2')
+        kw3 = self.db.keyword.create(name='Key3')
+        kw4 = self.db.keyword.create(name='Key4')
+        self.db.issue.set('1', keywords=[kw1, kw2])
+        self.db.issue.set('2', keywords=[kw1, kw3])
+        self.db.issue.set('3', keywords=[kw2, kw3, kw4])
+        self.db.issue.set('4', keywords=[kw1, kw2, kw4])
+        self.db.commit()
+        kw = 'keywords'
+        for filt in iiter():
+            with self.assertRaises(ExpressionError) as e:
+                filt(None, {kw: ['1', '-3']}, ('+','status'))
+            self.assertIn("searching issue by keywords", str(e.exception))
+            self.assertIn("position 2", str(e.exception))
+            # verify all tokens are consumed
+            self.assertNotIn("%", str(e.exception))
+            self.assertNotIn("%", repr(e.exception))
+
+            with self.assertRaises(ExpressionError) as e:
+                filt(None, {kw: ['0', '1', '2', '3', '-3', '-4']},
+                     ('+','status'))
+            self.assertIn("searching issue by keywords", str(e.exception))
+            self.assertIn("values on the stack are: [Value 0,",
+                          str(e.exception))
+            self.assertNotIn("%", str(e.exception))
+            self.assertNotIn("%", repr(e.exception))
+
+            with self.assertRaises(ExpressionError) as e:
+                # expression tests _repr_ for every operator and
+                # three values
+                filt(None, {kw: ['-1', '1', '2', '3', '-3', '-2', '-4']},
+                     ('+','status'))
+            result = str(e.exception)
+            self.assertIn("searching issue by keywords", result)
+            self.assertIn(" AND ", result)
+            self.assertIn(" OR ", result)
+            self.assertIn("NOT(", result)
+            self.assertIn("ISEMPTY(-1)", result)
+            # trigger a KeyError and verify fallback format
+            # is correct. It includes the template with %(name)s tokens,
+            del(e.exception.context['class'])
+            self.assertIn("values on the stack are: %(stack)s",
+                          str(e.exception))
+            self.assertIn("values on the stack are: %(stack)s",
+                          repr(e.exception))
+
 
     def testFilteringMultilinkExpression(self):
         ae, iiter = self.filteringSetup()

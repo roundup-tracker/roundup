@@ -7,6 +7,57 @@
 # see the COPYING.txt file coming with Roundup.
 #
 
+from roundup.exceptions import RoundupException
+from roundup.i18n import _
+
+opcode_names = {
+    -2: "not",
+    -3: "and",
+    -4: "or",
+}
+
+
+class ExpressionError(RoundupException):
+    """Takes two arguments.
+
+        ExpressionError(template, context={})
+
+    The repr of ExpressionError is:
+
+        template % context
+
+    """
+
+    # only works on python 3
+    #def __init__(self, *args, context=None):
+    #    super().__init__(*args)
+    #    self.context = context if isinstance(context, dict) else {}
+
+    # works python 2 and 3
+    def __init__(self, *args, **kwargs):
+        super(RoundupException, self).__init__(*args)
+        self.context = {}
+        if 'context' in kwargs and isinstance(kwargs['context'], dict):
+            self.context = kwargs['context']
+
+        # Skip testing for a bad call to ExpressionError
+        # keywords = [x for x in list(kwargs) if x != "context"]
+        #if len(keywords) != 0:
+        #        raise ValueError("unknown keyword argument(s) passed to ExpressionError: %s" % keywords)
+
+    def __str__(self):
+        try:
+            return self.args[0] % self.context
+        except KeyError:
+            return "%s: context=%s" % (self.args[0], self.context)
+
+    def __repr__(self):
+        try:
+            return self.args[0] % self.context
+        except KeyError:
+            return "%s: context=%s" % (self.args[0], self.context)
+
+
 class Binary:
 
     def __init__(self, x, y):
@@ -38,6 +89,9 @@ class Equals(Unary):
     def visit(self, visitor):
         visitor(self)
 
+    def __repr__(self):
+        return "Value %s" % self.x
+
 
 class Empty(Unary):
 
@@ -47,6 +101,9 @@ class Empty(Unary):
     def visit(self, visitor):
         visitor(self)
 
+    def __repr__(self):
+        return "ISEMPTY(-1)"
+
 
 class Not(Unary):
 
@@ -55,6 +112,9 @@ class Not(Unary):
 
     def generate(self, atom):
         return "NOT(%s)" % self.x.generate(atom)
+
+    def __repr__(self):
+        return "NOT(%s)" % self.x
 
 
 class Or(Binary):
@@ -67,6 +127,9 @@ class Or(Binary):
             self.x.generate(atom),
             self.y.generate(atom))
 
+    def __repr__(self):
+        return "(%s OR %s)" % (self.y, self.x)
+
 
 class And(Binary):
 
@@ -78,17 +141,44 @@ class And(Binary):
             self.x.generate(atom),
             self.y.generate(atom))
 
+    def __repr__(self):
+        return "(%s AND %s)" % (self.y, self.x)
+
 
 def compile_expression(opcodes):
 
     stack = []
     push, pop = stack.append, stack.pop
-    for opcode in opcodes:
-        if   opcode == -1: push(Empty(opcode))      # noqa: E271,E701
-        elif opcode == -2: push(Not(pop()))         # noqa: E701
-        elif opcode == -3: push(And(pop(), pop()))  # noqa: E701
-        elif opcode == -4: push(Or(pop(), pop()))   # noqa: E701
-        else:              push(Equals(opcode))     # noqa: E701
+    try:
+        for position, opcode in enumerate(opcodes):     # noqa: B007
+            if   opcode == -1: push(Empty(opcode))      # noqa: E271,E701
+            elif opcode == -2: push(Not(pop()))         # noqa: E701
+            elif opcode == -3: push(And(pop(), pop()))  # noqa: E701
+            elif opcode == -4: push(Or(pop(), pop()))   # noqa: E701
+            else:              push(Equals(opcode))     # noqa: E701
+    except IndexError:
+        raise ExpressionError(
+            _("There was an error searching %(class)s by %(attr)s using: "
+              "%(opcodes)s. "
+              "The operator %(opcode)s (%(opcodename)s) at position "
+              "%(position)d has too few arguments."),
+            context={
+                "opcode": opcode,
+                "opcodename": opcode_names[opcode],
+                "position": position + 1,
+                "opcodes": opcodes,
+            })
+    if len(stack) != 1:
+        # Too many arguments - I don't think stack can be zero length
+        raise ExpressionError(
+            _("There was an error searching %(class)s by %(attr)s using: "
+              "%(opcodes)s. "
+              "There are too many arguments for the existing operators. The "
+              "values on the stack are: %(stack)s"),
+            context={
+                "opcodes": opcodes,
+                "stack": stack,
+            })
 
     return pop()
 
@@ -104,7 +194,7 @@ class Expression:
             compiled = compile_expression(opcodes)
             if is_link:
                 self.evaluate = lambda x: compiled.evaluate(
-                    x and [int(x)] or [])
+                    (x and [int(x)]) or [])
             else:
                 self.evaluate = lambda x: compiled.evaluate([int(y) for y in x])
         except (ValueError, TypeError):

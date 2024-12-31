@@ -34,7 +34,7 @@ from roundup.anypy.dbm_ import anydbm, whichdb
 from roundup.anypy.strings import b2s, bs2b, repr_export, eval_import, is_us
 
 from roundup import hyperdb, date, password, roundupdb, security, support
-from roundup.mlink_expr import Expression
+from roundup.mlink_expr import Expression, ExpressionError
 from roundup.backends import locking
 from roundup.i18n import _
 
@@ -1880,7 +1880,12 @@ class Class(hyperdb.Class):
                     if t == LINK:
                         # link - if this node's property doesn't appear in the
                         # filterspec's nodeid list, skip it
-                        expr = Expression(v, is_link=True)
+                        try:
+                            expr = Expression(v, is_link=True)
+                        except ExpressionError as e:
+                            e.context['class'] = cn
+                            e.context['attr'] = k
+                            raise
                         if expr.evaluate(nv):
                             match = 1
                     elif t == MULTILINK:
@@ -1895,7 +1900,12 @@ class Class(hyperdb.Class):
                         else:
                             # otherwise, make sure this node has each of the
                             # required values
-                            expr = Expression(v)
+                            try:
+                                expr = Expression(v)
+                            except ExpressionError as e:
+                                e.context['class'] = cn
+                                e.context['attr'] = k
+                                raise
                             if expr.evaluate(nv):
                                 match = 1
                     elif t == STRING:
