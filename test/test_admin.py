@@ -692,7 +692,8 @@ class AdminTest(object):
 
         ### test replacement of old default value
         replace_in_file(self.dirname + "/config.ini",
-                        "= 2000000", "= 10000")
+                        "= 250000", "= 10000")
+
         with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, 'update',
                       self.dirname + "/config2.ini"]
@@ -700,13 +701,13 @@ class AdminTest(object):
 
         out = out.getvalue().strip()
         print(out)
-        expected = "from old default of 10000 to new default of 2000000."
+        expected = "from old default of 10000 to new default of 250000."
 
         self.assertIn(expected, out)
         self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
         self.assertEqual(find_in_file(self.dirname + "/config2.ini",
-                                     "^password_.*= 2000000$"),
-                         "password_pbkdf2_default_rounds = 2000000")
+                                     "^password_.*= 250000$"),
+                         "password_pbkdf2_default_rounds = 250000")
 
         # Reopen the db closed by previous call
         self.admin=AdminTool()
@@ -722,7 +723,7 @@ class AdminTest(object):
         out = out.getvalue().strip()
         print(out)
         expected = ("Update 'password_pbkdf2_default_rounds' to a number "
-                    "equal to or larger\n  than 2000000.")
+                    "equal to or larger\n  than 250000.")
 
         self.assertIn(expected, out)
         self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
