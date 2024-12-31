@@ -726,10 +726,10 @@ class Client:
         if not self.is_origin_header_ok(api=True):
             if 'HTTP_ORIGIN' not in self.env:
                 msg = self._("Required Header Missing")
-                err = 'Origin header missing'
+                err = "REST request missing 'Origin' header by user %(user)s."
             else:
                 msg = self._("Client is not allowed to use Rest Interface.")
-                err = 'Unauthorized for REST request'
+                err = "REST request 'Origin' (%(origin)s) unauthorized by user %(user)s."
 
             # Use code 400. Codes 401 and 403 imply that authentication
             # is needed or authenticated person is not authorized.
@@ -739,7 +739,18 @@ class Client:
             self.reject_request(output,
                                 message_type="application/json",
                                 status=400)
-            logger.error(err)
+            # Would be nice to log the original source address here to
+            # allow firewalling in case of abuse/attack. Especially if
+            # anonymous is allowed REST access. However,
+            #    self.request.connection.getpeername()
+            # only gets us 127.0.0.1 when a proxy is used. I think the
+            # same is true of wsgi mode (but it might be a UNIX domain
+            # socket address). The upstream server needs to supply the
+            # real IP as it sees it and we need to consume it. There
+            # is no method for this that handles all the ways roundup
+            # can be run AFAIK. So no IP address, just user.
+            logger.error(err, {"user": self.user,
+                               "origin": self.env.get('HTTP_ORIGIN', None)})
             return
 
         # Handle CORS preflight request. We know rest is enabled
