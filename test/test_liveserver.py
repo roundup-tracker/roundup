@@ -364,10 +364,11 @@ class BaseTestCases(WsgiSetup, ClientSetup):
 
         # verify the query has run by looking for the query name
         # print(f.text)
-        self.assertIn('Error when searching issue by creator using: '
+        self.assertIn('There was an error searching issue by creator using: '
                       '[-2]. The operator -2 (not) at position 1 has '
                       'too few arguments.',
                       f.text)
+        self.assertEqual(f.status_code, 400)
 
     def test_broken_multiink_query(self):
         # query multilink item
@@ -381,10 +382,11 @@ class BaseTestCases(WsgiSetup, ClientSetup):
 
         # verify the query has run by looking for the query name
         print(f.text)
-        self.assertIn('Error when searching issue by keyword using: '
+        self.assertIn('There was an error searching issue by keyword using: '
                       '[-3]. The operator -3 (and) at position 1 has '
                       'too few arguments.',
                       f.text)
+        self.assertEqual(f.status_code, 400)
 
     def test_start_page(self):
         """ simple test that verifies that the server can serve a start page.
