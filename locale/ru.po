@@ -5,9 +5,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Roundup 2.4.0\n"
+"Project-Id-Version: Roundup 2.5.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2024-08-07 21:43-0400\n"
+"POT-Creation-Date: 2024-12-30 22:49-0500\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: alexander smishlajev <alex@tycobka.lv>\n"
 "Language-Team: Russian\n"
@@ -84,8 +84,8 @@ msgstr ""
 msgid "Enable verbose output: tracing, descriptions...\n"
 msgstr ""
 
-#: ../roundup/admin.py:175 ../roundup/admin.py:1188 ../roundup/admin.py:1836
-#: ../roundup/admin.py:1868 ../roundup/admin.py:175:1188 :1836:1868
+#: ../roundup/admin.py:175 ../roundup/admin.py:1188 ../roundup/admin.py:1858
+#: ../roundup/admin.py:1890 ../roundup/admin.py:175:1188 :1858:1890
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "Класс \"%(classname)s\" не существует"
@@ -313,13 +313,13 @@ msgstr ""
 msgid "%s:"
 msgstr ""
 
-#: ../roundup/admin.py:439 ../roundup/admin.py:1396
-#: ../roundup/admin.py:439:1396
+#: ../roundup/admin.py:439 ../roundup/admin.py:1415
+#: ../roundup/admin.py:439:1415
 msgid "Templates:"
 msgstr "Шаблоны:"
 
-#: ../roundup/admin.py:442 ../roundup/admin.py:1406
-#: ../roundup/admin.py:442:1406
+#: ../roundup/admin.py:442 ../roundup/admin.py:1425
+#: ../roundup/admin.py:442:1425
 msgid "Back ends:"
 msgstr "Серверы:"
 
@@ -369,11 +369,11 @@ msgstr ""
 #: ../roundup/admin.py:482 ../roundup/admin.py:555 ../roundup/admin.py:606
 #: ../roundup/admin.py:733 ../roundup/admin.py:806 ../roundup/admin.py:851
 #: ../roundup/admin.py:902 ../roundup/admin.py:999 ../roundup/admin.py:1216
-#: ../roundup/admin.py:1369 ../roundup/admin.py:1497 ../roundup/admin.py:1580
-#: ../roundup/admin.py:1703 ../roundup/admin.py:1826 ../roundup/admin.py:1858
-#: ../roundup/admin.py:1974 ../roundup/admin.py:2028 ../roundup/admin.py:2076
-#: ../roundup/admin.py:482:555 :1216:1369:1497 :1580:1703 :1826:1858 :1974:2028
-#: :2076 :606:733 :806:851 :902:999
+#: ../roundup/admin.py:1388 ../roundup/admin.py:1516 ../roundup/admin.py:1599
+#: ../roundup/admin.py:1725 ../roundup/admin.py:1848 ../roundup/admin.py:1880
+#: ../roundup/admin.py:1996 ../roundup/admin.py:2050 ../roundup/admin.py:2098
+#: ../roundup/admin.py:482:555 :1216:1388:1516 :1599:1725 :1848:1880 :1996:2050
+#: :2098 :606:733 :806:851 :902:999
 msgid "Not enough arguments supplied"
 msgstr "Недостаточно аргументов"
 
@@ -536,9 +536,9 @@ msgstr ""
 msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
 msgstr "Класс %(classname)s не имеет атрибута \"%(propname)s\""
 
-#: ../roundup/admin.py:791 ../roundup/admin.py:840 ../roundup/admin.py:1517
-#: ../roundup/admin.py:1530 ../roundup/admin.py:2098
-#: ../roundup/admin.py:791:840 :1517:1530:2098
+#: ../roundup/admin.py:791 ../roundup/admin.py:840 ../roundup/admin.py:1536
+#: ../roundup/admin.py:1549 ../roundup/admin.py:2120
+#: ../roundup/admin.py:791:840 :1536:1549:2120
 #, python-format
 msgid "%(classname)s has no property \"%(propname)s\""
 msgstr "Класс %(classname)s не имеет атрибута \"%(propname)s\""
@@ -621,8 +621,8 @@ msgid "property %s is not of type Multilink or Link so -d flag does not apply."
 msgstr ""
 "Ключ '-d' неприменим, потому что тип атрибута %s - не Link и не Multilink"
 
-#: ../roundup/admin.py:942 ../roundup/admin.py:1190 ../roundup/admin.py:1842
-#: ../roundup/admin.py:1870 ../roundup/admin.py:942:1190 :1842:1870
+#: ../roundup/admin.py:942 ../roundup/admin.py:1190 ../roundup/admin.py:1864
+#: ../roundup/admin.py:1892 ../roundup/admin.py:942:1190 :1864:1892
 #, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "В классе %(classname)s нет объекта \"%(nodeid)s\""
@@ -777,7 +777,7 @@ msgstr ""
 "        из существующей базы все объекты).\n"
 "        "
 
-#: ../roundup/admin.py:1287
+#: ../roundup/admin.py:1306
 msgid ""
 "Usage: importtables export_dir\n"
 "        This imports the database tables exported using exporttables.\n"
@@ -788,7 +788,7 @@ msgstr ""
 
 #  password
 #. password
-#: ../roundup/admin.py:1295
+#: ../roundup/admin.py:1314
 msgid ""
 "Usage: initialise [adminpw]\n"
 "        Initialise a new Roundup tracker.\n"
@@ -806,23 +806,23 @@ msgstr ""
 "        Инициализация трекера делается функцией dbinit.init()\n"
 "        "
 
-#: ../roundup/admin.py:1309
+#: ../roundup/admin.py:1328
 msgid "Admin Password: "
 msgstr "Пароль администратора: "
 
-#: ../roundup/admin.py:1310
+#: ../roundup/admin.py:1329
 msgid "       Confirm: "
 msgstr "              Еще раз: "
 
-#: ../roundup/admin.py:1314
+#: ../roundup/admin.py:1333
 msgid "Instance home does not exist"
 msgstr "Домашний каталог трекера не существует"
 
-#: ../roundup/admin.py:1318
+#: ../roundup/admin.py:1337
 msgid "Instance has not been installed"
 msgstr "Трекер не установлен"
 
-#: ../roundup/admin.py:1326
+#: ../roundup/admin.py:1345
 msgid ""
 "WARNING: The database is already initialised!\n"
 "If you re-initialise it, you will lose all the data!\n"
@@ -832,7 +832,7 @@ msgstr ""
 "Повторная инициализация уничтожит все ваши данные!\n"
 "Удалить существующую базу? Y/N: "
 
-#: ../roundup/admin.py:1346
+#: ../roundup/admin.py:1365
 msgid ""
 "Usage: install [template [backend [key=val[,key=val]]]]\n"
 "        Install a new Roundup tracker.\n"
@@ -884,12 +884,12 @@ msgstr ""
 "        См.также \"help initopts\".\n"
 "        "
 
-#: ../roundup/admin.py:1375
+#: ../roundup/admin.py:1394
 #, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr "Каталог \"%(parent)s\" не существует"
 
-#: ../roundup/admin.py:1384
+#: ../roundup/admin.py:1403
 #, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
@@ -900,22 +900,22 @@ msgstr ""
 "Повторная установка уничтожит все ваши данные!\n"
 "Удалить существующий трекер? Y/N: "
 
-#: ../roundup/admin.py:1397
+#: ../roundup/admin.py:1416
 #, fuzzy
 msgid "Select template"
 msgstr "Выберите шаблон [classic]: "
 
-#: ../roundup/admin.py:1407
+#: ../roundup/admin.py:1426
 #, fuzzy
 msgid "Select backend"
 msgstr "Выберите сервер [anydbm]: "
 
-#: ../roundup/admin.py:1418
+#: ../roundup/admin.py:1437
 #, python-format
 msgid "Error in configuration settings: \"%s\""
 msgstr "Ошибка в параметрах конфигурации: \"%s\""
 
-#: ../roundup/admin.py:1451
+#: ../roundup/admin.py:1470
 #, python-format
 msgid ""
 "\n"
@@ -928,12 +928,12 @@ msgstr ""
 " Теперь вам нужно исправить конфигурационный файл трекера:\n"
 "   %(config_file)s"
 
-#: ../roundup/admin.py:1461
+#: ../roundup/admin.py:1480
 msgid " ... at a minimum, you must set following options:"
 msgstr " ... как минимум, вы должны установить настройки:"
 
 # Указано английское название документа
-#: ../roundup/admin.py:1466
+#: ../roundup/admin.py:1485
 #, python-format
 msgid ""
 "\n"
@@ -960,7 +960,7 @@ msgstr ""
 " После этого вы должны выполнить команду \"roundup-admin initialise\".\n"
 "---------------------------------------------------------------------------\n"
 
-#: ../roundup/admin.py:1482
+#: ../roundup/admin.py:1501
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -989,17 +989,17 @@ msgstr ""
 "        выдает список значений этого атрибута.\n"
 "        "
 
-#: ../roundup/admin.py:1495
+#: ../roundup/admin.py:1514
 msgid "Too many arguments supplied"
 msgstr "Подано слишком много параметров"
 
-#: ../roundup/admin.py:1528
+#: ../roundup/admin.py:1547
 #, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr ""
 
 #. noqa: ARG002  - args unused
-#: ../roundup/admin.py:1535
+#: ../roundup/admin.py:1554
 msgid ""
 "Usage: migrate\n"
 "        Update a tracker's database to be compatible with the Roundup\n"
@@ -1022,17 +1022,17 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1555
+#: ../roundup/admin.py:1574
 #, python-format
 msgid "Tracker updated to schema version %s."
 msgstr ""
 
-#: ../roundup/admin.py:1559
+#: ../roundup/admin.py:1578
 #, python-format
 msgid "No migration action required. At schema version %s."
 msgstr ""
 
-#: ../roundup/admin.py:1564
+#: ../roundup/admin.py:1583
 #, fuzzy
 msgid ""
 "Usage: pack period | date\n"
@@ -1071,11 +1071,11 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1590
+#: ../roundup/admin.py:1609
 msgid "Invalid format"
 msgstr "Неправильный формат"
 
-#: ../roundup/admin.py:1601
+#: ../roundup/admin.py:1620
 msgid ""
 "Usage: perftest [mode] [arguments]*\n"
 "        Time operations in Roundup.\n"
@@ -1093,25 +1093,25 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1635
+#: ../roundup/admin.py:1657
 msgid "Invalid 'rounds'. Must be larger than 999."
 msgstr ""
 
-#: ../roundup/admin.py:1639
+#: ../roundup/admin.py:1661
 #, python-format
 msgid "Invalid 'rounds'. It must be an integer not: %s"
 msgstr ""
 
-#: ../roundup/admin.py:1666
+#: ../roundup/admin.py:1688
 msgid "scheme does not support rounds."
 msgstr ""
 
-#: ../roundup/admin.py:1669
+#: ../roundup/admin.py:1691
 #, python-format
 msgid "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, rounds: %(rounds)s"
 msgstr ""
 
-#: ../roundup/admin.py:1675
+#: ../roundup/admin.py:1697
 msgid ""
 "Usage: pragma setting=value | 'list'\n"
 "        Set internal admin settings to a value.\n"
@@ -1140,49 +1140,49 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1710
+#: ../roundup/admin.py:1732
 #, python-format
 msgid "Argument must be setting=value, was given: %s."
 msgstr ""
 
-#: ../roundup/admin.py:1713
+#: ../roundup/admin.py:1735
 msgid "Current settings and values (NYI - not yet implemented):"
 msgstr ""
 
-#: ../roundup/admin.py:1724
+#: ../roundup/admin.py:1746
 msgid ""
 "      Help for this pragma is missing. Please report it to the Roundup "
 "project.\n"
 msgstr ""
 
-#: ../roundup/admin.py:1730
+#: ../roundup/admin.py:1752
 #, fuzzy, python-format
 msgid "Unknown setting %s. Try \"pragma list\"."
 msgstr "Неизвестное имя пользователя"
 
-#: ../roundup/admin.py:1740
+#: ../roundup/admin.py:1762
 #, python-format
 msgid "Incorrect value for boolean setting %(setting)s: %(value)s."
 msgstr ""
 
-#: ../roundup/admin.py:1747
+#: ../roundup/admin.py:1769
 #, python-format
 msgid "Incorrect value for integer setting %(setting)s: %(value)s."
 msgstr ""
 
-#: ../roundup/admin.py:1754
+#: ../roundup/admin.py:1776
 #, python-format
 msgid ""
 "Incorrect value for setting %(setting)s: %(value)s. Should be no, both, or "
 "only."
 msgstr ""
 
-#: ../roundup/admin.py:1764
+#: ../roundup/admin.py:1786
 #, python-format
 msgid "Internal error: pragma can not handle values of type: %s"
 msgstr ""
 
-#: ../roundup/admin.py:1773
+#: ../roundup/admin.py:1795
 #, fuzzy
 msgid ""
 "Usage: reindex [classname|classname:#-#|designator]*\n"
@@ -1206,17 +1206,17 @@ msgstr ""
 "        данных.  Обычно построение индексов происходит автоматически.\n"
 "        "
 
-#: ../roundup/admin.py:1795
+#: ../roundup/admin.py:1817
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr "объект \"%(designator)s\" не существует"
 
-#: ../roundup/admin.py:1805
+#: ../roundup/admin.py:1827
 #, fuzzy, python-format
 msgid "no such item \"%(class)s%(id)s\""
 msgstr "объект \"%(designator)s\" не существует"
 
-#: ../roundup/admin.py:1817
+#: ../roundup/admin.py:1839
 #, fuzzy
 msgid ""
 "Usage: restore designator[,designator]*\n"
@@ -1235,7 +1235,7 @@ msgstr ""
 "        можно пользоваться снова.\n"
 "        "
 
-#: ../roundup/admin.py:1848
+#: ../roundup/admin.py:1870
 #, fuzzy
 msgid ""
 "Usage: retire designator[,designator]*\n"
@@ -1258,7 +1258,7 @@ msgstr ""
 "        "
 
 #. noqa: ARG002 - args unused
-#: ../roundup/admin.py:1876
+#: ../roundup/admin.py:1898
 msgid ""
 "Usage: rollback\n"
 "        Undo all changes that are pending commit to the database.\n"
@@ -1279,7 +1279,7 @@ msgstr ""
 "        было в момент последней записи.\n"
 "        "
 
-#: ../roundup/admin.py:1889
+#: ../roundup/admin.py:1911
 msgid ""
 "Usage: security [Role name]\n"
 "        Display the Permissions available to one or all Roles.\n"
@@ -1292,49 +1292,49 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1904
+#: ../roundup/admin.py:1926
 #, fuzzy, python-format
 msgid "No such Role \"%(role)s\"\n"
 msgstr "Роль \"%(role)s\" не существует"
 
-#: ../roundup/admin.py:1910
+#: ../roundup/admin.py:1932
 #, fuzzy, python-format
 msgid "New Web users get the Roles \"%(role)s\"\n"
 msgstr "Новые пользователи web получают роли \"%(role)s\""
 
-#: ../roundup/admin.py:1913
+#: ../roundup/admin.py:1935
 #, fuzzy, python-format
 msgid "New Web users get the Role \"%(role)s\"\n"
 msgstr "Новые пользователи web получают роль \"%(role)s\""
 
-#: ../roundup/admin.py:1917
+#: ../roundup/admin.py:1939
 #, fuzzy, python-format
 msgid "New Email users get the Roles \"%(role)s\"\n"
 msgstr "Новые пользователи email получают роли \"%(role)s\""
 
-#: ../roundup/admin.py:1919
+#: ../roundup/admin.py:1941
 #, fuzzy, python-format
 msgid "New Email users get the Role \"%(role)s\"\n"
 msgstr "Новые пользователи email получают роль \"%(role)s\""
 
-#: ../roundup/admin.py:1922
+#: ../roundup/admin.py:1944
 #, fuzzy, python-format
 msgid "Role \"%(name)s\":\n"
 msgstr "Роль \"%(name)s\":"
 
-#: ../roundup/admin.py:1928
+#: ../roundup/admin.py:1950
 #, fuzzy
 msgid " %(description)s (%(name)s for \"%(klass)s\""
 msgstr " %(description)s (%(name)s только для класса \"%(klass)s\")"
 
-#: ../roundup/admin.py:1928
+#: ../roundup/admin.py:1950
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
 msgstr ""
 " %(description)s (%(name)s для класса \"%(klass)s\": только свойства "
 "%(properties)s)"
 
-#: ../roundup/admin.py:1941
+#: ../roundup/admin.py:1963
 #, python-format
 msgid ""
 "\n"
@@ -1342,17 +1342,17 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/admin.py:1947
+#: ../roundup/admin.py:1969
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
 msgstr " %(description)s (%(name)s только для класса \"%(klass)s\")"
 
-#: ../roundup/admin.py:1950
+#: ../roundup/admin.py:1972
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s)\n"
 msgstr " %(description)s (%(name)s только для класса \"%(klass)s\")"
 
-#: ../roundup/admin.py:1954
+#: ../roundup/admin.py:1976
 #, fuzzy
 msgid ""
 "Usage: set items property=value [property=value ...]\n"
@@ -1387,7 +1387,7 @@ msgstr ""
 "        атрибут.  (Например, \"1,2,3\".)\n"
 "        "
 
-#: ../roundup/admin.py:2022
+#: ../roundup/admin.py:2044
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -1401,17 +1401,17 @@ msgstr ""
 "        Выдает список атрибутов указанного класса.\n"
 "        "
 
-#: ../roundup/admin.py:2041
+#: ../roundup/admin.py:2063
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s (key property)\n"
 msgstr "%(key)s: %(value)s (ключевой атрибут)"
 
-#: ../roundup/admin.py:2044
+#: ../roundup/admin.py:2066
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s\n"
 msgstr "%(key)s: %(value)s (ключевой атрибут)"
 
-#: ../roundup/admin.py:2047
+#: ../roundup/admin.py:2069
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -1471,17 +1471,17 @@ msgstr ""
 "        обрезает значения столбца \"Name\" до четырех символов.\n"
 "        "
 
-#: ../roundup/admin.py:2093
+#: ../roundup/admin.py:2115
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "Значение \"%(spec)s\" должно быть задано как имя:ширина"
 
-#: ../roundup/admin.py:2115
+#: ../roundup/admin.py:2137
 #, python-format
 msgid "\"%(spec)s\" does not have an integer width: \"%(width)s\""
 msgstr ""
 
-#: ../roundup/admin.py:2151
+#: ../roundup/admin.py:2173
 msgid ""
 "Usage: templates [trace_search]\n"
 "        List templates and their installed directories.\n"
@@ -1491,7 +1491,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:2179
+#: ../roundup/admin.py:2201
 #, fuzzy
 msgid ""
 "Usage: updateconfig <filename>\n"
@@ -1506,35 +1506,35 @@ msgstr ""
 "        используя настройки по умолчанию.\n"
 "        "
 
-#: ../roundup/admin.py:2188 ../roundup/cgi/actions.py:886
+#: ../roundup/admin.py:2210 ../roundup/cgi/actions.py:886
 #: ../roundup/cgi/actions.py:897 ../roundup/cgi/actions.py:1099
 #: ../roundup/cgi/actions.py:1113 ../roundup/cgi/actions.py:886:897 :1099:1113
 #, python-format
 msgid "Error: %s"
 msgstr "Ошибка: %s"
 
-#: ../roundup/admin.py:2220
+#: ../roundup/admin.py:2242
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr ""
 "Команда \"%(command)s\" неизвестна. (\"help commands\" выдает список команд)"
 
-#: ../roundup/admin.py:2226
+#: ../roundup/admin.py:2248
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "\"%(command)s\" соответствует нескольким командам: %(list)s"
 
-#: ../roundup/admin.py:2241
+#: ../roundup/admin.py:2263
 msgid "Enter tracker home: "
 msgstr "Домашний каталог трекера: "
 
-#: ../roundup/admin.py:2270 ../roundup/admin.py:2274
-#: ../roundup/admin.py:2270:2274
+#: ../roundup/admin.py:2292 ../roundup/admin.py:2296
+#: ../roundup/admin.py:2292:2296
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Ошибка: Трекер не открывается: %(message)s"
 
-#: ../roundup/admin.py:2322
+#: ../roundup/admin.py:2344
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1543,15 +1543,15 @@ msgstr ""
 "Roundup %s к вашим услугам.\n"
 "Введите \"help\" для справки."
 
-#: ../roundup/admin.py:2355
+#: ../roundup/admin.py:2377
 msgid "Note: command history and editing not available"
 msgstr "Примечание: работает редактор и история команд"
 
-#: ../roundup/admin.py:2361
+#: ../roundup/admin.py:2383
 msgid "exit..."
 msgstr "приходите к нам еще..."
 
-#: ../roundup/admin.py:2374
+#: ../roundup/admin.py:2396
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Ой, тут несохраненные изменения. Записать в базу данных (y/N)? "
 
@@ -1578,23 +1578,23 @@ msgstr ""
 msgid "Couldn't open database - the required module '%s' is not available"
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:871
-#: ../roundup/backends/back_anydbm.py:884
-#: ../roundup/backends/back_anydbm.py:1158
-#: ../roundup/backends/back_anydbm.py:1193
-#: ../roundup/backends/back_anydbm.py:1422
-#: ../roundup/backends/back_anydbm.py:1440
-#: ../roundup/backends/back_anydbm.py:1487
-#: ../roundup/backends/back_anydbm.py:2123
-#: ../roundup/backends/back_anydbm.py:871:884
+#: ../roundup/backends/back_anydbm.py:873
+#: ../roundup/backends/back_anydbm.py:886
+#: ../roundup/backends/back_anydbm.py:1160
+#: ../roundup/backends/back_anydbm.py:1195
+#: ../roundup/backends/back_anydbm.py:1424
+#: ../roundup/backends/back_anydbm.py:1442
+#: ../roundup/backends/back_anydbm.py:1489
+#: ../roundup/backends/back_anydbm.py:2135
+#: ../roundup/backends/back_anydbm.py:873:886
 #: ../roundup/backends/rdbms_common.py:1720
 #: ../roundup/backends/rdbms_common.py:1967
 #: ../roundup/backends/rdbms_common.py:2206
 #: ../roundup/backends/rdbms_common.py:2226
 #: ../roundup/backends/rdbms_common.py:2279
-#: ../roundup/backends/rdbms_common.py:3246
-#: ../roundup/backends/rdbms_common.py:1720:1967 :1158:1193 :1422:1440:1487
-#: :2123 :2206:2226 :2279:3246
+#: ../roundup/backends/rdbms_common.py:3254
+#: ../roundup/backends/rdbms_common.py:1720:1967 :1160:1195 :1424:1442:1489
+#: :2135 :2206:2226 :2279:3254
 msgid "Database open read-only"
 msgstr ""
 
@@ -1989,13 +1989,13 @@ msgstr "Неправильный пароль или имя пользователя."
 msgid "You do not have permission to login"
 msgstr "У вас нет разрешения на работу с системой"
 
-#: ../roundup/cgi/actions.py:1577 ../roundup/cgi/actions.py:1761
-#: ../roundup/cgi/actions.py:1577:1761
+#: ../roundup/cgi/actions.py:1577 ../roundup/cgi/actions.py:1757
+#: ../roundup/cgi/actions.py:1577:1757
 #, python-format
 msgid "Column \"%(column)s\" not found in %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1832
+#: ../roundup/cgi/actions.py:1822
 #, fuzzy, python-format
 msgid "You do not have permission to view %(class)s"
 msgstr "У вас нет разрешения редактировать %(class)s"
@@ -2088,7 +2088,7 @@ msgstr "в <strong>%s</strong>"
 msgid "<em>undefined</em>"
 msgstr "<em>неопределено</em>"
 
-#: ../roundup/cgi/client.py:105
+#: ../roundup/cgi/client.py:111
 msgid ""
 "<html><head><title>An error has occurred</title></head>\n"
 "<body><h1>An error has occurred</h1>\n"
@@ -2102,148 +2102,154 @@ msgstr ""
 "Администратору трекера отослано сообщение об ошибке.</p>\n"
 "</body></html>"
 
-#: ../roundup/cgi/client.py:717 ../roundup/cgi/client.py:1635
-#: ../roundup/cgi/client.py:717:1635
+#: ../roundup/cgi/client.py:666
+msgid ""
+"XMLRPC endpoint is not using defusedxml. Improve security by installing "
+"defusedxml."
+msgstr ""
+
+#: ../roundup/cgi/client.py:728 ../roundup/cgi/client.py:1646
+#: ../roundup/cgi/client.py:728:1646
 msgid "Required Header Missing"
 msgstr ""
 
-#: ../roundup/cgi/client.py:719
+#: ../roundup/cgi/client.py:731
 #, fuzzy
 msgid "Client is not allowed to use Rest Interface."
 msgstr "Анонимным пользователям не разрешено пользоваться веб-интерфейсом."
 
-#: ../roundup/cgi/client.py:971
+#: ../roundup/cgi/client.py:985
 msgid "Form Error: "
 msgstr "Ошибка формы: "
 
-#: ../roundup/cgi/client.py:1064
+#: ../roundup/cgi/client.py:1078
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Кодировка %r не распознана"
 
-#: ../roundup/cgi/client.py:1331 ../roundup/cgi/client.py:2294
-#: ../roundup/cgi/client.py:1331:2294
+#: ../roundup/cgi/client.py:1345 ../roundup/cgi/client.py:2357
+#: ../roundup/cgi/client.py:1345:2357
 msgid "broken form: multiple @action values submitted"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1348
+#: ../roundup/cgi/client.py:1362
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr "Анонимным пользователям не разрешено пользоваться веб-интерфейсом."
 
-#: ../roundup/cgi/client.py:1496
+#: ../roundup/cgi/client.py:1507
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1500
+#: ../roundup/cgi/client.py:1511
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1529
+#: ../roundup/cgi/client.py:1540
 #, python-format
 msgid "csrf header %(header)s required but missing for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1533
+#: ../roundup/cgi/client.py:1544
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1541
+#: ../roundup/cgi/client.py:1552
 #, python-format
 msgid "csrf Referer header check failed for user%(userid)s. Value=%(referer)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1546
+#: ../roundup/cgi/client.py:1557
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
 msgstr "Неправильный пароль или имя пользователя."
 
-#: ../roundup/cgi/client.py:1561
+#: ../roundup/cgi/client.py:1572
 #, python-format
 msgid "csrf Origin header check failed for user%(userid)s. Value=%(origin)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1566
+#: ../roundup/cgi/client.py:1577
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Неправильный пароль или имя пользователя."
 
-#: ../roundup/cgi/client.py:1580
+#: ../roundup/cgi/client.py:1591
 #, python-format
 msgid ""
 "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1586
+#: ../roundup/cgi/client.py:1597
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1605
+#: ../roundup/cgi/client.py:1616
 #, python-format
 msgid "csrf HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1610
+#: ../roundup/cgi/client.py:1621
 #, python-format
 msgid "Invalid HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1618
+#: ../roundup/cgi/client.py:1629
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1619
+#: ../roundup/cgi/client.py:1630
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1632
+#: ../roundup/cgi/client.py:1643
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1673
+#: ../roundup/cgi/client.py:1684
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1675 ../roundup/cgi/client.py:1702
-#: ../roundup/cgi/client.py:1719 ../roundup/cgi/client.py:1675:1702:1719
+#: ../roundup/cgi/client.py:1686 ../roundup/cgi/client.py:1713
+#: ../roundup/cgi/client.py:1730 ../roundup/cgi/client.py:1686:1713:1730
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1679
+#: ../roundup/cgi/client.py:1690
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1691
+#: ../roundup/cgi/client.py:1702
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
 "session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1709
+#: ../roundup/cgi/client.py:1720
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %(curr_sess)s != stored session "
 "%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1901
+#: ../roundup/cgi/client.py:1912
 msgid "You are not allowed to view this file."
 msgstr "У вас нет разрешения на просмотр этого файла."
 
-#: ../roundup/cgi/client.py:2172
+#: ../roundup/cgi/client.py:2235
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sЗатраченное время: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2176
+#: ../roundup/cgi/client.py:2239
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -2253,7 +2259,7 @@ msgstr ""
 "%(cache_misses)d. Загрузка объектов: %(get_items)f сек. Фильтрация: "
 "%(filtering)f сек.%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2716
+#: ../roundup/cgi/client.py:2778
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -2675,17 +2681,17 @@ msgstr ""
 msgid "Not a property name: %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:1984
+#: ../roundup/hyperdb.py:2038
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a %(classname)s."
 msgstr "атрибут \"%(propname)s\": значение \"%(value)s\" отсутствует в списке"
 
-#: ../roundup/hyperdb.py:1990
+#: ../roundup/hyperdb.py:2044
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr ""
 
-#: ../roundup/hyperdb.py:2025
+#: ../roundup/hyperdb.py:2079
 #, python-format
 msgid "%(property)r is not a property of %(classname)s"
 msgstr ""
@@ -3003,6 +3009,22 @@ msgstr ""
 "аргументы должны быть в формате [имя=значение,значение,...;имя=значение,"
 "значение,...]"
 
+#: ../roundup/mlink_expr.py:161
+#, python-format
+msgid ""
+"There was an error searching %(class)s by %(attr)s using: %(opcodes)s. The "
+"operator %(opcode)s (%(opcodename)s) at position %(position)d has too few "
+"arguments."
+msgstr ""
+
+#: ../roundup/mlink_expr.py:174
+#, python-format
+msgid ""
+"There was an error searching %(class)s by %(attr)s using: %(opcodes)s. There "
+"are too many arguments for the existing operators. The values on the stack "
+"are: %(stack)s"
+msgstr ""
+
 #: ../roundup/pygettext.py:401
 #, python-format
 msgid "*** %(file)s:%(lineno)s: Seen unexpected token \"%(token)s\""
@@ -3060,40 +3082,61 @@ msgstr ""
 msgid "morethanonestring"
 msgstr ""
 
-#: ../roundup/rest.py:410
+#: ../roundup/rest.py:417
 #, python-format
 msgid "Method %(m)s not allowed. Allowed: %(a)s"
 msgstr ""
 
-#: ../roundup/rest.py:948
+#: ../roundup/rest.py:964
 #, python-format
 msgid ""
 "Page size %(page_size)s must be less than admin limit on query result size: "
 "%(max_size)s."
 msgstr ""
 
-#: ../roundup/rest.py:1193
+#: ../roundup/rest.py:1211
 #, fuzzy, python-format
 msgid "Invalid attribute %s"
 msgstr "Неправильный пароль или имя пользователя."
 
-#: ../roundup/rest.py:2182
+#: ../roundup/rest.py:2199
 #, python-format
 msgid "Api rate limits exceeded. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/rest.py:2258
+#: ../roundup/rest.py:2283
 #, python-format
 msgid ""
-"Unable to parse Accept Header. %(error)s. Acceptable types: "
+"Content type '%s' requested in URL is not available.\n"
+"Acceptable types: %s\n"
+msgstr ""
+
+#: ../roundup/rest.py:2304
+#, python-format
+msgid ""
+"Unable to parse Accept Header. %(error)s. Acceptable types: */*, "
 "%(acceptable_types)s"
 msgstr ""
 
-#: ../roundup/rest.py:2441
+#: ../roundup/rest.py:2376 ../roundup/rest.py:2597 ../roundup/rest.py:2376:2597
 #, python-format
 msgid ""
 "Unrecognized api version: %s. See /rest without specifying api version for "
 "supported versions."
+msgstr ""
+
+#: ../roundup/rest.py:2411 ../roundup/rest.py:2420 ../roundup/rest.py:2411:2420
+#, python-format
+msgid ""
+"Requested content type(s) '%s' not available.\n"
+"Acceptable mime types are: */*, %s"
+msgstr ""
+
+#: ../roundup/rest.py:2696
+msgid ""
+"Internal error while formatting response.\n"
+"accept_mime_type is not defined. This should\n"
+"never happen\n"
 msgstr ""
 
 #: ../roundup/roundupdb.py:140
@@ -3257,33 +3300,33 @@ msgstr ""
 "Ошибка: Тип почтового ящика должен быть \"mailbox\", \"pop\", \"apop\", "
 "\"imap\" или \"imaps\""
 
-#: ../roundup/scripts/roundup_server.py:112
+#: ../roundup/scripts/roundup_server.py:113
 msgid "WARNING: generating temporary SSL certificate"
 msgstr "ВНИМАНИЕ: создается временный сертификат для SSL"
 
-#: ../roundup/scripts/roundup_server.py:143
+#: ../roundup/scripts/roundup_server.py:144
 #, python-format
 msgid "Unable to find/use key from file: %(pemfile)s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:144
+#: ../roundup/scripts/roundup_server.py:145
 msgid ""
 "Does it have a private key surrounded by '-----BEGIN PRIVATE KEY-----' and\n"
 "  '-----END PRIVATE KEY-----' markers?"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:149
+#: ../roundup/scripts/roundup_server.py:150
 #, python-format
 msgid "Unable to find/use certificate from file: %(pemfile)s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:150
+#: ../roundup/scripts/roundup_server.py:151
 msgid ""
 "Does it have a certificate surrounded by '-----BEGIN CERTIFICATE-----' and\n"
 "  '-----END CERTIFICATE-----' markers?"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:344
+#: ../roundup/scripts/roundup_server.py:345
 msgid ""
 "<html><head><title>Roundup trackers index</title></head>\n"
 "<body><h1>Roundup trackers index</h1><ol>\n"
@@ -3291,62 +3334,62 @@ msgstr ""
 "<html><head><title>Список трекеров Roundup</title></head>\n"
 "<body><h1>Список трекеров Roundup</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:570
+#: ../roundup/scripts/roundup_server.py:587
 #, fuzzy, python-format
 msgid "Error: %(type)s: %(value)s"
 msgstr "%(key)s: %(value)s (ключевой атрибут)"
 
-#: ../roundup/scripts/roundup_server.py:582
+#: ../roundup/scripts/roundup_server.py:599
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr ""
 "ВНИМАНИЕ: параметр \"-g\" не используется, он разрешен только для "
 "пользователя root"
 
-#: ../roundup/scripts/roundup_server.py:588
+#: ../roundup/scripts/roundup_server.py:605
 msgid "Can't change groups - no grp module"
 msgstr "Подмена группы невозможна - нужен модуль grp"
 
-#: ../roundup/scripts/roundup_server.py:597
+#: ../roundup/scripts/roundup_server.py:614
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr "Группа %(group)s не существует"
 
-#: ../roundup/scripts/roundup_server.py:609
+#: ../roundup/scripts/roundup_server.py:626
 msgid "Can't run as root!"
 msgstr "Запуск сервера с полномочиями пользователя root запрещен!"
 
-#: ../roundup/scripts/roundup_server.py:612
+#: ../roundup/scripts/roundup_server.py:629
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr ""
 "ВНИМАНИЕ: параметр \"-u\" не используется, он разрешен только для "
 "пользователя root"
 
-#: ../roundup/scripts/roundup_server.py:618
+#: ../roundup/scripts/roundup_server.py:635
 msgid "Can't change users - no pwd module"
 msgstr "Подмена пользователя невозможна - нужен модуль pwd"
 
-#: ../roundup/scripts/roundup_server.py:627
+#: ../roundup/scripts/roundup_server.py:644
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr "Пользователь %(user)s не существует"
 
-#: ../roundup/scripts/roundup_server.py:833
+#: ../roundup/scripts/roundup_server.py:856
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr "Режим \"%s\" недоступен, переключаемся в однозадачный режим"
 
-#: ../roundup/scripts/roundup_server.py:861
+#: ../roundup/scripts/roundup_server.py:884
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Невозможно установить сервер на порту %s, порт уже занят."
 
-#: ../roundup/scripts/roundup_server.py:865
+#: ../roundup/scripts/roundup_server.py:888
 #, fuzzy, python-format
 msgid ""
 "Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
 msgstr "Невозможно установить сервер на порту %s, порт уже занят."
 
-#: ../roundup/scripts/roundup_server.py:944
+#: ../roundup/scripts/roundup_server.py:967
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -3363,13 +3406,15 @@ msgstr ""
 "               файл протокола.  Команда 'roundup-server -c help'\n"
 "               выдает справку о командной строке сервиса Windows."
 
-#: ../roundup/scripts/roundup_server.py:951
+#: ../roundup/scripts/roundup_server.py:974
+#, fuzzy
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
 " -g <GID>      runs the Roundup web server as this GID\n"
 " -d <PIDfile>  run the server in the background and write the server's PID\n"
 "               to the file indicated by PIDfile. The -l option *must* be\n"
-"               specified if -d is used."
+"               specified if -d is used.\n"
+" -D            run the server in the foreground even when -d is used."
 msgstr ""
 " -u <UID>      запустить cервер Roundup с правами пользователя UID\n"
 " -g <GID>      запустить сервер Roundup в группе GID\n"
@@ -3377,7 +3422,7 @@ msgstr ""
 "               и запустить сервер в фоновом режиме.  Если указано \"-d\",\n"
 "               файл протокола *обязательно* должен быть задан ключом \"-l\""
 
-#: ../roundup/scripts/roundup_server.py:958
+#: ../roundup/scripts/roundup_server.py:982
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -3402,6 +3447,10 @@ msgid ""
 "mode\n"
 " -s            enable SSL\n"
 " -L            http request logging uses python logging (roundup.http)\n"
+" -P            log client address/name using reverse proxy X-Forwarded-For\n"
+"               header and not the connection IP (which is the reverse "
+"proxy).\n"
+"               Appends a '+' sign to the logged address/name.\n"
 " -e <fname>    PEM file containing SSL key and certificate\n"
 " -t <mode>     multiprocess mode (default: %(mp_def)s).\n"
 "               Allowed values: %(mp_types)s.\n"
@@ -3502,21 +3551,21 @@ msgstr ""
 "   не могут использоваться в URL (пробелы, русские буквы и проч.),\n"
 "   потому что такие имена сбивают с толку некоторые браузеры типа IE.\n"
 
-#: ../roundup/scripts/roundup_server.py:1135
+#: ../roundup/scripts/roundup_server.py:1162
 msgid "Instances must be name=home"
 msgstr "Список трекеров должен быть в формате имя=каталог"
 
-#: ../roundup/scripts/roundup_server.py:1149
+#: ../roundup/scripts/roundup_server.py:1176
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Конфигурация записана в %s"
 
-#: ../roundup/scripts/roundup_server.py:1167
+#: ../roundup/scripts/roundup_server.py:1194
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Извините, в этой операционной системе работа в фоновом режиме невозможна"
 
-#: ../roundup/scripts/roundup_server.py:1187
+#: ../roundup/scripts/roundup_server.py:1214
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Сервер Roundup готов к работе по адресу %(HOST)s:%(PORT)s"
