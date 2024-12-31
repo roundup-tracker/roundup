@@ -928,7 +928,7 @@ class TestCase():
             {'id': '2',
              'username': 'anonymous',
              'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/2'},
-            {'password': '[password hidden scheme PBKDF2]',
+            {'password': '[password hidden scheme PBKDF2S5]',
              'id': '3',
              'queries': [],
              'username': 'joe',
@@ -953,7 +953,7 @@ class TestCase():
                 'creator': {'id': '1',
                             'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/1',
                             'username': 'admin'},
-                'password': '[password hidden scheme PBKDF2]',
+                'password': '[password hidden scheme PBKDF2S5]',
                 'queries': [],
                 'username': 'joe'
             }
