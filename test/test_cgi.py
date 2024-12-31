@@ -623,7 +623,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         self.db.commit()
         actions.LoginAction(cl).handle()
         pw = self.db.user.get(chef, 'password')
-        self.assertEqual('PBKDF2', pw.scheme)
+        self.assertEqual('PBKDF2S5', pw.scheme)
         self.assertEqual(1000, password.pbkdf2_unpack(pw.password)[0])
         cl.db.close()
 
