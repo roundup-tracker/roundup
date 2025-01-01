@@ -4,7 +4,7 @@
 # be adapted for pytest.ini if you are running under python2.
 
 # For use with packages:
-#     python -m pip install pytest-cov pytest-env pytest-randomly
+#     python -m pip install pytest-cov pytest-env pytest-randomly pytest-testmon
 
 minversion = "6.0"
 
