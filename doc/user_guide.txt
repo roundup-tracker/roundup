@@ -114,11 +114,24 @@ This means the web interface for entering a new issue, the web interface
 for searching issues, the e-mail interface and even the command-line
 administration tool.
 
-String and Numeric properties
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+String Properties
+~~~~~~~~~~~~~~~~~
 
 These fields just take a plain text value, like ``It's broken``.
 
+Number Properties
+~~~~~~~~~~~~~~~~~
+
+These fields take a real number with decimal point like ``+12456.78``,
+``-12456.78`` ``12456.78``. It supports scientific/exponent notation
+like ``3.1415E-2``. Decimal commas (e.g. ``123456,78``) or thousand
+separators ``-12,456.78`` are not supported.
+
+Integer Properties
+~~~~~~~~~~~~~~~~~~
+
+These fields take a whole/integer number without decimal marker like
+``123``, ``+123``, ``-123``. Exponents are not supported.
 
 Boolean properties
 ~~~~~~~~~~~~~~~~~~

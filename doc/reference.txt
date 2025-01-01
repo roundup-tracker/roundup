@@ -442,25 +442,16 @@ Properties
 
 A Class consists of one or more properties of the following types:
 
-String
-     properties store arbitrary-length strings.
-Password
-     properties store encoded arbitrary-length strings.
-     The default encoding is defined in the ``roundup.password.Password``
-     class.
+Boolean
+     properties store on/off, yes/no, true/false values.
 Date
      properties store date-and-time stamps. Their values are Timestamp
      objects.
+Integer
+     properties store integer values. (Number can store real/float values.)
 Interval
      properties store time periods rather than absolute dates. For
      example 2 hours.
-Integer
-     properties store integer values. (Number can store real/float values.)
-Number
-     properties store numeric values. There is an option to use
-     double-precision floating point numbers.
-Boolean
-     properties store on/off, yes/no, true/false values.
 Link
      properties refers to a single item selected from a
      specified class. The class is part of the property; the value is an
@@ -468,6 +459,15 @@ Link
 Multilink
      properties refer to one or more items in a specified
      class. The value is a list of integers.
+Number
+     properties store numeric values. There is an option to use
+     double-precision floating point numbers.
+Password
+     properties store encoded arbitrary-length strings.
+     The default encoding is defined in the ``roundup.password.Password``
+     class.
+String
+     properties store arbitrary-length strings.
 
 Properties have attributes to change the default behaviour:
 
@@ -481,8 +481,8 @@ Properties have attributes to change the default behaviour:
     the list returned by calling get_required_props for the class.
   - ``default_value``: see `design documentation`_ Sets the default
     value if the property is not set.
-  - ``quiet``: see `design documentation`_. Suppresses user visible
-    to changes to this property. The property change is not reported:
+  - ``quiet``: see `design documentation`_. Suppresses reporting user
+    visible changes to this property. The property change is not reported:
 
     - in the change feedback/confirmation message in the web
       interface
