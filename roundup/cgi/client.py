@@ -2232,7 +2232,8 @@ class Client:
                 result = self.renderError(e.args[0])
             except ExpressionError as e:
                 self.add_error_message(str(e))
-                result = self.renderError(str(e))
+                self.template = "search"
+                self.write_html(self.renderContext())
 
             if 'Content-Type' not in self.additional_headers:
                 self.additional_headers['Content-Type'] = pt.content_type

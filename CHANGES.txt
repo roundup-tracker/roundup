@@ -59,9 +59,7 @@ Fixed:
 - fixed a crash with roundup-admin perftest password when rounds not set
   on command line. (John Rouillard)
 - issue2551374 - Add error handling for filter expressions. Filter
-  expression errors are now reported. The UI needs some work but
-  even the current code is helpful when debugging filter
-  expressions. (John Rouillard)
+  expression errors are now reported. (John Rouillard)
 
 Features:
 

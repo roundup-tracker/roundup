@@ -491,12 +491,45 @@ search page, there's an expression editor. You can access it by
 clicking on the ``(expr)`` link, which makes creating these
 expressions a bit easier.
 
-Note that errors in your expression (e.g. a missing operand) are
-silently ignored and a fallback search is conducted. This is
-`considered a bug <https://issues.roundup-tracker.org/issue2551374>`_
-and will hopefully be fixed in the future. But at least you can use
-this info to understand the search syntax in the URL if you see
-something strange.
+If your expression has an error, you will be returned to the search
+page and an error will be reported. For example using the expression
+``1, -3`` to search the nosy property of an issue generates the
+following error::
+
+   There was an error searching issue by nosy using: [1, -3]. The
+   operator -3 (and) at position 2 has too few arguments.
+
+The error message gives you the problem element (``-3``), it's meaning
+(``and``) and its position: the second element. The problem was caused
+because ``and`` requires two arguments, but only one argument (``1``)
+was given.
+
+Another error message::
+
+  There was an error searching issue by status using: [1, 2, -3,
+  -3]. The operator -3 (and) at position 4 has too few arguments.
+
+reports that the second ``-3`` in the 4th position is the problem
+operator. Note that this search expression will never return any
+values. This is because ``status`` is a single value (link) type
+property. It can't have the values ``1`` and ``2``, so the expression
+``1,2,-3`` will never return an issue.
+
+In the examples above, the error was caused by not having enough
+arguments. However you can also have too many arguments. An example of
+this type of message is::
+
+  There was an error searching issue by nosy using: [4, 5, 1, 2, -3,
+  -3]. There are too many arguments for the existing operators. The
+  values on the stack are: [Value 4, (Value 5 AND (Value 1 AND Value
+  2))]
+
+This message gives you the expression as far as it was able to compose
+it, but value 1 is not combined with the rest of the expression. So
+another binary operator is needed to complete the expression.
+
+If you have multiple incorrect expressions in your search, only one
+expression will be reported each time you submit the search.
 
 Using the Classhelper
 ---------------------
