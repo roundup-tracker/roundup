@@ -12,3 +12,9 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "pg_schema: tests using schema for postgres"
     )
+
+# try to work around loss of testmon data when ^Cing out of tests.
+def pytest_unconfigure(config):
+    if hasattr(config, "testmon_data"):
+        config.testmon_data.db.con.close()
+
