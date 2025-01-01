@@ -19,6 +19,9 @@ __author__ = 'John Kristensen'
 __version__ = '0.3.1'
 __license__ = 'GPLv3'
 
+"""
+Classmethod probe_ports() added by John Rouillard 2024.
+"""
 
 class QuietHandler(WSGIRequestHandler):
     def log_request(*args, **kwargs):
