@@ -542,7 +542,9 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         """
         from_forwarded_header=""
         forwarded_for = None
-        if 'X-FORWARDED-FOR' in self.headers:
+
+        # if connection timed out, there is no headers property
+        if hasattr(self, 'headers') and ('X-FORWARDED-FOR' in self.headers):
             forwarded_for = re.split(r'[,\s]',
                                      self.headers['X-FORWARDED-FOR'],
                                      maxsplit=1)[0]
