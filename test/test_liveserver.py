@@ -79,8 +79,19 @@ class WsgiSetup(LiveServerTestCase):
     # have chicken and egg issue here. Need to encode the base_url
     # in the config file but we don't know it until after
     # the server is started and has read the config.ini.
-    # so only allow one port number
-    port_range = (9001, 9001)  # default is (8080, 8090)
+    # Probe for an unused port and set the port range to
+    # include only that port.
+    tracker_port = LiveServerTestCase.probe_ports(8080, 8100)
+    if tracker_port is None:
+        pytest.skip("Unable to find available port for server: 8080-8100",
+                    allow_module_level=True)
+    port_range = (tracker_port, tracker_port)
+
+    # set a couple of properties to use for URL generation in
+    # expected output or use to set TRACKER_WEB in config.ini.
+    tracker_web = "http://localhost:%d/" % tracker_port
+       # tracker_web_base should be the same as self.base_url()
+    tracker_web_base = "http://localhost:%d" % tracker_port
 
     dirname = '_test_instance'
     backend = 'anydbm'
@@ -106,7 +117,7 @@ class WsgiSetup(LiveServerTestCase):
             password=password.Password('sekrit'), address='fred@example.com')
 
         # set the url the test instance will run at.
-        cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
+        cls.db.config['TRACKER_WEB'] = cls.tracker_web
         # set up mailhost so errors get reported to debuging capture file
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
@@ -190,8 +201,9 @@ class ClientSetup():
     def create_login_session(self, username="admin", password="sekrit",
                              return_response=True, expect_login_ok=True):
         # Set up session to manage cookies <insert blue monster here>
+
         session = requests.Session()
-        session.headers.update({'Origin': 'http://localhost:9001'})
+        session.headers.update({'Origin': self.tracker_web_base})
 
         # login using form to get cookie
         login = {"__login_name": username, '__login_password': password,
@@ -747,13 +759,13 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.options(self.url_base() + '/rest',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
                      'Access-Control-Allow-Credentials': 'true',
@@ -770,13 +782,13 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.options(self.url_base() + '/rest/data',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
                      'Access-Control-Allow-Methods': 'OPTIONS, GET',
@@ -792,13 +804,13 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.options(self.url_base() + '/rest/data/user',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST',
                      'Access-Control-Allow-Methods': 'OPTIONS, GET, POST',
@@ -815,13 +827,13 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.options(self.url_base() + '/rest/data/user/1',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
                      'Access-Control-Allow-Methods': 'OPTIONS, GET, PUT, DELETE, PATCH',
@@ -837,13 +849,13 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.options(self.url_base() + '/rest/data/user/1/username',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
                      'Access-Control-Allow-Methods': 'OPTIONS, GET, PUT, DELETE, PATCH',
@@ -859,7 +871,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.options(self.url_base() + '/rest/data/user/1/creator',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
@@ -877,7 +889,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.options(self.url_base() + '/rest/data/user/1/zot',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",})
+                                        'Origin': self.tracker_web_base,})
         print(f.status_code)
         print(f.headers)
 
@@ -888,7 +900,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.get(self.url_base() + '/rest/data/user/roles',
                          auth=('admin', 'sekrit'),
                          headers = {'content-type': "",
-                                    'Origin': "http://localhost:9001",
+                                    'Origin': self.tracker_web_base,
                          })
         print(f.status_code)
         print(f.headers)
@@ -1190,10 +1202,10 @@ class BaseTestCases(WsgiSetup, ClientSetup):
 
         content_str = '''{ "data": {
                         "id": "1",
-                        "link": "http://localhost:9001/rest/data/user/1/username",
+                        "link": "%s/rest/data/user/1/username",
                         "data": "admin"
                     }
-        }'''
+        }''' % self.tracker_web_base
         content = json.loads(content_str)
 
 
@@ -1248,10 +1260,10 @@ class BaseTestCases(WsgiSetup, ClientSetup):
 
         content_str = '''{ "data": {
                         "id": "1",
-                        "link": "http://localhost:9001/rest/data/user/1/username",
+                        "link": "%s/rest/data/user/1/username",
                         "data": "admin"
                     }
-        }'''
+        }''' % self.tracker_web_base
         content = json.loads(content_str)
 
         print(f.content)
@@ -1496,7 +1508,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         # Escape % signs in string by doubling them. This verifies the
         # search is working correctly.
         # use groupdict for python2.
-        self.assertEqual('http://localhost:9001/issue%(issue)s?@ok_message=file%%20%(file)s%%20created%%0Aissue%%20%(issue)s%%20created&@template=item'%m.groupdict(), f.url)
+        self.assertEqual( self.tracker_web_base + '/issue%(issue)s?@ok_message=file%%20%(file)s%%20created%%0Aissue%%20%(issue)s%%20created&@template=item'%m.groupdict(), f.url)
 
         # we have an issue display, verify filename is listed there
         # seach for unique filename given to it.
@@ -1520,13 +1532,13 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         c = dict (content = r'xyzzy')
         r = session.post(url + 'file', files = c, data = d,
                           headers = {'x-requested-with': "rest",
-                                     'Origin': "http://localhost:9001"}
+                                     'Origin': self.tracker_web_base}
         )
 
         # was a 500 before fix for issue2551178
         self.assertEqual(r.status_code, 201)
         # just compare the path leave off the number
-        self.assertIn('http://localhost:9001/rest/data/file/',
+        self.assertIn(self.tracker_web_base + '/rest/data/file/',
                       r.headers["location"])
         json_dict = json.loads(r.text)
         self.assertEqual(json_dict["data"]["link"], r.headers["location"])
@@ -1534,7 +1546,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         # download file and verify content
         r = session.get(r.headers["location"] +'/content',
                           headers = {'x-requested-with': "rest",
-                                     'Origin': "http://localhost:9001"}
+                                     'Origin': self.tracker_web_base}
 )
         json_dict = json.loads(r.text)
         self.assertEqual(json_dict['data']['data'], c["content"])
@@ -1544,7 +1556,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         session.auth = None
         r = session.post(url + 'file', files = c, data = d,
                           headers = {'x-requested-with': "rest",
-                                     'Origin': "http://localhost:9001"}
+                                     'Origin': self.tracker_web_base}
         )
         self.assertEqual(r.status_code, 403)
 
@@ -1556,7 +1568,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
 
         r = session.post(url + 'file', files = c, data = d,
                           headers = {'x-requested-with': "rest",
-                                     'Origin': "http://localhost:9001"}
+                                     'Origin': self.tracker_web_base}
         )
         self.assertEqual(r.status_code, 201)
         print(r.status_code)
@@ -1611,7 +1623,7 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
             password=password.Password('sekrit'), address='fred@example.com')
 
         # set the url the test instance will run at.
-        cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
+        cls.db.config['TRACKER_WEB'] = cls.tracker_web
         # set up mailhost so errors get reported to debuging capture file
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
@@ -1699,7 +1711,7 @@ class TestApiRateLogin(WsgiSetup):
             password=password.Password('sekrit'), address='fred@example.com')
 
         # set the url the test instance will run at.
-        cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
+        cls.db.config['TRACKER_WEB'] = cls.tracker_web
         # set up mailhost so errors get reported to debuging capture file
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
@@ -1761,7 +1773,7 @@ class TestApiRateLogin(WsgiSetup):
             # use basic auth for rest endpoint
         
             request_headers = {'content-type': "",
-                               'Origin': "http://localhost:9001",}
+                               'Origin': self.tracker_web_base,}
             f = requests.options(url_base_numeric + '/rest/data',
                                  auth=('admin', 'sekrit'),
                                  headers=request_headers
@@ -1798,7 +1810,7 @@ class TestApiRateLogin(WsgiSetup):
             f = requests.options(url_base_numeric + '/rest/data',
                                  auth=('admin', 'ekrit'),
                                  headers = {'content-type': "",
-                                            'Origin': "http://localhost:9001",}
+                                            'Origin': self.tracker_web_base,}
             )
 
             if (i < 4): # assuming limit is 4.
@@ -1835,7 +1847,7 @@ class TestApiRateLogin(WsgiSetup):
         f = requests.options(url_base_numeric + '/rest/data',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",}
+                                        'Origin': self.tracker_web_base,}
         )
         self.assertEqual(f.status_code, 429)
 
@@ -1850,7 +1862,7 @@ class TestApiRateLogin(WsgiSetup):
         f = requests.get(url_base_numeric + '/rest/data',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",}
+                                        'Origin': self.tracker_web_base,}
         )
         self.assertEqual(f.status_code, 200)
         print(i, f.status_code)
@@ -1868,7 +1880,7 @@ class TestApiRateLogin(WsgiSetup):
               'Retry-After, '
               'Sunset, '
               'Allow'),
-            'Access-Control-Allow-Origin': 'http://localhost:9001',
+            'Access-Control-Allow-Origin': self.tracker_web_base,
             'Access-Control-Allow-Credentials': 'true',
             'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH'
         }
@@ -1879,28 +1891,28 @@ class TestApiRateLogin(WsgiSetup):
 
         expected_data = {
             "status": {
-                "link": "http://localhost:9001/rest/data/status"
+                "link": self.tracker_web_base + "/rest/data/status"
             },
             "keyword": {
-                "link": "http://localhost:9001/rest/data/keyword"
+                "link": self.tracker_web_base + "/rest/data/keyword"
             },
             "priority": {
-                "link": "http://localhost:9001/rest/data/priority"
+                "link": self.tracker_web_base + "/rest/data/priority"
             },
             "user": {
-                "link": "http://localhost:9001/rest/data/user"
+                "link": self.tracker_web_base + "/rest/data/user"
             },
             "file": {
-                "link": "http://localhost:9001/rest/data/file"
+                "link": self.tracker_web_base + "/rest/data/file"
             },
             "msg": {
-                "link": "http://localhost:9001/rest/data/msg"
+                "link": self.tracker_web_base + "/rest/data/msg"
             },
             "query": {
-                "link": "http://localhost:9001/rest/data/query"
+                "link": self.tracker_web_base + "/rest/data/query"
             },
             "issue": {
-                "link": "http://localhost:9001/rest/data/issue"
+                "link": self.tracker_web_base + "/rest/data/issue"
             }
         }
 

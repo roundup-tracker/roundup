@@ -9,8 +9,9 @@ Licensed under the GNU GPL v3
 
 Copyright (c) 2013 John Kristensen (unless explicitly stated otherwise).
 """
-import threading
+import errno
 import socket
+import threading
 import unittest
 from wsgiref.simple_server import make_server, WSGIRequestHandler
 
@@ -82,3 +83,19 @@ class LiveServerTestCase(unittest.TestCase):
             self._server.server_close()
             self._thread.join()
             del self._server
+
+    def probe_ports(start=port_range[0], end=port_range[1]):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        port = start
+        try:
+            s.connect(('127.0.0.1', port))
+        except socket.error as e:
+            if not hasattr(e, 'args') or e.args[0] != errno.ECONNREFUSED:
+                raise
+            return port
+        else:
+            s.close()
+            port += 1
+            if port > end:
+                return None
