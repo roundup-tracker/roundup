@@ -13,7 +13,7 @@ import errno
 import socket
 import threading
 import unittest
-from wsgiref.simple_server import make_server, WSGIRequestHandler
+from wsgiref.simple_server import WSGIRequestHandler, make_server
 
 __author__ = 'John Kristensen'
 __version__ = '0.3.1'
@@ -22,6 +22,7 @@ __license__ = 'GPLv3'
 """
 Classmethod probe_ports() added by John Rouillard 2024.
 """
+
 
 class QuietHandler(WSGIRequestHandler):
     def log_request(*args, **kwargs):
@@ -89,17 +90,21 @@ class LiveServerTestCase(unittest.TestCase):
 
     @classmethod
     def probe_ports(cls, start=port_range[0], end=port_range[1]):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
         port = start
-        try:
-            s.connect(('127.0.0.1', port))
-        except socket.error as e:
-            if not hasattr(e, 'args') or e.args[0] != errno.ECONNREFUSED:
-                raise
-            return port
-        else:
-            s.close()
-            port += 1
-            if port > end:
-                return None
+
+        while port <= end:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+            try:
+                s.connect(('127.0.0.1', port))
+            except socket.error as e:
+                if not hasattr(e, 'args') or e.args[0] != errno.ECONNREFUSED:
+                    raise
+                return port
+            else:
+                s.close()
+                port += 1
+
+        return None
