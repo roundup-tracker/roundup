@@ -1,8 +1,7 @@
 
 try:
     # Python 3+
-    from urllib.parse import parse_qs, quote, unquote, urlencode, \
-        urlparse, urlunparse
+    from urllib.parse import parse_qs, quote, unquote, urlencode, urlparse, urlunparse
     from urllib.request import urlopen
 except ImportError:
     # Python 2.5-2.7

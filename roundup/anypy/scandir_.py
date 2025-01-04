@@ -4,5 +4,6 @@ try:
 except ImportError:
     # python 2 fallback
     import os
-    import scandir # pip package
+
+    import scandir  # pip package
     os.scandir = scandir.scandir
