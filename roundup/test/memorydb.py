@@ -1,22 +1,14 @@
 '''Implement an in-memory hyperdb for testing purposes.
 '''
 
-import shutil
 import os
+import shutil
 import time
 
-from roundup import date
-from roundup import hyperdb
-from roundup import roundupdb
-from roundup import security
-from roundup import password
-from roundup import configuration
-from roundup.backends import back_anydbm
-from roundup.backends import indexer_dbm
-from roundup.backends import sessions_dbm
-from roundup.backends import indexer_common
-from roundup.support import ensureParentsExist
+from roundup import configuration, date, hyperdb, password, roundupdb, security
 from roundup.anypy.strings import s2b
+from roundup.backends import back_anydbm, indexer_common, indexer_dbm, sessions_dbm
+from roundup.support import ensureParentsExist
 from roundup.test.tx_Source_detector import init as tx_Source_init
 
 default_prefix = '../../share/roundup/templates/classic'
@@ -51,31 +43,30 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
         prefix = os.path.join(os.path.dirname(__file__), prefix)
 
     schema = os.path.join(prefix, 'schema.py')
-    vars = hyperdb.__dict__
-    vars['Class'] = Class
-    vars['FileClass'] = FileClass
-    vars['IssueClass'] = IssueClass
-    vars['db'] = db
-    fd = open(schema)
-    exec(compile(fd.read(), schema, 'exec'), vars)
-    fd.close()
+    hyperdb_vars = hyperdb.__dict__
+    hyperdb_vars['Class'] = Class
+    hyperdb_vars['FileClass'] = FileClass
+    hyperdb_vars['IssueClass'] = IssueClass
+    hyperdb_vars['db'] = db
+
+    with open(schema) as fd:
+        exec(compile(fd.read(), schema, 'exec'), hyperdb_vars)
 
     initial_data = os.path.join(prefix, 'initial_data.py')
-    vars = dict(db=db, admin_email='admin@test.com',
-                adminpw=password.Password('sekrit', config=db.config))
-    fd = open(initial_data)
-    exec(compile(fd.read(), initial_data, 'exec'), vars)
-    fd.close()
+    admin_vars = {"db": db, "admin_email": "admin@test.com",
+                  "adminpw": password.Password('sekrit', config=db.config)}
+    with open(initial_data) as fd:
+        exec(compile(fd.read(), initial_data, 'exec'), admin_vars)
 
     # load standard detectors
     dirname = os.path.join(prefix, 'detectors')
     for fn in os.listdir(dirname):
         if not fn.endswith('.py'): continue                       # noqa: E701
-        vars = {}
+        exec_vars = {}
         with open(os.path.join(dirname, fn)) as fd:
             exec(compile(fd.read(),
-                         os.path.join(dirname, fn), 'exec'), vars)
-        vars['init'](db)
+                         os.path.join(dirname, fn), 'exec'), exec_vars)
+        exec_vars['init'](db)
 
     tx_Source_init(db)
 
@@ -200,7 +191,7 @@ class BasicDatabase(dict):
                 float(newvalues['__timestamp'])
             except ValueError:
                 if infoid in self:
-                    del(newvalues['__timestamp'])
+                    del (newvalues['__timestamp'])
                 else:
                     newvalues['__timestamp'] = time.time()
         self[infoid].update(newvalues)
@@ -301,8 +292,8 @@ class Database(back_anydbm.Database):
         self.journals = self.__class__.memdb.get('journals', {})
 
     def filename(self, classname, nodeid, property=None, create=0):
-        shutil.copyfile(__file__, __file__+'.dummy')
-        return __file__+'.dummy'
+        shutil.copyfile(__file__, __file__ + '.dummy')
+        return __file__ + '.dummy'
 
     def filesize(self, classname, nodeid, property=None, create=0):
         return len(self.getfile(classname, nodeid, property))
@@ -423,8 +414,8 @@ class Database(back_anydbm.Database):
         self.ids[classname] += 1
         return str(self.ids[classname])
 
-    def setid(self, classname, id):
-        self.ids[classname] = int(id)
+    def setid(self, classname, nodeid):
+        self.ids[classname] = int(nodeid)
 
     #
     # Journal
@@ -477,8 +468,8 @@ class Database(back_anydbm.Database):
                 kept_journals = []
                 for entry in db[key]:
                     # unpack the entry
-                    (nodeid, date_stamp, self.journaltag, action,
-                     params) = entry
+                    (_nodeid, date_stamp, self.journaltag, action,
+                     _params) = entry
                     date_stamp = date_stamp.serialise()
                     # if the entry is after the pack date, _or_ the initial
                     # create entry, then it stays
@@ -502,15 +493,13 @@ class FileClass(back_anydbm.FileClass):
     def export_files(self, dirname, nodeid):
         dest = self.exportFilename(dirname, nodeid)
         ensureParentsExist(dest)
-        f = open(dest, 'wb')
-        f.write(self.db.files[self.classname, nodeid, None])
-        f.close()
+        with open(dest, 'wb') as f:
+            f.write(self.db.files[self.classname, nodeid, None])
 
     def import_files(self, dirname, nodeid):
         source = self.exportFilename(dirname, nodeid)
-        f = open(source, 'rb')
-        self.db.files[self.classname, nodeid, None] = f.read()
-        f.close()
+        with open(source, 'rb') as f:
+            self.db.files[self.classname, nodeid, None] = f.read()
         mime_type = None
         props = self.getprops()
         if 'type' in props:
