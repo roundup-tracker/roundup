@@ -539,6 +539,9 @@ Subject: [issue] Testing...
 This is a test submission of a new issue.
 ''')
         userlist = self.db.user.list()
+        if os.path.exists(SENDMAILDEBUG):
+            with open(SENDMAILDEBUG) as f:
+                print(f.read())
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(userlist, self.db.user.list(),
             "user created when it shouldn't have been")
