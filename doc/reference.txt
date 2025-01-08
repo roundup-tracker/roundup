@@ -1745,7 +1745,7 @@ is used by ``roundup.cgi``, ``roundup-server`` and ``ZRoundup``
 (``ZRoundup``  is broken, until further notice). In all cases, Roundup
 determines which tracker is accessed (the first part of the URL
 path inside the scope of the CGI handler) and pass control on to the
-``roundup.cgi.client.Client`` class - which handles the rest of the
+:py:class:`roundup.cgi.client.Client` class - which handles the rest of the
 access through its ``main()`` method. This means that you can do pretty
 much anything you want as a web interface to your tracker.
 
@@ -3467,26 +3467,38 @@ This is implemented by the
 ``roundup.cgi.templating.TemplatingUtils`` class. New methods can
 be added to the variable by using extensions_.
 
-.. table::
-  :class: valign-top
+-----
 
-  ================= ========================================================
-  Method            Description
-  ================= ========================================================
-  Batch             return a batch object using the supplied list
-  anti_csrf_nonce   returns the random nonce generated for this session
-  expandfile        load a file into a template and expand
-                    '%(tokenname)s' in the file using
-                    values from the supplied dictionary.
-  html_quote        quote some text as safe in HTML (ie. <, >, ...)
-  html_calendar     renders an HTML calendar used by the
-		    ``_generic.calendar.html`` template (itself invoked by
-		    the popupCalendar DateHTMLProperty method
-  readfile          read JavaScript or other content in an external
-                    file into the template.
-  set_http_response sets the HTTP response code for the request.
-  url_quote         quote some text as safe for a URL (ie. space, %, ...)
-  ================= ========================================================
+.. list-table:: TemplatingUtils Methods
+   :align: left
+   :header-rows: 1
+   :class: valign-top captionbelow booktabs
+
+   * - Method
+     - Description
+   * - Batch
+     - return a batch object using the supplied list
+   * - anti_csrf_nonce
+     - returns the random nonce generated for this session
+   * - :meth:`expandfile <roundup.cgi.templating.TemplatingUtils.expandfile>`
+     - load a file into a template and expand
+       '%(tokenname)s' in the file using
+       values from the supplied dictionary.
+   * - :meth:`html_calendar <roundup.cgi.templating.TemplatingUtils.html_calendar>`
+     - renders an HTML calendar used by the ``_generic.calendar.html``
+       template (itself invoked by the popupCalendar DateHTMLProperty
+       method
+   * - :meth:`html_quote <roundup.cgi.templating.TemplatingUtils.html_quote>`
+     - quote some text as safe in HTML (ie. <, >, ...)
+   * - :meth:`readfile <roundup.cgi.templating.TemplatingUtils.readfile>`
+     - read JavaScript or other content in an external file
+       into the template.
+   * - :meth:`set_http_response <roundup.cgi.templating.TemplatingUtils.set_http_response>`
+     - set_http_response sets the HTTP response code for the request.
+   * - :meth:`url_quote <roundup.cgi.templating.TemplatingUtils.url_quote>`
+     - quote some text as safe for a URL (ie. space, %, ...)
+
+-----
 
 Additional info can be obtained by starting ``python`` with the
 ``roundup`` subdirectory on your PYTHONPATH and using the Python help
@@ -3960,7 +3972,8 @@ example ``myaction.py``::
          '''
 
 The *self.client* attribute is an instance of ``roundup.cgi.client.Client``.
-See the docstring of that class for details of what it can do.
+See the :class:`docstring of that class <roundup.cgi.client.Client>`
+for details of what it can do.
 
 The method will typically check the ``self.form`` variable's contents.
 It may then:

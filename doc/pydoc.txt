@@ -1,0 +1,17 @@
+================
+Pydocs from code
+================
+
+.. contents::
+   :local:
+
+Client class
+============
+
+.. autoclass:: roundup.cgi.client::Client
+
+Templating Utils class
+======================
+
+.. autoclass:: roundup.cgi.templating::TemplatingUtils
+   :members:

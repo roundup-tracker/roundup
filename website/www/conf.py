@@ -45,9 +45,10 @@ finally:
 # General configuration
 # ---------------------
 
-# Add any Sphinx extension module names here, as strings. They can be extensions
-# coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ["sphinxext.opengraph", 'sphinx_sitemap', 'sphinx_tabs.tabs',]
+# Add any Sphinx extension module names here, as strings. They can be
+#  extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+extensions = ['sphinx.ext.autodoc', 'sphinxext.opengraph',
+              'sphinx_sitemap', 'sphinx_tabs.tabs']
 
 sphinx_tabs_valid_builders = ['linkcheck']
 sphinx_tabs_disable_tab_closing = True
