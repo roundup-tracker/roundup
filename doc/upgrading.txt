@@ -253,6 +253,28 @@ occurs before any database changes are made. Now, all errors related
 to the data format (mime type, API version) will return 406 errors,
 where some previously resulted in 400 errors.
 
+New method for registering templating utils (info)
+--------------------------------------------------
+
+If you are building a template utility function that needs access
+to:
+
+  * the database
+  * the client instance
+  * the form the user submitted
+
+you had to pass these objects from the template using the ``db``,
+``request.client`` or ``request.form``  arguments.
+
+A new method for registering a template utility has been
+added. If you use the ``instance`` object's
+``registerUtilMethod()`` to register a utility function, you do
+not need to pass these arguments. The function is called as a
+method and the first argument is a ``client`` instance from which
+the database (client.db), form (client.form).
+
+You can find an example in :ref:`dynamic_csp`.
+
 .. index:: Upgrading; 2.3.0 to 2.4.0
 
 Migrating from 2.3.0 to 2.4.0

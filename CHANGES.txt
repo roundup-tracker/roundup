@@ -95,7 +95,13 @@ Features:
 - issue2551116 - Replace xmlrpclib (xmlrpc.client) with defusedxml.
   Added support for defusedxml to better secure the xmlrpc
   endpoint. (John Rouillard)
-
+- Added new instance.registerUtilMethod() method to make using complex
+  templating easier as it provides a default Client instance to the
+  templating method. (John Rouillard)
+- Added new templating utils.set_http_response(integer) method to
+  allow reporting an error to the user from a template. (John
+  Rouillard)
+	
 2024-07-13 2.4.0
 
 Fixed:

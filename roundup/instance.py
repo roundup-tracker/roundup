@@ -247,8 +247,38 @@ class Tracker:
             self.cgi_actions[name] = action
 
     def registerUtil(self, name, function):
+        """Register a function that can be called using:
+           `utils.<name>(...)`.
+
+           The function is defined as:
+
+               def function(...):
+
+           If you need access to the client, database, form or other
+           item, you have to pass it explicitly::
+
+               utils.name(request.client, ...)
+
+           If you need client access, consider using registerUtilMethod()
+           instead.
+
+        """
         self.templating_utils[name] = function
 
+    def registerUtilMethod(self, name, function):
+        """Register a method that can be called using:
+           `utils.<name>(...)`.
+
+           Unlike registerUtil, the method is defined as:
+
+               def function(self, ...):
+
+           `self` is a TemplatingUtils object. You can use self.client
+           to access the client object for your request.
+        """
+        setattr(self.TemplatingUtils,
+                name, 
+                function)
 
 class TrackerError(RoundupException):
     pass

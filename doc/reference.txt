@@ -1148,6 +1148,11 @@ mechanism.
   (see `adding a time log to your issues
   <customizing.html#adding-a-time-log-to-your-issues-4>`_ for an example)
 
+* ``instance.registerUtilMethod`` is also used for adding `templating
+  utilities`_, and provides a client instance by default to the
+  function. This makes more complex templating actions easier to
+  use. (see :ref:`dynamic_csp` for an example)
+
 * ``instance.registerAction`` is used to add more actions to the
   instance and to web interface. See `Defining new web actions`_
   for details.  Generic action can be added by inheriting from
@@ -3465,22 +3470,23 @@ be added to the variable by using extensions_.
 .. table::
   :class: valign-top
 
-  =============== ========================================================
-  Method          Description
-  =============== ========================================================
-  Batch           return a batch object using the supplied list
-  anti_csrf_nonce returns the random nonce generated for this session
-  expandfile      load a file into a template and expand
-                  '%(tokenname)s' in the file using
-                  values from the supplied dictionary.
-  html_quote      quote some text as safe in HTML (ie. <, >, ...)
-  html_calendar   renders an HTML calendar used by the
-		  ``_generic.calendar.html`` template (itself invoked by
-		  the popupCalendar DateHTMLProperty method
-  readfile        read JavaScript or other content in an external
-                  file into the template.
-  url_quote       quote some text as safe for a URL (ie. space, %, ...)
-  =============== ========================================================
+  ================= ========================================================
+  Method            Description
+  ================= ========================================================
+  Batch             return a batch object using the supplied list
+  anti_csrf_nonce   returns the random nonce generated for this session
+  expandfile        load a file into a template and expand
+                    '%(tokenname)s' in the file using
+                    values from the supplied dictionary.
+  html_quote        quote some text as safe in HTML (ie. <, >, ...)
+  html_calendar     renders an HTML calendar used by the
+		    ``_generic.calendar.html`` template (itself invoked by
+		    the popupCalendar DateHTMLProperty method
+  readfile          read JavaScript or other content in an external
+                    file into the template.
+  set_http_response sets the HTTP response code for the request.
+  url_quote         quote some text as safe for a URL (ie. space, %, ...)
+  ================= ========================================================
 
 Additional info can be obtained by starting ``python`` with the
 ``roundup`` subdirectory on your PYTHONPATH and using the Python help

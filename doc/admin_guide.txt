@@ -443,6 +443,8 @@ when invoked.
 More secure CSPs can also be created. However because of the ability
 to customise the web interface, it is difficult to provide guidance.
 
+.. _dynamic_csp:
+
 Dynamic CSP
 -----------
 
@@ -469,7 +471,7 @@ directory that generates the CSP on the fly. For example::
     }
 
 
-    def AddHtmlHeaders(client, header_dict=None):
+    def AddHtmlHeaders(self, header_dict=None):
 	''' Generate https headers from dict use default security headers
 
 	    Setting the header with a value of None will not inject the
@@ -479,34 +481,35 @@ directory that generates the CSP on the fly. For example::
 	    nonce. Use to set a nonce for inline scripts.
 	'''
 	try:
-	    if client.client_nonce is None:
+	    if self.client.client_nonce is None:
 		# logger.warning("client_nonce is None")
-		client.client_nonce = client.session_api._gen_sid()
+		self.client.client_nonce = self.client.session_api._gen_sid()
 	except AttributeError:
-	    # client.client_nonce doesn't exist, create it
+	    # self.client.client_nonce doesn't exist, create it
 	    # logger.warning("client_nonce does not exist, creating")
-	    client.client_nonce = client.session_api._gen_sid()
+	    self.client.client_nonce = client.session_api._gen_sid()
 
 	headers = default_security_headers.copy()
 	if isinstance(header_dict, dict):
             headers.update(header_dict)
 
-	client_headers = client.additional_headers
+	client_headers = self.client.additional_headers
 
 	for header, value in list(headers.items()):
 	    if value is None:
 		continue
 	    client_headers[header] = value.format(
-                nonce=client.client_nonce)
+                nonce=self.client.client_nonce)
 
     def init(instance):
-        instance.registerUtil('AddHtmlHeaders', AddHtmlHeaders)
+        # Note the use of the new (in version 2.5) registerUtilMethod
+        instance.registerUtilMethod('AddHtmlHeaders', AddHtmlHeaders)
 
 
 Adding the following to ``page.html`` right after the opening
 ``<html....`>`` tag::
 
-   <tal:code tal:content="python:utils.AddHtmlHeaders(request.client)" />
+   <tal:code tal:content="python:utils.AddHtmlHeaders()" />
 
 will invoke ``AddHtmlHeaders()`` to add the CSP header with the nonce.
 
@@ -522,6 +525,43 @@ to::
         src="javascript.js"></script>
 
 for each script, object or style tag.
+
+If you are using a version of Roundup before version 2.5, you need to
+replace ``instance.registerUtilMethod`` with
+``instance.registerUtil``. For example::
+
+    def init(instance):
+        # Note the use of the new (in version 2.5) registerUtilMethod
+        instance.registerUtil('AddHtmlHeaders', AddHtmlHeaders)
+
+The AddHtmlHeaders function needs to be changed so that ``self.client``
+is replaced by ``client``::
+
+    # replace self parameter with client
+    def AddHtmlHeaders(client, header_dict=None):
+	''' Generate https headers from dict use default security headers
+
+	    Setting the header with a value of None will not inject the
+	    header and can override the default set.
+
+	    Header values will be formatted with a dictionary including a
+	    nonce. Use to set a nonce for inline scripts.
+	'''
+
+	### Then change all references to self.client to client
+
+	try:
+	    if client.client_nonce is None:  # note self.client -> client
+		# logger.warning("client_nonce is None")
+		client.client_nonce = self.client.session_api._gen_sid()
+
+	...
+
+Lastly the client must be passed explicitly when calling
+AddHtmlHeaders. The call looks like::
+
+   <tal:code tal:content="python:utils.AddHtmlHeaders(request.client)" />
+
 
 Remediating ``unsafe-inline``
 -----------------------------

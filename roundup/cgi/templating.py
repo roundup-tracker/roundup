@@ -3799,6 +3799,18 @@ class TemplatingUtils:
                 {'fullpath': fullpath, 'issue': e.args[0]})
             return ""
 
+    def set_http_response(self, code):
+        '''Set the HTTP response code to the integer `code`.
+            Example::
+
+              <tal:x
+               tal:replace="python:utils.set_response(404);"
+              />
+
+
+            will make the template return code 404 (not found).
+            '''
+        self.client.response_code = code
 
 class MissingValue(object):
     def __init__(self, description, **kwargs):
