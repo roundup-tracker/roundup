@@ -760,7 +760,6 @@ class Client:
 
             # Use code 400. Codes 401 and 403 imply that authentication
             # is needed or authenticated person is not authorized.
-            # Preflight doesn't do authentication.
             output = s2b(
                 '{ "error": { "status": 400, "msg": "%s" } }' % msg)
             self.reject_request(output,
