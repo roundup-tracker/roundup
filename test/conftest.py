@@ -2,6 +2,20 @@
 # can use if pytest-random-order --random-order mode isn't
 # usable (e.g. python2).
 
+
+# known issues:
+#  python3 -m pytest -k Whoosh test/test_indexer.py fails starting with
+#      first reversed (so last) test in module
+#
+#  python3 -m pytest test/test_cgi.py 
+#    fails: FormTestCase::testCreatePermission
+#           FormTestCase::testClassPermission
+#           FormTestCase::testCheckAndPropertyPermission
+#
+#  this failure results in a failure in test_action again with
+#     bad permission application. Something run prior to these
+#     tests is breaking the permission checks.
+
 #def pytest_collection_modifyitems(items): 
 #    items.reverse()
 
