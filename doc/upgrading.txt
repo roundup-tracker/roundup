@@ -224,6 +224,17 @@ defusedxml.
 
 .. _defusedxml: https://pypi.org/project/defusedxml/
 
+Change in REST response for invalid CORS requests (info)
+--------------------------------------------------------
+
+CORS_ preflight requests that are missing required headers can
+now result in either a 403 or 400 error code. If you permit
+anonymous users to access the REST interface, a 400 error may
+still occur. Previously, only a 400 error was given. This change
+is not expected to create issues since the client will recognize
+both codes it as an error response, and the CORS request will
+still fail.
+
 More secure session cookie handling (info)
 ------------------------------------------
 

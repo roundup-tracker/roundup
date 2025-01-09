@@ -60,6 +60,13 @@ Fixed:
   on command line. (John Rouillard)
 - issue2551374 - Add error handling for filter expressions. Filter
   expression errors are now reported. (John Rouillard)
+- issue2551384: Modify flow in client.py's REST handler to verify
+  authorization earlier. The validation order for REST requests
+  has been changed. Checking user authorization to use the REST
+  interface is done before validating the Origin header. As a
+  result, incorrectly formatted CORS preflight requests
+  (e.g. missing Origin header) can now return HTTP status 403 as
+  well as status 400. (John Rouillard)
 
 Features:
 

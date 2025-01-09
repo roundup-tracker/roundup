@@ -677,8 +677,11 @@ class Client:
     def is_cors_preflight(self):
         return (
             self.env['REQUEST_METHOD'] == "OPTIONS"
-            and self.request.headers.get("Access-Control-Request-Headers")
             and self.request.headers.get("Access-Control-Request-Method")
+               # technically Access-Control-Request-Headers (ACRH) is
+               # optional, but we require the header x-requested-with,
+               # so ACRH will be present.
+            and self.request.headers.get("Access-Control-Request-Headers")
             and self.request.headers.get("Origin"))
 
     def handle_preflight(self):
@@ -721,6 +724,30 @@ class Client:
                                 status=http_.client.TOO_MANY_REQUESTS)
             return
 
+        # Handle CORS preflight request. We know rest is enabled
+        # because handle_rest is called. Preflight requests
+        # are unauthenticated, so no need to check permissions.
+        if (self.is_cors_preflight()):
+                # Origin header must be defined to get here
+            if self.is_origin_header_ok(api=True):
+                self.handle_preflight()
+            else:
+                # origin is not authorized for REST
+                msg = self._("Client is not allowed to use Rest Interface.")
+                output = s2b(
+                    '{ "error": { "status": 400, "msg": "%s" } }' % msg)
+                self.reject_request(output,
+                                message_type="application/json",
+                                status=400)
+            return
+
+        if not self.db.security.hasPermission('Rest Access', self.userid):
+            output = s2b('{ "error": { "status": 403, "msg": "Forbidden." } }')
+            self.reject_request(output,
+                                message_type="application/json",
+                                status=403)
+            return
+
         # verify Origin is allowed on all requests including GET.
         # If a GET, missing origin is allowed  (i.e. same site GET request)
         if not self.is_origin_header_ok(api=True):
@@ -751,20 +778,6 @@ class Client:
             # can be run AFAIK. So no IP address, just user.
             logger.error(err, {"user": self.user,
                                "origin": self.env.get('HTTP_ORIGIN', None)})
-            return
-
-        # Handle CORS preflight request. We know rest is enabled
-        # because handle_rest is called. Preflight requests
-        # are unauthenticated, so no need to check permissions.
-        if (self.is_cors_preflight()):
-            self.handle_preflight()
-            return
-
-        if not self.db.security.hasPermission('Rest Access', self.userid):
-            output = s2b('{ "error": { "status": 403, "msg": "Forbidden." } }')
-            self.reject_request(output,
-                                message_type="application/json",
-                                status=403)
             return
 
         self.check_anonymous_access()

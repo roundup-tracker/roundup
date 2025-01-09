@@ -1360,7 +1360,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             cl.additional_headers
         )
 
-        self.assertEqual(cl.response_code, 400)
+        self.assertEqual(cl.response_code, 403)
         del(out[0])
 
         # origin not set to allowed value

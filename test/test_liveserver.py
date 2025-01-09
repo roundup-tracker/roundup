@@ -711,10 +711,9 @@ class BaseTestCases(WsgiSetup, ClientSetup):
                                  "x-requested-with",
                              'Access-Control-Request-Method': "PUT",})
 
-        self.assertEqual(f.status_code, 400)
+        self.assertEqual(f.status_code, 403)
 
-        expected = ('{ "error": { "status": 400, "msg": "Required'
-                    ' Header Missing" } }')
+        expected = ('{ "error": { "status": 403, "msg": "Forbidden." } }')
         self.assertEqual(b2s(f.content), expected)
 
 
