@@ -67,6 +67,10 @@ Fixed:
   result, incorrectly formatted CORS preflight requests
   (e.g. missing Origin header) can now return HTTP status 403 as
   well as status 400. (John Rouillard)
+- issue2551387 - TypeError: not indexable. Fix crash due to
+  uninitialized list element on a (Mini)FieldStorage when unexpected
+  input is posted via wsgi. (Reported and debugged by Christof
+  Meerwald; fix John Rouillard)
 
 Features:
 

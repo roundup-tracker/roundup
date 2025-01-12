@@ -3,6 +3,7 @@ import unittest
 import shutil
 import sys
 import errno
+import logging
 
 from time import sleep
 from datetime import datetime, timedelta
@@ -75,6 +76,10 @@ NEEDS_INSTANCE = 1
 
 
 class TestCase():
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
 
     backend = None
     url_pfx = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/'
@@ -291,7 +296,8 @@ class TestCase():
             'HTTP_ORIGIN': 'http://tracker.example'
         }
         self.dummy_client = client.Client(self.instance, MockNull(),
-                                          self.client_env, [], None)
+                                          self.client_env,
+                                          cgi.FieldStorage(), None)
         self.dummy_client.request.headers.get = self.get_header
         self.dummy_client.db = self.db
 
@@ -2293,6 +2299,30 @@ class TestCase():
             else:
                 self.assertNotIn("X-Content-Type-Options", 
                               self.server.client.additional_headers)
+
+    def testBadFormAttributeErrorException(self):
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+
+
+        with self._caplog.at_level(logging.ERROR, logger="roundup"):
+            with self.assertRaises(AttributeError) as exc:
+                self.dummy_client = client.Client(
+                    self.instance, MockNull(), env, [], None)
+
+        self.assertEqual(exc.exception.args[0],
+                         "'list' object has no attribute 'list'")
+
+        # log should look like (with string not broken into parts):
+        #    [('roundup', 40, 
+        #       'Invalid self.form found (please report to the '
+        #       'roundup-users mailing list): []')]
+        log = self._caplog.record_tuples[:]
+        self.assertIn("Invalid self.form found", log[0][2])
 
     def testDispatchBadAccept(self):
         # simulate: /rest/data/issue expect failure unknown accept settings
@@ -4508,8 +4538,9 @@ class TestCase():
             'TRACKER_NAME': 'rounduptest',
             "REQUEST_METHOD": "GET"
         }
+
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4517,7 +4548,6 @@ class TestCase():
         self.terse_form.list = [
             cgi.MiniFieldStorage('@verbose', '0'),
         ]
-        self.dummy_client.form = cgi.FieldStorage()
         self.dummy_client.form.list = [
             cgi.MiniFieldStorage('@fields', 'username,address'),
         ]
@@ -4575,7 +4605,7 @@ class TestCase():
         )
 
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4645,7 +4675,7 @@ class TestCase():
         }
 
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4710,7 +4740,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4781,7 +4811,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4849,7 +4879,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4891,7 +4921,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4930,7 +4960,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4966,7 +4996,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -5003,7 +5033,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -5039,7 +5069,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                           cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()

@@ -333,6 +333,18 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         self.assertEqual(cookie._rest['HttpOnly'], None)  # flag is present
         self.assertEqual(cookie._rest['SameSite'], 'Lax')
 
+    def test_bad_post_data(self):
+        """issue2551387 - bad post data causes TypeError: not indexable
+        """
+        session, _response = self.create_login_session()
+
+        h = {"Content-Type": "text/plain"}
+        response = session.post(self.url_base()+'/', headers=h, data="test")
+        print(response.status_code)
+        print(response.headers)
+        print(response.text)
+        self.assertEqual(response.status_code, 200)
+
     def test_query(self):
         current_user_query = (
             "@columns=title,id,activity,status,assignedto&"

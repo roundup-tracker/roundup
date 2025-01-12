@@ -1870,8 +1870,11 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         def wh(s):
             out.append(s)
 
-        # xmlrpc has no form content
-        form = {}
+        # create form for xmlrpc from string
+        form = db_test_base.makeFormFromString('xyzzy',
+                                               {"REQUEST_METHOD": "POST",
+                                               "CONTENT_TYPE": "text/json"})
+
         cl = client.Client(self.instance, None,
                            {'REQUEST_METHOD':'POST',
                             'PATH_INFO':'xmlrpc',

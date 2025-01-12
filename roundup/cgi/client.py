@@ -504,12 +504,25 @@ class Client:
             # It's a workaround for a bug in cgi.FieldStorage. See class
             # def for details.
             self.form = BinaryFieldStorage(fp=request.rfile, environ=env)
-            # In some case (e.g. content-type application/xml), cgi
-            # will not parse anything. Fake a list property in this case
-            if self.form.list is None:
-                self.form.list = []
         else:
             self.form = form
+
+        # When the CONTENT-TYPE is not 'application/x-www-form-urlencoded':
+        # or multipart/*, cgi.(Mini)FieldStorage sets the list property to
+        # None. Initialize an empty list property in this case so we can
+        # query the list in all cases.
+        try:
+            if (self.form.list is None):
+                self.form.list = []
+        except AttributeError:
+            # self.form should always be some type of
+            # FieldStorage. If we get an AttributeError,
+            # print what the form is.
+            # FIXME: plan on removing this in 2028 to improve
+            # performance if there are no reports of it being triggered.
+            logger.error(("Invalid self.form found (please report "
+                         "to the roundup-users mailing list): %s") % self.form)
+            raise
 
         # turn debugging on/off
         try:

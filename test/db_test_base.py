@@ -30,6 +30,14 @@ from . import gpgmelib
 from email import message_from_string
 
 import pytest
+
+try:
+    from StringIO import cStringIO as IOBuff
+except ImportError:
+    # python 3
+    from io import BytesIO as IOBuff
+
+from roundup.cgi.client import BinaryFieldStorage
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node, Integer
 from roundup.mailer import Mailer
@@ -43,7 +51,7 @@ from roundup.cgi.templating import HTMLItem
 from roundup.exceptions import UsageError, Reject
 from roundup.mlink_expr import ExpressionError
 
-from roundup.anypy.strings import b2s, s2b, u2s
+from roundup.anypy.strings import b2s, bs2b, s2b, u2s
 from roundup.anypy.cmp_ import NoneAndDictComparable
 from roundup.anypy.email_ import message_from_bytes
 
@@ -4340,6 +4348,14 @@ class HTMLItemTest(ClassicInitBase):
         ae(bool(issue ['priority']['name']),False)
 
 def makeForm(args):
+    """ Takes a dict of form elements or a FieldStorage.
+
+         FieldStorage is just returned so you can pass the result from
+         makeFormFromString through it cleanly.
+    """
+    if isinstance(args, cgi.FieldStorage):
+        return args
+
     form = cgi.FieldStorage()
     for k,v in args.items():
         if type(v) is type([]):
@@ -4350,6 +4366,33 @@ def makeForm(args):
             form.list.append(x)
         else:
             form.list.append(cgi.MiniFieldStorage(k, v))
+    return form
+
+def makeFormFromString(bstring, env=None):
+    """used for generating a form that looks like a rest or xmlrpc
+       payload. Takes a binary or regular string and stores
+       it in a FieldStorage object.
+
+       :param: bstring - binary or regular string
+       :param" env - dict of environment variables. Names/keys
+               must be uppercase.
+                  e.g. {"REQUEST_METHOD": "DELETE"}
+
+       Ideally this would be part of makeForm, but the env dict
+       is needed here to allow FieldStorage to properly define
+       the resulting object.
+    """
+    rfile=IOBuff(bs2b(bstring))
+
+    # base headers required for BinaryFieldStorage/FieldStorage
+    e = {'REQUEST_METHOD':'POST',
+         'CONTENT_TYPE': 'text/xml',
+         'CONTENT_LENGTH': str(len(bs2b(bstring)))
+         }
+    if env:
+        e.update(env)
+
+    form = BinaryFieldStorage(fp=rfile, environ=e)
     return form
 
 class FileUpload:
