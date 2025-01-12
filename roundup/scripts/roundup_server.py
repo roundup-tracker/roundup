@@ -282,6 +282,15 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             exc, val, tb = sys.exc_info()
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
                 self.log_error('timeout')
+                self.send_response(408)
+                self.send_header('Content-Type', 'text/html')
+
+                output = s2b('''<body><p>Connection timed out</p></body>''')
+                # Close connection
+                self.send_header('Content-Length', len(output))
+                self.end_headers()
+                self.wfile.write(output)
+                self.close_connection = True
             else:
                 self.send_response(400)
                 self.send_header('Content-Type', 'text/html')

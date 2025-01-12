@@ -71,6 +71,9 @@ Fixed:
   uninitialized list element on a (Mini)FieldStorage when unexpected
   input is posted via wsgi. (Reported and debugged by Christof
   Meerwald; fix John Rouillard)
+- close http socket and send a 408 status when a timeout exception
+  is handed in roundup-server. This prevents another exception
+  caused by using a timed out socket. (John Rouillard)
 
 Features:
 
