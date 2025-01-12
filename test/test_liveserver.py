@@ -225,12 +225,17 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
 
     _max_examples = 100
 
+    # Timeout for each fuzz test in ms. Use env variable in local
+    # pytest.ini if your dev environment can't complete in the default
+    # 10 seconds.
+    fuzz_deadline = int(os.environ.get('pytest_fuzz_timeout', 0)) or 10000
+
     @given(sampled_from(['@verbose', '@page_size', '@page_index']),
            text(min_size=1))
     @example("@verbose", "1#")
     @example("@verbose", "#1stuff")
     @settings(max_examples=_max_examples,
-              deadline=10000) # in ms
+              deadline=fuzz_deadline) # in ms
     def test_class_url_param_accepting_integer_values(self, param, value):
         """Tests all integer args for rest url. @page_* is the
            same code for all *.
@@ -258,7 +263,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
     @example("@verbose", "10#")
     @example("@verbose", u'Ø\U000dd990')
     @settings(max_examples=_max_examples,
-              deadline=10000) # in ms
+              deadline=fuzz_deadline) # in ms
     def test_element_url_param_accepting_integer_values(self, param, value):
         """Tests args accepting int for rest url.
         """
@@ -281,10 +286,20 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
                 # invalid value for param
                 self.assertEqual(f.status_code, 400)
 
+@skip_hypothesis
+class FuzzTestSettingData(WsgiSetup, ClientSetup):
+
+    _max_examples = 100
+
+    # Timeout for each fuzz test in ms. Use env variable in local
+    # pytest.ini if your dev environment can't complete in the default
+    # 10 seconds.
+    fuzz_deadline = int(os.environ.get('pytest_fuzz_timeout', 0)) or 10000
+
     @given(emails())
     @settings(max_examples=_max_examples,
-              deadline=10000) # in ms
-    def test_email_param(self,email):
+              deadline=fuzz_deadline) # in ms
+    def test_setting_email_param(self,email):
         session, _response = self.create_login_session()
         url = '%s/rest/data/user/1/address' % (self.url_base())
         headers = {"Accept": "application/json",
