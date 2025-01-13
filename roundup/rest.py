@@ -2277,15 +2277,17 @@ class RestfulInstance(object):
         if ext_type and (len(ext_type) < MAX_MIME_EXTENSION_LENGTH):
             if ext_type not in list(self.__accepted_content_type.values()):
                 self.client.response_code = 406
-                return (None, uri,
-                        self.error_obj(
-                            406,
-                            _("Content type '%s' requested in URL is "
-                             "not available.\nAcceptable types: %s\n") %
-                            (ext_type,
-                             ", ".join(sorted(
-                                 set(self.__accepted_content_type.values()))))))
-
+                return (
+                    None, uri,
+                    self.error_obj(
+                        406,
+                        _("Content type '%(requested)s' requested in URL is"
+                          "not available.\nAcceptable types: "
+                          "%(acceptable)s\n") %
+                        { "requested": ext_type,
+                          "acceptable": ", ".join(sorted(
+                              set(self.__accepted_content_type.values())))}))
+            
             # strip extension so uri makes sense.
             # E.G. .../issue.json -> .../issue
             uri = uri[:-(len(ext_type) + 1)]
@@ -2408,20 +2410,24 @@ class RestfulInstance(object):
             return (None, uri,
                     self.error_obj(
                         406,
-                        _("Requested content type(s) '%s' not available.\n"
-                          "Acceptable mime types are: */*, %s") %
-                        (self.client.request.headers.get('Accept'),
-                         ", ".join(sorted(
-                             valid_binary_content_types)))))
+                        _("Requested content type(s) '%(requested)s' not "
+                          "available.\nAcceptable mime types are: */*, "
+                          "%(acceptable)s") %
+                        {"requested":
+                         self.client.request.headers.get('Accept'),
+                         "acceptable": ", ".join(sorted(
+                             valid_binary_content_types))}))
 
         return (None, uri,
                 self.error_obj(
                     406,
-                    _("Requested content type(s) '%s' not available.\n"
-                      "Acceptable mime types are: */*, %s") %
-                    (self.client.request.headers.get('Accept'),
-                     ", ".join(sorted(
-                         self.__accepted_content_type.keys())))))
+                    _("Requested content type(s) '%(requested)s' not "
+                      "available.\nAcceptable mime types are: */*, "
+                      "%(acceptable)s") %
+                    {"requested":
+                     self.client.request.headers.get('Accept'),
+                     "acceptable": ", ".join(sorted(
+                         self.__accepted_content_type.keys()))}))
 
     def dispatch(self, method, uri, input_payload):
         """format and process the request"""
