@@ -1677,8 +1677,8 @@ class Client:
             if 'HTTP_X_REQUESTED_WITH' not in self.env:
                 logger.error(self._(
                     ''"csrf X-REQUESTED-WITH xmlrpc required header "
-                    ''"check failed for user%s."),
-                             current_user)
+                    ''"check failed for user%(userid)s."),
+                    {"userid": current_user})
                 raise UsageError(self._("Required Header Missing"))
 
         # Expire old csrf tokens now so we don't use them.  These will
@@ -1717,14 +1717,16 @@ class Client:
         if key is None:  # we do not have an @csrf token
             if enforce == 'required':
                 logger.error(self._(
-                    "Required csrf field missing for user%s"), current_user)
+                    "Required csrf field missing for user%(userid)s"),
+                             {"userid": current_user})
                 raise UsageError(self._(
                     ''"We can't validate your session (csrf failure). "
                     ''"Re-enter any unsaved data and try again."))
             if enforce == 'logfailure':
                 # FIXME include url
-                logger.warning(self._("csrf field not supplied by user%s"),
-                               current_user)
+                logger.warning(self._(
+                    "csrf field not supplied by user%(userid)s"),
+                    {"userid": current_user})
             else:
                 # enforce is either yes or no. Both permit change if token is
                 # missing
