@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 2.5.0\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2024-12-30 22:49-0500\n"
+"POT-Creation-Date: 2025-01-12 20:17-0500\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: alexander smishlajev <alex@tycobka.lv>\n"
 "Language-Team: Russian\n"
@@ -2102,154 +2102,155 @@ msgstr ""
 "Администратору трекера отослано сообщение об ошибке.</p>\n"
 "</body></html>"
 
-#: ../roundup/cgi/client.py:666
+#: ../roundup/cgi/client.py:679
 msgid ""
 "XMLRPC endpoint is not using defusedxml. Improve security by installing "
 "defusedxml."
 msgstr ""
 
-#: ../roundup/cgi/client.py:728 ../roundup/cgi/client.py:1646
-#: ../roundup/cgi/client.py:728:1646
-msgid "Required Header Missing"
-msgstr ""
-
-#: ../roundup/cgi/client.py:731
+#: ../roundup/cgi/client.py:749 ../roundup/cgi/client.py:771
+#: ../roundup/cgi/client.py:749:771
 #, fuzzy
 msgid "Client is not allowed to use Rest Interface."
 msgstr "Анонимным пользователям не разрешено пользоваться веб-интерфейсом."
 
-#: ../roundup/cgi/client.py:985
+#: ../roundup/cgi/client.py:768 ../roundup/cgi/client.py:1682
+#: ../roundup/cgi/client.py:768:1682
+msgid "Required Header Missing"
+msgstr ""
+
+#: ../roundup/cgi/client.py:1021
 msgid "Form Error: "
 msgstr "Ошибка формы: "
 
-#: ../roundup/cgi/client.py:1078
+#: ../roundup/cgi/client.py:1114
 #, python-format
 msgid "Unrecognized charset: %r"
 msgstr "Кодировка %r не распознана"
 
-#: ../roundup/cgi/client.py:1345 ../roundup/cgi/client.py:2357
-#: ../roundup/cgi/client.py:1345:2357
+#: ../roundup/cgi/client.py:1381 ../roundup/cgi/client.py:2394
+#: ../roundup/cgi/client.py:1381:2394
 msgid "broken form: multiple @action values submitted"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1362
+#: ../roundup/cgi/client.py:1398
 msgid "Anonymous users are not allowed to use the web interface"
 msgstr "Анонимным пользователям не разрешено пользоваться веб-интерфейсом."
 
-#: ../roundup/cgi/client.py:1507
+#: ../roundup/cgi/client.py:1543
 msgid "Referer header not available."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1511
+#: ../roundup/cgi/client.py:1547
 #, python-format
 msgid "csrf key used with wrong method from: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1540
+#: ../roundup/cgi/client.py:1576
 #, python-format
 msgid "csrf header %(header)s required but missing for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1544
+#: ../roundup/cgi/client.py:1580
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1552
+#: ../roundup/cgi/client.py:1588
 #, python-format
 msgid "csrf Referer header check failed for user%(userid)s. Value=%(referer)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1557
+#: ../roundup/cgi/client.py:1593
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
 msgstr "Неправильный пароль или имя пользователя."
 
-#: ../roundup/cgi/client.py:1572
+#: ../roundup/cgi/client.py:1608
 #, python-format
 msgid "csrf Origin header check failed for user%(userid)s. Value=%(origin)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1577
+#: ../roundup/cgi/client.py:1613
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Неправильный пароль или имя пользователя."
 
-#: ../roundup/cgi/client.py:1591
+#: ../roundup/cgi/client.py:1627
 #, python-format
 msgid ""
 "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1597
+#: ../roundup/cgi/client.py:1633
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1616
+#: ../roundup/cgi/client.py:1652
 #, python-format
 msgid "csrf HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1621
+#: ../roundup/cgi/client.py:1657
 #, python-format
 msgid "Invalid HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1629
+#: ../roundup/cgi/client.py:1665
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1630
+#: ../roundup/cgi/client.py:1666
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1643
+#: ../roundup/cgi/client.py:1679
 #, python-format
 msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1684
+#: ../roundup/cgi/client.py:1720
 #, python-format
 msgid "Required csrf field missing for user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1686 ../roundup/cgi/client.py:1713
-#: ../roundup/cgi/client.py:1730 ../roundup/cgi/client.py:1686:1713:1730
+#: ../roundup/cgi/client.py:1722 ../roundup/cgi/client.py:1749
+#: ../roundup/cgi/client.py:1766 ../roundup/cgi/client.py:1722:1749:1766
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1690
+#: ../roundup/cgi/client.py:1726
 #, python-format
 msgid "csrf field not supplied by user%s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1702
+#: ../roundup/cgi/client.py:1738
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
 "session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1720
+#: ../roundup/cgi/client.py:1756
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %(curr_sess)s != stored session "
 "%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1912
+#: ../roundup/cgi/client.py:1948
 msgid "You are not allowed to view this file."
 msgstr "У вас нет разрешения на просмотр этого файла."
 
-#: ../roundup/cgi/client.py:2235
+#: ../roundup/cgi/client.py:2272
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sЗатраченное время: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2239
+#: ../roundup/cgi/client.py:2276
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -2259,7 +2260,7 @@ msgstr ""
 "%(cache_misses)d. Загрузка объектов: %(get_items)f сек. Фильтрация: "
 "%(filtering)f сек.%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2778
+#: ../roundup/cgi/client.py:2815
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -3104,35 +3105,35 @@ msgstr "Неправильный пароль или имя пользователя."
 msgid "Api rate limits exceeded. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/rest.py:2283
+#: ../roundup/rest.py:2284
 #, python-format
 msgid ""
-"Content type '%s' requested in URL is not available.\n"
-"Acceptable types: %s\n"
+"Content type '%(requested)s' requested in URL is not available.\n"
+"Acceptable types: %(acceptable)s\n"
 msgstr ""
 
-#: ../roundup/rest.py:2304
+#: ../roundup/rest.py:2306
 #, python-format
 msgid ""
 "Unable to parse Accept Header. %(error)s. Acceptable types: */*, "
 "%(acceptable_types)s"
 msgstr ""
 
-#: ../roundup/rest.py:2376 ../roundup/rest.py:2597 ../roundup/rest.py:2376:2597
+#: ../roundup/rest.py:2378 ../roundup/rest.py:2603 ../roundup/rest.py:2378:2603
 #, python-format
 msgid ""
 "Unrecognized api version: %s. See /rest without specifying api version for "
 "supported versions."
 msgstr ""
 
-#: ../roundup/rest.py:2411 ../roundup/rest.py:2420 ../roundup/rest.py:2411:2420
+#: ../roundup/rest.py:2413 ../roundup/rest.py:2424 ../roundup/rest.py:2413:2424
 #, python-format
 msgid ""
-"Requested content type(s) '%s' not available.\n"
-"Acceptable mime types are: */*, %s"
+"Requested content type(s) '%(requested)s' not available.\n"
+"Acceptable mime types are: */*, %(acceptable)s"
 msgstr ""
 
-#: ../roundup/rest.py:2696
+#: ../roundup/rest.py:2702
 msgid ""
 "Internal error while formatting response.\n"
 "accept_mime_type is not defined. This should\n"
@@ -3326,7 +3327,7 @@ msgid ""
 "  '-----END CERTIFICATE-----' markers?"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:345
+#: ../roundup/scripts/roundup_server.py:354
 msgid ""
 "<html><head><title>Roundup trackers index</title></head>\n"
 "<body><h1>Roundup trackers index</h1><ol>\n"
@@ -3334,62 +3335,62 @@ msgstr ""
 "<html><head><title>Список трекеров Roundup</title></head>\n"
 "<body><h1>Список трекеров Roundup</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:587
+#: ../roundup/scripts/roundup_server.py:598
 #, fuzzy, python-format
 msgid "Error: %(type)s: %(value)s"
 msgstr "%(key)s: %(value)s (ключевой атрибут)"
 
-#: ../roundup/scripts/roundup_server.py:599
+#: ../roundup/scripts/roundup_server.py:610
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr ""
 "ВНИМАНИЕ: параметр \"-g\" не используется, он разрешен только для "
 "пользователя root"
 
-#: ../roundup/scripts/roundup_server.py:605
+#: ../roundup/scripts/roundup_server.py:616
 msgid "Can't change groups - no grp module"
 msgstr "Подмена группы невозможна - нужен модуль grp"
 
-#: ../roundup/scripts/roundup_server.py:614
+#: ../roundup/scripts/roundup_server.py:625
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr "Группа %(group)s не существует"
 
-#: ../roundup/scripts/roundup_server.py:626
+#: ../roundup/scripts/roundup_server.py:637
 msgid "Can't run as root!"
 msgstr "Запуск сервера с полномочиями пользователя root запрещен!"
 
-#: ../roundup/scripts/roundup_server.py:629
+#: ../roundup/scripts/roundup_server.py:640
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr ""
 "ВНИМАНИЕ: параметр \"-u\" не используется, он разрешен только для "
 "пользователя root"
 
-#: ../roundup/scripts/roundup_server.py:635
+#: ../roundup/scripts/roundup_server.py:646
 msgid "Can't change users - no pwd module"
 msgstr "Подмена пользователя невозможна - нужен модуль pwd"
 
-#: ../roundup/scripts/roundup_server.py:644
+#: ../roundup/scripts/roundup_server.py:655
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr "Пользователь %(user)s не существует"
 
-#: ../roundup/scripts/roundup_server.py:856
+#: ../roundup/scripts/roundup_server.py:867
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr "Режим \"%s\" недоступен, переключаемся в однозадачный режим"
 
-#: ../roundup/scripts/roundup_server.py:884
+#: ../roundup/scripts/roundup_server.py:895
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Невозможно установить сервер на порту %s, порт уже занят."
 
-#: ../roundup/scripts/roundup_server.py:888
+#: ../roundup/scripts/roundup_server.py:899
 #, fuzzy, python-format
 msgid ""
 "Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
 msgstr "Невозможно установить сервер на порту %s, порт уже занят."
 
-#: ../roundup/scripts/roundup_server.py:967
+#: ../roundup/scripts/roundup_server.py:978
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -3406,7 +3407,7 @@ msgstr ""
 "               файл протокола.  Команда 'roundup-server -c help'\n"
 "               выдает справку о командной строке сервиса Windows."
 
-#: ../roundup/scripts/roundup_server.py:974
+#: ../roundup/scripts/roundup_server.py:985
 #, fuzzy
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
@@ -3422,7 +3423,7 @@ msgstr ""
 "               и запустить сервер в фоновом режиме.  Если указано \"-d\",\n"
 "               файл протокола *обязательно* должен быть задан ключом \"-l\""
 
-#: ../roundup/scripts/roundup_server.py:982
+#: ../roundup/scripts/roundup_server.py:993
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -3551,21 +3552,21 @@ msgstr ""
 "   не могут использоваться в URL (пробелы, русские буквы и проч.),\n"
 "   потому что такие имена сбивают с толку некоторые браузеры типа IE.\n"
 
-#: ../roundup/scripts/roundup_server.py:1162
+#: ../roundup/scripts/roundup_server.py:1173
 msgid "Instances must be name=home"
 msgstr "Список трекеров должен быть в формате имя=каталог"
 
-#: ../roundup/scripts/roundup_server.py:1176
+#: ../roundup/scripts/roundup_server.py:1187
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Конфигурация записана в %s"
 
-#: ../roundup/scripts/roundup_server.py:1194
+#: ../roundup/scripts/roundup_server.py:1205
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Извините, в этой операционной системе работа в фоновом режиме невозможна"
 
-#: ../roundup/scripts/roundup_server.py:1214
+#: ../roundup/scripts/roundup_server.py:1225
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Сервер Roundup готов к работе по адресу %(HOST)s:%(PORT)s"
