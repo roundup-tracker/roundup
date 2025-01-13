@@ -3,7 +3,7 @@ all:  man_html tracker_config.txt admin_help.html ## make all docs under share
 	cd ..; ./setup.py build_doc
 
 ##@ build doc parts
-tracker_config.txt: ../roundup/configuration.py ## generate a current config file
+tracker_config.txt: ../roundup/configuration.py format_config.awk ## generate a current config file
 
 	python3 ../roundup/scripts/roundup_admin.py \
                genconfig _temp_config.txt

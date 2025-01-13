@@ -166,8 +166,9 @@
   csv_field_size = 131072
 
   # Sets the default number of rounds used when encoding passwords
-  # using the PBKDF2 scheme. Set this to a higher value on faster
-  # systems which want more security.
+  # using any PBKDF2 scheme. Set this to a higher value on faster
+  # systems which want more security. Use a minimum of 250000
+  # for PBKDF2-SHA512 which is the default hash in Roundup 2.5.
   # PBKDF2 (Password-Based Key Derivation Function) is a
   # password hashing mechanism that derives hash from the
   # password and a random salt. For authentication this process
@@ -180,8 +181,8 @@
   # become faster. The currently enforced minimum number of
   # rounds is 1000.
   # See: http://en.wikipedia.org/wiki/PBKDF2 and RFC2898
-  # Default: 2000000
-  password_pbkdf2_default_rounds = 2000000
+  # Default: 250000
+  password_pbkdf2_default_rounds = 250000
 
 .. index:: config.ini; sections tracker
 .. _`config-ini-section-tracker`:
@@ -460,7 +461,7 @@
   #     the user if the header is missing or invalid.
   # Set this to 'yes' to block the post and notify the user
   #     if the header is invalid, but accept the form if
-  #     the field is missing.
+  #     the header is missing.
   # Set this to 'logfailure' to log a notice to the roundup
   #     log if the header is invalid or missing, but accept
   #     the post.
@@ -475,7 +476,7 @@
   #     the user if the header is missing or invalid.
   # Set this to 'yes' to block the post and notify the user
   #     if the header is invalid, but accept the form if
-  #     the field is missing.
+  #     the header is missing.
   # Set this to 'logfailure' to log a notice to the roundup
   #     log if the header is invalid or missing, but accept
   #     the post.
@@ -513,7 +514,7 @@
   #     the user if the header is missing or invalid.
   # Set this to 'yes' to block the post and notify the user
   #     if the header is invalid, but accept the form if
-  #     the field is missing.
+  #     the header is missing.
   # Set this to 'logfailure' to log a notice to the roundup
   #     log if the header is invalid or missing, but accept
   #     the post.
@@ -529,7 +530,7 @@
   #     the user if the header is missing or invalid.
   # Set this to 'yes' to block the post and notify the user
   #     if the header is invalid, but accept the form if
-  #     the field is missing.
+  #     the header is missing.
   # Set this to 'logfailure' to log a notice to the roundup
   #     log if the header is invalid or missing, but accept
   #     the post.
@@ -628,8 +629,8 @@
 .. code:: ini
 
   
-  # Settings in this section (except for backend) are used
-  #  by RDBMS backends only.
+  # Most settings in this section (except for backend and debug_filter)
+  # are used by RDBMS backends only.
 
   [rdbms]
 
@@ -637,6 +638,20 @@
   # Available backends: anydbm, mysql, sqlite, postgresql
   # Default: NO DEFAULT
   #backend = NO DEFAULT
+
+  # Filter debugging: Permissions can define additional filter
+  # functions that are used when checking permissions on results
+  # returned by the database. This is done to improve
+  # performance since the filtering is done in the database
+  # backend, not in python (at least for the SQL backends). The
+  # user is responsible for making the filter return the same
+  # set of results as the check function for a permission. So it
+  # makes sense to aid in debugging (and performance
+  # measurements) to allow turning off the usage of filter
+  # functions using only the check functions.
+  # Allowed values: yes, no
+  # Default: no
+  debug_filter = no
 
   # Name of the database to use. For Postgresql, this can
   # be database.schema to use a specific schema within

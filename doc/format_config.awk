@@ -1,7 +1,13 @@
 #! /bin/awk
+BEGIN {SECRET_KEY = "DWmbKgVUy6fF5D2Y5TD5Az+dnHhMYKCCpJzIY3H8nsU="}
 
 # delete first 8 lines
 NR < 9 {next}
+
+# To prevent new file generation from causing the secret_key to
+# change, we replace the secret key with a fixed value.
+/^# Default: [0-9A-z+=]{44}/ {sub(/[0-9A-z+=]{44}/, SECRET_KEY)}
+/^secret_key = [0-9A-z+=]{44}/ {sub(/[0-9A-z+=]{44}/, SECRET_KEY)}
 
 # When we see a section [label]:
 #  emit section index marker,
@@ -43,3 +49,4 @@ NR < 9 {next}
 /^$/ { if (! prev_line_is_blank) {accumulate = accumulate $0};
        prev_line_is_blank = 1;
      }
+
