@@ -528,7 +528,7 @@ to::
       self.form_wins = True
       self.add_error_message(' '.join(msg.args))
 
-This escapes the Referer value an prevents it from being
+This escapes the Referer value and prevents it from being
 executed.
 
 .. _CVE-2024-39126:
