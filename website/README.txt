@@ -57,6 +57,17 @@ to free resources:
 
 updating www.roundup-tracker.org
 ---------------------------------
+Note that sourceforge still only has python2 available on it's
+systems. Doc updates probably need to be done by building on local
+machine using modern Sphinx (7.x or greater) and the generated files
+pushed to the website.
+
+Also the files htdocs/ahref* and htdocs/google* have to be copied from
+the current production tree to the new directory so we keep some level
+of analytics.
+
+-----
+
 Site update requires rebuilding HTML files. For that
 `sphinx` is required/
 Hopefully, it is already installed into virtualenv, so
