@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Thu Oct 17 23:16:02 2024 -->
+<!-- CreationDate: Sun Jan 12 22:28:09 2025 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -78,6 +78,21 @@ background and write the server&rsquo;s PID to the file
 indicated by PIDfile. The -l (or -L) option <b>must</b> be
 specified if -d is used.</p>
 
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+
+<p><b>-D</b></p></td>
+<td width="8%"></td>
+<td width="78%">
+
+
+<p>Run the server in the foreground even if -d is used.</p></td></tr>
+</table>
+
 <p style="margin-left:11%;"><b>-t
 fork|thread|debug|none</b></p>
 
@@ -101,6 +116,28 @@ used.</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+
+<p><b>-P</b></p></td>
+<td width="8%"></td>
+<td width="78%">
+
+
+<p>If a reverse proxy is used in front of the
+roundup-server, the server will log the ip address of the
+proxy, not the client browser. Using -P logs the left most
+entry in the X-Forwarded-For http header as the IP address
+of the client. This address will be logged or resolved to a
+hostname (with <b>-N</b>) and a &rsquo;+&rsquo; character
+will be appended. <b>-P</b> should only be used when the
+roundup server is accessible only from trusted proxy hosts.
+See:
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
+for details and warnings about using the X-Forwarded-For
+header.</p> </td></tr>
 <tr valign="top" align="left">
 <td width="11%"></td>
 <td width="3%">
