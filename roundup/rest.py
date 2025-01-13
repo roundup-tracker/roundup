@@ -2281,7 +2281,7 @@ class RestfulInstance(object):
                     None, uri,
                     self.error_obj(
                         406,
-                        _("Content type '%(requested)s' requested in URL is"
+                        _("Content type '%(requested)s' requested in URL is "
                           "not available.\nAcceptable types: "
                           "%(acceptable)s\n") %
                         { "requested": ext_type,
