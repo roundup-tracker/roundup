@@ -350,14 +350,15 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
                                2345678.2345678)
         self.assertEqual(p.field(),
-                         ('<input name="testnum1@test" size="30" type="text" '
+                         ('<input id="testnum1@test" name="testnum1@test" size="30" type="text" '
                          'value="%s">')%expected_val)
         self.assertEqual(p.field(size=10),
-                         ('<input name="testnum1@test" size="10" type="text" '
+                         ('<input id="testnum1@test" name="testnum1@test" size="10" type="text" '
                          'value="%s">')%expected_val)
         self.assertEqual(p.field(size=10, dataprop="foo", dataprop2=5),
                          ('<input dataprop="foo" dataprop2="5" '
-                          'name="testnum1@test" size="10" type="text" '
+                          'id="testnum1@test" name="testnum1@test" '
+                          'size="10" type="text" '
                           'value="%s">'%expected_val))
 
         self.assertEqual(p.field(size=10, klass="class1", 
@@ -365,7 +366,8 @@ class HTMLClassTestCase(TemplatingTestCase) :
                                      "data-prop": "foo",
                                      "data-prop2": 5}),
                          ('<input class="class2 class3" data-prop="foo" '
-                          'data-prop2="5" klass="class1" '
+                          'data-prop2="5" id="testnum1@test" '
+                          'klass="class1" '
                           'name="testnum1@test" size="10" type="text" '
                           'value="%s">')%expected_val)
 
@@ -377,8 +379,8 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
                                "2345678.2345678")
         self.assertEqual(p.field(),
-                         ('<input name="testnum1@test" size="30" type="text" '
-                          'value="2345678.2345678">'))
+                         ('<input id="testnum1@test" name="testnum1@test" '
+                          'size="30" type="text" value="2345678.2345678">'))
 
         # test with None value, pretend property.__default_value = Null which
         #    is the default. It would be returned by get_default_value
@@ -387,8 +389,8 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
                                'test', None)
         self.assertEqual(p.field(),
-                         ('<input name="testnum1@test" size="30" type="text" '
-                          'value="">'))
+                         ('<input id="testnum1@test" name="testnum1@test" '
+                         'size="30" type="text" value="">'))
 
     def test_number_plain(self):
         import sys
@@ -570,7 +572,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
     def test_string_field(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
-        self.assertEqual(p.field(), '<input name="test1@test" size="30" type="text" value="A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;">')
+        self.assertEqual(p.field(), '<input id="test1@test" name="test1@test" size="30" type="text" value="A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;">')
 
     def test_string_multiline(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
@@ -746,7 +748,7 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
         self.assertIs(type(d._value), str)
         self.assertEqual(d.pretty(), "2021-01-01 11:22:10")
         self.assertEqual(d.plain(), "2021-01-01 11:22:10")
-        input = """<input name="test1@test" size="30" type="text" value="2021-01-01 11:22:10"><a class="classhelp" data-calurl="test?@template=calendar&amp;amp;property=test&amp;amp;form=itemSynopsis&amp;date=2021-01-01 11:22:10" data-height="200" data-width="300" href="javascript:help_window('test?@template=calendar&amp;property=test&amp;form=itemSynopsis&date=2021-01-01 11:22:10', 300, 200)">(cal)</a>"""
+        input = """<input id="test1@test" name="test1@test" size="30" type="text" value="2021-01-01 11:22:10"><a class="classhelp" data-calurl="test?@template=calendar&amp;amp;property=test&amp;amp;form=itemSynopsis&amp;date=2021-01-01 11:22:10" data-height="200" data-width="300" href="javascript:help_window('test?@template=calendar&amp;property=test&amp;form=itemSynopsis&date=2021-01-01 11:22:10', 300, 200)">(cal)</a>"""
         self.assertEqual(d.field(), input)
 
 # common markdown test cases

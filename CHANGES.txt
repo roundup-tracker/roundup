@@ -74,6 +74,9 @@ Fixed:
 - close http socket and send a 408 status when a timeout exception
   is handed in roundup-server. This prevents another exception
   caused by using a timed out socket. (John Rouillard)
+- issue2551391, partial fix for issue1513369. input fields were
+  not getting id's assigned. Fixed automatic id assignment to
+  input fields. Thinko in the code. (John Rouillard)
 
 Features:
 

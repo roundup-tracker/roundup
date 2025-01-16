@@ -1503,9 +1503,9 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         self.assertIn(b'done-cbb', f.content)
 
         if user == 'admin':
-            self.assertIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
+            self.assertIn(b'<input id="submit_button" name="submit_button" type="submit" value="Submit Changes">', f.content)
         else:
-            self.assertNotIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
+            self.assertNotIn(b'<input id="submit_button" name="submit_button" type="submit" value="Submit Changes">', f.content)
 
         # logout
         f = session.get(self.url_base()+'/?@action=logout')

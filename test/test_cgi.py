@@ -950,7 +950,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
           <p>deferred</p>
           <p>admin, anonymous</p>
           <p></p>
-          <p><input name="superseder" size="30" type="text" value="5000"></p>
+          <p><input id="superseder" name="superseder" size="30" type="text" value="5000"></p>
          </body>
         </html>
         """.strip ())

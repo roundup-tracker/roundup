@@ -607,7 +607,7 @@ def _set_input_default_args(dic):
     # useful e.g for HTML LABELs:
     if 'id' not in dic:
         try:
-            if dic['text'] in ('radio', 'checkbox'):
+            if dic['type'] in ('radio', 'checkbox'):
                 dic['id'] = '%(name)s-%(value)s' % dic
             else:
                 dic['id'] = dic['name']
