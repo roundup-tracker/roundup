@@ -13,7 +13,8 @@ help:
 # fix that in postprocess
 # also sed index.html to properly format meta og:... entries.
 html: doc_links  ## make standalone HTML files
-	rm -rf html
+	if [ -z "${KEEP_HTML}" ]; then rm -rf html; fi
+	rm -f html/robots.txt  # otherwise sphinx errors
 	mkdir -p $(TMP)/doctrees $(HTML)
 	sphinx-build -n -W -b html -d $(TMP)/doctrees . $(HTML)
         # install searchtools.js into search page.
@@ -23,7 +24,7 @@ html: doc_links  ## make standalone HTML files
 	sed -i -e '/<meta/s/og\\:/og:/' \
              -e '/<meta/s/name="og:/property="og:/' html/index.html
 	cp robots.txt html/robots.txt
-	mkdir html/signatures && cp signatures/*.asc html/signatures
+	mkdir -p html/signatures && cp signatures/*.asc html/signatures
 	cp --no-clobber -r docs/html_extra/. html/docs/.
 	cp htaccess html/.htaccess
 	@echo; \
