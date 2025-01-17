@@ -753,7 +753,7 @@ See:
 
    https://github.com/MicrosoftDocs/iis-docs/blob/main/iis/web-dev-reference/server-variables.md
 
-More information about ISS setup may be found at:
+More information about IIS setup may be found at:
 
    https://learn.microsoft.com/en-us/iis/
 
