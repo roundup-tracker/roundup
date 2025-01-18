@@ -351,15 +351,15 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
                                2345678.2345678)
         self.assertEqual(p.field(),
-                         ('<input id="testnum1@test" name="testnum1@test" size="30" type="text" '
+                         ('<input id="testnum1@test" name="testnum1@test" size="30" type="number" '
                          'value="%s">')%expected_val)
         self.assertEqual(p.field(size=10),
-                         ('<input id="testnum1@test" name="testnum1@test" size="10" type="text" '
+                         ('<input id="testnum1@test" name="testnum1@test" size="10" type="number" '
                          'value="%s">')%expected_val)
         self.assertEqual(p.field(size=10, dataprop="foo", dataprop2=5),
                          ('<input dataprop="foo" dataprop2="5" '
                           'id="testnum1@test" name="testnum1@test" '
-                          'size="10" type="text" '
+                          'size="10" type="number" '
                           'value="%s">'%expected_val))
 
         self.assertEqual(p.field(size=10, klass="class1", 
@@ -369,7 +369,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
                          ('<input class="class2 class3" data-prop="foo" '
                           'data-prop2="5" id="testnum1@test" '
                           'klass="class1" '
-                          'name="testnum1@test" size="10" type="text" '
+                          'name="testnum1@test" size="10" type="number" '
                           'value="%s">')%expected_val)
 
         # get plain representation if user can't edit
@@ -378,10 +378,10 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
         # test with string which is wrong type
         p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
-                               "2345678.2345678")
+                               "234567e.2345678")
         self.assertEqual(p.field(),
                          ('<input id="testnum1@test" name="testnum1@test" '
-                          'size="30" type="text" value="2345678.2345678">'))
+                          'size="30" type="number" value="234567e.2345678">'))
 
         # test with None value, pretend property.__default_value = Null which
         #    is the default. It would be returned by get_default_value
@@ -391,7 +391,7 @@ class HTMLClassTestCase(TemplatingTestCase) :
                                'test', None)
         self.assertEqual(p.field(),
                          ('<input id="testnum1@test" name="testnum1@test" '
-                         'size="30" type="text" value="">'))
+                         'size="30" type="number" value="">'))
 
     def test_number_plain(self):
         import sys
@@ -768,6 +768,7 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
                              'deadline', test_Date)
         self.assertIsInstance(d._value, date.Date)
         self.assertEqual(d.pretty(), " 1 January 2021")
+        self.assertEqual(d.pretty("%2d %B %Y"), "01 January 2021")
         self.assertEqual(d.pretty(format="%Y-%m"), "2021-01")
         self.assertEqual(d.plain(), "2021-01-01.13:22:10")
         self.assertEqual(d.local("-4").plain(), "2021-01-01.07:22:10")
