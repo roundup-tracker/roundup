@@ -46,13 +46,12 @@ ARG appdir
 WORKDIR $appdir
 
 # Update to get security and other improvements;
-RUN apk --no-cache upgrade
-
 # Add packages needed to compile mysql, pgsql and other python modules.
 # Can't use apk to add python packages as it installs for base image
 # in /usr.
 #        g++ installs cc1plus needed by pip install
-RUN apk --no-cache add \
+RUN apk --no-cache upgrade; \
+    apk --no-cache add \
     file \
     g++ \
     gcc \
@@ -83,14 +82,18 @@ COPY scripts/Docker/sphinxdeps.txt .
 # suppress warning when running pip as root
 ENV PIP_ROOT_USER_ACTION=ignore
 
+# force embedded script to fail on any error "-e"
+# including in a pipeline (-o pipefail) (note pipefail
+# is not documented, but setting it isn;t an error and
+# works in testing)
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ARG VERBOSE
 ARG pythonversion
 
 RUN [ -z "${VERBOSE}" ] || set -xv; \
     CWD="$PWD" && \
-    upgrades=$(python3 -m pip --no-cache-dir --disable-pip-version-check \
-	list --outdated | awk 'NR > 2 {print $1}'); \
+    upgrades="$(python3 -m pip --no-cache-dir --disable-pip-version-check \
+	list --outdated | awk 'NR > 2 {print $1}')"; \
     if [ -n "$upgrades" ]; then \
         echo "Pip updating $upgrades"; \
         python -m pip --no-cache-dir --disable-pip-version-check \
@@ -98,7 +101,7 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
     else \
         echo "Nothing to pip update"; \
     fi; \
-    ls -l /usr/local/lib/python${pythonversion}/site-packages; \
+    ls -l "/usr/local/lib/python${pythonversion}/site-packages"; \
     VER=$(apk list -I 'xapian-core-dev' | \
           sed 's/^xapian-core-dev-\([0-9.]*\)-.*/\1/') && \
     cd /tmp && \
@@ -211,8 +214,8 @@ RUN apk --no-cache upgrade; \
      libstdc++ \
      libxapian \
      zstd-libs; \
-    upgrades=$(python3 -m pip --no-cache-dir --disable-pip-version-check \
-	list --outdated | awk 'NR > 2 {print $1}'); \
+    upgrades="$(python3 -m pip --no-cache-dir --disable-pip-version-check \
+	list --outdated | awk 'NR > 2 {print $1}')"; \
     if [ -n "$upgrades" ]; then \
         echo "Pip updating $upgrades"; \
         python -m pip --no-cache-dir --disable-pip-version-check \
