@@ -803,6 +803,8 @@ class BooleanHTMLPropertyTestCase(HTMLPropertyTestClass):
                         'True</label>') % params
             n_label = ('<label class="rblabel" '
                        'for="issue1@%(propname)s_no">False</label>') % params
+            u_label = ('<label class="rblabel" '
+                       'for="issue1@%(propname)s_unk">Ignore</label>') % params
 
             input_expected = (
                 '<input %(check1)sid="issue1@%(propname)s_yes" '
@@ -828,7 +830,23 @@ class BooleanHTMLPropertyTestCase(HTMLPropertyTestClass):
             print(d.field(labelfirst=True))
             self.assertEqual(d.field(labelfirst=True), input_expected)
 
-        # one test on the last d is enough.
+            input_expected = (
+                '<label class="rblabel" for="issue1@%(propname)s_unk">'
+                'Ignore</label>'
+                '<input id="issue1@%(propname)s_unk" '
+                'name="issue1@%(propname)s" type="radio" value="">'
+                '<input %(check1)sid="issue1@%(propname)s_yes" '
+                'name="issue1@%(propname)s" type="radio" value="yes">'
+                '<label class="rblabel" for="issue1@%(propname)s_yes">'
+                'Yes</label>'
+                '<input %(check2)sid="issue1@%(propname)s_no" name="issue1@%(propname)s" '
+                'type="radio" value="no"><label class="rblabel" '
+                'for="issue1@%(propname)s_no">No</label>') % params
+
+            self.assertEqual(d.field(u_label=u_label), input_expected)
+
+
+        # one test with the last d is enough.
         # check permissions return
         is_view_ok_orig = d.is_view_ok
         is_edit_ok_orig = d.is_edit_ok

@@ -2165,26 +2165,27 @@ class BooleanHTMLProperty(HTMLProperty):
             n_label += '</label>'
 
         checked = value and "checked" or ""
+        kwargs.setdefault("type", "radio")
         if value:
-            y_rb = self.input(type="radio", name=self._formname, value="yes",
+            y_rb = self.input(name=self._formname, value="yes",
                               checked="checked", id="%s_%s" % (
                                   self._formname, 'yes'), **kwargs)
 
-            n_rb = self.input(type="radio", name=self._formname,  value="no",
+            n_rb = self.input(name=self._formname,  value="no",
                               id="%s_%s" % (
                                   self._formname, 'no'), **kwargs)
         else:
-            y_rb = self.input(type="radio", name=self._formname, value="yes",
+            y_rb = self.input(name=self._formname, value="yes",
                               id="%s_%s" % (self._formname, 'yes'), **kwargs)
 
-            n_rb = self.input(type="radio", name=self._formname,  value="no",
+            n_rb = self.input(name=self._formname,  value="no",
                               checked="checked", id="%s_%s" % (
                                   self._formname, 'no'), **kwargs)
 
         if (u_label):
             if (u_label is True):  # it was set via u_label=True
                 u_label = ''       # make it empty but a string not boolean
-            u_rb = self.input(type="radio", name=self._formname,  value="",
+            u_rb = self.input(name=self._formname,  value="",
                               id="%s_%s" % (self._formname, 'unk'), **kwargs)
         else:
             # don't generate a trivalue radiobutton.
