@@ -734,6 +734,116 @@ class HTMLPropertyTestClass(unittest.TestCase):
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
+class BooleanHTMLPropertyTestCase(HTMLPropertyTestClass):
+
+    def setUp(self):
+        super(BooleanHTMLPropertyTestCase, self).setUp()
+
+        db = self.client.db
+        db.issue.addprop(boolvalt=hyperdb.Boolean())
+        db.issue.addprop(boolvalf=hyperdb.Boolean())
+        db.issue.addprop(boolvalunset=hyperdb.Boolean())
+
+        self.client.db.issue.create(title="title",
+                                    boolvalt = True,
+                                    boolvalf = False)
+
+    def tearDown(self):
+        self.client.db.close()
+        memorydb.db_nuke('')
+
+    testdata = [
+        ("boolvalt", "Yes", True, False),
+        ("boolvalf", "No", False, True),
+        ("boolvalunset", "", False, True),
+    ]
+
+    def test_BoolHTMLRadioButtons(self):
+        #propname = "boolvalt"
+
+        #plainval = "Yes"
+
+        self.maxDiff = None
+        for test_inputs in self.testdata:
+            params = {
+                "check1": 'checked="checked" ' if test_inputs[2] else "",
+                "check2": 'checked="checked" ' if test_inputs[3] else "",
+                "propname": test_inputs[0],
+                "plainval": test_inputs[1],
+
+            }
+
+
+            test_hyperdbBoolean = self.client.db.issue.getprops("1")[
+                params['propname']]
+            test_boolean = self.client.db.issue.get("1", params['propname'])
+
+            # client, classname, nodeid, prop, name, value,
+            #    anonymous=0, offset=None
+            d = BooleanHTMLProperty(self.client, 'issue', '1',
+                                    test_hyperdbBoolean,
+                                    params['propname'], test_boolean)
+
+            self.assertIsInstance(d._value, (type(None), bool))
+
+            self.assertEqual(d.plain(), params['plainval'])
+
+            input_expected = (
+                '<input %(check1)sid="issue1@%(propname)s_yes" '
+                'name="issue1@%(propname)s" type="radio" value="yes">'
+                '<label class="rblabel" for="issue1@%(propname)s_yes">'
+                'Yes</label>'
+                '<input %(check2)sid="issue1@%(propname)s_no" name="issue1@%(propname)s" '
+                'type="radio" value="no"><label class="rblabel" '
+                'for="issue1@%(propname)s_no">No</label>') % params
+
+            self.assertEqual(d.field(), input_expected)
+
+            y_label = ( '<label class="rblabel" for="issue1@%(propname)s_yes">'
+                        'True</label>') % params
+            n_label = ('<label class="rblabel" '
+                       'for="issue1@%(propname)s_no">False</label>') % params
+
+            input_expected = (
+                '<input %(check1)sid="issue1@%(propname)s_yes" '
+                'name="issue1@%(propname)s" type="radio" value="yes">'
+                + y_label +
+                '<input %(check2)sid="issue1@%(propname)s_no" name="issue1@%(propname)s" '
+                'type="radio" value="no">' + n_label ) % params
+
+            self.assertEqual(d.field(y_label=y_label, n_label=n_label), input_expected)
+
+
+            input_expected = (
+                '<label class="rblabel" for="issue1@%(propname)s_yes">'
+                'Yes</label>'
+                '<input %(check1)sid="issue1@%(propname)s_yes" '
+                'name="issue1@%(propname)s" type="radio" value="yes">'
+                '<label class="rblabel" '
+                'for="issue1@%(propname)s_no">No</label>'
+                '<input %(check2)sid="issue1@%(propname)s_no" '
+                    'name="issue1@%(propname)s" '
+                'type="radio" value="no">') % params
+
+            print(d.field(labelfirst=True))
+            self.assertEqual(d.field(labelfirst=True), input_expected)
+
+        # one test on the last d is enough.
+        # check permissions return
+        is_view_ok_orig = d.is_view_ok
+        is_edit_ok_orig = d.is_edit_ok
+        no_access = lambda : False
+
+        d.is_view_ok = no_access
+        self.assertEqual(d.plain(), "[hidden]")
+
+        d.is_edit_ok = no_access
+        self.assertEqual(d.field(), "[hidden]")
+
+        d.is_view_ok = is_view_ok_orig
+        self.assertEqual(d.field(), params['plainval'])
+        d.is_edit_ok = is_edit_ok_orig
+
 class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
 
     def setUp(self):
