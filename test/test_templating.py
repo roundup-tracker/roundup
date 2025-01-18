@@ -5,6 +5,7 @@ import time
 from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
 from roundup.cgi.templating import *
 from roundup.cgi.ZTUtils.Iterator import Iterator
+from roundup.test import memorydb
 from .test_actions import MockNull, true
 from .html_norm import NormalizingHtmlParser
 
@@ -716,7 +717,11 @@ class HTMLPropertyTestClass(unittest.TestCase):
     def setUp(self):
         self.form = FieldStorage()
         self.client = MockNull()
-        self.client.db = db = MockDatabase()
+        self.client.db = db = memorydb.create('admin')
+        db.tx_Source = "web"
+
+        db.issue.addprop(tx_Source=hyperdb.String())
+
         db.security.hasPermission = lambda *args, **kw: True
         self.client.form = self.form
 
@@ -725,7 +730,101 @@ class HTMLPropertyTestClass(unittest.TestCase):
         self.client.session_api = MockNull(_sid="1234567890")
         self.client.db.getuid = lambda : 10
 
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
 class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
+
+    def setUp(self):
+        super(DateHTMLPropertyTestCase, self).setUp()
+
+        db = self.client.db
+        db.issue.addprop(deadline=hyperdb.Date())
+
+        self.test_datestring = "2021-01-01.11:22:10"
+
+        self.client.db.issue.create(title="title",
+                                    deadline=date.Date(self.test_datestring))
+        self.client.db.getUserTimezone = lambda: "2"
+
+    def tearDown(self):
+        self.client.db.close()
+        memorydb.db_nuke('')
+
+    def test_DateHTMLWithDate(self):
+        """Test methods when DateHTMLProperty._value is a hyperdb.Date()
+        """
+        test_datestring = self.test_datestring
+        test_Date = self.client.db.issue.get("1", 'deadline')
+        test_hyperdbDate = self.client.db.issue.getprops("1")['deadline']
+
+        self.client.classname = "issue"
+        self.client.template = "item"
+
+        # client, classname, nodeid, prop, name, value,
+        #    anonymous=0, offset=None
+        d = DateHTMLProperty(self.client, 'issue', '1', test_hyperdbDate,
+                             'deadline', test_Date)
+        self.assertIsInstance(d._value, date.Date)
+        self.assertEqual(d.pretty(), " 1 January 2021")
+        self.assertEqual(d.pretty(format="%Y-%m"), "2021-01")
+        self.assertEqual(d.plain(), "2021-01-01.13:22:10")
+        self.assertEqual(d.local("-4").plain(), "2021-01-01.07:22:10")
+        input_expected = """<input id="issue1@deadline" name="issue1@deadline" size="30" type="date" value="2021-01-01">"""
+        self.assertEqual(d.field(), input_expected)
+        self.assertEqual(d.field_time(type="date"), input_expected)
+
+        input_expected = """<input id="issue1@deadline" name="issue1@deadline" size="30" type="datetime-local" value="2021-01-01T13:22:10">"""
+        self.assertEqual(d.field(type="datetime-local"), input_expected)
+        self.assertEqual(d.field_time(), input_expected)
+
+        input_expected = """<input id="issue1@deadline" name="issue1@deadline" size="30" type="text" value="2021-01-01.13:22:10">"""
+        self.assertEqual(d.field(type="text"), input_expected)
+        self.assertEqual(d.field_time(type="text"), input_expected)
+
+        # test with format
+        input_expected = """<input id="issue1@deadline" name="issue1@deadline" size="30" type="text" value="2021-01"><a class="classhelp" data-calurl="issue?@template=calendar&amp;amp;property=deadline&amp;amp;form=itemSynopsis&amp;date=2021-01-01.11:22:10" data-height="200" data-width="300" href="javascript:help_window(\'issue?@template=calendar&amp;property=deadline&amp;form=itemSynopsis&date=2021-01-01.11:22:10\', 300, 200)">(cal)</a>"""
+
+        self._caplog.clear()
+        with self._caplog.at_level(logging.WARNING,
+                                   logger="roundup"):
+            input = d.field(format="%Y-%m")
+        self.assertEqual(input_expected, input)
+
+        # name used for logging
+        log_expected = """Format '%Y-%m' prevents use of modern date input. Remove format from field() call in template issue.item. Using text input."""
+        self.assertEqual(self._caplog.record_tuples[0][2], log_expected)
+        # severity ERROR = 40
+        self.assertEqual(self._caplog.record_tuples[0][1], 30,
+                        msg="logging level != 30 (WARNING)")
+
+        # test with format and popcal=None
+        input_expected = """<input id="issue1@deadline" name="issue1@deadline" size="30" type="text" value="2021-01">"""
+
+        self._caplog.clear()
+        with self._caplog.at_level(logging.WARNING,
+                                   logger="roundup"):
+            input = d.field(format="%Y-%m", popcal=False)
+        self.assertEqual(input_expected, input)
+
+        # name used for logging
+        log_expected = """Format '%Y-%m' prevents use of modern date input. Remove format from field() call in template issue.item. Using text input."""
+        self.assertEqual(self._caplog.record_tuples[0][2], log_expected)
+        # severity ERROR = 40
+        self.assertEqual(self._caplog.record_tuples[0][1], 30,
+                        msg="logging level != 30 (WARNING)")
+
+        # test with format, type=text and popcal=None
+        input_expected = """<input id="issue1@deadline" name="issue1@deadline" size="30" type="text" value="2021-01">"""
+
+        self._caplog.clear()
+        with self._caplog.at_level(logging.WARNING,
+                                   logger="roundup"):
+            input = d.field(type="text", format="%Y-%m", popcal=False )
+        self.assertEqual(input_expected, input)
+
+        self.assertEqual(self._caplog.records, [])
 
     def test_DateHTMLWithText(self):
         """Test methods when DateHTMLProperty._value is a string
@@ -741,6 +840,9 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
             ( test = MockNull(getprops = lambda : test_date)
             )
 
+        self.client.classname = "test"
+        self.client.template = "item"
+
         # client, classname, nodeid, prop, name, value,
         #    anonymous=0, offset=None
         d = DateHTMLProperty(self.client, 'test', '1', self.client._props,
@@ -748,8 +850,61 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
         self.assertIs(type(d._value), str)
         self.assertEqual(d.pretty(), "2021-01-01 11:22:10")
         self.assertEqual(d.plain(), "2021-01-01 11:22:10")
-        input = """<input id="test1@test" name="test1@test" size="30" type="text" value="2021-01-01 11:22:10"><a class="classhelp" data-calurl="test?@template=calendar&amp;amp;property=test&amp;amp;form=itemSynopsis&amp;date=2021-01-01 11:22:10" data-height="200" data-width="300" href="javascript:help_window('test?@template=calendar&amp;property=test&amp;form=itemSynopsis&date=2021-01-01 11:22:10', 300, 200)">(cal)</a>"""
+        input = """<input id="test1@test" name="test1@test" size="30" type="date" value="2021-01-01 11:22:10">"""
         self.assertEqual(d.field(), input)
+
+
+        input_expected = """<input id="test1@test" name="test1@test" size="40" type="date" value="2021-01-01 11:22:10">"""
+        self.assertEqual(d.field(size=40), input_expected)
+
+        input_expected = """<input id="test1@test" name="test1@test" size="30" type="text" value="2021-01-01 11:22:10"><a class="classhelp" data-calurl="test?@template=calendar&amp;amp;property=test&amp;amp;form=itemSynopsis&amp;date=2021-01-01 11:22:10" data-height="200" data-width="300" href="javascript:help_window(\'test?@template=calendar&amp;property=test&amp;form=itemSynopsis&date=2021-01-01 11:22:10\', 300, 200)">(cal)</a>"""
+        with self._caplog.at_level(logging.WARNING,
+                                   logger="roundup"):
+            input = d.field(format="%Y-%m")
+        self.assertEqual(input_expected, input)
+
+        # name used for logging
+        log_expected = """Format '%Y-%m' prevents use of modern date input. Remove format from field() call in template test.item. Using text input."""
+        self.assertEqual(self._caplog.record_tuples[0][2], log_expected)
+        # severity ERROR = 40
+        self.assertEqual(self._caplog.record_tuples[0][1], 30,
+                        msg="logging level != 30 (WARNING)")
+
+        """with self.assertRaises(ValueError) as e:
+            d.field(format="%Y-%m")
+        self.assertIn("'%Y-%m'", e.exception.args[0])
+        self.assertIn("'date'", e.exception.args[0])"""
+
+
+        # format matches rfc format, so this should pass
+        result = d.field(format="%Y-%m-%d")
+        input_expected = """<input id="test1@test" name="test1@test" size="30" type="date" value="2021-01-01 11:22:10">"""
+        self.assertEqual(result, input_expected)
+
+        input_expected = """<input id="test1@test" name="test1@test" size="30" type="text" value="2021-01-01 11:22:10"><a class="classhelp" data-calurl="test?@template=calendar&amp;amp;property=test&amp;amp;form=itemSynopsis&amp;date=2021-01-01 11:22:10" data-height="200" data-width="300" href="javascript:help_window(\'test?@template=calendar&amp;property=test&amp;form=itemSynopsis&date=2021-01-01 11:22:10\', 300, 200)">(cal)</a>"""
+        with self._caplog.at_level(logging.WARNING,
+                                   logger="roundup"):
+            input = d.field(format="%Y-%m", type="datetime-local")
+        self.assertEqual(input_expected, input)
+
+        # name used for logging
+        log_expected = """Format '%Y-%m' prevents use of modern date input. Remove format from field() call in template test.item. Using text input."""
+        self.assertEqual(self._caplog.record_tuples[0][2], log_expected)
+        # severity ERROR = 40
+        self.assertEqual(self._caplog.record_tuples[0][1], 30,
+                        msg="logging level != 30 (WARNING)")
+
+        """
+        with self.assertRaises(ValueError) as e:
+            d.field(format="%Y-%m", type="datetime-local")
+        self.assertIn("'%Y-%m'", e.exception.args[0])
+        self.assertIn("'datetime-local'", e.exception.args[0])
+        """
+
+        # format matches rfc, so this should pass
+        result = d.field(type="datetime-local", format="%Y-%m-%dT%H:%M:%S")
+        input_expected = """<input id="test1@test" name="test1@test" size="30" type="datetime-local" value="2021-01-01 11:22:10">"""
+        self.assertEqual(result, input_expected)
 
 # common markdown test cases
 class MarkdownTests:

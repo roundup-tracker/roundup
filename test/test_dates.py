@@ -483,6 +483,11 @@ class DateTestCase(unittest.TestCase):
         toomuch = datetime.MAXYEAR + 1
         self.assertRaises(ValueError, Date, (toomuch, 1, 1, 0, 0, 0, 0, 1, -1))
 
+    def testRfc3339Form(self):
+        ae = self.assertEqual
+        d = Date('2003-11-01T00:00:00')
+        self.assertEqual(str(d), '2003-11-01.00:00:00')
+
     def testSimpleTZ(self):
         ae = self.assertEqual
         # local to utc

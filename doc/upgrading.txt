@@ -224,6 +224,148 @@ defusedxml.
 
 .. _defusedxml: https://pypi.org/project/defusedxml/
 
+Use native date inputs (optional)
+---------------------------------
+
+Roundup now uses native date or datetime-local inputs for Date()
+properties. These inputs take the place of the text input and
+calendar popup from earlier Roundup versions. Modern browsers
+come with a built-in calendar for date selection, so the
+``(cal)`` calendar link is no longer needed. These native inputs
+show the date based on the browser's locale and translate terms
+into the local language.
+
+If you do nothing, simple uses of the field() method will
+generate date inputs to allow selection of a date.  Input fields
+for Date() properties will not have the ``(cal)`` link
+anymore. Complex uses will not be upgraded and will operate like
+earlier Roundup versions.
+
+To upgrade all date properties, there are four changes to make:
+
+  1. Replace ``field`` calls with ``field_time`` where needed.
+
+  2. Remove the format argument from field() calls on Date()
+     properties.
+
+  3. Remove popcal() calls.
+
+  4. Include datecopy.js in page.html.
+
+Use field_time() where needed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The format used by ``field`` does not include hours, minutes or
+seconds. If your users need to enter times, you should change
+these calls to use ``field_time``. The arguments are the same as
+for field.
+
+Remove format argument
+~~~~~~~~~~~~~~~~~~~~~~
+
+Speaking of arguments, avoid setting the date format if you want
+to use native date inputs. The date value needs a specific format
+for date or datetime-local inputs. If you include the `format`
+argument in the `field` method, it should be removed.
+
+The `field` method uses the format ``%Y-%m-%d``.  The
+``field_time`` method uses the format ``%Y-%m-%dT%H:%M:%S``. If
+you use these exact formats, Roundup will accept them and use a
+native date input.
+
+.. highlight:: text
+
+If you use an format that doesn't match, you will see a text
+input and a logged warning message like::
+
+  Format '%Y-%m' prevents use of modern date input.
+  Remove format from field() call in template test.item.
+  Using text input.
+
+.. highlight:: default
+
+The log message will appear if your logging level is set to
+WARNING or lower. (Refer to your tracker's :ref:`config.ini
+logging section <config-ini-section-logging>` for details on
+logging levels.)
+
+If you want to use a text input for a specific date format, you
+can add ``type="text"`` to the field() argument list to suppress
+the warning. By default using a format argument will show the
+popup calendar link. You can disable the link by setting
+``popcal=False`` in the field() call. If you have::
+
+  tal:content="structure python:context.duedate.field(
+               placeholder='YYYY-MM, format='%Y-%m')"
+
+changing it to::
+
+  tal:content="structure python:context.duedate.field(
+               type='text',
+               placeholder='YYYY-MM, format='%Y-%m',
+               popcal=False)"
+
+will generate the input as in Roundup 2.4 or earlier without a
+popcal link.
+
+If you are using a path expression like::
+
+  tal:content="context/duedate/field"
+
+change it to::
+
+  tal:content="structure python:context.duedate.field(
+               type='text')"
+
+to get the input from before Roundup 2.5 with a popcal link.
+
+Remove popcal
+~~~~~~~~~~~~~
+
+If you use the ``popcal()`` method directly in your templates, you
+can remove them. The browser's native date selection calendar can
+be used instead.
+
+Add copy/paste/edit on double-click using datecopy.js
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is no way to copy/paste using a native datetime-local or
+date input. With the datecopy.js file installed, double-clicking
+on the input turns it into a normal text input with the ability
+to copy, paste, or manually edit the date.
+
+To set this up, take either ``datecopy.js`` or the smaller
+version, ``datecopy.min.js``, from the ``html`` folder of the
+classic tracker template. Put the file in the ``html`` folder of
+your tracker home.
+
+After you install the datecopy file, you can add the script
+directly to a page using::
+
+  <script tal:attributes="nonce request/client/client_nonce"
+          tal:content="structure python:utils.readfile('datecopy.min.js')">
+  </script>
+
+or get the file in a separate download using a regular script
+tag::
+
+    <script type="text/javascript" src="@@file/datecopy.js">
+    </script>
+
+You can place these at the end of ``page.html`` just before the
+close body ``</body>`` tag. This is the method used in the
+classic template. This forces the file to be run for every page
+even those that don't have any date inputs. However, it is cached
+after the first download.
+
+Alternatively you can inline or link to it using a script tag
+only on pages that will have a date input. For example
+``issue.item.html``.
+
+There is no support for activating text mode using the
+keyboard. Tablet/touch support is mixed. Chrome supports
+double-tap to activate text mode input. Firefox does not.
+
 Change in REST response for invalid CORS requests (info)
 --------------------------------------------------------
 

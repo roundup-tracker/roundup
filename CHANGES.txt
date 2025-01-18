@@ -77,6 +77,10 @@ Fixed:
 - issue2551391, partial fix for issue1513369. input fields were
   not getting id's assigned. Fixed automatic id assignment to
   input fields. Thinko in the code. (John Rouillard)
+- issue2551390 - Replace text input/calendar popup with native
+  date input. Also add double-click and exit keyboard handlers to
+  allow copy/paste/editing the text version of the date.  (John
+  Rouillard)
 
 Features:
 

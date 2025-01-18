@@ -46,7 +46,7 @@ from roundup.anypy.strings import is_us
 date_re = re.compile(r'''^
     ((?P<y>\d\d\d\d)([/-](?P<m>\d\d?)([/-](?P<d>\d\d?))?)? # yyyy[-mm[-dd]]
     |(?P<a>\d\d?)[/-](?P<b>\d\d?))?              # or mm-dd
-    (?P<n>\.)?                                   # .
+    (?P<n>[.T])?                                 # . or T
     (((?P<H>\d?\d):(?P<M>\d\d))?(:(?P<S>\d\d?(\.\d+)?))?)?  # hh:mm:ss
     (?:(?P<tz>\s?[+-]\d{4})|(?P<o>[\d\smywd\-+]+))? # time-zone offset, offset
 $''', re.VERBOSE)

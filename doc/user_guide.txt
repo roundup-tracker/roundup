@@ -177,6 +177,14 @@ Classhelper`_ for details.
 Date properties
 ~~~~~~~~~~~~~~~
 
+Date properties are usually shown using a native HTML date
+element. This provides a calendar button for choosing the
+date. The date is shown in the normal format for your location.
+
+Native date inputs do not allow the use of partial forms as
+defined below.  For this reason, you may edit a date/time
+stamp directly.
+
 Date-and-time stamps are specified with the date in
 international standard format (``yyyy-mm-dd``) joined to the time
 (``hh:mm:ss``) by a period ``.``.  Dates in this form can be easily
@@ -191,7 +199,7 @@ just the year may be omitted.  If the time is given, the time is
 interpreted in the user's local time zone. The Date constructor takes
 care of these conversions. In the following examples, suppose that
 ``yyyy`` is the current year, ``mm`` is the current month, and ``dd`` is
-the current day of the month.
+the current day of the month and the local timezone is GMT-5.
 
 -   "2000-04-17" means <Date 2000-04-17.00:00:00>
 -   "01-25" means <Date yyyy-01-25.00:00:00>
@@ -202,6 +210,30 @@ the current day of the month.
 -   "8:47:11" means <Date yyyy-mm-dd.13:47:11>
 -   the special date "." means "right now"
 
+The native date input doesn't allow copy or paste. Roundup
+enhances the native date field. If you double-click on a native
+date field, it changes to a text input mode with the date already
+selected. You can use control-C to copy the date or control-V to
+paste into the field.  Double-clicking also lets you add seconds
+in a date-time value if you need to.
+
+It will switch back to a date input and save the value when:
+
+- you move to another field using the mouse or the Tab key.
+- you press enter/return (press return again if you want to
+  submit the form).
+
+If you press Escape, it will restore the original value and
+change back to a date input.
+
+When using native date elements in text input mode, the date
+looks like a full data with ``T`` replacing ``.``. If the ``T``
+is missing, the native date elements will not recognize the value
+as a date.
+
+There is no support for activating text mode using the
+keyboard. Tablet/touch support is mixed. Chrome supports
+double-tap to activate text mode input. Firefox does not.
 
 When searching, a plain date entered as a search field will match that date
 exactly in the database.  We may also accept ranges of dates. You can

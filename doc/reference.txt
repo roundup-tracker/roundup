@@ -3070,17 +3070,28 @@ There are several methods available on these wrapper objects:
 	      tri-state yes/no/neither selection. This method may take some
 	      arguments:
 
-	      size
+	      size (default 30)
 		Sets the width in characters of the edit field
 
 	      format (Date properties only)
-		Sets the format of the date in the field - uses the same
-		format string argument as supplied to the ``pretty`` method
-		below.
+                Sets the format of the date in the field - uses the
+		same format string argument as supplied to the
+		``pretty`` method below. If you use this, it will
+		prevent the use of browser native date inputs. It is
+		useful if you want partial dates. For example using
+		``format="%Y-%m"`` with ``type="text"`` will display a
+		text edit box with the year and month part of your
+		date.
+
+              type (depends on property type)
+                Sets the type property of the input. To change a date
+                property field from a native date input to a text
+                input you would use ``type="text"``.
 
 	      popcal (Date properties only)
-		Include the JavaScript-based popup calendar for date
-		selection. Defaults to on.
+		Include a link to the JavaScript-based popup calendar
+		for date selection. Defaults to off/False since native
+		date inputs supply popup calendars.
 
 	      y_label, n_label, u_label (Boolean properties only)
 	        Set the labels for the true/false/undefined
@@ -3104,6 +3115,10 @@ There are several methods available on these wrapper objects:
 	      attribute without a value. This is useful for boolean
 	      properties like ``required``.
 
+  field_time  (Date properties only)
+              Create a browser native input for editing date and time.
+              The field method creates an input for editing
+              month/day/year (without time).
 
   rst         only on String properties - render the value of the property
 	      as ReStructuredText (requires the :ref:`Docutils
@@ -3164,7 +3179,11 @@ There are several methods available on these wrapper objects:
 	      is returned if the value is ``None`` otherwise it
 	      is converted to a string.
 
-  popcal      Generate a link to a popup calendar which may be used to
+  popcal      This is deprecated with Roundup 2.5 which uses the
+              native HTML5 date input. The native date input
+              includes a calendar popup on modern broswers.
+
+              Generate a link to a popup calendar which may be used to
 	      edit the date field, for example::
 
 		<span tal:replace="structure context/due/popcal" />
@@ -4026,6 +4045,17 @@ override the content type indicated to the user by calling ``setHeader``::
 This example indicates that the value sent back to the user is actually
 comma-separated value content (i.e. something to load into a
 spreadsheet or database).
+
+CSS for the web interface
+-------------------------
+
+The web interface can be completely redesigned by the admin, However
+some parts of Roundup use classes or set attributes that can be
+selected by css to change the look of the element.
+
+The ``datecopy.js`` module used to allow editing a date value with a
+text input assigns the ``mode_textdate`` class to the input when it is
+in text mode. The class is removed when it is not in text mode.
 
 
 8-bit character set support in Web interface

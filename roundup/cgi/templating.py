@@ -2252,7 +2252,16 @@ class DateHTMLProperty(HTMLProperty):
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
                                 self._prop, self._formname, ret)
 
-    def field(self, size=30, default=None, format=_marker, popcal=True,
+
+    def field_time(self, size=30, default=None, format=_marker, popcal=None,
+                   **kwargs):
+
+        kwargs.setdefault("type", "datetime-local")
+        field = self.field(size=size, default=default, format=format,
+                           popcal=popcal, **kwargs)
+        return field
+
+    def field(self, size=30, default=None, format=_marker, popcal=None,
               **kwargs):
         """Render a form edit field for the property
 
@@ -2268,6 +2277,47 @@ class DateHTMLProperty(HTMLProperty):
                 return self.plain(escape=1)
             else:
                 return self.pretty(format)
+
+        kwargs.setdefault("type", "date")
+
+        if kwargs["type"] in ["date", "datetime-local"]:
+            acceptable_formats = {
+                "date": "%Y-%m-%d",
+                "datetime-local": "%Y-%m-%dT%H:%M:%S"
+            }
+
+            if format is not self._marker:  # user set format
+                if format != acceptable_formats[kwargs["type"]]:
+                    # format is incompatible with date type
+                    kwargs['type'] = "text"
+                    if popcal is not False:
+                        popcal = True
+                    logger.warning(self._(
+                        "Format '%(format)s' prevents use of modern "
+                        "date input. Remove format from field() call in "
+                        "template %(class)s.%(template)s. "
+                        "Using text input.") % {
+                            "format": format,
+                            "class": self._client.classname,
+                            "template": self._client.template
+                        })
+
+                    """
+                    raise ValueError(self._(
+                        "When using input type of '%(field_type)s', the "
+                        "format must not be set, or must be "
+                        "'%(format_string)s' to match RFC3339 date "
+                        "or date-time. Current format is '%(format)s'.") % {
+                            "field_type": kwargs["type"],
+                            "format_string":
+                            acceptable_formats[kwargs["type"]],
+                            "format": format,
+                      })"""
+            else:
+                # https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats#local_date_and_time_strings
+                # match date-time format in
+                # https://www.rfc-editor.org/rfc/rfc3339
+                format = acceptable_formats[kwargs['type']]
 
         value = self._value
 
