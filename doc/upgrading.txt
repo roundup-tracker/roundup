@@ -224,8 +224,8 @@ defusedxml.
 
 .. _defusedxml: https://pypi.org/project/defusedxml/
 
-Use native date inputs (optional)
----------------------------------
+Enable use of native date inputs (optional)
+-------------------------------------------
 
 Roundup now uses native date or datetime-local inputs for Date()
 properties. These inputs take the place of the text input and
@@ -308,6 +308,8 @@ changing it to::
 will generate the input as in Roundup 2.4 or earlier without a
 popcal link.
 
+.. _revert_input_to_text:
+
 If you are using a path expression like::
 
   tal:content="context/duedate/field"
@@ -365,6 +367,22 @@ only on pages that will have a date input. For example
 There is no support for activating text mode using the
 keyboard. Tablet/touch support is mixed. Chrome supports
 double-tap to activate text mode input. Firefox does not.
+
+Revert native number inputs for Number() and Integer() (optional)
+-----------------------------------------------------------------
+
+Roundup's field() method for properties of type Number() or
+Integer() now use a native browser number input.
+
+You can use the old style text inputs by calling the field
+method with ``type="text"``. You can :ref:`follow the example
+for setting the text argument on a Date()
+property. <revert_input_to_text>` for details.
+
+Note that the Integer() type also uses ``step="1"`` by default to
+add a stepper control and try to constrain the input to
+integers. This can be overridden by passing a new step
+(e.g. ``step="50"``) to the field() method.
 
 Change in REST response for invalid CORS requests (info)
 --------------------------------------------------------

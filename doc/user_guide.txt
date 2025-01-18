@@ -131,7 +131,8 @@ Integer Properties
 ~~~~~~~~~~~~~~~~~~
 
 These fields take a whole/integer number without decimal marker like
-``123``, ``+123``, ``-123``. Exponents are not supported.
+``123``, ``+123``, ``-123``. Exponents are not supported. Your browser
+may show an up/down arrow spinner to change the value. 
 
 Boolean properties
 ~~~~~~~~~~~~~~~~~~

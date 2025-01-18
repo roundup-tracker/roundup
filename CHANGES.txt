@@ -122,7 +122,9 @@ Features:
 - Added new templating utils.set_http_response(integer) method to
   allow reporting an error to the user from a template. (John
   Rouillard)
-	
+- Use native number type input for Number() and Integer()
+  properties. Integer() uses step=1 as well. (John Rouillard)
+
 2024-07-13 2.4.0
 
 Fixed:

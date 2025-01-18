@@ -1253,6 +1253,118 @@ class NoRstTestCase(TemplatingTestCase) :
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
         self.assertEqual(p.rst(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
 
+class NumberIntegerHTMLPropertyTestCase(HTMLPropertyTestClass):
+
+    def setUp(self):
+        super(NumberIntegerHTMLPropertyTestCase, self).setUp()
+
+        db = self.client.db
+        db.issue.addprop(numberval=hyperdb.Number())
+        db.issue.addprop(intval=hyperdb.Integer())
+
+        self.client.db.issue.create(title="title",
+                                    numberval = "3.14",
+                                    intval="314")
+
+    def tearDown(self):
+        self.client.db.close()
+        memorydb.db_nuke('')
+
+    def test_IntegerHTML(self):
+        test_hyperdbInteger = self.client.db.issue.getprops("1")['intval']
+        test_Integer = test_hyperdbInteger.from_raw(
+            self.client.db.issue.get("1", 'intval')
+        )
+
+        # client, classname, nodeid, prop, name, value,
+        #    anonymous=0, offset=None
+        d = IntegerHTMLProperty(self.client, 'issue', '1',
+                                test_hyperdbInteger,
+                                'intval', test_Integer)
+
+        self.assertIsInstance(d._value, int)
+
+        self.assertEqual(d.plain(), "314")
+
+        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" step="1" type="number" value="314">"""
+        self.assertEqual(d.field(), input_expected)
+
+        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" step="50" type="number" value="314">"""
+        self.assertEqual(d.field(step="50"), input_expected)
+
+        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" type="text" value="314">"""
+        self.assertEqual(d.field(type="text"), input_expected)
+
+
+        # check permissions return
+        is_view_ok_orig = d.is_view_ok
+        is_edit_ok_orig = d.is_edit_ok
+        no_access = lambda : False
+
+        d.is_view_ok = no_access
+        self.assertEqual(d.plain(), "[hidden]")
+
+        d.is_edit_ok = no_access
+        self.assertEqual(d.field(), "[hidden]")
+
+        d.is_view_ok = is_view_ok_orig
+        self.assertEqual(d.field(), "314")
+        d.is_edit_ok = is_edit_ok_orig
+
+    def test_NumberHTML(self):
+        test_hyperdbNumber = self.client.db.issue.getprops("1")['numberval']
+        test_Number = test_hyperdbNumber.from_raw(
+            self.client.db.issue.get("1", 'numberval')
+        )
+
+        # client, classname, nodeid, prop, name, value,
+        #    anonymous=0, offset=None
+        d = NumberHTMLProperty(self.client, 'issue', '1',
+                                test_hyperdbNumber,
+                                'numberval', test_Number)
+
+        # string needed for memorydb/anydbm backend. Float?? when
+        # running against sql backends.
+        self.assertIsInstance(d._value, float)
+
+        self.assertEqual(d._value, 3.14)
+
+        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" type="number" value="3.14">"""
+        self.assertEqual(d.field(), input_expected)
+
+        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" step="50" type="number" value="3.14">"""
+        self.assertEqual(d.field(step="50"), input_expected)
+
+        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" type="text" value="3.14">"""
+        self.assertEqual(d.field(type="text"), input_expected)
+
+        self.assertEqual(d.pretty("%0.3f"), "3.140")
+        self.assertEqual(d.pretty("%0.3d"), "003")
+        self.assertEqual(d.pretty("%2d"), " 3")
+
+        # see what happens if for other values
+        value = d._value
+        d._value = "1" # integer
+        self.assertEqual(d.pretty("%2d"), "1")
+        d._value = "I'mNotAFloat" # not a number
+        self.assertEqual(d.pretty("%2d"), "I'mNotAFloat")
+        d._value = value
+
+        # check permissions return
+        is_view_ok_orig = d.is_view_ok
+        is_edit_ok_orig = d.is_edit_ok
+        no_access = lambda : False
+
+        d.is_view_ok = no_access
+        self.assertEqual(d.plain(), "[hidden]")
+
+        d.is_edit_ok = no_access
+        self.assertEqual(d.field(), "[hidden]")
+
+        d.is_view_ok = is_view_ok_orig
+        self.assertEqual(d.field(), "3.14")
+        d.is_edit_ok = is_edit_ok_orig
+
 class ZUtilsTestcase(TemplatingTestCase):
 
     def test_Iterator(self):

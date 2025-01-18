@@ -2066,6 +2066,7 @@ class NumberHTMLProperty(HTMLProperty):
         if value is None:
             value = ''
 
+        kwargs.setdefault("type", "number")
         return self.input(name=self._formname, value=value, size=size,
                           **kwargs)
 
@@ -2104,6 +2105,9 @@ class IntegerHTMLProperty(HTMLProperty):
         if value is None:
             value = ''
 
+        kwargs.setdefault("type", "number")
+        if kwargs["type"] == "number":
+            kwargs.setdefault("step", "1")
         return self.input(name=self._formname, value=value, size=size,
                           **kwargs)
 
