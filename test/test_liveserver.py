@@ -234,6 +234,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
            text(min_size=1))
     @example("@verbose", "1#")
     @example("@verbose", "#1stuff")
+    @example("@verbose", "0 #stuff")
     @settings(max_examples=_max_examples,
               deadline=fuzz_deadline) # in ms
     def test_class_url_param_accepting_integer_values(self, param, value):
@@ -245,8 +246,8 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
         query = '%s=%s'  % (param, value)
         f = session.get(url, params=query)
         try:
-            # test case '0#' '12345#stuff' '12345&stuff'
-            match = re.match('(^[0-9]*)[#&]', value)
+            # test case '0 #', '0#', '12345#stuff' '12345&stuff'
+            match = re.match(r'(^[0-9]*\s*)[#&]', value)
             if match is not None:
                 value = match[1]
             elif int(value) >= 0:
