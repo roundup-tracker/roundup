@@ -125,8 +125,7 @@ Features:
 - Use native number type input for Number() and Integer()
   properties. Integer() uses step=1 as well. (John Rouillard)
 - issue2551231 - template.py-HTMLClass::classhelp doesn't merge
-  user defined classes. It now merges them in. Also fixed same
-  issue in popcal(). (John Rouillard)
+  user defined classes. It now merges them in. (John Rouillard)
 
 2024-07-13 2.4.0
 

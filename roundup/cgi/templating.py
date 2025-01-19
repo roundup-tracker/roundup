@@ -2454,16 +2454,9 @@ class DateHTMLProperty(HTMLProperty):
             "data-height": height
         }
 
-        if 'class' in html_kwargs:
-            html_classes = ("classhelp %s" %
-                            html_escape(str(html_kwargs["class"]), True))
-            del html_kwargs["class"]
-        else:
-            html_classes = "classhelp"
-
-        return ('<a class="%s" %s href="javascript:help_window('
+        return ('<a class="classhelp" %s href="javascript:help_window('
                 "'%s?@template=calendar&amp;property=%s&amp;form=%s%s', %d, %d)"
-                '">%s</a>' % (html_classes, self.cgi_escape_attrs(**data_attr),
+                '">%s</a>' % (self.cgi_escape_attrs(**data_attr),
                               self._classname, self._name, form, date, width,
                               height, label))
 
