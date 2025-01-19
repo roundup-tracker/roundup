@@ -205,3 +205,12 @@ wiki/_static.
 Backups are assumed to be done by Waldmann-edv. There does not appear
 to be a way to get access to the underlying filesystem via ssh or to
 do a backup/tarball via with web.
+
+DNS
+===
+Thomas Waldman is also our DNS manager. All changes should go to him
+at email: info AT waldmann-edv DOT de.
+
+Richard Jones still owns/pays for the roundup-tracker.org domain.
+It expires on: 2026-01-06T10:49:58Z.
+
