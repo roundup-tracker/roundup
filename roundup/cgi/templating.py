@@ -981,10 +981,18 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                     group, sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
-        return ('<a class="classhelp" data-helpurl="%s" '
+
+        if 'class' in html_kwargs:
+            html_classes = ("classhelp %s" %
+                            html_escape(str(html_kwargs["class"]), True))
+            del html_kwargs["class"]
+        else:
+            html_classes = "classhelp"
+
+        return ('<a class="%s" data-helpurl="%s" '
                 'data-width="%s" data-height="%s" href="%s" '
                 'target="_blank" onclick="%s" %s>%s</a>') % (
-                    help_url, width, height,
+                    html_classes, help_url, width, height,
                     help_url, onclick, self.cgi_escape_attrs(**html_kwargs),
                     self._(label))
 
@@ -2446,9 +2454,16 @@ class DateHTMLProperty(HTMLProperty):
             "data-height": height
         }
 
-        return ('<a class="classhelp" %s href="javascript:help_window('
+        if 'class' in html_kwargs:
+            html_classes = ("classhelp %s" %
+                            html_escape(str(html_kwargs["class"]), True))
+            del html_kwargs["class"]
+        else:
+            html_classes = "classhelp"
+
+        return ('<a class="%s" %s href="javascript:help_window('
                 "'%s?@template=calendar&amp;property=%s&amp;form=%s%s', %d, %d)"
-                '">%s</a>' % (self.cgi_escape_attrs(**data_attr),
+                '">%s</a>' % (html_classes, self.cgi_escape_attrs(**data_attr),
                               self._classname, self._name, form, date, width,
                               height, label))
 
