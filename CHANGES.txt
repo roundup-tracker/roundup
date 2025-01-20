@@ -85,6 +85,8 @@ Fixed:
   be skipped. Fixed code so that the id used to set the sequence
   will be returned and not skipped. (Tom Ekberg diagnosed and
   supplied the fix. John Rouillard committed)
+- issue1895197 - translated help texts in admin.py not displayed
+  correctly. (Initial patch tobias-herp, John Rouillard)
 
 Features:
 

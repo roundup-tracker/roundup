@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
 # This module is free software, and you may redistribute it and/or modify
@@ -232,7 +233,17 @@ Help:
         commands = ['']
         for command in self.commands.values():
             h = _(command.__doc__).split('\n')[0]
-            commands.append(' ' + h[7:])
+            # ascii colon and space, U+003A '：' as ascii repr (for
+            # Chinese locales), 'fallback'
+            for seq in [': ', '\uff1a', 'fallback']:
+                if seq == 'fallback':
+                    # command hasn't been printed yet so ...
+                    commands.append(' ' + h.lstrip())
+                    break
+                if seq in h:
+                    commands.append(' ' + h.split(seq, 1)[1].lstrip())
+                    break
+                    
         commands.sort()
         commands.append(_(
 """Commands may be abbreviated as long as the abbreviation
