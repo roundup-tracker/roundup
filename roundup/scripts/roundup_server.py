@@ -1198,6 +1198,9 @@ ERROR: -c is not available because roundup couldn't import
         config.set_logging()
     if config["PIDFILE"]:
         config["PIDFILE"] = os.path.abspath(config["PIDFILE"])
+        if not (config["LOGFILE"] or config["LOGHTTPVIALOGGER"]):
+            print(_("If you specify a PID file you must use -l or -L."))
+            sys.exit(1)
 
     # fork the server from our parent if a pidfile is specified
     if config["PIDFILE"]:

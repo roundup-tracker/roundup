@@ -87,6 +87,10 @@ Fixed:
   supplied the fix. John Rouillard committed)
 - issue1895197 - translated help texts in admin.py not displayed
   correctly. (Initial patch tobias-herp, John Rouillard)
+- issue2551238 - roundup-server should exit with error if -d
+  <pidfile> is used without -l <logfile>. Added code to report
+  the issue. Added issue with relative paths for log file whn
+  using -L and -d with roundup-server. (John Rouillard)
 
 Features:
 

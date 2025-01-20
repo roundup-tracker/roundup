@@ -223,6 +223,20 @@ Additional notes for each keyword:
   ``-----END CERTIFICATE-----``.
   If not specified, roundup will generate a temporary, self-signed certificate
   for use.
+**loghttpvialogger** section
+  If you:
+
+    * have **loghttpvialogger** enabled
+    * use **pidfile**
+    * use a logging config file in the tracker's config.ini
+
+  it is essential to specify absolute paths for log files in the
+  tracker's logging.config file.  The use of pidfile causes the
+  server to switch to the root directory ('/'). As a result
+  relative paths in the logging ini configuration file (as
+  opposed to the tracker's config.ini) will be written to the
+  system's root directory. The access error will cause the server
+  to exit.
 **trackers** section
   Each line denotes a mapping from a URL component to a tracker home.
   Make sure the name part doesn't include any url-unsafe characters like
