@@ -81,6 +81,10 @@ Fixed:
   date input. Also add double-click and exit keyboard handlers to
   allow copy/paste/editing the text version of the date.  (John
   Rouillard)
+- issue2550815 - roundup-admin import for postgres causes id to
+  be skipped. Fixed code so that the id used to set the sequence
+  will be returned and not skipped. (Tom Ekberg diagnosed and
+  supplied the fix. John Rouillard committed)
 
 Features:
 

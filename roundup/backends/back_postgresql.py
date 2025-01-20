@@ -548,7 +548,7 @@ class Database(rdbms_common.Database):
         return str(self.cursor.fetchone()[0])
 
     def setid(self, classname, setid):
-        sql = "select setval('_%s_ids', %s) from dual" % (classname,
+        sql = "select setval('_%s_ids', %s, false) from dual" % (classname,
                                                           int(setid))
         self.sql(sql)
 
