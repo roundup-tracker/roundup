@@ -267,7 +267,9 @@ class Role:
 
     def hasPermission (self, db, perm, uid, classname, property, itemid, chk):
         # if itemid is given a classname must, too, checked in caller
-        assert not itemid or classname
+        if itemid and classname is None:
+            raise ValueError('classname must accompany itemid')
+
         perms = self._permissions
         if perm not in perms:
             return False
