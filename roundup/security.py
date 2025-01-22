@@ -2,11 +2,11 @@
 """
 __docformat__ = 'restructuredtext'
 
+import logging
 import weakref
 
 from roundup import hyperdb, support
 
-import logging
 logger = logging.getLogger('roundup.security')
 
 
@@ -119,6 +119,8 @@ class Permission:
             for a in args:
                 if cls.filter([itemid], **a):
                     return True
+            return False
+
         return check
 
     def test(self, db, permission, classname, property, userid, itemid):
@@ -241,16 +243,16 @@ class Role:
         pl = self.permission_list()
         return '<Role 0x%x %r,%r>' % (id(self), self.name, pl)
 
-    def addPermission (self, *permissions):
+    def addPermission(self, *permissions):
         for p in permissions:
             pn = p.name
             self._permissions.setdefault(pn, {})
             cn = p.klass
             if p.klass not in self._permissions[pn]:
-                self._permissions[pn][cn] = dict (((False, []), (True, [])))
+                self._permissions[pn][cn] = {False: [], True: []}
             self._permissions[pn][cn][bool(p.check)].append(p)
 
-    def filter_iter (self, permission, classname):
+    def filter_iter(self, permission, classname):
         """ Loop over all permissions for the current role on the class
             with a check method (and props_only False).
         """
@@ -265,7 +267,7 @@ class Role:
                     continue
                 yield p
 
-    def hasPermission (self, db, perm, uid, classname, property, itemid, chk):
+    def hasPermission(self, db, perm, uid, classname, property, itemid, chk):
         # if itemid is given a classname must, too, checked in caller
         if itemid and classname is None:
             raise ValueError('classname must accompany itemid')
@@ -287,32 +289,35 @@ class Role:
             if p.test(db, perm, classname, property, uid, itemid):
                 return True
 
-    def permission_list (self):
+        return False
+
+    def permission_list(self):
         """ Used for reporting in admin tool """
-        l = []
+        perm_list = []
         for p in self._permissions:
             for c in self._permissions[p]:
                 for cond in (False, True):
-                    l.extend (self._permissions[p][c][cond])
-        l.sort (key = lambda x: (x.klass or '', x.name))
-        return l
+                    perm_list.extend(self._permissions[p][c][cond])
+        perm_list.sort(key=lambda x: (x.klass or '', x.name))
+        return perm_list
 
-    def searchable (self, classname, propname):
-        for perm in 'View', 'Search':
+    def searchable(self, classname, propname):
+        for perm_name in 'View', 'Search':
             # Only permissions without a check method
-            if perm not in self._permissions:
+            if perm_name not in self._permissions:
                 continue
-            p = self._permissions[perm]
-            if classname not in p and None not in p:
+            perms = self._permissions[perm_name]
+            if classname not in perms and None not in perms:
                 continue
-            if None in p:
-                for p in p[None][False]:
+            if None in perms:
+                for p in perms[None][False]:
                     if p.searchable(classname, propname):
                         return True
-            if classname in p:
-                for p in p[classname][False]:
+            if classname in perms:
+                for p in perms[classname][False]:
                     if p.searchable(classname, propname):
                         return True
+        return False
 
 
 class Security:
@@ -334,9 +339,10 @@ class Security:
         self.addRole(name="Anonymous", description="An anonymous user")
 
         # default permissions - Admin may do anything
-        for p in 'create edit restore retire view'.split():
-            p = self.addPermission(name=p.title(),
-                                   description="User may %s everything" % p)
+        for perm_name in 'create edit restore retire view'.split():
+            p = self.addPermission(name=perm_name.title(),
+                                   description="User may %s everything" %
+                                   perm_name)
             self.addPermissionToRole('Admin', p)
 
         # initialise the permissions and roles needed for the UIs
@@ -441,7 +447,7 @@ class Security:
             no permissions with a check method found, the performed
             checks later will find no matching records.
         """
-        for perm in self.filter_iter (permission, userid, classname):
+        for perm in self.filter_iter(permission, userid, classname):
             if not perm.filter:
                 return False
         return True
@@ -450,7 +456,6 @@ class Security:
         """ For each of the given roles, check the permissions.
             Property can be a transitive property.
         """
-        perms = []
         # Note: break from inner loop means "found"
         #       break from outer loop means "not found"
         cn = classname
@@ -478,13 +483,13 @@ class Security:
         else:
             # for Link and Multilink require search permission on label-
             # and order-properties and on ID
-            if isinstance(prop, Multilink) or isinstance(prop, Link):
+            if isinstance(prop, (Link, Multilink)):
                 try:
                     cls = self.db.getclass(prop.classname)
                 except KeyError:
                     return 0
                 props = dict.fromkeys(('id', cls.labelprop(), cls.orderprop()))
-                for p in props.keys():
+                for p in props:
                     for rn in rolenames:
                         if self.role[rn].searchable(prop.classname, p):
                             break
@@ -568,8 +573,8 @@ class Security:
     def filterFilterspec(self, userid, classname, filterspec):
         """ Return a filterspec that has all non-allowed properties removed.
         """
-        return dict([(k, v) for k, v in filterspec.items()
-                     if self.hasSearchPermission(userid, classname, k)])
+        return {k: v for k, v in filterspec.items()
+                     if self.hasSearchPermission(userid, classname, k)}
 
     def filterSortspec(self, userid, classname, sort):
         """ Return a sort- or group-list that has all non-allowed properties
