@@ -3076,6 +3076,11 @@ There are several methods available on these wrapper objects:
                 date and time for Date properties. You can set this to
                 False for displaying only the date.
 
+              form (Date properties only)
+                When using a popup calendar (see popcal below) and the
+                enclosing form name is different from "itemSynopsis",
+                the form name must be specified for the field.
+
 	      format (Date properties only)
                 Sets the format of the date in the field - uses the
 		same format string argument as supplied to the

@@ -2276,7 +2276,7 @@ class DateHTMLProperty(HTMLProperty):
 
 
     def field(self, size=30, default=None, format=_marker, popcal=None,
-              display_time=None, **kwargs):
+              display_time=None, form='itemSynopsis', **kwargs):
         """Render a form edit field for the property
 
         If not editable, just display the value via plain().
@@ -2344,7 +2344,7 @@ class DateHTMLProperty(HTMLProperty):
             s = self.input(name=self._formname, value=value, size=size,
                            **kwargs)
             if popcal:
-                s += self.popcal()
+                s += self.popcal(form=form)
             return s
         else:
             raw_value = value
@@ -2368,7 +2368,7 @@ class DateHTMLProperty(HTMLProperty):
         s = self.input(name=self._formname, value=value, size=size,
                        **kwargs)
         if popcal:
-            s += self.popcal()
+            s += self.popcal(form=form)
         return s
 
     def reldate(self, pretty=1):

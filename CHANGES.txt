@@ -89,6 +89,9 @@ Fixed:
   <pidfile> is used without -l <logfile>. Added code to report
   the issue. Added issue with relative paths for log file whn
   using -L and -d with roundup-server. (John Rouillard)
+- Allow the specification of a "form" parameter for Date fields to make
+  the popup calendar work when the enclosing form has a name different
+  from "itemSynopsis".
 
 Features:
 
