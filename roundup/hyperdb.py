@@ -128,13 +128,19 @@ class Password(_Type):
 
 
 class Date(_Type):
-    """An object designating a Date property."""
+    """An object designating a Date property.
+       The display_time parameter specifies if we want date and time or
+       date only. Both display_time and format are defaults for the
+       field method of the DateHTMLProperty (for rendering html).
+    """
     def __init__(self, offset=None, required=False, default_value=None,
-                 quiet=False):
+                 quiet=False, display_time='yes', format=None):
         super(Date, self).__init__(required=required,
                                    default_value=default_value,
                                    quiet=quiet)
         self._offset = offset
+        self.display_time = display_time == 'yes'
+        self.format = format
 
     def offset(self, db):
         if self._offset is not None:

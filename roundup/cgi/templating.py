@@ -2074,7 +2074,10 @@ class NumberHTMLProperty(HTMLProperty):
         if value is None:
             value = ''
 
-        kwargs.setdefault("type", "number")
+        if self._client.db.config.WEB_USE_BROWSER_NUMBER_INPUT:
+            kwargs.setdefault("type", "number")
+        else:
+            kwargs.setdefault("type", "text")
         return self.input(name=self._formname, value=value, size=size,
                           **kwargs)
 
@@ -2113,11 +2116,13 @@ class IntegerHTMLProperty(HTMLProperty):
         if value is None:
             value = ''
 
-        kwargs.setdefault("type", "number")
-        if kwargs["type"] == "number":
+        if self._client.db.config.WEB_USE_BROWSER_NUMBER_INPUT:
+            kwargs.setdefault("type", "number")
+        else:
+            kwargs.setdefault("type", "text")
+        if kwargs['type'] == "number":
             kwargs.setdefault("step", "1")
-        return self.input(name=self._formname, value=value, size=size,
-                          **kwargs)
+        return self.input(name=self._formname, value=value, size=size, **kwargs)
 
     def __int__(self):
         """ Return an int of me
@@ -2213,7 +2218,7 @@ class DateHTMLProperty(HTMLProperty):
     _marker = ('HTMLPropertyMarker')
 
     def __init__(self, client, classname, nodeid, prop, name, value,
-                 anonymous=0, offset=None):
+                 anonymous=0, offset=None, display_time=None, format=None):
         HTMLProperty.__init__(self, client, classname, nodeid, prop, name,
                               value, anonymous=anonymous)
         if self._value and not is_us(self._value):
@@ -2221,6 +2226,10 @@ class DateHTMLProperty(HTMLProperty):
         self._offset = offset
         if self._offset is None:
             self._offset = self._prop.offset(self._db)
+        self.display_time = display_time
+        if self.display_time is None:
+            self.display_time = self._prop.display_time
+        self.format = format or self._prop.format
 
     def plain(self, escape=0):
         """ Render a "plain" representation of the property
@@ -2266,71 +2275,51 @@ class DateHTMLProperty(HTMLProperty):
                                 self._prop, self._formname, ret)
 
 
-    def field_time(self, size=30, default=None, format=_marker, popcal=None,
-                   **kwargs):
-
-        kwargs.setdefault("type", "datetime-local")
-        field = self.field(size=size, default=default, format=format,
-                           popcal=popcal, **kwargs)
-        return field
-
     def field(self, size=30, default=None, format=_marker, popcal=None,
-              **kwargs):
+              display_time=None, **kwargs):
         """Render a form edit field for the property
 
         If not editable, just display the value via plain().
 
+        If a format is specified or the use_browser_date_input config
+        option is set to 'no' we use a type="text" input. Otherwise we
+        use a type="date" or type="datetime-local" input depending on
+        the setting of display_time.
+
         If "popcal" then include the Javascript calendar editor.
-        Default=yes.
+        Default=yes for text input fields, otherwise no.
 
         The format string is a standard python strftime format string.
         """
+        if format is self._marker and self.format is not None:
+            format = self.format
         if not self.is_edit_ok():
             if format is self._marker:
                 return self.plain(escape=1)
             else:
                 return self.pretty(format)
 
-        kwargs.setdefault("type", "date")
+        if display_time is None:
+            display_time = self.display_time
+        use_date = self._client.db.config.WEB_USE_BROWSER_DATE_INPUT
 
-        if kwargs["type"] in ["date", "datetime-local"]:
-            acceptable_formats = {
-                "date": "%Y-%m-%d",
-                "datetime-local": "%Y-%m-%dT%H:%M:%S"
-            }
-
-            if format is not self._marker:  # user set format
-                if format != acceptable_formats[kwargs["type"]]:
-                    # format is incompatible with date type
-                    kwargs['type'] = "text"
-                    if popcal is not False:
-                        popcal = True
-                    logger.warning(self._(
-                        "Format '%(format)s' prevents use of modern "
-                        "date input. Remove format from field() call in "
-                        "template %(class)s.%(template)s. "
-                        "Using text input.") % {
-                            "format": format,
-                            "class": self._client.classname,
-                            "template": self._client.template
-                        })
-
-                    """
-                    raise ValueError(self._(
-                        "When using input type of '%(field_type)s', the "
-                        "format must not be set, or must be "
-                        "'%(format_string)s' to match RFC3339 date "
-                        "or date-time. Current format is '%(format)s'.") % {
-                            "field_type": kwargs["type"],
-                            "format_string":
-                            acceptable_formats[kwargs["type"]],
-                            "format": format,
-                      })"""
+        # https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats#local_date_and_time_strings
+        if format is not self._marker or not use_date:
+            kwargs ['type'] = "text"
+            # popcal is None by default, only when explicitly turned off
+            # do we use no popcal
+            popcal = popcal != False
+            # emulate display_time with old-style input
+            if not display_time and format is self._marker:
+                format = '%Y-%m-%d'
+        else:
+            if display_time:
+                kwargs ['type'] = "datetime-local"
+                format = '%Y-%m-%dT%H:%M:%S'
             else:
-                # https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats#local_date_and_time_strings
-                # match date-time format in
-                # https://www.rfc-editor.org/rfc/rfc3339
-                format = acceptable_formats[kwargs['type']]
+                kwargs ['type'] = "date"
+                format = '%Y-%m-%d'
+            popcal = False
 
         value = self._value
 

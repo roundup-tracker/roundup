@@ -90,11 +90,11 @@ caches the schema).
       <td tal:content="structure context/due_date/field" /> 
      </tr>
     
-   If you want to show the date and time for due_date then do this instead::
+   If you want to show only the date part of due_date then do this instead:
    
     <tr> 
      <th>Due Date</th> 
-     <td tal:content="structure context/due_date/field_time" /> 
+     <td tal:content="structure python:context.due_date.field(display_time=False)" />
     </tr>
 
 3. Add the property to the ``issue.index.html`` page::

@@ -79,8 +79,10 @@ Fixed:
   input fields. Thinko in the code. (John Rouillard)
 - issue2551390 - Replace text input/calendar popup with native
   date input. Also add double-click and exit keyboard handlers to
-  allow copy/paste/editing the text version of the date.  (John
-  Rouillard)
+  allow copy/paste/editing the text version of the date. Configurable
+  via the use_browser_date_input setting in the [web] section of
+  config.ini. By default browser native dates are turned off.
+  (John Rouillard, Ralf Schlatterbeck)
 - issue1895197 - translated help texts in admin.py not displayed
   correctly. (Initial patch tobias-herp, John Rouillard)
 - issue2551238 - roundup-server should exit with error if -d
@@ -129,7 +131,9 @@ Features:
   allow reporting an error to the user from a template. (John
   Rouillard)
 - Use native number type input for Number() and Integer()
-  properties. Integer() uses step=1 as well. (John Rouillard)
+  properties. Integer() uses step=1 as well. Configurable via the
+  use_browser_number_input setting in the [web] section of config.ini
+  (John Rouillard, Ralf Schlatterbeck)
 - issue2551231 - template.py-HTMLClass::classhelp doesn't merge
   user defined classes. It now merges them in. (John Rouillard)
 

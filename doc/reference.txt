@@ -3070,8 +3070,11 @@ There are several methods available on these wrapper objects:
 	      tri-state yes/no/neither selection. This method may take some
 	      arguments:
 
-	      size (default 30)
-		Sets the width in characters of the edit field
+              display_time (Date properties only)
+                By default this uses the display_time paramter of the
+                Date property (which by default is True) and displays
+                date and time for Date properties. You can set this to
+                False for displaying only the date.
 
 	      format (Date properties only)
                 Sets the format of the date in the field - uses the
@@ -3083,24 +3086,32 @@ There are several methods available on these wrapper objects:
 		text edit box with the year and month part of your
 		date.
 
-              type (depends on property type)
-                Sets the type property of the input. To change a date
-                property field from a native date input to a text
-                input you would use ``type="text"``.
+	      labelfirst (Boolean properties only)
+	        place the labels before the radio buttons
 
 	      popcal (Date properties only)
 		Include a link to the JavaScript-based popup calendar
-		for date selection. Defaults to off/False since native
-		date inputs supply popup calendars.
+		for date selection. Defaults to off/False when browser
+                native dates are in use and on/True otherwise because
+                browser native dates support a date popup on most
+                browsers.
+
+	      size (default 30)
+		Sets the width in characters of the edit field
+
+              type (depends on property type)
+                Sets the type property of the input. To change a date
+                property field from a native date input to a text
+                input you would use ``type="text"``. For Date properties
+                the type cannot be set by the user and is enforced via
+                the configuration (if browser native date input should
+                be used).
 
 	      y_label, n_label, u_label (Boolean properties only)
 	        Set the labels for the true/false/undefined
 		states. If u_label is defined, it produces a
 	        tri-state radio button selector. Otherwise, it
 		allows selection of true/yes or false/no only.
-
-	      labelfirst (Boolean properties only)
-	        place the labels before the radio buttons
 
               Other arguments are added as properties directly on the
               input tag. For example::
@@ -3114,11 +3125,6 @@ There are several methods available on these wrapper objects:
 	      Note that using ``None`` as the value results in an
 	      attribute without a value. This is useful for boolean
 	      properties like ``required``.
-
-  field_time  (Date properties only)
-              Create a browser native input for editing date and time.
-              The field method creates an input for editing
-              month/day/year (without time).
 
   rst         only on String properties - render the value of the property
 	      as ReStructuredText (requires the :ref:`Docutils
@@ -3179,9 +3185,10 @@ There are several methods available on these wrapper objects:
 	      is returned if the value is ``None`` otherwise it
 	      is converted to a string.
 
-  popcal      This is deprecated with Roundup 2.5 which uses the
-              native HTML5 date input. The native date input
-              includes a calendar popup on modern broswers.
+  popcal      This is deprecated with Roundup 2.5 which either uses the
+              native HTML5 date input or can generate a date popup with
+              the popcal option of the ``field`` method. The native date
+              input includes a calendar popup on modern broswers.
 
               Generate a link to a popup calendar which may be used to
 	      edit the date field, for example::
@@ -3193,6 +3200,9 @@ There are several methods available on these wrapper objects:
 
 		<span tal:replace="structure context/due/field" />
 		<span tal:replace="structure context/due/popcal" />
+              
+              Since the ``field`` by default already produces a popup
+              calendar this use is deprecated.
 
   menu        only on Link and Multilink properties - render a form select
 	      list for this property. Takes a number of optional arguments

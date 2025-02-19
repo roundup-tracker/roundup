@@ -132,7 +132,7 @@ Integer Properties
 
 These fields take a whole/integer number without decimal marker like
 ``123``, ``+123``, ``-123``. Exponents are not supported. Your browser
-may show an up/down arrow spinner to change the value. 
+may show an up/down arrow spinner to change the value.
 
 Boolean properties
 ~~~~~~~~~~~~~~~~~~
@@ -178,9 +178,11 @@ Classhelper`_ for details.
 Date properties
 ~~~~~~~~~~~~~~~
 
-Date properties are usually shown using a native HTML date
-element. This provides a calendar button for choosing the
-date. The date is shown in the normal format for your location.
+Date properties can be shown using a native HTML date (or
+datetime-local) element by setting ``use_browser_date_input=yes`` in
+section ``[web]`` in ``config.ini``. This provides a calendar button for
+choosing the date. The date is shown in the normal format for your
+location.
 
 Native date inputs do not allow the use of partial forms as
 defined below.  For this reason, you may edit a date/time
