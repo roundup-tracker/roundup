@@ -1122,7 +1122,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         try:
             if int(self._nodeid) > 0:
                 value = self._klass.get(self._nodeid, items[0], None)
-        except ValueError:
+        except (IndexError, ValueError):
             value = self._nodeid
         if value is None:
             if isinstance(prop, hyperdb.Multilink):
@@ -2573,9 +2573,9 @@ class LinkHTMLProperty(HTMLProperty):
             if k and num_re.match(self._value):
                 try:
                     value = linkcl.get(self._value, k)
-                except IndexError:
+                except (IndexError, hyperdb.HyperdbValueError) as err:
                     if idparse:
-                        raise
+                        self._client.add_error_message(str(err))
                     value = ''
             else:
                 value = self._value
@@ -2880,7 +2880,10 @@ class MultilinkHTMLProperty(HTMLProperty):
                 showid = 1
             if not showid:
                 k = linkcl.labelprop(1)
-                value = lookupKeys(linkcl, k, value)
+                try:
+                    value = lookupKeys(linkcl, k, value)
+                except (ValueError, IndexError) as err:
+                    self._client.add_error_message (str(err))
             value = ','.join(value)
             kwargs["value"] = value
 

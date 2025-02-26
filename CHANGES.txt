@@ -91,7 +91,8 @@ Fixed:
   using -L and -d with roundup-server. (John Rouillard)
 - Allow the specification of a "form" parameter for Date fields to make
   the popup calendar work when the enclosing form has a name different
-  from "itemSynopsis".
+  from "itemSynopsis". (Ralf Schlatterbeck)
+- issue2551376: Fix tracebacks in item templates (Ralf Schlatterbeck)
 
 Features:
 

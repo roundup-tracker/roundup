@@ -2248,8 +2248,15 @@ class Class(hyperdb.Class):
         self.fireReactors('restore', nodeid, None)
 
     def is_retired(self, nodeid):
-        """Return true if the node is rerired
+        """Return true if the node is retired
         """
+        # Do not produce invalid sql, the id must be numeric
+        try:
+            id = int(nodeid)
+        except ValueError:
+            raise hyperdb.HyperdbValueError(_(
+                'class %(cls)s: %(value)r is not an id')
+                % {'cls': self.classname, 'value': nodeid})
         sql = 'select __retired__ from _%s where id=%s' % (self.classname,
                                                            self.db.arg)
         self.db.sql(sql, (nodeid,))

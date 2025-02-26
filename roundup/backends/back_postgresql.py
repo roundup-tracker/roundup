@@ -116,7 +116,7 @@ def get_database_schema_names(config):
         #
         # Database name is any character sequence not including a " or
         # whitespace. Arguably both are allowed by:
-        # 
+        #
         #  https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
         #
         # with suitable quoting but ... really.
@@ -170,7 +170,7 @@ def get_database_user_name(config):
         #
         # Database name is any character sequence not including a " or
         # whitespace. Arguably both are allowed by:
-        # 
+        #
         #  https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
         #
         # with suitable quoting but ... really.
@@ -560,6 +560,16 @@ class Database(rdbms_common.Database):
             self.cursor.execute('DROP SEQUENCE _%s_ids' % cn)
             self.cursor.execute('CREATE SEQUENCE _%s_ids' % cn)
 
+    def getnode (self, classname, nodeid, fetch_multilinks=True):
+        """ For use of savepoint see 'Class' below """
+        self.sql('savepoint sp')
+        try:
+            getnode = rdbms_common.Database.getnode
+            return getnode(self, classname, nodeid, fetch_multilinks)
+        except psycopg2.errors.DataError as err:
+            self.sql('rollback to savepoint sp')
+            raise hyperdb.HyperdbValueError(str (err).split('\n')[0])
+
 
 class PostgresqlClass:
     order_by_null_values = '(%s is not NULL)'
@@ -567,7 +577,34 @@ class PostgresqlClass:
 
 
 class Class(PostgresqlClass, rdbms_common.Class):
-    pass
+    """ We re-raise database-specific data errors as HyperdbValueError
+        Note that we re-use the savepoint so that at most one savepoint
+        is used.
+    """
+
+    def filter(self, *args, **kw):
+        self.db.sql('savepoint sp')
+        try:
+            return rdbms_common.Class.filter(self, *args, **kw)
+        except psycopg2.errors.DataError as err:
+            self.db.sql('rollback to savepoint sp')
+            raise hyperdb.HyperdbValueError(str (err).split('\n')[0])
+
+    def filter_iter(self, *args, **kw):
+        self.db.sql('savepoint sp')
+        try:
+            return rdbms_common.Class.filter_iter(self, *args, **kw)
+        except psycopg2.errors.DataError as err:
+            self.db.sql('rollback to savepoint sp')
+            raise hyperdb.HyperdbValueError(str (err).split('\n')[0])
+
+    def is_retired(self, nodeid):
+        self.db.sql('savepoint sp')
+        try:
+            return rdbms_common.Class.is_retired(self, nodeid)
+        except psycopg2.errors.DataError as err:
+            self.db.sql('rollback to savepoint sp')
+            raise hyperdb.HyperdbValueError (str (err).split('\n')[0])
 
 
 class IssueClass(PostgresqlClass, rdbms_common.IssueClass):
