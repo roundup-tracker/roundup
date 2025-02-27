@@ -593,7 +593,8 @@ class Class(PostgresqlClass, rdbms_common.Class):
     def filter_iter(self, *args, **kw):
         self.db.sql('savepoint sp')
         try:
-            return rdbms_common.Class.filter_iter(self, *args, **kw)
+            for v in rdbms_common.Class.filter_iter(self, *args, **kw):
+                yield v
         except psycopg2.errors.DataError as err:
             self.db.sql('rollback to savepoint sp')
             raise hyperdb.HyperdbValueError(str (err).split('\n')[0])
