@@ -31,7 +31,7 @@ import shutil
 import time
 
 from roundup.anypy.dbm_ import anydbm, whichdb
-from roundup.anypy.strings import b2s, bs2b, repr_export, eval_import, is_us
+from roundup.anypy.strings import b2s, repr_export, eval_import, is_us
 
 from roundup import hyperdb, date, password, roundupdb, security, support
 from roundup.mlink_expr import Expression, ExpressionError
@@ -47,8 +47,6 @@ except ImportError:
     sessions_redis = None
 
 from roundup.backends.indexer_common import get_indexer
-
-from hashlib import md5
 
 
 def db_exists(config):
@@ -2221,168 +2219,19 @@ class Class(hyperdb.Class):
 
 
 class FileClass(hyperdb.FileClass, Class):
-    """This class defines a large chunk of data. To support this, it has a
-       mandatory String property "content" which is typically saved off
-       externally to the hyperdb.
-
-       The default MIME type of this data is defined by the
-       "default_mime_type" class attribute, which may be overridden by each
-       node if the class defines a "type" String property.
-    """
+    # Use for explicit upcalls in generic code, for py2 compat we cannot
+    # use super() without making everything a new-style class.
+    subclass = Class
     def __init__(self, db, classname, **properties):
-        """The newly-created class automatically includes the "content"
-        and "type" properties.
-        """
-        if 'content' not in properties:
-            properties['content'] = hyperdb.String(indexme='yes')
-        if 'type' not in properties:
-            properties['type'] = hyperdb.String()
+        self._update_properties(properties)
         Class.__init__(self, db, classname, **properties)
 
-    def create(self, **propvalues):
-        """ Snarf the "content" propvalue and store in a file
-        """
-        # we need to fire the auditors now, or the content property won't
-        # be in propvalues for the auditors to play with
-        self.fireAuditors('create', None, propvalues)
-
-        # now remove the content property so it's not stored in the db
-        content = propvalues['content']
-        del propvalues['content']
-
-        # make sure we have a MIME type
-        mime_type = propvalues.get('type', self.default_mime_type)
-
-        # do the database create
-        newid = self.create_inner(**propvalues)
-
-        # store off the content as a file
-        self.db.storefile(self.classname, newid, None, bs2b(content))
-
-        # fire reactors
-        self.fireReactors('create', newid, None)
-
-        return newid
-
-    def get(self, nodeid, propname, default=_marker, cache=1):
-        """ Trap the content propname and get it from the file
-
-        'cache' exists for backwards compatibility, and is not used.
-        """
-        poss_msg = 'Possibly an access right configuration problem.'
-        if propname == 'content':
-            try:
-                return b2s(self.db.getfile(self.classname, nodeid, None))
-            except IOError as strerror:
-                # XXX by catching this we don't see an error in the log.
-                return 'ERROR reading file: %s%s\n%s\n%s' % (
-                        self.classname, nodeid, poss_msg, strerror)
-            except UnicodeDecodeError as e:
-                # if content is not text (e.g. jpeg file) we get
-                # unicode error trying to convert to string in python 3.
-                # trap it and supply an error message. Include md5sum
-                # of content as this string is included in the etag
-                # calculation of the object.
-                return ('%s%s is not text, retrieve using '
-                        'binary_content property. mdsum: %s') % (
-                            self.classname, nodeid,
-                            md5(self.db.getfile(
-                                self.classname, nodeid, None)).hexdigest())  # nosec - bandit md5 use ok
-        elif propname == 'binary_content':
-            return self.db.getfile(self.classname, nodeid, None)
-
-        if default is not _marker:
-            return Class.get(self, nodeid, propname, default)
-        else:
-            return Class.get(self, nodeid, propname)
-
-    def set(self, itemid, **propvalues):
-        """ Snarf the "content" propvalue and update it in a file
-        """
-        self.fireAuditors('set', itemid, propvalues)
-
-        # create the oldvalues dict - fill in any missing values
-        oldvalues = copy.deepcopy(self.db.getnode(self.classname, itemid))
-        for name, prop in self.getprops(protected=0).items():
-            if name in oldvalues:
-                continue
-            if isinstance(prop, hyperdb.Multilink):
-                oldvalues[name] = []
-            else:
-                oldvalues[name] = None
-
-        # now remove the content property so it's not stored in the db
-        content = None
-        if 'content' in propvalues:
-            content = propvalues['content']
-            del propvalues['content']
-
-        # do the database update
-        propvalues = self.set_inner(itemid, **propvalues)
-
-        # do content?
-        if content:
-            # store and possibly index
-            self.db.storefile(self.classname, itemid, None, bs2b(content))
-            if self.properties['content'].indexme:
-                index_content = content
-                if bytes != str and isinstance(content, bytes):
-                    index_content = content.decode('utf-8', errors='ignore')
-                mime_type = self.get(itemid, 'type', self.default_mime_type)
-                self.db.indexer.add_text((self.classname, itemid, 'content'),
-                                         index_content, mime_type)
-            propvalues['content'] = content
-
-        # fire reactors
-        self.fireReactors('set', itemid, oldvalues)
-        return propvalues
-
-    def index(self, nodeid):
-        """ Add (or refresh) the node to search indexes.
-
-        Use the content-type property for the content property.
-        """
-        # find all the String properties that have indexme
-        for prop, propclass in self.getprops().items():
-            if prop == 'content' and propclass.indexme:
-                mime_type = self.get(nodeid, 'type', self.default_mime_type)
-                index_content = self.get(nodeid, 'binary_content')
-                if bytes != str and isinstance(index_content, bytes):
-                    index_content = index_content.decode('utf-8',
-                                                         errors='ignore')
-                self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                                         index_content, mime_type)
-            elif isinstance(propclass, hyperdb.String) and propclass.indexme:
-                # index them under (classname, nodeid, property)
-                try:
-                    value = str(self.get(nodeid, prop))
-                except IndexError:
-                    # node has been destroyed
-                    continue
-                self.db.indexer.add_text((self.classname, nodeid, prop), value)
-
-
-# deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):
-    # Overridden methods:
+    # Use for explicit upcalls in generic code, for py2 compat we cannot
+    # use super() without making everything a new-style class.
+    subclass = Class
     def __init__(self, db, classname, **properties):
-        """The newly-created class automatically includes the "messages",
-        "files", "nosy", and "superseder" properties.  If the 'properties'
-        dictionary attempts to specify any of these properties or a
-        "creation" or "activity" property, a ValueError is raised.
-        """
-        if 'title' not in properties:
-            properties['title'] = hyperdb.String(indexme='yes')
-        if 'messages' not in properties:
-            properties['messages'] = hyperdb.Multilink("msg")
-        if 'files' not in properties:
-            properties['files'] = hyperdb.Multilink("file")
-        if 'nosy' not in properties:
-            # note: journalling is turned off as it really just wastes
-            # space. this behaviour may be overridden in an instance
-            properties['nosy'] = hyperdb.Multilink("user", do_journal="no")
-        if 'superseder' not in properties:
-            properties['superseder'] = hyperdb.Multilink(classname)
+        self._update_properties(classname, properties)
         Class.__init__(self, db, classname, **properties)
 
 # vim: set et sts=4 sw=4 :
