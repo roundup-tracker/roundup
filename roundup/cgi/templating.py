@@ -587,7 +587,7 @@ def lookupKeys(linkcl, key, ids, num_re=num_re):
     for entry in ids:
         if num_re.match(entry):
             try:
-                label = linkcl.get(entry, key)
+                label = linkcl.get(entry, key, allow_abort=False)
             except IndexError:
                 # fall back to id if illegal (avoid template crash)
                 label = entry
@@ -1121,7 +1121,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         value = None
         try:
             if int(self._nodeid) > 0:
-                value = self._klass.get(self._nodeid, items[0], None)
+                value = self._klass.get(self._nodeid, items[0], None,
+                                        allow_abort=False)
         except (IndexError, ValueError):
             value = self._nodeid
         if value is None:
@@ -1157,7 +1158,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
     def is_retired(self):
         """Is this item retired?"""
-        return self._klass.is_retired(self._nodeid)
+        return self._klass.is_retired(self._nodeid, allow_abort=False)
 
     def submit(self, label=''"Submit Changes", action="edit", html_kwargs={}):
         """Generate a submit button.
@@ -2572,7 +2573,7 @@ class LinkHTMLProperty(HTMLProperty):
             idparse = self._prop.try_id_parsing
             if k and num_re.match(self._value):
                 try:
-                    value = linkcl.get(self._value, k)
+                    value = linkcl.get(self._value, k, allow_abort=False)
                 except (IndexError, hyperdb.HyperdbValueError) as err:
                     if idparse:
                         self._client.add_error_message(str(err))
@@ -3043,7 +3044,7 @@ def make_key_function(db, classname, sort_on=None):
 
     def keyfunc(a):
         if num_re.match(a):
-            a = linkcl.get(a, sort_on)
+            a = linkcl.get(a, sort_on, allow_abort=False)
             # In Python3 we may not compare numbers/strings and None
             if a is None:
                 if isinstance(prop, (hyperdb.Number, hyperdb.Integer)):

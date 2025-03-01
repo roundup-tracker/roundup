@@ -560,14 +560,17 @@ class Database(rdbms_common.Database):
             self.cursor.execute('DROP SEQUENCE _%s_ids' % cn)
             self.cursor.execute('CREATE SEQUENCE _%s_ids' % cn)
 
-    def getnode (self, classname, nodeid, fetch_multilinks=True):
+    def getnode(self, classname, nodeid, fetch_multilinks=True,
+                allow_abort=True):
         """ For use of savepoint see 'Class' below """
-        self.sql('savepoint sp')
+        if not allow_abort:
+            self.sql('savepoint sp')
         try:
             getnode = rdbms_common.Database.getnode
             return getnode(self, classname, nodeid, fetch_multilinks)
         except psycopg2.errors.DataError as err:
-            self.sql('rollback to savepoint sp')
+            if not allow_abort:
+                self.sql('rollback to savepoint sp')
             raise hyperdb.HyperdbValueError(str (err).split('\n')[0])
 
 
@@ -583,28 +586,26 @@ class Class(PostgresqlClass, rdbms_common.Class):
     """
 
     def filter(self, *args, **kw):
-        self.db.sql('savepoint sp')
         try:
             return rdbms_common.Class.filter(self, *args, **kw)
         except psycopg2.errors.DataError as err:
-            self.db.sql('rollback to savepoint sp')
             raise hyperdb.HyperdbValueError(str (err).split('\n')[0])
 
     def filter_iter(self, *args, **kw):
-        self.db.sql('savepoint sp')
         try:
             for v in rdbms_common.Class.filter_iter(self, *args, **kw):
                 yield v
         except psycopg2.errors.DataError as err:
-            self.db.sql('rollback to savepoint sp')
             raise hyperdb.HyperdbValueError(str (err).split('\n')[0])
 
-    def is_retired(self, nodeid):
-        self.db.sql('savepoint sp')
+    def is_retired(self, nodeid, allow_abort=True):
+        if not allow_abort:
+            self.db.sql('savepoint sp')
         try:
             return rdbms_common.Class.is_retired(self, nodeid)
         except psycopg2.errors.DataError as err:
-            self.db.sql('rollback to savepoint sp')
+            if not allow_abort:
+                self.db.sql('rollback to savepoint sp')
             raise hyperdb.HyperdbValueError (str (err).split('\n')[0])
 
 

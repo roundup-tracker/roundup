@@ -1,4 +1,4 @@
-#
+
 # Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
 # This module is free software, and you may redistribute it and/or modify
 # under the same terms as Python, so long as this copyright message and
@@ -1251,11 +1251,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if propname not in node:
                 self._materialize_multilink(classname, nodeid, node, propname)
 
-    def getnode(self, classname, nodeid, fetch_multilinks=True):
+    def getnode(self, classname, nodeid, fetch_multilinks=True,
+                allow_abort=True):
         """ Get a node from the database.
             For optimisation optionally we don't fetch multilinks
             (lazy Multilinks).
             But for internal database operations we need them.
+            'allow_abort' determines if we allow that the current
+            transaction is aborted due to a data error (e.g. invalid nodeid).
         """
         # see if we have this node cached
         key = (classname, nodeid)
@@ -1863,7 +1866,7 @@ class Class(hyperdb.Class):
         # XXX numeric ids
         return str(newid)
 
-    def get(self, nodeid, propname, default=_marker, cache=1):
+    def get(self, nodeid, propname, default=_marker, cache=1, allow_abort=True):
         """Get the value of a property on an existing node of this class.
 
         'nodeid' must be the id of an existing node of this class or an
@@ -1871,12 +1874,16 @@ class Class(hyperdb.Class):
         of this class or a KeyError is raised.
 
         'cache' exists for backwards compatibility, and is not used.
+
+        'allow_abort' determines if we allow that the current
+        transaction is aborted due to a data error (e.g.  invalid nodeid).
         """
         if propname == 'id':
             return nodeid
 
         # get the node's dict
-        d = self.db.getnode(self.classname, nodeid, fetch_multilinks=False)
+        d = self.db.getnode(self.classname, nodeid, fetch_multilinks=False,
+                            allow_abort=allow_abort)
         # handle common case -- that property is in dict -- first
         # if None and one of creator/creation actor/activity return None
         if propname in d:
@@ -2245,8 +2252,10 @@ class Class(hyperdb.Class):
 
         self.fireReactors('restore', nodeid, None)
 
-    def is_retired(self, nodeid):
+    def is_retired(self, nodeid, allow_abort=True):
         """Return true if the node is retired
+           The allow_abort parameter determines if we allow the
+           transaction to be aborted when an invalid nodeid has been passed.
         """
         # Do not produce invalid sql, the id must be numeric
         try:

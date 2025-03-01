@@ -381,11 +381,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 'save %s%s %r' % (classname, nodeid, node))
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
-    def getnode(self, classname, nodeid, db=None, cache=1):
+    def getnode(self, classname, nodeid, db=None, cache=1, allow_abort=True):
         """ get a node from the database
 
             Note the "cache" parameter is not used, and exists purely for
             backward compatibility!
+
+            'allow_abort' is used only in sql backends.
         """
         # try the cache
         cache_dict = self.cache.setdefault(classname, {})
@@ -1026,7 +1028,7 @@ class Class(hyperdb.Class):
 
         return newid
 
-    def get(self, nodeid, propname, default=_marker, cache=1):
+    def get(self, nodeid, propname, default=_marker, cache=1, allow_abort=True):
         """Get the value of a property on an existing node of this class.
 
         'nodeid' must be the id of an existing node of this class or an
@@ -1034,6 +1036,8 @@ class Class(hyperdb.Class):
         of this class or a KeyError is raised.
 
         'cache' exists for backward compatibility, and is not used.
+
+        'allow_abort' is used only in sql backends.
 
         Attempts to get the "creation" or "activity" properties should
         do the right thing.
@@ -1459,8 +1463,9 @@ class Class(hyperdb.Class):
 
         self.fireReactors('restore', nodeid, None)
 
-    def is_retired(self, nodeid, cldb=None):
+    def is_retired(self, nodeid, cldb=None, allow_abort=True):
         """Return true if the node is retired.
+           'allow_abort' is used only in sql backends.
         """
         node = self.db.getnode(self.classname, nodeid, cldb)
         if self.db.RETIRED_FLAG in node:

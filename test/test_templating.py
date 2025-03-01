@@ -143,7 +143,9 @@ class HTMLDatabaseTestCase(TemplatingTestCase):
         db = MockNull(issue = HTMLDatabase(self.client).issue)
         db.issue._klass.list = lambda : ['23', 'a', 'b']
         # Make db.getclass return something that has a sensible 'get' method
-        mock = MockNull(get = lambda x, y : None)
+        def get(x, y, allow_abort=True):
+            return None
+        mock = MockNull(get = get)
         db.issue._db.getclass = lambda x : mock
         l = db.issue.list()
 
@@ -170,7 +172,7 @@ class FunctionsTestCase(TemplatingTestCase):
 
     def test_lookupKeys(self):
         db = HTMLDatabase(self.client)
-        def get(entry, key):
+        def get(entry, key, allow_abort=True):
             return {'1': 'green', '2': 'eggs'}.get(entry, entry)
         shrubbery = MockNull(get=get)
         db._db.classes = {'shrubbery': shrubbery}

@@ -1065,10 +1065,12 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         """
         return node
 
-    def getnode(self, classname, nodeid):
+    def getnode(self, classname, nodeid, allow_abort=True):
         """Get a node from the database.
 
         'cache' exists for backwards compatibility, and is not used.
+        'allow_abort' determines if we allow that the current
+        transaction is aborted due to a data error (e.g. invalid nodeid).
         """
         raise NotImplementedError
 
@@ -1235,7 +1237,7 @@ class Class:
         """
         raise NotImplementedError
 
-    def get(self, nodeid, propname, default=_marker, cache=1):
+    def get(self, nodeid, propname, default=_marker, cache=1, allow_abort=True):
         """Get the value of a property on an existing node of this class.
 
         'nodeid' must be the id of an existing node of this class or an
@@ -1243,6 +1245,8 @@ class Class:
         of this class or a KeyError is raised.
 
         'cache' exists for backwards compatibility, and is not used.
+        'allow_abort' determines if we allow that the current
+        transaction is aborted due to a data error (e.g. invalid nodeid).
         """
         raise NotImplementedError
 
@@ -1300,8 +1304,10 @@ class Class:
         """
         raise NotImplementedError
 
-    def is_retired(self, nodeid):
+    def is_retired(self, nodeid, allow_abort=True):
         """Return true if the node is rerired
+           'allow_abort' specifies if we allow the transaction to be
+           aborted if a syntactically invalid nodeid is passed.
         """
         raise NotImplementedError
 
@@ -2182,10 +2188,13 @@ class FileClass:
         ensureParentsExist(dest)
         shutil.copyfile(source, dest)
 
-    def get(self, nodeid, propname, default=_marker, cache=1):
+    def get(self, nodeid, propname, default=_marker, cache=1, allow_abort=True):
         """ Trap the content propname and get it from the file
 
         'cache' exists for backwards compatibility, and is not used.
+
+        'allow_abort' determines if we allow that the current
+        transaction is aborted due to a data error (e.g. invalid nodeid).
         """
         poss_msg = 'Possibly an access right configuration problem.'
         if propname == 'content':
@@ -2212,9 +2221,11 @@ class FileClass:
             return self.db.getfile(self.classname, nodeid, None)
 
         if default is not _marker:
-            return self.subclass.get(self, nodeid, propname, default)
+            return self.subclass.get(self, nodeid, propname, default,
+                                     allow_abort=allow_abort)
         else:
-            return self.subclass.get(self, nodeid, propname)
+            return self.subclass.get(self, nodeid, propname,
+                                     allow_abort=allow_abort)
 
     def import_files(self, dirname, nodeid):
         """ Import the "content" property as a file

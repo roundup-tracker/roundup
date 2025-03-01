@@ -661,8 +661,13 @@ class EditCommon(Action):
             cn, nodeid = needed
             if props:
                 if nodeid is not None and int(nodeid) > 0:
-                    # make changes to the node
-                    props = self._changenode(cn, nodeid, props)
+                    # make changes to the node, if an error occurs the
+                    # db may be in a state that needs rollback
+                    try:
+                        props = self._changenode(cn, nodeid, props)
+                    except (IndexError, ValueError):
+                        self.db.rollback ()
+                        raise
 
                     # and some nice feedback for the user
                     if props:
