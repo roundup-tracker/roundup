@@ -7,6 +7,7 @@ import errno
 import mimetypes
 import os
 import os.path
+import stat
 
 from roundup.cgi.templating import StringIO, context, TALLoaderBase
 from roundup.cgi.PageTemplates import PageTemplate
@@ -30,7 +31,7 @@ class Loader(TALLoaderBase):
 
         # has it changed?
         try:
-            stime = os.stat(src)[os.path.stat.ST_MTIME]
+            stime = os.stat(src)[stat.ST_MTIME]
         except os.error as error:
             if error.errno != errno.ENOENT:
                 raise
