@@ -47,7 +47,8 @@ Repeat for each tracker instance.
    Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
    Python version 2.7 that is newer than 2.7.2 is required to run
    Roundup.  Starting with Roundup version 2.0.0 we also support Python 3
-   versions newer than 3.6.
+   versions newer than 3.6. Roundup version 2.5 supports Python
+   3.7 and newer.
 
 Recent release notes have the following labels:
 
@@ -100,13 +101,15 @@ Contents:
 Migrating from 2.4.0 to 2.5.0
 =============================
 
-Deprecation Notices (info)
---------------------------
+Deprecation Notices (required)
+------------------------------
 
-Support for SQLite version 2 has been removed in 2.5.0.  Support for
-the `PySQLite <https://github.com/ghaering/pysqlite>`_ library has
-been removed in 2.5.0. Only the Python supplied sqlite3 library will
-be supported.
+  * Support for SQLite version 2 has been removed in 2.5.0.
+  * Support for the `PySQLite <https://github.com/ghaering/pysqlite>`_
+    library has been removed in 2.5.0. Only the Python supplied
+    sqlite3 library is supported.
+  * Roundup 2.5.0 supports Python 3.7 or newer. (It is not tested
+    on Python 3.6. It may work but we don;t support it.)
 
 Update responsive template _generic.404.html and query.item.html (recommended)
 ------------------------------------------------------------------------------

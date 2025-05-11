@@ -90,7 +90,7 @@ caches the schema).
       <td tal:content="structure context/due_date/field" /> 
      </tr>
     
-   If you want to show only the date part of due_date then do this instead:
+   If you want to show only the date part of due_date then do this instead::
    
     <tr> 
      <th>Due Date</th> 
