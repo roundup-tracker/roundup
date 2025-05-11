@@ -231,7 +231,6 @@ def make_escapes(pass_iso8859):
 
 
 def escape(s):
-    global escapes
     s = list(s)
     for i in range(len(s)):
         s[i] = escapes[ord(s[i])]
