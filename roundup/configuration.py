@@ -1469,7 +1469,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "international date format server-side) and some browsers\n"
             "ignore the date format set by the operating system, the\n"
             "default is 'no'."),
-        (BooleanOption, "use_browser_number_input", "yes",
+        (BooleanOption, "use_browser_number_input", "no",
             "HTML input elements for Number properties: This determines\n"
             "if we use the input type 'number' for Number (and Integer)\n"
             "properties. If set to 'no' we use input type 'text'."),
