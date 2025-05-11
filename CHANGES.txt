@@ -93,6 +93,8 @@ Fixed:
   the popup calendar work when the enclosing form has a name different
   from "itemSynopsis". (Ralf Schlatterbeck)
 - issue2551376: Fix tracebacks in item templates (Ralf Schlatterbeck)
+- issue2551396: Use of os.path.stat.ST_MTIME in python 3.13 crashes
+  roundup on windows. Replaced with equivalent stat.ST_MTIME.
 
 Features:
 
