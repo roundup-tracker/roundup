@@ -899,7 +899,7 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
     def exp_classhelp(self, cls='issue', prop='deadline', dlm='.'):
         value = dlm.join (('2021-01-01', '11:22:10'))
         return ('<a class="classhelp" data-calurl="%(cls)s?'
-        '@template=calendar&amp;amp;property=%(prop)s&amp;amp;'
+        '@template=calendar&amp;property=%(prop)s&amp;'
         'form=itemSynopsis&amp;date=%(value)s" '
         'data-height="200" data-width="300" href="javascript:help_window'
         '(\'%(cls)s?@template=calendar&amp;property=%(prop)s&amp;'
@@ -1392,10 +1392,10 @@ class NumberIntegerHTMLPropertyTestCase(HTMLPropertyTestClass):
 
         self.assertEqual(d.plain(), "314")
 
-        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" step="1" type="number" value="314">"""
+        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" type="text" value="314">"""
         self.assertEqual(d.field(), input_expected)
 
-        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" step="50" type="number" value="314">"""
+        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" step="50" type="text" value="314">"""
         self.assertEqual(d.field(step="50"), input_expected)
 
         input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" type="text" value="314">"""
@@ -1435,10 +1435,10 @@ class NumberIntegerHTMLPropertyTestCase(HTMLPropertyTestClass):
 
         self.assertEqual(d._value, 3.14)
 
-        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" type="number" value="3.14">"""
+        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" type="text" value="3.14">"""
         self.assertEqual(d.field(), input_expected)
 
-        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" step="50" type="number" value="3.14">"""
+        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" step="50" type="text" value="3.14">"""
         self.assertEqual(d.field(step="50"), input_expected)
 
         input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" type="text" value="3.14">"""
