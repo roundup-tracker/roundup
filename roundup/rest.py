@@ -38,7 +38,7 @@ from roundup.rate_limit import Gcra, RateLimit
 logger = logging.getLogger('roundup.rest')
 
 try:
-    # if dicttoxml2 (or dicttoxml for Python <= 3.6)
+    # if dicttoxml2
     # is installed in roundup directory, use it
     from roundup.dicttoxml2 import dicttoxml
 except ImportError:
