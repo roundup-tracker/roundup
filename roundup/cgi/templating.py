@@ -2438,7 +2438,7 @@ class DateHTMLProperty(HTMLProperty):
             date = ""
 
         data_attr = {
-            "data-calurl": '%s?@template=calendar&amp;property=%s&amp;form=%s%s' % (
+            "data-calurl": '%s?@template=calendar&property=%s&form=%s%s' % (
                 self._classname, self._name, form, date),
             "data-width": width,
             "data-height": height
