@@ -628,30 +628,10 @@ def html4_cgi_escape_attrs(**attrs):
                      for k, v in sorted(attrs.items())])
 
 
-def xhtml_cgi_escape_attrs(**attrs):
-    ''' Boolean attributes like 'disabled', 'required'
-        are represented with a value that is the same as
-        the attribute name.. E.G.
-           <input required="required" ...> not <input required ..>
-        The latter is html4 or 5. Recognize booleans by:
-          value is None
-        Code can use None to indicate a pure boolean.
-    '''
-    return ' '.join(['%s="%s"' % (k, html_escape(str(v), True))
-                     if v is not None else '%s="%s"' % (k, k)
-                     for k, v in sorted(attrs.items())])
-
-
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
     _set_input_default_args(attrs)
     return '<input %s>' % html4_cgi_escape_attrs(**attrs)
-
-
-def input_xhtml(**attrs):
-    """Generate an 'input' (xhtml) element with given attributes"""
-    _set_input_default_args(attrs)
-    return '<input %s/>' % xhtml_cgi_escape_attrs(**attrs)
 
 
 class HTMLInputMixin(object):
@@ -660,12 +640,8 @@ class HTMLInputMixin(object):
         html_version = 'html4'
         if hasattr(self._client.instance.config, 'HTML_VERSION'):
             html_version = self._client.instance.config.HTML_VERSION
-        if html_version == 'xhtml':
-            self.input = input_xhtml
-            self.cgi_escape_attrs = xhtml_cgi_escape_attrs
-        else:
-            self.input = input_html4
-            self.cgi_escape_attrs = html4_cgi_escape_attrs
+        self.input = input_html4
+        self.cgi_escape_attrs = html4_cgi_escape_attrs
         # self._context is used for translations.
         # will be initialized by the first call to .gettext()
         self._context = None

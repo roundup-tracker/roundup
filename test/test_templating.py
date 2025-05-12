@@ -710,24 +710,6 @@ class HTMLClassTestCase(TemplatingTestCase) :
         input=input_html4(**attrs)
         self.assertEqual(input, '<input class="required" disabled="disabled" size="30" type="text">')
 
-    def test_input_xhtml(self):
-        # boolean attributes are attribute name="attribute name"
-        # indicate with attr=None or attr="attr"
-        #    e.g. disabled="disabled"
-        input=input_xhtml(required=None, size=30)
-        self.assertEqual(input, '<input required="required" size="30" type="text"/>')
-
-        input=input_xhtml(required="required", size=30)
-        self.assertEqual(input, '<input required="required" size="30" type="text"/>')
-
-        attrs={"required": None, "class": "required", "size": 30}
-        input=input_xhtml(**attrs)
-        self.assertEqual(input, '<input class="required" required="required" size="30" type="text"/>')
-
-        attrs={"disabled": "disabled", "class": "required", "size": 30}
-        input=input_xhtml(**attrs)
-        self.assertEqual(input, '<input class="required" disabled="disabled" size="30" type="text"/>')
-
 
 class HTMLPropertyTestClass(unittest.TestCase):
     def setUp(self):
@@ -1613,7 +1595,6 @@ class HTMLPermissions:
     def edit_check(self):
 
 def input_html4(**attrs):
-def input_xhtml(**attrs):
 
 class HTMLInputMixin:
     def __init__(self):

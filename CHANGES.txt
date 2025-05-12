@@ -89,6 +89,9 @@ Fixed:
 - issue2551376: Fix tracebacks in item templates (Ralf Schlatterbeck)
 - issue2551396: Use of os.path.stat.ST_MTIME in python 3.13 crashes
   roundup on windows. Replaced with equivalent stat.ST_MTIME.
+- issue2551323: remove functions used for XHTML template
+  support. XHTML was deprecated in Roundup 2.3.0 and an invalid value
+  in 2.4.0.
 
 Features:
 
