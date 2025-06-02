@@ -2941,6 +2941,39 @@ class TemplateHtmlRendering(unittest.TestCase, testFtsQuery):
         sha1sum = '<!-- SHA: 952568414163cd12b2e89e91e59ef336da64fbbe -->'
         self.assertNotEqual(-1, result.index(sha1sum))
 
+    def testRenderAltTemplatesError(self):
+        # check that an error is reported to user when rendering using
+        #  @template=oktempl|errortmpl|oops|foo
+
+        # template names can not include |
+
+        # set up the client;
+        # run determine_context to set the required client attributes
+        # run renderContext(); check result for proper page
+
+        # Test ok state template that uses user.forgotten.html
+        self.client.form=db_test_base.makeForm({"@template": "forgotten|item|oops|foo"})
+        self.client.path = 'user'
+        self.client.determine_context()
+        self.client.session_api = MockNull(_sid="1234567890")
+        self.assertEqual(
+          (self.client.classname, self.client.template, self.client.nodeid),
+          ('user', 'forgotten|item|oops|foo', None))
+        self.assertEqual(self.client._ok_message, [])
+        
+        result = self.client.renderContext()
+        print(result)
+        # sha1sum of classic tracker user.forgotten.template must be found
+        sha1sum = '<!-- SHA: f93570f95f861da40f9c45bbd2b049bb3a7c0fc5 -->'
+        self.assertNotEqual(-1, result.index(sha1sum))
+
+        # now set an error in the form to get error template user.item.html
+        self.client.form=db_test_base.makeForm({"@template": "forgotten|item|oops|foo",
+                                   "@error_message": "this is an error"})
+        self.client.path = 'user'
+        self.client.determine_context()
+        result = self.client.renderContext()
+        self.assertEqual(result, '<strong>No template file exists for templating "user" with template "item|oops|foo" (neither "user.item|oops|foo" nor "_generic.item|oops|foo")</strong>')
 
     def testexamine_url(self):
         ''' test the examine_url function '''

@@ -2195,7 +2195,7 @@ class Client:
         # templates, just leave view alone.
         if (view and view.find('|') != -1):
             # we have alternate templates, parse them apart.
-            (oktmpl, errortmpl) = view.split("|", 2)
+            (oktmpl, errortmpl) = view.split("|", 1)
 
             # Choose the right template
             view = errortmpl if self._error_message else oktmpl

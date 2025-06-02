@@ -92,6 +92,9 @@ Fixed:
 - issue2551323: remove functions used for XHTML template
   support. XHTML was deprecated in Roundup 2.3.0 and an invalid value
   in 2.4.0.
+- issue2551406: 'Templating Error: too many values to unpack' crash
+  fixed. (reported by and patch Christof Meerwald, commit/test John
+  Rouillard)
 
 Features:
 
