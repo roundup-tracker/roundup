@@ -23,8 +23,10 @@ ARG source=local
 
 # parameterize the sha256 sum to pin version of python:3-alpine
 # Must use the same version in both build stages.
-ARG SHA256=452682e4648deafe431ad2f2391d726d7c52f0ff291be8bd4074b10379bb89ff
-
+# Note this is the index digest for the image, not the manifest digest.
+# The index digest is shared across archetectures (amd64, arm64 etc.)
+# while the manifest digest is unique per platform/arch.
+ARG SHA256=b4d299311845147e7e47c970566906caf8378a1f04e5d3de65b5f2e834f8e3bf
 
 # Set to any non-empty value to enable shell debugging for troubleshooting
 ARG VERBOSE=
