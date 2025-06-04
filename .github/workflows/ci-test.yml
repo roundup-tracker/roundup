@@ -241,7 +241,7 @@ jobs:
           # testing index, which contains a newer version of the
           # bindings on 24.04 or released version for other OS
           # versions. See issue2551368
-          if grep 24.04 /etc/os-release > /dev/null; then \
+          if true || grep 24.04 /etc/os-release > /dev/null; then \
             pip install --index-url https://test.pypi.org/simple/ \
                 --extra-index-url https://pypi.org/simple --pre gpg; \
           else \
