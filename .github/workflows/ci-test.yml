@@ -235,13 +235,18 @@ jobs:
           # docutils for ReStructuredText
           pip install beautifulsoup4 brotli docutils jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
-          # gpg doesn't build on Ubuntu 24.04. Ignore failure on that
-          # platform only. Grep os-release to cover matrix.os in
-          # [ubunutu-latest, ubuntu-24.04].
-          pip install gpg || ( save_status=$?; \
-             if grep 24.04 /etc/os-release > /dev/null; then \
-                 echo "Ignoring error ubuntu-24.04: issue2551368"; exit 0; \
-                 else exit $save_status; fi; )
+          # gpg on PyPi is currently broken with newer OS platform
+          #   ubuntu 24.04
+          # used for newer Python versions. Temporarily use the
+          # testing index, which contains a newer version of the
+          # bindings on 24.04 or released version for other OS
+          # versions. See issue2551368
+          if grep 24.04 /etc/os-release > /dev/null; then \
+            pip install --index-url https://test.pypi.org/simple/ \
+                --extra-index-url https://pypi.org/simple --pre gpg; \
+          else \
+            pip install gpg; \
+          fi
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
