@@ -432,6 +432,10 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             url = '%s://%s%s/' % (protocol, self.headers['host'], rest)
             if query:
                 url += '?' + query
+
+            # Do not allow literal \n or \r in URL to prevent
+            # HTTP Response Splitting
+            url = re.sub("[\r\n]", "", url)
             self.send_header('Location', url)
             self.send_header('Content-Length', 17)
             self.end_headers()
