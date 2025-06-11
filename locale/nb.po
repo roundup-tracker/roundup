@@ -5,9 +5,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Roundup 2.5.0\n"
+"Project-Id-Version: Roundup 2.5.0b1\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2025-01-12 20:17-0500\n"
+"POT-Creation-Date: 2025-06-11 16:02-0400\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: Christian Aastorp <christian.aastorp@gmail.com>\n"
 "Language-Team: Norwegian Bokmal <LL@li.org>\n"
@@ -30,19 +30,19 @@ msgstr "Du har ikke tillatelse til  %(action)s %(classname)s klassen."
 msgid "You may not retire the admin or anonymous user"
 msgstr "Du kan ikke slette admin eller anonymous brukerne"
 
-#: ../roundup/admin.py:131
+#: ../roundup/admin.py:132
 msgid ""
 "Have 'display designator[,designator*]' show header inside\n"
 "      []'s before items. Includes retired/active status.\n"
 msgstr ""
 
-#: ../roundup/admin.py:135
+#: ../roundup/admin.py:136
 msgid ""
 "Have 'display designator' and 'specification class' show\n"
 "      protected fields: creator, id etc.\n"
 msgstr ""
 
-#: ../roundup/admin.py:139
+#: ../roundup/admin.py:140
 msgid ""
 "Controls history options. It is a bitstring where setting\n"
 "      the bit disables the feature. A value of 0 (default)\n"
@@ -53,50 +53,50 @@ msgid ""
 "      history.\n"
 msgstr ""
 
-#: ../roundup/admin.py:148
+#: ../roundup/admin.py:149
 msgid ""
 "Set the number of lines of history to keep for this session.\n"
 "      -1 is infinite.\n"
 msgstr ""
 
-#: ../roundup/admin.py:152
+#: ../roundup/admin.py:153
 msgid "Set indexer to use when running 'reindex' NYI\n"
 msgstr ""
 
-#: ../roundup/admin.py:155
+#: ../roundup/admin.py:156
 msgid "Force reopening of tracker when running each command.\n"
 msgstr ""
 
-#: ../roundup/admin.py:158
+#: ../roundup/admin.py:159
 msgid ""
 "set the number of rows imported before a database commit is\n"
 "      done. Used only for imports on PostgreSQL.\n"
 msgstr ""
 
-#: ../roundup/admin.py:160
+#: ../roundup/admin.py:161
 msgid "Show retired items in table, list etc. One of 'no', 'only', 'both'\n"
 msgstr ""
 
-#: ../roundup/admin.py:162
+#: ../roundup/admin.py:163
 msgid "internal mapping for show_retired.\n"
 msgstr ""
 
-#: ../roundup/admin.py:163
+#: ../roundup/admin.py:164
 msgid "Enable verbose output: tracing, descriptions...\n"
 msgstr ""
 
-#: ../roundup/admin.py:175 ../roundup/admin.py:1188 ../roundup/admin.py:1858
-#: ../roundup/admin.py:1890 ../roundup/admin.py:175:1188 :1858:1890
+#: ../roundup/admin.py:176 ../roundup/admin.py:1199 ../roundup/admin.py:1869
+#: ../roundup/admin.py:1901 ../roundup/admin.py:176:1199 :1869:1901
 #, python-format
 msgid "no such class \"%(classname)s\""
 msgstr "ingen slik klasse \"%(classname)s\""
 
-#: ../roundup/admin.py:188
+#: ../roundup/admin.py:189
 #, python-format
 msgid "argument \"%(arg)s\" not propname=value"
 msgstr "argumentet \"%(arg)s\" ikke propname=value"
 
-#: ../roundup/admin.py:201
+#: ../roundup/admin.py:202
 #, python-format
 msgid ""
 "Problem: %(message)s\n"
@@ -105,7 +105,7 @@ msgstr ""
 "Problem: %(message)s\n"
 "\n"
 
-#: ../roundup/admin.py:202
+#: ../roundup/admin.py:203
 #, fuzzy, python-format
 msgid ""
 "%(message)sUsage: roundup-admin [options] [<command> <arguments>]\n"
@@ -158,12 +158,12 @@ msgstr ""
 " roundup-admin help <command>             -- kommandospesifikk hjelp\n"
 " roundup-admin help all                   -- all tilgjengelig hjelp\n"
 
-#: ../roundup/admin.py:231
+#: ../roundup/admin.py:232
 #, fuzzy
 msgid "Commands: "
 msgstr "Kommandoer:"
 
-#: ../roundup/admin.py:238
+#: ../roundup/admin.py:249
 msgid ""
 "Commands may be abbreviated as long as the abbreviation\n"
 "matches only one command, e.g. l == li == lis == list."
@@ -171,7 +171,7 @@ msgstr ""
 "Kommandoer kan forkortes så lenge som forkortelsen bare passer med en "
 "kommando, feks e.g. l == li == lis == list."
 
-#: ../roundup/admin.py:270
+#: ../roundup/admin.py:281
 #, fuzzy
 msgid ""
 "\n"
@@ -309,23 +309,23 @@ msgstr ""
 "\n"
 "Kommandohjelp:\n"
 
-#: ../roundup/admin.py:334
+#: ../roundup/admin.py:345
 #, python-format
 msgid "%s:"
 msgstr "%s:"
 
-#: ../roundup/admin.py:439 ../roundup/admin.py:1415
-#: ../roundup/admin.py:439:1415
+#: ../roundup/admin.py:450 ../roundup/admin.py:1426
+#: ../roundup/admin.py:450:1426
 msgid "Templates:"
 msgstr "Maler:"
 
-#: ../roundup/admin.py:442 ../roundup/admin.py:1425
-#: ../roundup/admin.py:442:1425
+#: ../roundup/admin.py:453 ../roundup/admin.py:1436
+#: ../roundup/admin.py:453:1436
 msgid "Back ends:"
 msgstr "Back ends:"
 
 #. noqa: ARG002
-#: ../roundup/admin.py:459
+#: ../roundup/admin.py:470
 msgid ""
 "Usage: commit\n"
 "        Commit changes made to the database during an interactive session.\n"
@@ -348,7 +348,7 @@ msgstr ""
 "         permanent, hvis de lykkes.\n"
 "        "
 
-#: ../roundup/admin.py:474
+#: ../roundup/admin.py:485
 msgid ""
 "Usage: create classname property=value ...\n"
 "        Create a new entry of a given class.\n"
@@ -366,42 +366,42 @@ msgstr ""
 "        på kommandolinjen ette \"create\"kommandoen.\n"
 "        "
 
-#: ../roundup/admin.py:482 ../roundup/admin.py:555 ../roundup/admin.py:606
-#: ../roundup/admin.py:733 ../roundup/admin.py:806 ../roundup/admin.py:851
-#: ../roundup/admin.py:902 ../roundup/admin.py:999 ../roundup/admin.py:1216
-#: ../roundup/admin.py:1388 ../roundup/admin.py:1516 ../roundup/admin.py:1599
-#: ../roundup/admin.py:1725 ../roundup/admin.py:1848 ../roundup/admin.py:1880
-#: ../roundup/admin.py:1996 ../roundup/admin.py:2050 ../roundup/admin.py:2098
-#: ../roundup/admin.py:482:555 :1216:1388:1516 :1599:1725 :1848:1880 :1996:2050
-#: :2098 :606:733 :806:851 :902:999
+#: ../roundup/admin.py:493 ../roundup/admin.py:566 ../roundup/admin.py:617
+#: ../roundup/admin.py:744 ../roundup/admin.py:817 ../roundup/admin.py:862
+#: ../roundup/admin.py:913 ../roundup/admin.py:1010 ../roundup/admin.py:1227
+#: ../roundup/admin.py:1399 ../roundup/admin.py:1527 ../roundup/admin.py:1610
+#: ../roundup/admin.py:1736 ../roundup/admin.py:1859 ../roundup/admin.py:1891
+#: ../roundup/admin.py:2007 ../roundup/admin.py:2061 ../roundup/admin.py:2109
+#: ../roundup/admin.py:493:566 :1227:1399 :1527:1610 :1736:1859 :1891:2007
+#: :2061:2109 :617:744 :817:862 :913:1010
 msgid "Not enough arguments supplied"
 msgstr "For få parametre"
 
-#: ../roundup/admin.py:502
+#: ../roundup/admin.py:513
 #, python-format
 msgid "%(propname)s (Password): "
 msgstr "%(propname)s (Password): "
 
-#: ../roundup/admin.py:505
+#: ../roundup/admin.py:516
 #, python-format
 msgid "   %(propname)s (Again): "
 msgstr "   %(propname)s (Again): "
 
-#: ../roundup/admin.py:509
+#: ../roundup/admin.py:520
 msgid "Sorry, try again..."
 msgstr "Beklager, prøv en gang til..."
 
-#: ../roundup/admin.py:514
+#: ../roundup/admin.py:525
 #, python-format
 msgid "%(propname)s (%(proptype)s): "
 msgstr "%(propname)s (%(proptype)s): "
 
-#: ../roundup/admin.py:533
+#: ../roundup/admin.py:544
 #, python-format
 msgid "you must provide the \"%(propname)s\" property."
 msgstr "du må oppgi \"%(propname)s\" egenskapen."
 
-#: ../roundup/admin.py:545
+#: ../roundup/admin.py:556
 #, fuzzy
 msgid ""
 "Usage: display designator[,designator]*\n"
@@ -420,13 +420,13 @@ msgstr ""
 "        Lister egenskapene og deres verdier for oppgitt node.\n"
 "        "
 
-#: ../roundup/admin.py:586
+#: ../roundup/admin.py:597
 #, fuzzy, python-format
 msgid "%(protected)s%(key)s: %(value)s"
 msgstr "%(key)s: %(value)s"
 
 #. grab the directory to export to
-#: ../roundup/admin.py:589
+#: ../roundup/admin.py:600
 #, fuzzy
 msgid ""
 "Usage: export [[-]class[,class]] export_dir\n"
@@ -457,7 +457,7 @@ msgstr ""
 "\t  kolonseparerte filer som plasseres i angitt katalog.\n"
 "        "
 
-#: ../roundup/admin.py:704
+#: ../roundup/admin.py:715
 #, fuzzy
 msgid ""
 "Usage: exporttables [[-]class[,class]] export_dir\n"
@@ -490,7 +490,7 @@ msgstr ""
 "      kolonseparerte filer som plasseres i angitt katalog.\n"
 "        "
 
-#: ../roundup/admin.py:723
+#: ../roundup/admin.py:734
 #, fuzzy
 msgid ""
 "Usage: filter classname propname=value ...\n"
@@ -510,19 +510,19 @@ msgstr ""
 "        Verdien kan enten være nodeid-en til den lenkede noden, eller dens "
 "nøkkelverdi.n        "
 
-#: ../roundup/admin.py:764
+#: ../roundup/admin.py:775
 #, fuzzy, python-format
 msgid "Class %(curclassname)s has no property %(pn)s in %(propname)s."
 msgstr "%(classname)s har ingen verdi \"%(propname)s\""
 
-#: ../roundup/admin.py:791 ../roundup/admin.py:840 ../roundup/admin.py:1536
-#: ../roundup/admin.py:1549 ../roundup/admin.py:2120
-#: ../roundup/admin.py:791:840 :1536:1549:2120
+#: ../roundup/admin.py:802 ../roundup/admin.py:851 ../roundup/admin.py:1547
+#: ../roundup/admin.py:1560 ../roundup/admin.py:2131
+#: ../roundup/admin.py:802:851 :1547:1560:2131
 #, python-format
 msgid "%(classname)s has no property \"%(propname)s\""
 msgstr "%(classname)s har ingen verdi \"%(propname)s\""
 
-#: ../roundup/admin.py:798
+#: ../roundup/admin.py:809
 msgid ""
 "Usage: find classname propname=value ...\n"
 "        Find the nodes of the given class with a given link property value.\n"
@@ -539,7 +539,7 @@ msgstr ""
 "        Verdien kan enten være nodeid-en til den lenkede noden, eller dens "
 "nøkkelverdi.n        "
 
-#: ../roundup/admin.py:847
+#: ../roundup/admin.py:858
 #, fuzzy
 msgid ""
 "Usage: genconfig filename\n"
@@ -551,7 +551,7 @@ msgstr ""
 "        i <filename>.\n"
 "        "
 
-#: ../roundup/admin.py:864
+#: ../roundup/admin.py:875
 #, python-format
 msgid ""
 "Changing option\n"
@@ -559,20 +559,20 @@ msgid ""
 "from old default of %(old_number)s to new default of %(new_number)s."
 msgstr ""
 
-#: ../roundup/admin.py:875
+#: ../roundup/admin.py:886
 #, python-format
 msgid ""
 "Update 'password_pbkdf2_default_rounds' to a number equal to or larger\n"
 "  than %s.\n"
 msgstr ""
 
-#: ../roundup/admin.py:882
+#: ../roundup/admin.py:893
 msgid ""
 "Check the rdbms mysql_* settings. Your charset and collations may need\n"
 "  to be changed. See upgrading instructions.\n"
 msgstr ""
 
-#: ../roundup/admin.py:892
+#: ../roundup/admin.py:903
 #, fuzzy
 msgid ""
 "Usage: get property designator[,designator]*\n"
@@ -593,24 +593,24 @@ msgstr ""
 "\t\tved angivelsene.\n"
 "        "
 
-#: ../roundup/admin.py:925
+#: ../roundup/admin.py:936
 #, python-format
 msgid "property %s is not of type Multilink or Link so -d flag does not apply."
 msgstr ""
 "egneskapen %s er ikke multilenke eller lenke so -d lfagget kan ikke anvendes."
 
-#: ../roundup/admin.py:942 ../roundup/admin.py:1190 ../roundup/admin.py:1864
-#: ../roundup/admin.py:1892 ../roundup/admin.py:942:1190 :1864:1892
+#: ../roundup/admin.py:953 ../roundup/admin.py:1201 ../roundup/admin.py:1875
+#: ../roundup/admin.py:1903 ../roundup/admin.py:953:1201 :1875:1903
 #, python-format
 msgid "no such %(classname)s node \"%(nodeid)s\""
 msgstr "finnes ikke %(classname)s node \"%(nodeid)s\""
 
-#: ../roundup/admin.py:945
+#: ../roundup/admin.py:956
 #, python-format
 msgid "no such %(classname)s property \"%(propname)s\""
 msgstr "finnes ikke %(classname)s property \"%(propname)s\""
 
-#: ../roundup/admin.py:950
+#: ../roundup/admin.py:961
 msgid ""
 "Usage: help topic\n"
 "        Give help about topic.\n"
@@ -630,12 +630,12 @@ msgstr ""
 "        all       -- all tilgjengeli hjelp\n"
 "        "
 
-#: ../roundup/admin.py:969
+#: ../roundup/admin.py:980
 #, python-format
 msgid "Sorry, no help for \"%(topic)s\""
 msgstr "Beklager, ingen hjelp for \"%(topic)s\""
 
-#: ../roundup/admin.py:986
+#: ../roundup/admin.py:997
 #, fuzzy
 msgid ""
 "Usage: history designator [skipquiet] [raw]\n"
@@ -657,27 +657,27 @@ msgstr ""
 "       av list eller find-kommandoene, og at dens nøkkel kan gjenbrukes.\n"
 "        "
 
-#: ../roundup/admin.py:1011
+#: ../roundup/admin.py:1022
 #, python-format
 msgid "Unexpected argument(s): %s. Expected 'skipquiet' or 'raw'."
 msgstr ""
 
-#: ../roundup/admin.py:1062
+#: ../roundup/admin.py:1073
 #, fuzzy
 msgid "removed"
 msgstr "slette"
 
-#: ../roundup/admin.py:1064
+#: ../roundup/admin.py:1075
 msgid "added"
 msgstr ""
 
-#: ../roundup/admin.py:1066
+#: ../roundup/admin.py:1077
 #, python-format
 msgid "Unknown history set operation '%s'. Expected +/-."
 msgstr ""
 
 #. .Hint added issue23 to superseder
-#: ../roundup/admin.py:1091
+#: ../roundup/admin.py:1102
 #, fuzzy, python-format
 msgid "added %(class)s%(item_id)s to %(propname)s"
 msgstr "%(class)s %(id)s %(properties)s endret ok"
@@ -685,29 +685,29 @@ msgstr "%(class)s %(id)s %(properties)s endret ok"
 #. .Hint read as: assignedto was admin(1)
 #. where assignedto is the property
 #. admin is the key name for value 1
-#: ../roundup/admin.py:1112
+#: ../roundup/admin.py:1123
 #, fuzzy, python-format
 msgid "%(prop)s was %(name)s(%(value)s)"
 msgstr "%(propname)s (%(proptype)s): "
 
-#: ../roundup/admin.py:1118 ../roundup/admin.py:1147
-#: ../roundup/admin.py:1118:1147
+#: ../roundup/admin.py:1129 ../roundup/admin.py:1158
+#: ../roundup/admin.py:1129:1158
 #, fuzzy, python-format
 msgid "%(prop)s was %(value)s"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:1137
+#: ../roundup/admin.py:1148
 #, python-format
 msgid "%(prop)s was [%(value_list)s]"
 msgstr ""
 
 #. .Hint modified nosy: added demo(3)
-#: ../roundup/admin.py:1144
+#: ../roundup/admin.py:1155
 #, python-format
 msgid "modified %(prop)s: %(how)s"
 msgstr ""
 
-#: ../roundup/admin.py:1195
+#: ../roundup/admin.py:1206
 #, fuzzy
 msgid ""
 "Usage: import import_dir\n"
@@ -751,7 +751,7 @@ msgstr ""
 "    (eller, mer omstendelig glem alle gamle data).\n"
 "        "
 
-#: ../roundup/admin.py:1306
+#: ../roundup/admin.py:1317
 msgid ""
 "Usage: importtables export_dir\n"
 "        This imports the database tables exported using exporttables.\n"
@@ -761,7 +761,7 @@ msgid ""
 msgstr ""
 
 #. password
-#: ../roundup/admin.py:1314
+#: ../roundup/admin.py:1325
 msgid ""
 "Usage: initialise [adminpw]\n"
 "        Initialise a new Roundup tracker.\n"
@@ -779,23 +779,23 @@ msgstr ""
 "        Kjør sporerens oppstartsfunksjon dbinit.init()\n"
 "        "
 
-#: ../roundup/admin.py:1328
+#: ../roundup/admin.py:1339
 msgid "Admin Password: "
 msgstr "Admin passord:"
 
-#: ../roundup/admin.py:1329
+#: ../roundup/admin.py:1340
 msgid "       Confirm: "
 msgstr "       Bekreft: "
 
-#: ../roundup/admin.py:1333
+#: ../roundup/admin.py:1344
 msgid "Instance home does not exist"
 msgstr "Hjemmekatalogen finnes ikke"
 
-#: ../roundup/admin.py:1337
+#: ../roundup/admin.py:1348
 msgid "Instance has not been installed"
 msgstr "Sporeren er ikke installert"
 
-#: ../roundup/admin.py:1345
+#: ../roundup/admin.py:1356
 msgid ""
 "WARNING: The database is already initialised!\n"
 "If you re-initialise it, you will lose all the data!\n"
@@ -805,7 +805,7 @@ msgstr ""
 "Hvis du reinitialiserer den vil alle data bli slettet.\n"
 "Slette den? Y/N: "
 
-#: ../roundup/admin.py:1365
+#: ../roundup/admin.py:1376
 msgid ""
 "Usage: install [template [backend [key=val[,key=val]]]]\n"
 "        Install a new Roundup tracker.\n"
@@ -852,12 +852,12 @@ msgstr ""
 "\t\tSe også hjelp for initops.\n"
 "        "
 
-#: ../roundup/admin.py:1394
+#: ../roundup/admin.py:1405
 #, python-format
 msgid "Instance home parent directory \"%(parent)s\" does not exist"
 msgstr "Overordnet katalog \"%(parent)s\" finnes ikke"
 
-#: ../roundup/admin.py:1403
+#: ../roundup/admin.py:1414
 #, python-format
 msgid ""
 "WARNING: There appears to be a tracker in \"%(tracker_home)s\"!\n"
@@ -868,22 +868,22 @@ msgstr ""
 "Du vil miste alle data hvis du reinstallerer!\n"
 "Slette den? Y/N: "
 
-#: ../roundup/admin.py:1416
+#: ../roundup/admin.py:1427
 #, fuzzy
 msgid "Select template"
 msgstr "Velg mal [classic]: "
 
-#: ../roundup/admin.py:1426
+#: ../roundup/admin.py:1437
 #, fuzzy
 msgid "Select backend"
 msgstr "Velg database backend [anydbm]: "
 
-#: ../roundup/admin.py:1437
+#: ../roundup/admin.py:1448
 #, python-format
 msgid "Error in configuration settings: \"%s\""
 msgstr "Feil i konfigurasjon \"%s\""
 
-#: ../roundup/admin.py:1470
+#: ../roundup/admin.py:1481
 #, python-format
 msgid ""
 "\n"
@@ -896,11 +896,11 @@ msgstr ""
 " Du bør redigere konfigurasjonsfilen for sporeren nå:\n"
 "   %(config_file)s"
 
-#: ../roundup/admin.py:1480
+#: ../roundup/admin.py:1491
 msgid " ... at a minimum, you must set following options:"
 msgstr "... du må spesifisere følgende opsjoner som et minimum:"
 
-#: ../roundup/admin.py:1485
+#: ../roundup/admin.py:1496
 #, python-format
 msgid ""
 "\n"
@@ -928,7 +928,7 @@ msgstr ""
 " disse endringene.\n"
 "---------------------------------------------------------------------------\n"
 
-#: ../roundup/admin.py:1501
+#: ../roundup/admin.py:1512
 msgid ""
 "Usage: list classname [property]\n"
 "        List the instances of a class.\n"
@@ -957,17 +957,17 @@ msgstr ""
 "        for alle klasseinstanser.\n"
 "        "
 
-#: ../roundup/admin.py:1514
+#: ../roundup/admin.py:1525
 msgid "Too many arguments supplied"
 msgstr "For mange argumenter"
 
-#: ../roundup/admin.py:1547
+#: ../roundup/admin.py:1558
 #, python-format
 msgid "%(nodeid)4s: %(value)s"
 msgstr "%(nodeid)4s: %(value)s"
 
 #. noqa: ARG002  - args unused
-#: ../roundup/admin.py:1554
+#: ../roundup/admin.py:1565
 #, fuzzy
 msgid ""
 "Usage: migrate\n"
@@ -1014,17 +1014,17 @@ msgstr ""
 "    la det bli en vane.\n"
 "        "
 
-#: ../roundup/admin.py:1574
+#: ../roundup/admin.py:1585
 #, python-format
 msgid "Tracker updated to schema version %s."
 msgstr ""
 
-#: ../roundup/admin.py:1578
+#: ../roundup/admin.py:1589
 #, fuzzy, python-format
 msgid "No migration action required. At schema version %s."
 msgstr "Ingen migrasjon krevet"
 
-#: ../roundup/admin.py:1583
+#: ../roundup/admin.py:1594
 #, fuzzy
 msgid ""
 "Usage: pack period | date\n"
@@ -1062,11 +1062,11 @@ msgstr ""
 "\n"
 "        "
 
-#: ../roundup/admin.py:1609
+#: ../roundup/admin.py:1620
 msgid "Invalid format"
 msgstr "Ugyldig format"
 
-#: ../roundup/admin.py:1620
+#: ../roundup/admin.py:1631
 msgid ""
 "Usage: perftest [mode] [arguments]*\n"
 "        Time operations in Roundup.\n"
@@ -1084,25 +1084,25 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1657
+#: ../roundup/admin.py:1668
 msgid "Invalid 'rounds'. Must be larger than 999."
 msgstr ""
 
-#: ../roundup/admin.py:1661
+#: ../roundup/admin.py:1672
 #, python-format
 msgid "Invalid 'rounds'. It must be an integer not: %s"
 msgstr ""
 
-#: ../roundup/admin.py:1688
+#: ../roundup/admin.py:1699
 msgid "scheme does not support rounds."
 msgstr ""
 
-#: ../roundup/admin.py:1691
+#: ../roundup/admin.py:1702
 #, python-format
 msgid "Hash time: %(time)0.9f seconds, scheme: %(scheme)s, rounds: %(rounds)s"
 msgstr ""
 
-#: ../roundup/admin.py:1697
+#: ../roundup/admin.py:1708
 msgid ""
 "Usage: pragma setting=value | 'list'\n"
 "        Set internal admin settings to a value.\n"
@@ -1131,49 +1131,49 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1732
+#: ../roundup/admin.py:1743
 #, python-format
 msgid "Argument must be setting=value, was given: %s."
 msgstr ""
 
-#: ../roundup/admin.py:1735
+#: ../roundup/admin.py:1746
 msgid "Current settings and values (NYI - not yet implemented):"
 msgstr ""
 
-#: ../roundup/admin.py:1746
+#: ../roundup/admin.py:1757
 msgid ""
 "      Help for this pragma is missing. Please report it to the Roundup "
 "project.\n"
 msgstr ""
 
-#: ../roundup/admin.py:1752
+#: ../roundup/admin.py:1763
 #, fuzzy, python-format
 msgid "Unknown setting %s. Try \"pragma list\"."
 msgstr "Ukjent brukernavn:"
 
-#: ../roundup/admin.py:1762
+#: ../roundup/admin.py:1773
 #, python-format
 msgid "Incorrect value for boolean setting %(setting)s: %(value)s."
 msgstr ""
 
-#: ../roundup/admin.py:1769
+#: ../roundup/admin.py:1780
 #, python-format
 msgid "Incorrect value for integer setting %(setting)s: %(value)s."
 msgstr ""
 
-#: ../roundup/admin.py:1776
+#: ../roundup/admin.py:1787
 #, python-format
 msgid ""
 "Incorrect value for setting %(setting)s: %(value)s. Should be no, both, or "
 "only."
 msgstr ""
 
-#: ../roundup/admin.py:1786
+#: ../roundup/admin.py:1797
 #, python-format
 msgid "Internal error: pragma can not handle values of type: %s"
 msgstr ""
 
-#: ../roundup/admin.py:1795
+#: ../roundup/admin.py:1806
 #, fuzzy
 msgid ""
 "Usage: reindex [classname|classname:#-#|designator]*\n"
@@ -1197,17 +1197,17 @@ msgstr ""
 "    automatisk.\n"
 "        "
 
-#: ../roundup/admin.py:1817
+#: ../roundup/admin.py:1828
 #, python-format
 msgid "no such item \"%(designator)s\""
 msgstr "ingen slik enhet  \"%(designator)s\""
 
-#: ../roundup/admin.py:1827
+#: ../roundup/admin.py:1838
 #, fuzzy, python-format
 msgid "no such item \"%(class)s%(id)s\""
 msgstr "ingen slik enhet  \"%(designator)s\""
 
-#: ../roundup/admin.py:1839
+#: ../roundup/admin.py:1850
 #, fuzzy
 msgid ""
 "Usage: restore designator[,designator]*\n"
@@ -1225,7 +1225,7 @@ msgstr ""
 "\t   Oppgitte noder blir tilgjengelige for brukerne igjen.\n"
 "        "
 
-#: ../roundup/admin.py:1870
+#: ../roundup/admin.py:1881
 #, fuzzy
 msgid ""
 "Usage: retire designator[,designator]*\n"
@@ -1246,7 +1246,7 @@ msgstr ""
 "        "
 
 #. noqa: ARG002 - args unused
-#: ../roundup/admin.py:1898
+#: ../roundup/admin.py:1909
 msgid ""
 "Usage: rollback\n"
 "        Undo all changes that are pending commit to the database.\n"
@@ -1265,7 +1265,7 @@ msgstr ""
 "          commited. \n"
 "        "
 
-#: ../roundup/admin.py:1911
+#: ../roundup/admin.py:1922
 msgid ""
 "Usage: security [Role name]\n"
 "        Display the Permissions available to one or all Roles.\n"
@@ -1278,47 +1278,47 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:1926
+#: ../roundup/admin.py:1937
 #, fuzzy, python-format
 msgid "No such Role \"%(role)s\"\n"
 msgstr "Ingen slik rolle \"%(role)s\""
 
-#: ../roundup/admin.py:1932
+#: ../roundup/admin.py:1943
 #, fuzzy, python-format
 msgid "New Web users get the Roles \"%(role)s\"\n"
 msgstr "Nye web-brukere for rollene \"%(role)s\""
 
-#: ../roundup/admin.py:1935
+#: ../roundup/admin.py:1946
 #, fuzzy, python-format
 msgid "New Web users get the Role \"%(role)s\"\n"
 msgstr "Nye web-brukere for rollen \"%(role)s\""
 
-#: ../roundup/admin.py:1939
+#: ../roundup/admin.py:1950
 #, fuzzy, python-format
 msgid "New Email users get the Roles \"%(role)s\"\n"
 msgstr "Nye epostbrukere for rollene \"%(role)s\""
 
-#: ../roundup/admin.py:1941
+#: ../roundup/admin.py:1952
 #, fuzzy, python-format
 msgid "New Email users get the Role \"%(role)s\"\n"
 msgstr "Nye epostbrukere for rollen \"%(role)s\""
 
-#: ../roundup/admin.py:1944
+#: ../roundup/admin.py:1955
 #, fuzzy, python-format
 msgid "Role \"%(name)s\":\n"
 msgstr "Rolle \"%(name)s\":"
 
-#: ../roundup/admin.py:1950
+#: ../roundup/admin.py:1961
 #, fuzzy
 msgid " %(description)s (%(name)s for \"%(klass)s\""
 msgstr " %(description)s (%(name)s bare for \"%(klass)s\")"
 
-#: ../roundup/admin.py:1950
+#: ../roundup/admin.py:1961
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\": %(properties)s only)\n"
 msgstr " %(description)s (%(name)s bare for \"%(klass)s\": %(properties)s )"
 
-#: ../roundup/admin.py:1963
+#: ../roundup/admin.py:1974
 #, python-format
 msgid ""
 "\n"
@@ -1326,17 +1326,17 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/admin.py:1969
+#: ../roundup/admin.py:1980
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s for \"%(klass)s\" only)\n"
 msgstr " %(description)s (%(name)s bare for \"%(klass)s\")"
 
-#: ../roundup/admin.py:1972
+#: ../roundup/admin.py:1983
 #, fuzzy, python-format
 msgid " %(description)s (%(name)s)\n"
 msgstr " %(description)s (%(name)s)"
 
-#: ../roundup/admin.py:1976
+#: ../roundup/admin.py:1987
 #, fuzzy
 msgid ""
 "Usage: set items property=value [property=value ...]\n"
@@ -1371,7 +1371,7 @@ msgstr ""
 "som\n"
 "        en kommaseparert liste (feks \"1,2,3\")."
 
-#: ../roundup/admin.py:2044
+#: ../roundup/admin.py:2055
 msgid ""
 "Usage: specification classname\n"
 "        Show the properties for a classname.\n"
@@ -1385,17 +1385,17 @@ msgstr ""
 "        Lister egenskapene til gitt klasse.\n"
 "        "
 
-#: ../roundup/admin.py:2063
+#: ../roundup/admin.py:2074
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s (key property)\n"
 msgstr "%(key)s: %(value)s (key property)"
 
-#: ../roundup/admin.py:2066
+#: ../roundup/admin.py:2077
 #, fuzzy, python-format
 msgid "%(key)s: %(value)s\n"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/admin.py:2069
+#: ../roundup/admin.py:2080
 msgid ""
 "Usage: table classname [property[,property]*]\n"
 "        List the instances of a class in tabular form.\n"
@@ -1455,17 +1455,17 @@ msgstr ""
 "        resulterer i en fire bokstavaer bred \"Name\" kolonne.\n"
 "        "
 
-#: ../roundup/admin.py:2115
+#: ../roundup/admin.py:2126
 #, python-format
 msgid "\"%(spec)s\" not name:width"
 msgstr "\"%(spec)s\" ikke navn:bredde"
 
-#: ../roundup/admin.py:2137
+#: ../roundup/admin.py:2148
 #, python-format
 msgid "\"%(spec)s\" does not have an integer width: \"%(width)s\""
 msgstr ""
 
-#: ../roundup/admin.py:2173
+#: ../roundup/admin.py:2184
 msgid ""
 "Usage: templates [trace_search]\n"
 "        List templates and their installed directories.\n"
@@ -1475,7 +1475,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: ../roundup/admin.py:2201
+#: ../roundup/admin.py:2212
 #, fuzzy
 msgid ""
 "Usage: updateconfig <filename>\n"
@@ -1490,34 +1490,34 @@ msgstr ""
 "        i <filename>.\n"
 "        "
 
-#: ../roundup/admin.py:2210 ../roundup/cgi/actions.py:886
-#: ../roundup/cgi/actions.py:897 ../roundup/cgi/actions.py:1099
-#: ../roundup/cgi/actions.py:1113 ../roundup/cgi/actions.py:886:897 :1099:1113
+#: ../roundup/admin.py:2221 ../roundup/cgi/actions.py:891
+#: ../roundup/cgi/actions.py:902 ../roundup/cgi/actions.py:1104
+#: ../roundup/cgi/actions.py:1118 ../roundup/cgi/actions.py:891:902 :1104:1118
 #, python-format
 msgid "Error: %s"
 msgstr "Feil: %s"
 
-#: ../roundup/admin.py:2242
+#: ../roundup/admin.py:2253
 #, python-format
 msgid "Unknown command \"%(command)s\" (\"help commands\" for a list)"
 msgstr "Ukjent kommando \"%(command)s\" (\"help commands\" for liste)"
 
-#: ../roundup/admin.py:2248
+#: ../roundup/admin.py:2259
 #, python-format
 msgid "Multiple commands match \"%(command)s\": %(list)s"
 msgstr "Multiple kommandoer  matcher \"%(command)s\": %(list)s"
 
-#: ../roundup/admin.py:2263
+#: ../roundup/admin.py:2274
 msgid "Enter tracker home: "
 msgstr "Oppgi sporers plassering:"
 
-#: ../roundup/admin.py:2292 ../roundup/admin.py:2296
-#: ../roundup/admin.py:2292:2296
+#: ../roundup/admin.py:2303 ../roundup/admin.py:2307
+#: ../roundup/admin.py:2303:2307
 #, python-format
 msgid "Error: Couldn't open tracker: %(message)s"
 msgstr "Feil: Kan ikke åpne sporer: %(message)s"
 
-#: ../roundup/admin.py:2344
+#: ../roundup/admin.py:2355
 #, python-format
 msgid ""
 "Roundup %s ready for input.\n"
@@ -1526,30 +1526,30 @@ msgstr ""
 "Roundup %s er klar til bruk.\n"
 "Skriv  \"help\" for hjelp."
 
-#: ../roundup/admin.py:2377
+#: ../roundup/admin.py:2388
 msgid "Note: command history and editing not available"
 msgstr "Merk: kommandohistorikk og redigering utilgjengelig"
 
-#: ../roundup/admin.py:2383
+#: ../roundup/admin.py:2394
 msgid "exit..."
 msgstr "exit..."
 
-#: ../roundup/admin.py:2396
+#: ../roundup/admin.py:2407
 msgid "There are unsaved changes. Commit them (y/N)? "
 msgstr "Det er ikkelagrede endringer. Lagre dem (y/N)? "
 
-#: ../roundup/backends/back_anydbm.py:215
-#: ../roundup/backends/rdbms_common.py:928
+#: ../roundup/backends/back_anydbm.py:213
+#: ../roundup/backends/rdbms_common.py:926
 #, python-format
 msgid "Class \"%s\" already defined."
 msgstr ""
 
-#: ../roundup/backends/back_anydbm.py:280
+#: ../roundup/backends/back_anydbm.py:278
 #: ../roundup/backends/sessions_dbm.py:61
 msgid "Couldn't identify database type"
 msgstr "Kunne ikke identifisere databsetypen"
 
-#: ../roundup/backends/back_anydbm.py:314
+#: ../roundup/backends/back_anydbm.py:312
 #, fuzzy, python-format
 msgid ""
 "Couldn't open database - the required module '%s' (as dbm.gnu) is not "
@@ -1557,7 +1557,7 @@ msgid ""
 msgstr ""
 "Kunne ikke åpne databasen - den påkrevde modulen '%s' er ikke tilgjengelig"
 
-#: ../roundup/backends/back_anydbm.py:318
+#: ../roundup/backends/back_anydbm.py:316
 #, python-format
 msgid "Couldn't open database - the required module '%s' is not available"
 msgstr ""
@@ -1565,21 +1565,21 @@ msgstr ""
 
 #: ../roundup/backends/back_anydbm.py:873
 #: ../roundup/backends/back_anydbm.py:886
-#: ../roundup/backends/back_anydbm.py:1160
-#: ../roundup/backends/back_anydbm.py:1195
-#: ../roundup/backends/back_anydbm.py:1424
-#: ../roundup/backends/back_anydbm.py:1442
-#: ../roundup/backends/back_anydbm.py:1489
-#: ../roundup/backends/back_anydbm.py:2135
+#: ../roundup/backends/back_anydbm.py:1162
+#: ../roundup/backends/back_anydbm.py:1197
+#: ../roundup/backends/back_anydbm.py:1426
+#: ../roundup/backends/back_anydbm.py:1444
+#: ../roundup/backends/back_anydbm.py:1492
+#: ../roundup/backends/back_anydbm.py:2138
 #: ../roundup/backends/back_anydbm.py:873:886
-#: ../roundup/backends/rdbms_common.py:1720
-#: ../roundup/backends/rdbms_common.py:1967
-#: ../roundup/backends/rdbms_common.py:2206
-#: ../roundup/backends/rdbms_common.py:2226
-#: ../roundup/backends/rdbms_common.py:2279
-#: ../roundup/backends/rdbms_common.py:3254
-#: ../roundup/backends/rdbms_common.py:1720:1967 :1160:1195 :1424:1442:1489
-#: :2135 :2206:2226 :2279:3254
+#: ../roundup/backends/rdbms_common.py:1721
+#: ../roundup/backends/rdbms_common.py:1972
+#: ../roundup/backends/rdbms_common.py:2211
+#: ../roundup/backends/rdbms_common.py:2231
+#: ../roundup/backends/rdbms_common.py:2293
+#: ../roundup/backends/rdbms_common.py:3268
+#: ../roundup/backends/rdbms_common.py:1721:1972 :1162:1197 :1426:1444:1492
+#: :2138 :2211:2231 :2293:3268
 msgid "Database open read-only"
 msgstr "Databsen åpnet bare for lesing"
 
@@ -1605,44 +1605,49 @@ msgstr ""
 msgid "Unable to get lock after 10 retries on %s."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:632
+#: ../roundup/backends/rdbms_common.py:630
 #, python-format
 msgid "ALTER operation disallowed: %(old)r -> %(new)r."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:867
+#: ../roundup/backends/rdbms_common.py:865
 #, python-format
 msgid "CREATE operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:884
+#: ../roundup/backends/rdbms_common.py:882
 #, python-format
 msgid "DROP operation disallowed: \"%s\"."
 msgstr ""
 
-#: ../roundup/backends/rdbms_common.py:1863
+#: ../roundup/backends/rdbms_common.py:1864
 msgid "create"
 msgstr "lag"
 
-#: ../roundup/backends/rdbms_common.py:2038
+#: ../roundup/backends/rdbms_common.py:2043
 msgid "unlink"
 msgstr "fjern lenke"
 
-#: ../roundup/backends/rdbms_common.py:2042
+#: ../roundup/backends/rdbms_common.py:2047
 msgid "link"
 msgstr "lenke"
 
-#: ../roundup/backends/rdbms_common.py:2187
+#: ../roundup/backends/rdbms_common.py:2192
 msgid "set"
 msgstr "oppdater"
 
-#: ../roundup/backends/rdbms_common.py:2216
+#: ../roundup/backends/rdbms_common.py:2221
 msgid "retired"
 msgstr "glemt"
 
-#: ../roundup/backends/rdbms_common.py:2246
+#: ../roundup/backends/rdbms_common.py:2251
 msgid "restored"
 msgstr "brakt tilbake"
+
+#: ../roundup/backends/rdbms_common.py:2265
+#, fuzzy, python-format
+msgid "class %(cls)s: %(value)r is not an id"
+msgstr "egenskap %s: %r er ikke et nummer"
 
 #: ../roundup/backends/sessions_redis.py:78
 #: ../roundup/backends/sessions_redis.py:97
@@ -1726,10 +1731,10 @@ msgid "\"%(input)s\" is not an ID (%(classname)s ID required)"
 msgstr "\"%(input)s\" er ikke en ID (%(classname)s ID påkrevet)"
 
 #: ../roundup/cgi/actions.py:228 ../roundup/cgi/actions.py:266
-#: ../roundup/cgi/actions.py:493 ../roundup/cgi/actions.py:833
-#: ../roundup/cgi/actions.py:880 ../roundup/cgi/actions.py:1084
-#: ../roundup/cgi/actions.py:1246 ../roundup/cgi/actions.py:228:266:1246
-#: :493:833 :880:1084
+#: ../roundup/cgi/actions.py:493 ../roundup/cgi/actions.py:838
+#: ../roundup/cgi/actions.py:885 ../roundup/cgi/actions.py:1089
+#: ../roundup/cgi/actions.py:1251 ../roundup/cgi/actions.py:228:266:1251
+#: :493:838 :885:1089
 msgid "Invalid request"
 msgstr "Ugyldig forespørsel"
 
@@ -1779,8 +1784,8 @@ msgstr "Ugyldig forespørsel"
 msgid "Invalid integer: "
 msgstr "Ugylig login"
 
-#: ../roundup/cgi/actions.py:531 ../roundup/cgi/actions.py:735
-#: ../roundup/cgi/actions.py:531:735
+#: ../roundup/cgi/actions.py:531 ../roundup/cgi/actions.py:740
+#: ../roundup/cgi/actions.py:531:740
 #, python-format
 msgid "You do not have permission to create %(class)s"
 msgstr "Du har ikke tillatelse til  å opprette %(class)s"
@@ -1790,8 +1795,8 @@ msgstr "Du har ikke tillatelse til  å opprette %(class)s"
 msgid "Not enough values on line %(line)s"
 msgstr "Ikke nok verdier på linjen %(line)s"
 
-#: ../roundup/cgi/actions.py:556 ../roundup/cgi/actions.py:723
-#: ../roundup/cgi/actions.py:556:723
+#: ../roundup/cgi/actions.py:556 ../roundup/cgi/actions.py:728
+#: ../roundup/cgi/actions.py:556:728
 #, python-format
 msgid "You do not have permission to edit %(class)s"
 msgstr "Du har ikke tillatelse til å endre %(class)s"
@@ -1800,17 +1805,17 @@ msgstr "Du har ikke tillatelse til å endre %(class)s"
 msgid "Items edited OK"
 msgstr "Saker endret OK"
 
-#: ../roundup/cgi/actions.py:671
+#: ../roundup/cgi/actions.py:676
 #, python-format
 msgid "%(class)s %(id)s %(properties)s edited ok"
 msgstr "%(class)s %(id)s %(properties)s endret ok"
 
-#: ../roundup/cgi/actions.py:689
+#: ../roundup/cgi/actions.py:694
 #, python-format
 msgid "%(class)s %(id)s created"
 msgstr "%(class)s %(id)s opprettet"
 
-#: ../roundup/cgi/actions.py:817
+#: ../roundup/cgi/actions.py:822
 #, fuzzy, python-format
 msgid ""
 "Edit Error: someone else has edited this %(klass)s (%(props)s). View <a "
@@ -1820,12 +1825,12 @@ msgstr ""
 "Se <a target=\"new\" href=\"%(klass)s%(id)s\">deres endringer </a> i et nytt "
 "vindu."
 
-#: ../roundup/cgi/actions.py:850
+#: ../roundup/cgi/actions.py:855
 #, python-format
 msgid "Edit Error: %s"
 msgstr "Redigeringsfeil: %s"
 
-#: ../roundup/cgi/actions.py:931
+#: ../roundup/cgi/actions.py:936
 msgid ""
 "Invalid One Time Key!\n"
 "(a Mozilla bug may cause this message to show up erroneously, please check "
@@ -1835,12 +1840,12 @@ msgstr ""
 "(En Mozilla feil kan forårsake at denne meldingen kommer feilaktig, venligst "
 "sjekk eposten din)"
 
-#: ../roundup/cgi/actions.py:972
+#: ../roundup/cgi/actions.py:977
 #, fuzzy, python-format
 msgid "Password reset for %s"
 msgstr "Passord endringsforespørse"
 
-#: ../roundup/cgi/actions.py:973
+#: ../roundup/cgi/actions.py:978
 #, python-format
 msgid ""
 "\n"
@@ -1849,29 +1854,29 @@ msgid ""
 "Your password is now: %(password)s\n"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:982
+#: ../roundup/cgi/actions.py:987
 #, python-format
 msgid "Password reset and email sent to %s"
 msgstr "En e-post med passord er nå sendt til %s."
 
-#: ../roundup/cgi/actions.py:991
+#: ../roundup/cgi/actions.py:996
 msgid "Unknown username"
 msgstr "Ukjent brukernavn:"
 
-#: ../roundup/cgi/actions.py:999
+#: ../roundup/cgi/actions.py:1004
 msgid "Unknown email address"
 msgstr "Ukjent postadresse:"
 
-#: ../roundup/cgi/actions.py:1004
+#: ../roundup/cgi/actions.py:1009
 msgid "You need to specify a username or address"
 msgstr "Du må spesifisere et brukernavn eller en adresse"
 
-#: ../roundup/cgi/actions.py:1015
+#: ../roundup/cgi/actions.py:1020
 #, fuzzy, python-format
 msgid "Confirm reset of password for %s"
 msgstr "Bekreft passord"
 
-#: ../roundup/cgi/actions.py:1016
+#: ../roundup/cgi/actions.py:1021
 #, python-format
 msgid ""
 "\n"
@@ -1885,31 +1890,31 @@ msgid ""
 "You should then receive another email with the new password.\n"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1029
+#: ../roundup/cgi/actions.py:1034
 #, python-format
 msgid "Email sent to primary notification address for %s."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1031
+#: ../roundup/cgi/actions.py:1036
 #, fuzzy, python-format
 msgid "Email sent to %s."
 msgstr "Epost sendt til %s"
 
-#: ../roundup/cgi/actions.py:1046
+#: ../roundup/cgi/actions.py:1051
 msgid "You are now registered, welcome!"
 msgstr "Du er registrert, velkommen!"
 
-#: ../roundup/cgi/actions.py:1139
+#: ../roundup/cgi/actions.py:1144
 #, python-format
 msgid "Username '%s' is already used."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1163
+#: ../roundup/cgi/actions.py:1168
 #, python-format
 msgid "Complete your registration to %(tracker_name)s -- key %(key)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1167
+#: ../roundup/cgi/actions.py:1172
 #, python-format
 msgid ""
 "To complete your registration of the user \"%(name)s\" with\n"
@@ -1925,12 +1930,12 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1181
+#: ../roundup/cgi/actions.py:1186
 #, python-format
 msgid "Complete your registration to %s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1182
+#: ../roundup/cgi/actions.py:1187
 #, python-format
 msgid ""
 "To complete your registration of the user \"%(name)s\" with\n"
@@ -1940,44 +1945,44 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1206
+#: ../roundup/cgi/actions.py:1211
 msgid "It is not permitted to supply roles at registration."
 msgstr "Du kan ikke oppgi roller ved registreringen."
 
-#: ../roundup/cgi/actions.py:1220
+#: ../roundup/cgi/actions.py:1225
 msgid "You are logged out"
 msgstr "Du er logget ut"
 
-#: ../roundup/cgi/actions.py:1250
+#: ../roundup/cgi/actions.py:1255
 msgid "Username required"
 msgstr "Brukernavn nødvendig"
 
-#: ../roundup/cgi/actions.py:1354
+#: ../roundup/cgi/actions.py:1359
 #, python-format
 msgid "Welcome %(username)s!"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1477
+#: ../roundup/cgi/actions.py:1482
 #, python-format
 msgid "Logins occurring too fast. Please wait: %s seconds."
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1515 ../roundup/cgi/actions.py:1526
-#: ../roundup/cgi/actions.py:1515:1526
+#: ../roundup/cgi/actions.py:1520 ../roundup/cgi/actions.py:1531
+#: ../roundup/cgi/actions.py:1520:1531
 msgid "Invalid login"
 msgstr "Ugylig login"
 
-#: ../roundup/cgi/actions.py:1532
+#: ../roundup/cgi/actions.py:1537
 msgid "You do not have permission to login"
 msgstr "Du har ikke tillatelse til å logge inn"
 
-#: ../roundup/cgi/actions.py:1577 ../roundup/cgi/actions.py:1757
-#: ../roundup/cgi/actions.py:1577:1757
+#: ../roundup/cgi/actions.py:1582 ../roundup/cgi/actions.py:1762
+#: ../roundup/cgi/actions.py:1582:1762
 #, python-format
 msgid "Column \"%(column)s\" not found in %(class)s"
 msgstr ""
 
-#: ../roundup/cgi/actions.py:1822
+#: ../roundup/cgi/actions.py:1827
 #, python-format
 msgid "You do not have permission to view %(class)s"
 msgstr "Du har ikke tillatelse til  å se på %(class)s"
@@ -2102,8 +2107,8 @@ msgstr "Skjema feil:"
 msgid "Unrecognized charset: %r"
 msgstr "Ukjent tegnsett: %r"
 
-#: ../roundup/cgi/client.py:1381 ../roundup/cgi/client.py:2394
-#: ../roundup/cgi/client.py:1381:2394
+#: ../roundup/cgi/client.py:1381 ../roundup/cgi/client.py:2396
+#: ../roundup/cgi/client.py:1381:2396
 msgid "broken form: multiple @action values submitted"
 msgstr ""
 
@@ -2181,50 +2186,51 @@ msgstr ""
 
 #: ../roundup/cgi/client.py:1679
 #, python-format
-msgid "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%s."
+msgid ""
+"csrf X-REQUESTED-WITH xmlrpc required header check failed for user%(userid)s."
 msgstr ""
 
 #: ../roundup/cgi/client.py:1720
 #, python-format
-msgid "Required csrf field missing for user%s"
+msgid "Required csrf field missing for user%(userid)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1722 ../roundup/cgi/client.py:1749
-#: ../roundup/cgi/client.py:1766 ../roundup/cgi/client.py:1722:1749:1766
+#: ../roundup/cgi/client.py:1723 ../roundup/cgi/client.py:1751
+#: ../roundup/cgi/client.py:1768 ../roundup/cgi/client.py:1723:1751:1768
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1726
+#: ../roundup/cgi/client.py:1728
 #, python-format
-msgid "csrf field not supplied by user%s"
+msgid "csrf field not supplied by user%(userid)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1738
+#: ../roundup/cgi/client.py:1740
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
 "session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1756
+#: ../roundup/cgi/client.py:1758
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %(curr_sess)s != stored session "
 "%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1948
+#: ../roundup/cgi/client.py:1950
 msgid "You are not allowed to view this file."
 msgstr "Du har ikke lov å se denne filen."
 
-#: ../roundup/cgi/client.py:2272
+#: ../roundup/cgi/client.py:2274
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sMedgått tid: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2276
+#: ../roundup/cgi/client.py:2278
 #, python-format
 msgid ""
 "%(starttag)sCache hits: %(cache_hits)d, misses %(cache_misses)d. Loading "
@@ -2233,7 +2239,7 @@ msgstr ""
 "%(starttag)sCache treff: %(cache_hits)d, ikke-treff %(cache_misses)d. Laster "
 "saker: %(get_items)f secs. Filtrerer: %(filtering)f secs.%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:2815
+#: ../roundup/cgi/client.py:2817
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -2299,64 +2305,64 @@ msgstr[1] "Krevet %(class)s egenskap %(property)s ikke gitt."
 msgid "You are not allowed to %(action)s items of class %(class)s"
 msgstr "Du har ikke rettigheter til å %(action)s instanser av klasse %(class)s"
 
-#: ../roundup/cgi/templating.py:916
+#: ../roundup/cgi/templating.py:892
 msgid "(list)"
 msgstr "(liste)"
 
-#: ../roundup/cgi/templating.py:991
+#: ../roundup/cgi/templating.py:975
 msgid "Submit New Entry"
 msgstr "Legg til ny oppføring"
 
-#: ../roundup/cgi/templating.py:1013 ../roundup/cgi/templating.py:1189
-#: ../roundup/cgi/templating.py:1824 ../roundup/cgi/templating.py:1855
-#: ../roundup/cgi/templating.py:1876 ../roundup/cgi/templating.py:1914
-#: ../roundup/cgi/templating.py:1967 ../roundup/cgi/templating.py:1991
-#: ../roundup/cgi/templating.py:1998 ../roundup/cgi/templating.py:2035
-#: ../roundup/cgi/templating.py:2088 ../roundup/cgi/templating.py:2121
-#: ../roundup/cgi/templating.py:2216 ../roundup/cgi/templating.py:2237
-#: ../roundup/cgi/templating.py:2328 ../roundup/cgi/templating.py:2348
-#: ../roundup/cgi/templating.py:2370 ../roundup/cgi/templating.py:2413
-#: ../roundup/cgi/templating.py:2423 ../roundup/cgi/templating.py:2488
-#: ../roundup/cgi/templating.py:2791 ../roundup/cgi/templating.py:1013:1189
-#: :1824:1855 :1876:1914 :1967:1991 :1998:2035 :2088:2121 :2216:2237 :2328:2348
-#: :2370:2413 :2423:2488:2791
+#: ../roundup/cgi/templating.py:997 ../roundup/cgi/templating.py:1174
+#: ../roundup/cgi/templating.py:1809 ../roundup/cgi/templating.py:1840
+#: ../roundup/cgi/templating.py:1861 ../roundup/cgi/templating.py:1899
+#: ../roundup/cgi/templating.py:1952 ../roundup/cgi/templating.py:1976
+#: ../roundup/cgi/templating.py:1983 ../roundup/cgi/templating.py:2020
+#: ../roundup/cgi/templating.py:2077 ../roundup/cgi/templating.py:2115
+#: ../roundup/cgi/templating.py:2215 ../roundup/cgi/templating.py:2236
+#: ../roundup/cgi/templating.py:2357 ../roundup/cgi/templating.py:2377
+#: ../roundup/cgi/templating.py:2399 ../roundup/cgi/templating.py:2442
+#: ../roundup/cgi/templating.py:2452 ../roundup/cgi/templating.py:2517
+#: ../roundup/cgi/templating.py:2820 ../roundup/cgi/templating.py:997:1174
+#: :1809:1840 :1861:1899 :1952:1976 :1983:2020 :2077:2115 :2215:2236 :2357:2377
+#: :2399:2442 :2452:2517:2820
 msgid "[hidden]"
 msgstr "[skjult]"
 
-#: ../roundup/cgi/templating.py:1014
+#: ../roundup/cgi/templating.py:998
 msgid "New node - no history"
 msgstr "Ny node - ingen historie"
 
-#: ../roundup/cgi/templating.py:1154
+#: ../roundup/cgi/templating.py:1139
 msgid "Submit Changes"
 msgstr "Lagre endringer"
 
-#: ../roundup/cgi/templating.py:1232
+#: ../roundup/cgi/templating.py:1217
 msgid "<em>The indicated property no longer exists</em>"
 msgstr "<em>Valgt egenskap finnes ikke lenger</em>"
 
-#: ../roundup/cgi/templating.py:1268
+#: ../roundup/cgi/templating.py:1253
 #, python-format
 msgid "The linked class %(classname)s no longer exists"
 msgstr "Den lenkede klassen %(classname)s finnes ikke lenger"
 
-#: ../roundup/cgi/templating.py:1305 ../roundup/cgi/templating.py:1335
-#: ../roundup/cgi/templating.py:2497 ../roundup/cgi/templating.py:2800
-#: ../roundup/cgi/templating.py:1305:1335 :2497:2800
+#: ../roundup/cgi/templating.py:1290 ../roundup/cgi/templating.py:1320
+#: ../roundup/cgi/templating.py:2526 ../roundup/cgi/templating.py:2829
+#: ../roundup/cgi/templating.py:1290:1320 :2526:2829
 msgid "[label is missing]"
 msgstr ""
 
-#: ../roundup/cgi/templating.py:1309 ../roundup/cgi/templating.py:1338
-#: ../roundup/cgi/templating.py:1309:1338
+#: ../roundup/cgi/templating.py:1294 ../roundup/cgi/templating.py:1323
+#: ../roundup/cgi/templating.py:1294:1323
 msgid "<strike>The linked node no longer exists</strike>"
 msgstr "<strike>Den lenkede noden finnes ikke lenger</strike>"
 
-#: ../roundup/cgi/templating.py:1400
+#: ../roundup/cgi/templating.py:1385
 #, python-format
 msgid "%s: (no value)"
 msgstr "%s: (ingen verdi)"
 
-#: ../roundup/cgi/templating.py:1416
+#: ../roundup/cgi/templating.py:1401
 #, fuzzy, python-format
 msgid ""
 "<strong><em>This event %s is not handled by the history display!</em></"
@@ -2365,46 +2371,46 @@ msgstr ""
 "<strong><em>Denne hendelsen håndteres ikke av historievisningen!</em></"
 "strong>"
 
-#: ../roundup/cgi/templating.py:1429
+#: ../roundup/cgi/templating.py:1414
 msgid "<tr><td colspan=4><strong>Note:</strong></td></tr>"
 msgstr "<tr><td colspan=4><strong>Noter:</strong></td></tr>"
 
-#: ../roundup/cgi/templating.py:1438
+#: ../roundup/cgi/templating.py:1423
 msgid "History"
 msgstr "Historie"
 
-#: ../roundup/cgi/templating.py:1440
+#: ../roundup/cgi/templating.py:1425
 msgid "<th>Date</th>"
 msgstr "<th>Dato</th>"
 
-#: ../roundup/cgi/templating.py:1441
+#: ../roundup/cgi/templating.py:1426
 msgid "<th>User</th>"
 msgstr "<th>Bruker</th>"
 
-#: ../roundup/cgi/templating.py:1442
+#: ../roundup/cgi/templating.py:1427
 msgid "<th>Action</th>"
 msgstr "<th>Aksjon</th>"
 
-#: ../roundup/cgi/templating.py:1443
+#: ../roundup/cgi/templating.py:1428
 msgid "<th>Args</th>"
 msgstr "<th>Argumenter</th>"
 
-#: ../roundup/cgi/templating.py:1494
+#: ../roundup/cgi/templating.py:1479
 #, python-format
 msgid "Copy of %(class)s %(id)s"
 msgstr "Kopi av %(class)s %(id)s"
 
-#: ../roundup/cgi/templating.py:2125 ../roundup/cgi/templating.py:2160
-#: ../roundup/cgi/templating.py:1382:2125:2160
+#: ../roundup/cgi/templating.py:2119 ../roundup/cgi/templating.py:2154
+#: ../roundup/cgi/templating.py:1367:2119:2154
 msgid "No"
 msgstr "Nei"
 
-#: ../roundup/cgi/templating.py:2125 ../roundup/cgi/templating.py:2154
-#: ../roundup/cgi/templating.py:1382:2125:2154
+#: ../roundup/cgi/templating.py:2119 ../roundup/cgi/templating.py:2148
+#: ../roundup/cgi/templating.py:1367:2119:2148
 msgid "Yes"
 msgstr "Ja"
 
-#: ../roundup/cgi/templating.py:2286
+#: ../roundup/cgi/templating.py:2315
 msgid ""
 "default value for DateHTMLProperty must be either DateHTMLProperty or string "
 "date representation."
@@ -2412,27 +2418,27 @@ msgstr ""
 "standard verdi for DateHTMLProperty må være enten DateHTMLProperty eller en "
 "streng represantasjon av tidspunkt."
 
-#: ../roundup/cgi/templating.py:2468
+#: ../roundup/cgi/templating.py:2497
 #, python-format
 msgid "Attempt to look up %(attr)s on a missing value"
 msgstr "Forsøk på å slå opp  %(attr)s på manglende verdi"
 
-#: ../roundup/cgi/templating.py:2479
+#: ../roundup/cgi/templating.py:2508
 #, fuzzy, python-format
 msgid "Attempt to look up %(item)s on a missing value"
 msgstr "Forsøk på å slå opp  %(attr)s på manglende verdi"
 
-#: ../roundup/cgi/templating.py:2584
+#: ../roundup/cgi/templating.py:2613
 #, python-format
 msgid "<option %svalue=\"-1\">- no selection -</option>"
 msgstr "<option %svalue=\"-1\">- intet valg -</option>"
 
-#: ../roundup/cgi/templating.py:3745
+#: ../roundup/cgi/templating.py:3777
 #, python-format
 msgid "Unable to read or expand file '%(name)s' in template '%(template)s'."
 msgstr ""
 
-#: ../roundup/cgi/templating.py:3795
+#: ../roundup/cgi/templating.py:3827
 #, python-format
 msgid ""
 "Found an incorrect token when expandfile applied string subsitution on "
@@ -2603,54 +2609,54 @@ msgstr "%s siden"
 msgid "in %s"
 msgstr "i %s"
 
-#: ../roundup/hyperdb.py:120
+#: ../roundup/hyperdb.py:126
 #, fuzzy, python-format
 msgid "property %(property)s: %(errormsg)s"
 msgstr "egenskap %s: %s"
 
-#: ../roundup/hyperdb.py:149
+#: ../roundup/hyperdb.py:161
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is an invalid date (%(errormsg)s)"
 msgstr "egenskap %s: %r er en ugyldig dato (%s)"
 
-#: ../roundup/hyperdb.py:172
+#: ../roundup/hyperdb.py:184
 #, fuzzy, python-format
 msgid ""
 "property %(property)s: %(value)r is an invalid date interval (%(errormsg)s)"
 msgstr "egenskap %s: %r er et ugyldig datointervalll (%s)"
 
-#: ../roundup/hyperdb.py:434
+#: ../roundup/hyperdb.py:446
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a number"
 msgstr "egenskap %s: %r er ikke et nummer"
 
-#: ../roundup/hyperdb.py:448
+#: ../roundup/hyperdb.py:460
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not an integer"
 msgstr "egenskap %s: %r er ikke et nummer"
 
-#: ../roundup/hyperdb.py:470
+#: ../roundup/hyperdb.py:482
 #, python-format
 msgid "\"%s\" not a node designator"
 msgstr "\"%s\" ikke en node-benevnelse"
 
-#: ../roundup/hyperdb.py:1499 ../roundup/hyperdb.py:1507
-#: ../roundup/hyperdb.py:1499:1507
+#: ../roundup/hyperdb.py:1515 ../roundup/hyperdb.py:1523
+#: ../roundup/hyperdb.py:1515:1523
 #, python-format
 msgid "Not a property name: %s"
 msgstr "Ikke et navn på egenskap: %s"
 
-#: ../roundup/hyperdb.py:2038
+#: ../roundup/hyperdb.py:2054
 #, fuzzy, python-format
 msgid "property %(property)s: %(value)r is not a %(classname)s."
 msgstr "egenskapen \"%(propname)s\": \"%(value)s\" er ikke i listen nå"
 
-#: ../roundup/hyperdb.py:2044
+#: ../roundup/hyperdb.py:2060
 #, python-format
 msgid "you may only enter ID values for property %s"
 msgstr "du kan bare oppgi ID-verdier for egenskap %s"
 
-#: ../roundup/hyperdb.py:2079
+#: ../roundup/hyperdb.py:2095
 #, fuzzy, python-format
 msgid "%(property)r is not a property of %(classname)s"
 msgstr "%r er ikke en egenskap ved %s"
@@ -2990,60 +2996,60 @@ msgid ""
 "are: %(stack)s"
 msgstr ""
 
-#: ../roundup/pygettext.py:401
+#: ../roundup/pygettext.py:400
 #, python-format
 msgid "*** %(file)s:%(lineno)s: Seen unexpected token \"%(token)s\""
 msgstr ""
 
-#: ../roundup/pygettext.py:457
+#: ../roundup/pygettext.py:456
 #, python-format
 msgid "# File: %(filename)s, line: %(lineno)d"
 msgstr ""
 
-#: ../roundup/pygettext.py:464
+#: ../roundup/pygettext.py:463
 #, python-format
 msgid " %(filename)s:%(lineno)d"
 msgstr ""
 
-#: ../roundup/pygettext.py:540
+#: ../roundup/pygettext.py:539
 #, fuzzy, python-format
 msgid "Invalid value for --style: %s"
 msgstr "Ugylig login"
 
-#: ../roundup/pygettext.py:548
+#: ../roundup/pygettext.py:547
 #, python-format
 msgid "pygettext.py (xgettext for Python) %s"
 msgstr ""
 
-#: ../roundup/pygettext.py:554
+#: ../roundup/pygettext.py:553
 #, python-format
 msgid "--width argument must be an integer: %s"
 msgstr ""
 
-#: ../roundup/pygettext.py:582
+#: ../roundup/pygettext.py:581
 #, python-format
 msgid "Can't read --exclude-file: %s"
 msgstr ""
 
-#: ../roundup/pygettext.py:601
+#: ../roundup/pygettext.py:600
 msgid "Reading standard input"
 msgstr ""
 
-#: ../roundup/pygettext.py:606
+#: ../roundup/pygettext.py:605
 #, python-format
 msgid "Working on %s"
 msgstr ""
 
-#: ../roundup/pygettext.py:640
+#: ../roundup/pygettext.py:639
 msgid "a unicode string"
 msgstr ""
 
-#: ../roundup/pygettext.py:642
+#: ../roundup/pygettext.py:641
 #, python-format
 msgid "*** Seen unexpected token \"%(token)s\""
 msgstr ""
 
-#: ../roundup/pygettext.py:643
+#: ../roundup/pygettext.py:642
 msgid "morethanonestring"
 msgstr ""
 
@@ -3163,33 +3169,33 @@ msgstr "opprettelse"
 msgid "creator"
 msgstr "opprettet av"
 
-#: ../roundup/roundupdb.py:426
+#: ../roundup/roundupdb.py:447
 #, python-format
 msgid "No key for \"%(adr)s\" in keyring"
 msgstr ""
 
-#: ../roundup/roundupdb.py:504
+#: ../roundup/roundupdb.py:525
 #, python-format
 msgid "New submission from %(authname)s%(authaddr)s:"
 msgstr "Ny sak fra %(authname)s%(authaddr)s:"
 
-#: ../roundup/roundupdb.py:507
+#: ../roundup/roundupdb.py:528
 #, python-format
 msgid "%(authname)s%(authaddr)s added the comment:"
 msgstr "%(authname)s%(authaddr)s la inn kommentaren:"
 
-#: ../roundup/roundupdb.py:510
+#: ../roundup/roundupdb.py:531
 #, python-format
 msgid "Change by %(authname)s%(authaddr)s:"
 msgstr "Endret av %(authname)s%(authaddr)s:"
 
-#: ../roundup/roundupdb.py:529
+#: ../roundup/roundupdb.py:550
 #, python-format
 msgid "File '%(filename)s' not attached - you can download it from %(link)s."
 msgstr ""
 "Filen '%(filename)s' er ikke vedlagt - du kan laste den ned fra %(link)s."
 
-#: ../roundup/roundupdb.py:904
+#: ../roundup/roundupdb.py:925
 #, python-format
 msgid ""
 "\n"
@@ -3299,59 +3305,59 @@ msgstr ""
 "<html><head><title>Roundup saksliste</title></head>\n"
 "<body><h1>Roundup saksliste</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:598
+#: ../roundup/scripts/roundup_server.py:602
 #, fuzzy, python-format
 msgid "Error: %(type)s: %(value)s"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/scripts/roundup_server.py:610
+#: ../roundup/scripts/roundup_server.py:614
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr "ADVARSEL: ignorerer \"-g\" argument, ikke root"
 
-#: ../roundup/scripts/roundup_server.py:616
+#: ../roundup/scripts/roundup_server.py:620
 msgid "Can't change groups - no grp module"
 msgstr "Kan ikke skifte gruppe, ingen grp modul"
 
-#: ../roundup/scripts/roundup_server.py:625
+#: ../roundup/scripts/roundup_server.py:629
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr "Gruppe %(group)s finnes ikke"
 
-#: ../roundup/scripts/roundup_server.py:637
+#: ../roundup/scripts/roundup_server.py:641
 msgid "Can't run as root!"
 msgstr "Kan ikke kjøre som root"
 
-#: ../roundup/scripts/roundup_server.py:640
+#: ../roundup/scripts/roundup_server.py:644
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr "ADVARSEL: ignorerer \"-u\" argument, ikke root"
 
-#: ../roundup/scripts/roundup_server.py:646
+#: ../roundup/scripts/roundup_server.py:650
 msgid "Can't change users - no pwd module"
 msgstr "Kan ikke skifte bruker , ingen pwd modul"
 
-#: ../roundup/scripts/roundup_server.py:655
+#: ../roundup/scripts/roundup_server.py:659
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr "Bruker %(user)s finnes ikke"
 
-#: ../roundup/scripts/roundup_server.py:867
+#: ../roundup/scripts/roundup_server.py:871
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr ""
 "Multiprosess modus  \"%s\" ikke tilgjengelig, fortsetter som enkeltprosess"
 
-#: ../roundup/scripts/roundup_server.py:895
+#: ../roundup/scripts/roundup_server.py:899
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Ikke mulig å binde til port %s, porten er allerede i bruk."
 
-#: ../roundup/scripts/roundup_server.py:899
+#: ../roundup/scripts/roundup_server.py:903
 #, fuzzy, python-format
 msgid ""
 "Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
 msgstr "Ikke mulig å binde til port %s, porten er allerede i bruk."
 
-#: ../roundup/scripts/roundup_server.py:978
+#: ../roundup/scripts/roundup_server.py:982
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -3368,7 +3374,7 @@ msgstr ""
 "               Skriv \"roundup-server -c help\" for å vise Windows Services\n"
 "               informasjon."
 
-#: ../roundup/scripts/roundup_server.py:985
+#: ../roundup/scripts/roundup_server.py:989
 #, fuzzy
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
@@ -3384,7 +3390,7 @@ msgstr ""
 "               serverens PID til filen indikert av PIDfile.\n"
 "               -l optsjonen *må* brukes hvis -d brukes."
 
-#: ../roundup/scripts/roundup_server.py:993
+#: ../roundup/scripts/roundup_server.py:997
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -3512,21 +3518,25 @@ msgstr ""
 "   Pass på at de ikke inneholder url-utrygge tegn som mellomrom, for de kan "
 "forvirre IE.\n"
 
-#: ../roundup/scripts/roundup_server.py:1173
+#: ../roundup/scripts/roundup_server.py:1177
 msgid "Instances must be name=home"
 msgstr "Instanser må være navn=home"
 
-#: ../roundup/scripts/roundup_server.py:1187
+#: ../roundup/scripts/roundup_server.py:1191
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Konfigurasjon lagret til %s"
 
-#: ../roundup/scripts/roundup_server.py:1205
+#: ../roundup/scripts/roundup_server.py:1206
+msgid "If you specify a PID file you must use -l or -L."
+msgstr ""
+
+#: ../roundup/scripts/roundup_server.py:1212
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Beklager, du kan ikke kjøre servern som daemon under dette operativsystemet"
 
-#: ../roundup/scripts/roundup_server.py:1225
+#: ../roundup/scripts/roundup_server.py:1232
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Roundup server startet på %(HOST)s:%(PORT)s"
@@ -4803,46 +4813,46 @@ msgstr "Roundup dok"
 msgid "clear this message"
 msgstr "klarer denne meldingen"
 
-#: ../share/roundup/templates/classic/html/page.html:257
-#: ../share/roundup/templates/classic/html/page.html:270
-#: ../share/roundup/templates/classic/html/page.html:288
-#: ../share/roundup/templates/classic/html/page.html:302
-#: ../share/roundup/templates/devel/html/page.html:316
-#: ../share/roundup/templates/devel/html/page.html:329
-#: ../share/roundup/templates/devel/html/page.html:347
-#: ../share/roundup/templates/devel/html/page.html:361
-#: ../share/roundup/templates/minimal/html/page.html:239
-#: ../share/roundup/templates/minimal/html/page.html:254
-#: ../share/roundup/templates/minimal/html/page.html:268
-#: ../share/roundup/templates/responsive/html/page.html:331
-#: ../share/roundup/templates/responsive/html/page.html:344
-#: ../share/roundup/templates/responsive/html/page.html:362
-#: ../share/roundup/templates/responsive/html/page.html:376
+#: ../share/roundup/templates/classic/html/page.html:258
+#: ../share/roundup/templates/classic/html/page.html:271
+#: ../share/roundup/templates/classic/html/page.html:289
+#: ../share/roundup/templates/classic/html/page.html:303
+#: ../share/roundup/templates/devel/html/page.html:317
+#: ../share/roundup/templates/devel/html/page.html:330
+#: ../share/roundup/templates/devel/html/page.html:348
+#: ../share/roundup/templates/devel/html/page.html:362
+#: ../share/roundup/templates/minimal/html/page.html:240
+#: ../share/roundup/templates/minimal/html/page.html:255
+#: ../share/roundup/templates/minimal/html/page.html:269
+#: ../share/roundup/templates/responsive/html/page.html:332
+#: ../share/roundup/templates/responsive/html/page.html:345
+#: ../share/roundup/templates/responsive/html/page.html:363
+#: ../share/roundup/templates/responsive/html/page.html:377
 msgid "don't care"
 msgstr "valgfritt"
 
-#: ../share/roundup/templates/classic/html/page.html:259
-#: ../share/roundup/templates/classic/html/page.html:272
-#: ../share/roundup/templates/classic/html/page.html:290
-#: ../share/roundup/templates/classic/html/page.html:303
-#: ../share/roundup/templates/devel/html/page.html:318
-#: ../share/roundup/templates/devel/html/page.html:331
-#: ../share/roundup/templates/devel/html/page.html:349
-#: ../share/roundup/templates/devel/html/page.html:362
-#: ../share/roundup/templates/minimal/html/page.html:241
-#: ../share/roundup/templates/minimal/html/page.html:256
-#: ../share/roundup/templates/minimal/html/page.html:269
-#: ../share/roundup/templates/responsive/html/page.html:333
-#: ../share/roundup/templates/responsive/html/page.html:346
-#: ../share/roundup/templates/responsive/html/page.html:364
-#: ../share/roundup/templates/responsive/html/page.html:377
+#: ../share/roundup/templates/classic/html/page.html:260
+#: ../share/roundup/templates/classic/html/page.html:273
+#: ../share/roundup/templates/classic/html/page.html:291
+#: ../share/roundup/templates/classic/html/page.html:304
+#: ../share/roundup/templates/devel/html/page.html:319
+#: ../share/roundup/templates/devel/html/page.html:332
+#: ../share/roundup/templates/devel/html/page.html:350
+#: ../share/roundup/templates/devel/html/page.html:363
+#: ../share/roundup/templates/minimal/html/page.html:242
+#: ../share/roundup/templates/minimal/html/page.html:257
+#: ../share/roundup/templates/minimal/html/page.html:270
+#: ../share/roundup/templates/responsive/html/page.html:334
+#: ../share/roundup/templates/responsive/html/page.html:347
+#: ../share/roundup/templates/responsive/html/page.html:365
+#: ../share/roundup/templates/responsive/html/page.html:378
 msgid "------------"
 msgstr "------------"
 
-#: ../share/roundup/templates/classic/html/page.html:335
-#: ../share/roundup/templates/devel/html/page.html:390
-#: ../share/roundup/templates/minimal/html/page.html:297
-#: ../share/roundup/templates/responsive/html/page.html:405
+#: ../share/roundup/templates/classic/html/page.html:336
+#: ../share/roundup/templates/devel/html/page.html:391
+#: ../share/roundup/templates/minimal/html/page.html:298
+#: ../share/roundup/templates/responsive/html/page.html:406
 msgid "no value"
 msgstr "ingen verdi"
 
