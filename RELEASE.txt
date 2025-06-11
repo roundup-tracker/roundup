@@ -97,7 +97,15 @@ Roundup release checklist:
 
 8.  Rebuild documentation in "share/doc/roundup/html"
 
-      python3 setup.py build_doc
+      cd doc
+      make
+
+    runs commands to turn man pages into html files and adds them to
+    html_extra/man_pages subdir. Then it generates html text from
+    running roundup_admin. Then it generates a current copy of a
+    config.ini file. Then it runs:
+
+       python3 setup.py build_doc
 
 9.  Generate source distribution:
 
