@@ -375,8 +375,8 @@ The rest interface returns status 406 if you use an unrecognized
 extension.  You will also get a 406 status if none of the entries in
 the accept header are available or if the accept header is invalid.
 
-Note: ``dicttoxml2.py`` is an updated version of ``dicttoxml.py``. If
-you are still using Python 2.7 or 3.6, you can use ``dicttoxml.py``.
+Note: ``dicttoxml2.py`` is an updated version of ``dicttoxml.py`` and
+should be used for Roundup running on Python 3.7 or newer.
 
 Also the ``/binary_content`` attribute endpoint can be used to
 retrieve raw file data in many formats.

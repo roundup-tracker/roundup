@@ -18,7 +18,7 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
   ``python demo.py`` or `a Docker container`_ in under 5 minutes. 
 - Choose from `five included templates`_ for your tracker.
 - `Customize`_ and use the demo as a template for your production tracker.
-- No need for additional support software, just Python (3.6+ or 2.7)
+- No need for additional support software, just Python (3.7+ or 2.7)
   to get started.
 - Basic installation (including a web interface) takes about 30 minutes.
 - Supports embedded databases like `SQLite`_ and dbm. Upgradable
