@@ -13,7 +13,7 @@ Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
 python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 Roundup 2.4.0 is the last release to support Python 2.
 
-2025-XX-XX 2.5.0
+2025-XX-XX 2.5.0beta1
 
 Fixed:
 
@@ -88,10 +88,11 @@ Fixed:
   from "itemSynopsis". (Ralf Schlatterbeck)
 - issue2551376: Fix tracebacks in item templates (Ralf Schlatterbeck)
 - issue2551396: Use of os.path.stat.ST_MTIME in python 3.13 crashes
-  roundup on windows. Replaced with equivalent stat.ST_MTIME.
+  roundup on windows. Replaced with equivalent stat.ST_MTIME. (Randy
+  on IRC, fix: John Rouillard and R. David Murray (bitdancer))
 - issue2551323: remove functions used for XHTML template
   support. XHTML was deprecated in Roundup 2.3.0 and an invalid value
-  in 2.4.0.
+  in 2.4.0. (John Rouillard)
 - issue2551406: 'Templating Error: too many values to unpack' crash
   fixed. (reported by and patch Christof Meerwald, commit/test John
   Rouillard)
@@ -107,7 +108,7 @@ Features:
   Marcus Priesch, cleanup to remove python 2 issues, John Rouillard.)
 - issue2551315 - Document use of
   RestfulInstance.max_response_row_size to limit data returned
-  from rest request.
+  from rest request. (John Rouillard)
 - issue2551330 - Add an optional 'filter' function to the Permission
   objects and the addPermission method. This is used to optimize search
   performance by not checking items returned from a database query
