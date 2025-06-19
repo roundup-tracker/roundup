@@ -137,6 +137,12 @@ jobs:
           python -c "import sqlite3; print('sqlite version: ', sqlite3.sqlite_version)"
           python -c "import setuptools; print('setuptools version: ', setuptools.__version__);"
 
+      # from:
+      # https://hugovk.dev/blog/2025/free-threaded-python-on-github-actions/
+      - name: Set PYTHON_GIL when freethreaded
+        if: endsWith(matrix.python-version, 't')
+        run: |
+          echo "PYTHON_GIL=0" >> "$GITHUB_ENV"
       - name: Update pip
         run: python -m pip install --upgrade pip
 
