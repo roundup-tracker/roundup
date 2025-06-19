@@ -155,7 +155,7 @@ Features:
 - issue2551231 - template.py-HTMLClass::classhelp doesn't merge
   user defined classes. It now merges them in. (John Rouillard)
 - re-enable support for GPG/PGP encrypted emails using new python gpg
-  pakage on the test pypi instance. (Paul Schwabauer)
+  package on the test pypi instance. (Paul Schwabauer)
 
 2024-07-13 2.4.0
 
