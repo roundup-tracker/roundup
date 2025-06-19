@@ -133,7 +133,7 @@ jobs:
       - name: Display Python and key module versions
         run: |
           python --version --version
-          python -c "import sysconfig; print('GIL IS ENABLED: ', sysconfig.get_config_vars().get('Py_GIL_DISABLED', 'not defined'));"
+          python -c "import sysconfig; print('GIL IS DISABLED: ', sysconfig.get_config_vars().get('Py_GIL_DISABLED', 'not defined'));"
           python -c "import sqlite3; print('sqlite version: ', sqlite3.sqlite_version)"
           python -c "import setuptools; print('setuptools version: ', setuptools.__version__);"
 
