@@ -240,9 +240,10 @@ jobs:
           # used for newer Python versions. Temporarily use the
           # testing index, which contains a newer version of the
           # bindings on 24.04 or released version for other OS
-          # versions. See issue2551368. 'pip install gpg' should work.
+          # versions. See issue2551368. 'pip install gpg' should work
+          # at some point when things are released to the production repo.
           pip install --index-url https://test.pypi.org/simple/ \
-                --extra-index-url https://pypi.org/simple --pre gpg;
+                --extra-index-url https://pypi.org/simple gpg;
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
