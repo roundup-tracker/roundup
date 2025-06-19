@@ -641,7 +641,7 @@
   # if we use the input type 'number' for Number (and Integer)
   # properties. If set to 'no' we use input type 'text'.
   # Allowed values: yes, no
-  # Default: yes
+  # Default: no
   use_browser_number_input = no
 
 .. index:: config.ini; sections rdbms
