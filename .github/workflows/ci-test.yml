@@ -71,12 +71,12 @@ jobs:
         experimental: [ false ]
 
         include:
-            # example: if 3.13 fails the jobs still succeeds
+            # example: if this version fails the jobs still succeeds
             # allow-prereleases in setup-python allows alpha/beta
-            # releases to run
-            #- python-version: 3.13
-            #  os: ubuntu-22.04
-            #  experimental: true
+            # releases to run. Also allow free threaded python testing
+            - python-version: 3.13t
+              os: ubuntu-24.04
+              experimental: true
             
             # 3.7 not available on new 22.04 runners, so run on 22.04 ubuntu
             - python-version: 3.7
@@ -132,7 +132,8 @@ jobs:
       # Display the Python version being used
       - name: Display Python and key module versions
         run: |
-          python -c "import sys; print('python version: ', sys.version)"
+          python --version --version
+          python -c "import sysconfig; print('GIL IS ENABLED: ', sysconfig.get_config_vars().get('Py_GIL_DISABLED', 'not defined'));"
           python -c "import sqlite3; print('sqlite version: ', sqlite3.sqlite_version)"
           python -c "import setuptools; print('setuptools version: ', setuptools.__version__);"
 
