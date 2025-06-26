@@ -248,7 +248,11 @@ gpg
   If gpg_ is installed you can configure the mail gateway to perform
   verification or decryption of incoming OpenPGP MIME messages. When
   configured, you can require email to be cryptographically signed
-  before roundup will allow it to make modifications to issues.
+  before roundup will allow it to make modifications to issues. (Note
+  with python 3.13 or newer on some platforms, you may need to install
+  version 2.0 of gpg from test.pypi.org. See the `gpg install
+  directions in the upgrading document`_.
+
 
 jinja2
   To use the jinja2 template (may still be experimental, check out
@@ -317,6 +321,9 @@ requests
 
 .. _Using Redis for Session Databases:
    admin_guide.html#using-redis-for-session-databases
+
+.. _gpg install directions in the upgrading document:
+   upgrading.html#directions-for-installing-gpg
 
 Installing Roundup
 ==================

@@ -441,6 +441,23 @@ the database (client.db), form (client.form).
 
 You can find an example in :ref:`dynamic_csp`.
 
+Directions for installing gpg
+-----------------------------
+
+In this release a new version of the gpg module was needed for Ubuntu
+24.04 and python 3.13. Paul Schwabauer produced a new version of the
+gpg module. However it is only on the test instance of pypi. If you
+run into issues installing gpg with pip, you can use::
+
+    pip install --index-url https://test.pypi.org/simple/ \
+                --extra-index-url https://pypi.org/simple gpg;
+
+to installed version 2.0 of gpg from test.pypi.org obtaining it's
+requirements from pypi.org.
+
+When `issue2551368 <https://issues.roundup-tracker.org/issue2551368>`_
+is closed, you should be able to use ``pip install gpg`` again.   
+
 .. index:: Upgrading; 2.3.0 to 2.4.0
 
 Migrating from 2.3.0 to 2.4.0
