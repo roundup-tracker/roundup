@@ -362,11 +362,11 @@ There is no support for activating text mode using the
 keyboard. Tablet/touch support is mixed. Chrome supports
 double-tap to activate text mode input. Firefox does not.
 
-Revert native number inputs for Number() and Integer() (optional)
+Enable native number inputs for Number() and Integer() (optional)
 -----------------------------------------------------------------
 
 Roundup's ``field()`` method for properties of type ``Number()`` or
-``Integer()`` now use a native browser number input by default.
+``Integer()`` can use a native browser number input by default.
 
 This is configurable for *all* ``Number()`` and ``Integer()`` properties
 with the config option ``use_browser_number_input`` in section ``[web]``.
@@ -378,6 +378,8 @@ Note that the ``Integer()`` type also uses ``step="1"`` by default to
 add a stepper control and try to constrain the input to
 integers. This can be overridden by passing a new step
 (e.g. ``step="50"``) to the ``field()`` method.
+
+This is an experiment and maybe changed based on feedback.
 
 Change in REST response for invalid CORS requests (info)
 --------------------------------------------------------
