@@ -210,20 +210,8 @@ def main():
         sys.exit(42)
 
     setup(name='roundup',
-          version=__version__,
           author="Richard Jones",
           author_email="richard@users.sourceforge.net",
-          maintainer="Ralf Schlatterbeck",
-          maintainer_email="rsc@runtux.com",
-          description="A simple-to-use and -install issue-tracking system"
-            " with command-line, web and e-mail interfaces. Highly"
-            " customisable.",
-          license="OSI Approved: MIT License, Zope Public License, Python Software Foundation License",
-          long_description=long_description,
-          long_description_content_type='text/x-rst',
-          python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
-          url='https://www.roundup-tracker.org',
-          download_url='https://pypi.org/project/roundup',
           classifiers=[#'Development Status :: 5 - Production/Stable',
                        'Development Status :: 4 - Beta',
                        #'Development Status :: 3 - Alpha',
@@ -258,23 +246,46 @@ def main():
                        'Topic :: Software Development :: Bug Tracking',
                        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
                        ],
-          extras_require={
-              "charting": ['pygal'],
-              "jinja2": ['jinja2'],
-              "extras": ['brotli', 'pytz'],
-              "test": ['pytest > 7.0.0'],
-              },
           # Override certain command classes with our own ones
           cmdclass={'build_doc': build_doc,
                      'build': build,
                      'bdist_rpm': bdist_rpm,
                      'install_lib': install_lib,
                      },
-          packages=packages,
+          data_files=data_files,
+          description="A simple-to-use and -install issue-tracking system"
+            " with command-line, web and e-mail interfaces. Highly"
+            " customisable.",
+          download_url='https://pypi.org/project/roundup',
           entry_points={
               'console_scripts': scripts,
           },
-          data_files=data_files)
+          extras_require={
+              "charting": ['pygal'],
+              "jinja2": ['jinja2'],
+              "extras": ['brotli', 'pytz'],
+              "test": ['pytest > 7.0.0'],
+              },
+          license="OSI Approved: MIT License, Zope Public License,"
+                  " Python Software Foundation License",
+          long_description=long_description,
+          long_description_content_type='text/x-rst',
+          maintainer="Ralf Schlatterbeck",
+          maintainer_email="rsc@runtux.com",
+          packages=packages,
+          project_urls={
+              "Documentation": "https://roundup-tracker.org/docs.html",
+              "Changelog": "https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt",
+              "Contact": "https://roundup-tracker.org/contact.html",
+              "IRC": "https://webchat.oftc.net/?randomnick=1&channels=roundup&prompt=1",
+              "Issues": "https://issues.roundup-tracker.org/",
+              "Licenses": "https://roundup-tracker.org/docs/license.html",
+              "Wiki": "https://wiki.roundup-tracker.org/",
+    },
+          python_requires=">=3.7",
+          url='https://www.roundup-tracker.org',
+          version=__version__,
+)
 
 
 if __name__ == '__main__':
