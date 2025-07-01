@@ -1,4 +1,4 @@
-I'm proud to release version 2.5.0b1 of the Roundup issue
+I'm proud to release version 2.5.0 of the Roundup issue
 tracker.  This release is a bugfix and feature release, so
 make sure to read `docs/upgrading.txt
 <https://www.roundup-tracker.org/docs/upgrading.html>`_ to
@@ -7,7 +7,8 @@ bring your tracker up to date.
 The 41 changes, as usual, include some new features and many
 bug fixes.
 
-Version 2.5.0b1 does not support Python 2.
+Version 2.5.0 does not support Python 2. The minimum Python
+version is 3.7.
 
 Note that you should run ``roundup-admin ... migrate`` to
 update the database schema version. Do this before you use
@@ -24,54 +25,80 @@ You can install it with::
 
 then unpack and test/install from the tarball.
 
-Among the notable improvements in 2.5.0 from the 2.4.0
-release are:
+Among the significant enhancements in version 2.5.0 compared to
+the 2.4.0 release are:
 
-* detect more errors in RPN search expressions. Return more
-  useful error messages. Documented (advanced) RPN search expressions
-  in the user guide.
+The property/field advanced search expression feature has been
+enhanced. The RPN search expression format was previously
+undocumented. Search expressions are usually built using the
+expression editor on the search page. They can be built manually
+by modifying the search URL. However errors in expressions could
+return results that didn't match the user's intent. This release
+documents the RPN expression syntax, adds expression error
+detection, and improves error reporting.
 
-* change default password hash method to PBKDF2 with SHA512. You
-  may need to reset password_pbkdf2_default_rounds to a lower
-  value. See upgrading doc.
+To boost security, Roundup updated the default hash method for
+password storage. Now, we're using PBKDF2 with SHA512. Because of
+this change, you should change (lower) the value of
+password_pbkdf2_default_rounds in your tracker's config.ini. Check
+the upgrading documentation for more info. (Note this may cause
+longer authentication times, the upgrade doc describes how to
+downgrade the hash method.)
 
-* add filter function to Permission objects. This pushes some
-  permission checks down to the SQL database and speeds up display of
-  index pages.
+For better security, Roundup's session token is now prefixed with
+the magic ``__Secure__`` tag when using HTTPS. This adds to the
+existing ``Secure`` property that comes with the session cookie.
 
-* fix crash bug on windows with Python 3.13
+Roundup verifies the user's authorization for the data fetched
+from the database.  A new optional ``filter`` argument has been
+added to Permission objects. When the administrator supplies a
+filter function, it can boosts performance with SQL server
+databases. This function should provide selection criteria to
+offload permission checks to the database. Consequently, less data
+is retrieved from the database, leading to quicker display of
+index pages with reduced CPU and network traffic.
 
-* update doc on required REST headers. Also other docs updates.
+Requsting binary data from a REST endpoint has been a
+hassle. Since JSON can't handle binary data, images (and other
+binary data) need to be encoded. This makes them significantly
+larger. The workaround was to use a non-REST endpoint for fetching
+non-text attachments. This update lets the REST endpoint return
+raw message or file content data. You can utilize the
+``binary_content`` endpoint along with an appropriate ``Accept``
+header (e.g. ``image/jpeg``) in your request.
 
-* detect error condition early when we can't respond with requested
-  REST format response (e.g. xml is requested).
+The ``roundup-gettext`` tool has been enhanced to extract
+translatable strings from detectors and extensions. This will
+simplify the process of translating your trackers.
 
-* do not generate an error if a PUT REST request sets the user's
-  address to the current value.
+Other miscellaneous fixes include:
 
-* make ``roundup-gettext`` extract translatable strings from detectors
-  and extensions.
+* Fixed a crash bug on Windows with Python 3.13.
 
-* improve security of session cookies by marking them with the magic
-  ``__Secure__`` prefix.
+* Updated documentation on required REST headers, along with other
+  documentation updates.
 
-* make the rest endpoint return raw message or file content data. Use
-  the ``binary_content`` endpoint and a suitable ``Accept``` header in
-  the request.
+* Early detection of error conditions when we can't provide the
+  requested REST format response (like when XML is requested).
 
-* add support for the ``defusedxml`` Python module to improve security when
-  using XML.
+* An error is not generated if a PUT REST request sets the user's address
+  to its current value.
 
-* add templating function: ``utils.set_http_response(integer)`` to set
-  HTTP return code from your template.
+* Added support for the ``defusedxml`` Python module to enhance
+  security when using XML.
 
-* add generation of native HTML date and number/integer inputs. See
-  Upgrading for caveats this is disabled by default.
+* Introduced a templating function:
+  ``utils.set_http_response(integer)`` to set the HTTP return code
+  directly from your template.
 
-* re-enable support for GPG/PGP signed emails. Requires installing
-  from the test PyPi repository.
+* Added the ability to generate native HTML date and
+  number/integer inputs. Check Upgrading for caveats, as this
+  feature is disabled by default.
 
-* remove XHTML support simplifying the code base
+* Re-enabled support for GPG/PGP signed emails, which requires
+  installation from the test PyPi repository.
+
+* Removed XHTML support to simplify the code base.
 
 The file CHANGES.txt has a detailed list of feature
 additions and bug fixes for each release. The most recent
