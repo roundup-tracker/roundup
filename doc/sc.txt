@@ -18,12 +18,12 @@ still have to use the `wayback machine <https://web.archive.org>`_
 to access some of the links on these pages. The papers in
 chronological order are:
 
-  * `See a short paper explaining Roundup <roundup_short_paper.html>`_
+  * `A short paper explaining Roundup <roundup_short_paper.html>`_
 
-  * `See the original overview document for Roundup submitted to the
+  * `The original overview document for Roundup submitted to the
     Software Carpentry competition <original_overview.html>`_
 
-  * `See the original specification document for Roundup submitted to the
+  * `The original specification document for Roundup submitted to the
     Software Carpentry competition <spec.html>`_
 
 
