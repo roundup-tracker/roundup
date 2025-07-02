@@ -48,7 +48,13 @@
         content="Page {{ pagename }} in documentation on the Roundup issue tracker, version {{ release|e }}.">
     {%- endif %}
     {%- if pageurl %}
+      {%- if pageurl.endswith("org/index.html") %}
+      <!-- strip the index.html to make
+           https://www.roundup-tracker.org/ canonical -->
+    <link rel="canonical" href="{{ pageurl[:-10] }}" />
+      {%- else %}
     <link rel="canonical" href="{{ pageurl|e }}" />
+      {%- endif %}
     {%- endif %}
     {%- if use_opensearch %}
     <link rel="search" type="application/opensearchdescription+xml"
