@@ -1287,12 +1287,13 @@ wsgi server like uWSGI, Gnuicorn etc.
 
 To run Roundup using FastCGI, the flup_ package can be used under
 Python 2 and Python 3. We don't have a detailed config for this, but
-the basic idea can be found at:
-https://flask.palletsprojects.com/en/2.0.x/deploying/fastcgi/
+the basic idea `can be found in the wayback machine archive`_.
 
 If you have deployed Roundup using FastCGI and flup we welcome example
 configuration files and instructions.
 
+.. _can be found in the wayback machine archive:
+     https://web.archive.org/web/20241010170738/https://flask.palletsprojects.com/en/2.0.x/deploying/fastcgi/
 .. _flup: https://pypi.org/project/flup/
 
 WSGI Variations
