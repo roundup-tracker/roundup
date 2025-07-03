@@ -1151,8 +1151,8 @@ mechanism.
   <customizing.html#adding-a-time-log-to-your-issues-4>`_ for an example)
 
 * ``instance.registerUtilMethod`` is also used for adding `templating
-  utilities`_, and provides a client instance by default to the
-  function. This makes more complex templating actions easier to
+  utilities`_, and provides a TemplatingUtils instance by default to
+  the function. This makes more complex templating actions easier to
   use. (see :ref:`dynamic_csp` for an example)
 
 * ``instance.registerAction`` is used to add more actions to the
