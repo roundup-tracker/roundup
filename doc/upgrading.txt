@@ -434,12 +434,15 @@ to:
 you had to pass these objects from the template using the ``db``,
 ``request.client`` or ``request.form``  arguments.
 
-A new method for registering a template utility has been
-added. If you use the ``instance`` object's
-``registerUtilMethod()`` to register a utility function, you do
-not need to pass these arguments. The function is called as a
-method and the first argument is a ``client`` instance from which
-the database (client.db), form (client.form).
+A new method for registering a template utility has been added. If you
+use the ``instance`` object's ``registerUtilMethod()`` to register a
+utility function, you do not need to pass these arguments. The
+function is called as a method and the first argument is a
+TemplatingUtils (tu) instance from which the client object
+(tu.client), the database (tu.client.db), form (tu.client.form),
+request (tu.client.request), the translator for the current language
+(tu._) and any functions (tu.X) you registered using
+``registerUtil()`` are available.
 
 You can find an example in :ref:`dynamic_csp`.
 

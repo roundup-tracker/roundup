@@ -493,6 +493,10 @@ directory that generates the CSP on the fly. For example::
 
 	    Header values will be formatted with a dictionary including a
 	    nonce. Use to set a nonce for inline scripts.
+
+	    self is an instance of the TemplatingUtilities class, so
+	    you have access to self.client as well as any functions added
+	    using registerUtil.
 	'''
 	try:
 	    if self.client.client_nonce is None:
@@ -545,7 +549,6 @@ replace ``instance.registerUtilMethod`` with
 ``instance.registerUtil``. For example::
 
     def init(instance):
-        # Note the use of the new (in version 2.5) registerUtilMethod
         instance.registerUtil('AddHtmlHeaders', AddHtmlHeaders)
 
 The AddHtmlHeaders function needs to be changed so that ``self.client``

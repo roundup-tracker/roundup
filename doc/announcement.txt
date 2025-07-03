@@ -28,77 +28,99 @@ then unpack and test/install from the tarball.
 Among the significant enhancements in version 2.5.0 compared to
 the 2.4.0 release are:
 
-The property/field advanced search expression feature has been
-enhanced. The RPN search expression format was previously
-undocumented. Search expressions are usually built using the
-expression editor on the search page. They can be built manually
-by modifying the search URL. However errors in expressions could
-return results that didn't match the user's intent. This release
-documents the RPN expression syntax, adds expression error
-detection, and improves error reporting.
+* The property/field advanced search expression feature has been
+  enhanced and documented/
 
-To boost security, Roundup updated the default hash method for
-password storage. Now, we're using PBKDF2 with SHA512. Because of
-this change, you should change (lower) the value of
-password_pbkdf2_default_rounds in your tracker's config.ini. Check
-the upgrading documentation for more info. (Note this may cause
-longer authentication times, the upgrade doc describes how to
-downgrade the hash method.)
+   Search expressions are usually built using the
+   expression editor on the search page. They can be built manually
+   by modifying the search URL but the RPN search expression format
+   was undocumented. Errors in expressions could return results that
+   didn't match the user's intent. This release documents the RPN
+   expression syntax, adds basic expression error detection, and
+   improves error reporting.
 
-For better security, Roundup's session token is now prefixed with
-the magic ``__Secure__`` tag when using HTTPS. This adds to the
-existing ``Secure`` property that comes with the session cookie.
+* The default hash method for password storage is more secure.
 
-Roundup verifies the user's authorization for the data fetched
-from the database.  A new optional ``filter`` argument has been
-added to Permission objects. When the administrator supplies a
-filter function, it can boosts performance with SQL server
-databases. This function should provide selection criteria to
-offload permission checks to the database. Consequently, less data
-is retrieved from the database, leading to quicker display of
-index pages with reduced CPU and network traffic.
+  We use PBKDF2 with SHA512 (was SHA1). With this change you can
+  lower the value of password_pbkdf2_default_rounds in your
+  tracker's config.ini. Check the upgrading documentation for more
+  info. (Note this may cause longer authentication times, the
+  upgrade doc describes how to downgrade the hash method if required.)
 
-Requsting binary data from a REST endpoint has been a
-hassle. Since JSON can't handle binary data, images (and other
-binary data) need to be encoded. This makes them significantly
-larger. The workaround was to use a non-REST endpoint for fetching
-non-text attachments. This update lets the REST endpoint return
-raw message or file content data. You can utilize the
-``binary_content`` endpoint along with an appropriate ``Accept``
-header (e.g. ``image/jpeg``) in your request.
+* Roundup's session token is now prefixed with the magic
+ ``__Secure__`` tag when using HTTPS.
 
-The ``roundup-gettext`` tool has been enhanced to extract
-translatable strings from detectors and extensions. This will
-simplify the process of translating your trackers.
+  This adds another layer of protection in addition to the
+  existing ``Secure`` property that comes with the session cookie.
+
+* Data authorization can be done at the database level speeding up
+  display of index pages.
+
+  Roundup verifies the user's authorization for the data fetched
+  from the database after retrieving data from the database. A new
+  optional ``filter`` argument has been added to Permission
+  objects. When the administrator supplies a filter function, it
+  can boost performance with SQL server databases by pushing
+  selection criteria to the database. By offloading some
+  permission checks to the database, less data is retrieved from
+  the database. This leads to quicker display of index pages with
+  reduced CPU and network traffic.
+
+* The REST endpoint can supply binary data (images, pdf, ...) to
+  its clients.
+
+  Requesting binary data from a REST endpoint has been a
+  hassle. Since JSON can't handle binary data, images (and other
+  binary data) need to be encoded. This makes them significantly
+  larger. The workaround was to use a non-REST endpoint for fetching
+  non-text attachments. This update lets the REST endpoint return
+  raw message or file content data. You can utilize the
+  ``binary_content`` endpoint along with an appropriate ``Accept``
+  header (e.g. ``image/jpeg``) in your request.
+
+* Extract translatable strings from your tracker easily
+
+  The ``roundup-gettext`` tool has been enhanced to extract
+  translatable strings from detectors and extensions. This will
+  simplify the process of translating your trackers.
 
 Other miscellaneous fixes include:
 
-* Fixed a crash bug on Windows with Python 3.13.
+* Fix a crash bug on Windows with Python 3.13.
 
-* Updated documentation on required REST headers, along with other
+* Update documentation on required REST headers, along with other
   documentation updates.
 
-* Early detection of error conditions when we can't provide the
-  requested REST format response (like when XML is requested).
+* Improve handling of an error condition generated when an invalid
+  REST response format is requested. For example if XML output is
+  requested, but dicttoxml is not installed, we now return an
+  error without doing any work.
 
-* An error is not generated if a PUT REST request sets the user's address
-  to its current value.
+* Fix an incorrect error report when a PUT REST request sets
+  the user's email address to its current value.
 
-* Added support for the ``defusedxml`` Python module to enhance
+* Add support for the ``defusedxml`` Python module to enhance
   security when using XML.
 
-* Introduced a templating function:
+* Introduce the templating function:
   ``utils.set_http_response(integer)`` to set the HTTP return code
-  directly from your template.
+  directly from your template. This allows the template logic to
+  return a 404 or other code when the user invokes a template
+  incorrectly.
 
-* Added the ability to generate native HTML date and
-  number/integer inputs. Check Upgrading for caveats, as this
-  feature is disabled by default.
+* Add a new ``registerUtilMethod('name', my_function)``. which
+  makes it easier to define and use complex templating utilities.
+  It passes a default argument that allows access to the client
+  instance, translation functions, and other templating utility
+  functions. Previously you had to pass the arguments explicitly
+  when calling the utility from the template.
 
-* Re-enabled support for GPG/PGP signed emails, which requires
+* Add the ability to generate native HTML date and
+  number/integer inputs. Check the upgrading document for caveats.
+  This feature is disabled by default.
+
+* Re-enable support for GPG/PGP signed emails, which requires
   installation from the test PyPi repository.
-
-* Removed XHTML support to simplify the code base.
 
 The file CHANGES.txt has a detailed list of feature
 additions and bug fixes for each release. The most recent
