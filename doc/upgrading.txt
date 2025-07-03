@@ -109,7 +109,7 @@ Deprecation Notices (required)
     library has been removed in 2.5.0. Only the Python supplied
     sqlite3 library is supported.
   * Roundup 2.5.0 supports Python 3.7 or newer. (It is not tested
-    on Python 3.6. It may work but we don;t support it.)
+    on Python 3.6. It may work but we don't support it.)
 
 Update responsive template _generic.404.html and query.item.html (recommended)
 ------------------------------------------------------------------------------
