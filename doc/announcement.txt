@@ -28,18 +28,18 @@ then unpack and test/install from the tarball.
 Among the significant enhancements in version 2.5.0 compared to
 the 2.4.0 release are:
 
-* The property/field advanced search expression feature has been
-  enhanced and documented/
+* **The property/field advanced search expression feature has been
+  enhanced and documented.**
 
-   Search expressions are usually built using the
-   expression editor on the search page. They can be built manually
-   by modifying the search URL but the RPN search expression format
-   was undocumented. Errors in expressions could return results that
-   didn't match the user's intent. This release documents the RPN
-   expression syntax, adds basic expression error detection, and
-   improves error reporting.
+  Search expressions are usually built using the
+  expression editor on the search page. They can be built manually
+  by modifying the search URL but the RPN search expression format
+  was undocumented. Errors in expressions could return results that
+  didn't match the user's intent. This release documents the RPN
+  expression syntax, adds basic expression error detection, and
+  improves error reporting.
 
-* The default hash method for password storage is more secure.
+* **The default hash method for password storage is more secure.**
 
   We use PBKDF2 with SHA512 (was SHA1). With this change you can
   lower the value of password_pbkdf2_default_rounds in your
@@ -47,14 +47,14 @@ the 2.4.0 release are:
   info. (Note this may cause longer authentication times, the
   upgrade doc describes how to downgrade the hash method if required.)
 
-* Roundup's session token is now prefixed with the magic
- ``__Secure__`` tag when using HTTPS.
+* **Roundup's session token is now prefixed with the magic
+  ``__Secure__`` tag when using HTTPS.**
 
   This adds another layer of protection in addition to the
   existing ``Secure`` property that comes with the session cookie.
 
-* Data authorization can be done at the database level speeding up
-  display of index pages.
+* **Data authorization can be done at the database level speeding up
+  display of index pages.**
 
   Roundup verifies the user's authorization for the data fetched
   from the database after retrieving data from the database. A new
@@ -66,8 +66,8 @@ the 2.4.0 release are:
   the database. This leads to quicker display of index pages with
   reduced CPU and network traffic.
 
-* The REST endpoint can supply binary data (images, pdf, ...) to
-  its clients.
+* **The REST endpoint can supply binary data (images, pdf, ...) to
+  its clients.**
 
   Requesting binary data from a REST endpoint has been a
   hassle. Since JSON can't handle binary data, images (and other
@@ -78,7 +78,7 @@ the 2.4.0 release are:
   ``binary_content`` endpoint along with an appropriate ``Accept``
   header (e.g. ``image/jpeg``) in your request.
 
-* Extract translatable strings from your tracker easily
+* **Extract translatable strings from your tracker easily.**
 
   The ``roundup-gettext`` tool has been enhanced to extract
   translatable strings from detectors and extensions. This will

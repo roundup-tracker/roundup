@@ -51,6 +51,15 @@
 
 * + * { margin-block-start: 1.2em;}
 
+/* shrink spacing between first and following paragraph in a list item
+   when the first paragraph is bold/strong. Try to tie the first paragraph
+   pseudo header closer to the following paragraph. */
+li > p:has(strong):first-child
+ {
+    /* background: red; */
+    margin-block-end: -0.75em;
+}
+
 /* shrink spacing between list elements in tables of contents,
    badge displays */
 div.toctree-wrapper * + *, div.contents * + *, div.release_info * {
