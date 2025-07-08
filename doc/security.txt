@@ -28,6 +28,10 @@ source release tarballs.
 CVE Announcements
 -----------------
 
+  * `CVE-2025-pending`_ - :ref:`XSS security issue with devel or
+    responsive templates <CVE-2025-pending>`. Fixed in release 2.5.0,
+    directions available for fixing trackers based on these templates.
+
   * `CVE-2024-39124`_ - :ref:`classhelpers (_generic.help.html) are
     vulnerable to an XSS attack. <CVE-2024-39124>` Requires fixing
     tracker homes.
@@ -39,6 +43,8 @@ CVE Announcements
     executed. <CVE-2024-39126>` Fixed in release 2.4.0, directions
     available for fixing in prior versions.
 
+.. _CVE-2025-pending:
+        https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-pending
 .. _CVE-2024-39124:
         https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-39124
 .. _CVE-2024-39125:

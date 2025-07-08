@@ -4,7 +4,7 @@ make sure to read `docs/upgrading.txt
 <https://www.roundup-tracker.org/docs/upgrading.html>`_ to
 bring your tracker up to date.
 
-The 41 changes, as usual, include some new features and many
+The 42 changes, as usual, include some new features and many
 bug fixes.
 
 Version 2.5.0 does not support Python 2. The minimum Python
@@ -27,6 +27,13 @@ then unpack and test/install from the tarball.
 
 Among the significant enhancements in version 2.5.0 compared to
 the 2.4.0 release are:
+
+* **XSS vulnerability with devel and responsive templates fixed**
+
+  Just before release an XSS security issue with trackers based on
+  the devel or responsive templates was discovered. The updating
+  directions include instructions on fixing this issue with the
+  html templates.
 
 * **The property/field advanced search expression feature has been
   enhanced and documented.**

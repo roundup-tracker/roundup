@@ -127,7 +127,7 @@
   </select>
  </td>
  <td tal:condition="not:context/assignee/is_edit_ok">
-  <span tal:replace="structure context/assignee/plain" />
+  <span tal:replace="context/assignee/plain" />
  </td>
  <th><label for="nosy" i18n:translate="">Nosy List</label>:
   <span tal:condition="context/nosy/is_edit_ok"

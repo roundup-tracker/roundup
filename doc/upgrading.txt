@@ -91,15 +91,100 @@ your database.
   lists.sourceforge.net). Version 2.3.0 is the last version to support
   XHTML.
 
-Contents:
+.. raw:: html
+
+  <details>
+  <summary>Contents:</summary>
 
 .. contents::
    :local:
+
+.. raw:: html
+
+  </details>
 
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0
 =============================
+
+.. _CVE-2025-pending:
+
+XSS security issue with devel and responsive templates (required)
+-----------------------------------------------------------------
+
+The devel and responsive templates prior to Roundup 2.5 used this
+construct::
+
+  tal:content="structure context/MUMBLE/plain"
+
+Where ``MUMBLE`` is a property of your issues (e.g. title).
+
+This construct allows a URL with a carefully crafted query parameter
+to execute arbitrary JavaScript.
+
+You should check all your trackers.  The classic template has not used
+this construct since at least 2009, but your tracker's templates may
+use the offending construct anyway.
+
+This fix will apply if your tracker is based on the responsive or
+devel template. Check the TEMPLATE-INFO.txt file in your tracker
+home. The template name is the first component of the ``Name``
+field. For example a Name like::
+
+   Name: responsive-bugtracker
+
+   Name: devel-bugtracker
+
+shows that tracker is based on the responsive or devel templates.
+
+.. _cve-2025-pending-fixed:
+
+To fix this, remove the ``structure`` declaration when it is used with
+a plain representation. So fixing the code by replacing the example
+above with::
+
+  tal:content="context/MUMBLE/plain"
+
+prevents the attack.
+
+To check for this issue, search for ``structure`` followed by
+``/plain`` in all your html templates. If you are on a Linux/Unix
+system you can search the html subdirectory of your tracker with the
+following::
+
+   grep 'structure.*/plain' *.html
+
+which should return any lines with issues.
+
+.. warning::
+
+   Backup the files in the ``html`` subdirectory of your tracker in case
+   an edit goes wrong.
+
+You can fix this issue using the GNU sed command::
+
+  sed -i.bak -e '/structure.*\/plain/s/structure.//' *.html
+
+to edit the files in place and remove the structure keyword. It will
+create a ``.bak`` file with the original contents of the file. If you
+are on windows, some text editors support search and replace using a
+regular expression.
+
+If the construct is split across lines::
+
+     tal:content="structure
+              context/MUMBLE/plain"
+
+the commands above will miss the construct. So you should also search
+the html files using ``grep /plain *.html`` and verify that all of the
+``context/MUMBLE/plain`` include ``tal:content`` as in the `fixed
+example above <#cve-2025-pending-fixed>`_. Any lines that have
+``context/MUMBLE/plain`` without ``tal:content=`` before it need to be
+manually verified/fixed.
+
+The distributed devel and responsive templates do not split the
+construct across lines, but if you changed the files it may be split.
 
 Deprecation Notices (required)
 ------------------------------

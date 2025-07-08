@@ -24,7 +24,7 @@
       </td>
       <td colspan="5"
           tal:condition="python: not request.user.hasPermission('Edit')"
-          tal:content="structure context/title/plain">
+          tal:content="context/title/plain">
         title
       </td>
     </tr>
@@ -50,7 +50,7 @@
       </td>
       <td colspan="5"
           tal:condition="python: not request.user.hasPermission('Edit')"
-          tal:content="structure context/status/plain">
+          tal:content="context/status/plain">
         status
       </td>
     </tr>

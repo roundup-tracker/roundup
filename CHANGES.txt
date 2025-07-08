@@ -98,6 +98,8 @@ Fixed:
   Rouillard)
 - fix potential HTTP Response Splitting issue in
   roundup-server. Discovered by CodeQL in CI. (John Rouillard)
+- XSS issue in devel and responsive templates. Reported by 4bug of
+  ChaMd5 Security Team H1 Group. (John Rouillard).
 
 Features:
 
