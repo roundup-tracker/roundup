@@ -1077,7 +1077,7 @@ improvement, encouraging a wider adoption of the feature. In the
 event that an undiscovered bug arises, it can still be disabled
 if you experience problems. To disable it, modify your wsgi
 startup script and add the feature_flags to the RequestDispatcher
-as below:
+as below::
 
    feature_flags = { "cache_tracker": False }
    app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
