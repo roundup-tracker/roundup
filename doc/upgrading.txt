@@ -276,7 +276,7 @@ tracker's ``interfaces.py``::
   Password.default_scheme = Password.deprecated_schemes.pop(0)
   # Add PBKDF2S5 (PBKDF2-SHA512) as a valid scheme. Passwords
   # using it will be rehashed to use PBDKF2.
-  Password.experimental_schemes[0] = "PBKDF2S5"
+  Password.experimental_schemes.insert(0, "PBKDF2S5")
 
 If you proceed with this, you should set
 ``password_pbkdf2_default_rounds`` to 2 million or more rounds to keep
