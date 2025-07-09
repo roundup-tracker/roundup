@@ -110,8 +110,8 @@ Migrating from 2.4.0 to 2.5.0
 
 .. _CVE-2025-pending:
 
-XSS security issue with devel and responsive templates (required)
------------------------------------------------------------------
+XSS security issue with devel and responsive templates (recommended)
+--------------------------------------------------------------------
 
 The devel and responsive templates prior to Roundup 2.5 used this
 construct::
@@ -531,8 +531,8 @@ request (tu.client.request), the translator for the current language
 
 You can find an example in :ref:`dynamic_csp`.
 
-Directions for installing gpg
------------------------------
+Directions for installing gpg (optional)
+----------------------------------------
 
 In this release a new version of the gpg module was needed for Ubuntu
 24.04 and python 3.13. Paul Schwabauer produced a new version of the
