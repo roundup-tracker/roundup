@@ -455,9 +455,9 @@ div.highlight > pre {
        linear-gradient(to right, #f5f4d8, #f5f4d8),
        /* Shadow */
        radial-gradient(farthest-side at 0px 50%,
-		       rgba(0, 0, 20, 0.5), rgba(255, 255, 255, 0)),
+		       rgba(181, 181, 113, 0.75), rgba(255, 255, 255, 0)),
        radial-gradient(farthest-side at 100% 50%,
-		       rgba(0, 0, 20, 0.5), rgba(255, 255, 255, 0));
+		       rgba(181, 181, 113, 0.75), rgba(255, 255, 255, 0));
     /* square shadows */
     /*
     linear-gradient(to right, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0)),
