@@ -32,6 +32,15 @@ Roundup Glossary
       a dash '-', and a number. E.g. ``file-1``. These are used to create
       new instances of a class via the web interface.
 
+   html directory
+      there is a directory called **html** in tracker homes. This
+      contains html files (called templates) that are processed by the
+      templating processor (TAL or jinja2) for delivery to a web
+      client. However there is also a ``templates`` setting in the
+      tracker's ``config.ini`` file. The default value for this is
+      ``html``. However any directories listed as templates should be
+      considered an ``html directory``
+
    hyperdb
       a software layer between the user and the underlying :term:`db`.
       It is responsible for mutating the underlying db when the schema
