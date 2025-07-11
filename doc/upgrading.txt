@@ -108,10 +108,30 @@ your database.
 Migrating from 2.4.0 to 2.5.0
 =============================
 
-.. _CVE-2025-pending:
+.. _CVE-2025-53865:
 
 XSS security issue with devel and responsive templates (recommended)
 --------------------------------------------------------------------
+
+There are actually two different issues under this heading.
+
+  1. incorrect use of the ``structure`` keyword with
+     ``tal:content``
+  2. use of ``tal:replace`` on unsafe input
+
+In the discussion below, the :term:`html directory` means one or
+more directories listed in the ``templates`` key of your
+tracker's ``config.ini`` file.
+
+These directions can be used to solve the XSS security issue with
+any version of Roundup. Even if you used a classic or minimal
+template, you should check your trackers for these issues. The
+classic template fixed most of these many years ago, but the
+updates were not made to the devel and responsive templates. No
+report of similar issues with the jinja template has been seen.
+
+Incorrect use of structure in templates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The devel and responsive templates prior to Roundup 2.5 used this
 construct::
@@ -120,12 +140,12 @@ construct::
 
 Where ``MUMBLE`` is a property of your issues (e.g. title).
 
-This construct allows a URL with a carefully crafted query parameter
-to execute arbitrary JavaScript.
+This construct allows a URL with a carefully crafted query
+parameter to execute arbitrary JavaScript.
 
-You should check all your trackers.  The classic template has not used
-this construct since at least 2009, but your tracker's templates may
-use the offending construct anyway.
+You should check all your trackers.  The classic template has not
+used this construct since at least 2009, but your tracker's
+templates may use the offending construct anyway.
 
 This fix will apply if your tracker is based on the responsive or
 devel template. Check the TEMPLATE-INFO.txt file in your tracker
@@ -138,11 +158,11 @@ field. For example a Name like::
 
 shows that tracker is based on the responsive or devel templates.
 
-.. _cve-2025-pending-fixed:
+.. _cve-2025-53865-fixed:
 
-To fix this, remove the ``structure`` declaration when it is used with
-a plain representation. So fixing the code by replacing the example
-above with::
+To fix this, remove the ``structure`` declaration when it is used
+with a plain representation. So fixing the code by replacing the
+example above with::
 
   tal:content="context/MUMBLE/plain"
 
@@ -150,8 +170,8 @@ prevents the attack.
 
 To check for this issue, search for ``structure`` followed by
 ``/plain`` in all your html templates. If you are on a Linux/Unix
-system you can search the html subdirectory of your tracker with the
-following::
+system you can search the html subdirectory of your tracker with
+the following::
 
    grep 'structure.*/plain' *.html
 
@@ -159,32 +179,169 @@ which should return any lines with issues.
 
 .. warning::
 
-   Backup the files in the ``html`` subdirectory of your tracker in case
-   an edit goes wrong.
+   Backup the files in the ``html`` subdirectory of your tracker
+   in case an edit goes wrong.
 
-You can fix this issue using the GNU sed command::
+As an example, you could fix this issue using the GNU sed
+command::
 
   sed -i.bak -e '/structure.*\/plain/s/structure.//' *.html
 
-to edit the files in place and remove the structure keyword. It will
-create a ``.bak`` file with the original contents of the file. If you
-are on windows, some text editors support search and replace using a
-regular expression.
+to edit the files in place and remove the structure keyword. It
+will create a ``.bak`` file with the original contents of the
+file. If your templates were changed, this might still miss some
+entries. If you are on windows, some text editors support search
+and replace using a regular expression.
 
 If the construct is split across lines::
 
      tal:content="structure
               context/MUMBLE/plain"
 
-the commands above will miss the construct. So you should also search
-the html files using ``grep /plain *.html`` and verify that all of the
-``context/MUMBLE/plain`` include ``tal:content`` as in the `fixed
-example above <#cve-2025-pending-fixed>`_. Any lines that have
-``context/MUMBLE/plain`` without ``tal:content=`` before it need to be
-manually verified/fixed.
+the commands above will miss the construct. So you should also
+search the html files using ``grep /plain *.html`` and verify
+that all of the ``context/MUMBLE/plain`` include ``tal:content``
+as in the `fixed example above <#cve-2025-53865-fixed>`_. Any
+lines that have ``context/MUMBLE/plain`` without ``tal:content=``
+before it need to be manually verified/fixed.
 
 The distributed devel and responsive templates do not split the
-construct across lines, but if you changed the files it may be split.
+construct across lines, but if you changed the files it may be
+split.
+
+tal:replace used with unsafe input
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The problem was caused by the following markup::
+
+  <span tal:replace="context/MUMBLE" />
+
+in the head of the ``bug.item.html``, ``task.item.html`` and
+other files in the devel and responsive templates.
+
+This was fixed many years ago in the classic template's
+``index.item.html``. The classic template replaces the above
+construct with::
+
+  <tal:x tal:content="context/MUMBLE" />
+
+``tal:content`` explicitly escapes the result unless the
+``structure`` directive is used. ``tal:replace`` expects the
+result to be safe and usable in an HTML context.
+
+TAL drops any tags that it doesn't know about from the output.
+``<tal:x tal:content="..." />`` results in the value of the
+content expression without a surrounding html tag. (Effectively
+replacing the construct.)
+
+The following diff for ``bug.item.html`` in the devel template
+shows the change to make things safe (remove lines starting with
+``-`` and add lines staring with ``+``)::
+
+     <tal:block metal:use-macro="templates/page/macros/frame">
+     <title metal:fill-slot="head_title">
+     <tal:block condition="context/id" i18n:translate=""
+    - >Bug <span tal:replace="context/id" i18n:name="id"
+    - />: <span tal:replace="context/title" i18n:name="title"
+    - /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+    + >Bug <tal:x tal:content="context/id" i18n:name="id"
+    + />: <tal:x tal:content="context/title" i18n:name="title"
+    + /> - <tal:x tal:content="config/TRACKER_NAME" i18n:name="tracker"
+     /></tal:block>
+     <tal:block condition="not:context/id" i18n:translate=""
+      >New Bug report - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+
+A similar change was applied in the following html files in the
+devel or responsive templates:
+
+.. rst-class:: multicol
+
+* _generic.collision.html
+* bug.item.html
+* keyword.item.html
+* milestone.item.html
+* msg.item.html
+* task.item.html
+* user.item.html
+
+Also ``page.html`` should be changed from::
+
+   <p class="label"><b tal:replace="request/user/username">username</b></p>
+
+to::
+
+   <p class="label"><b tal:replace="python:request.user.username.plain(escape=1)">username</b></p>
+
+The code audit found the ``tal:replace`` construct is used with
+``context/id`` and ``context/designator`` paths. The references
+to these paths have been changed to use ``tal:x`` in the classic
+template's ``msg.item.html`` file and the classic and minimal
+template's ``_generic.collision.html`` file.
+
+These paths are critical to navigation in Roundup and are set
+from the path part of the URL. Roundup's URL path validation
+makes it unlikely that an attacker could exploit them. If you
+wish you can change your templates or copy the corresponding
+files from the template if you haven't made local changes.
+
+Also you may have used copies of these insecure templates
+elsewhere in your tracker (e.g. to create a feature class).  To
+find other possible issues you can use the command::
+
+  grep -r "tal:replace=" *.html
+
+in your tracker's :term:`html directory`. Check each occurrence
+and if needed, change it to the safer form. You should consider
+any reference to ``context`` to be under the user's (attacker's)
+control. Also ``db`` (excluding ``db/config``) and ``request``
+references that use user supplied content
+(e.g. ``request/user/username`` above) should be changed to
+``tal:x`` form
+
+.. comment:
+   As part of the analysis, the following command was used to find
+   potentially vulnerable stuff in the templates. Each grep -v was
+   removed to display items in that category and they were checked::
+
+     grep -r 'tal:replace' . | grep -v 'replace="batch' | \
+        grep -v 'replace="config' | grep -v 'replace="db/config' | \
+        grep -v 'replace="structure' | grep -v 'replace="python:' | \
+        grep -v 'replace="request/'
+
+
+   context/id, context/designator:
+     assume safe if used in an class.item.html page as the page
+     wouldn't be shown if they weren't valid numbers/designators.
+
+     Might not be ok referenced in a _generic fallback page though.
+
+   config, db/config, batch, nothing:
+     should be safe as they are not under user control
+
+   request/classname (python:request._classname), request/template:
+     should be safe as they are needed to navigate to a display page,
+     so if they are invalid nothing will be displayed.
+
+   utils, python:
+     assume it's written correctly and is safe (could use some new
+     tests for the shipped utility functions). The intent of these
+     can be to deliver blocks of <script> or other html markup.
+
+   db, request:
+     might be dangerous when accessing user supplied values.
+
+   request/user/username:
+     Escape these. If the username is an XSS issue, an attacker could
+     use it to compromise a user.
+
+   request/dispname:
+     should be quoted and is by the existing python: code.
+
+   Open question: why does there have to be an error generated by the
+   url @sort=1. Without invalid sort param, the exploit url doesn't
+   work and the context appears to use the database's title not the one
+   in the url. Also its not positional @sort=1 can appear anywhere in
+   the url.
 
 Deprecation Notices (required)
 ------------------------------

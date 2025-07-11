@@ -208,7 +208,7 @@
          </div>
          <div tal:condition="python:request.user.username != 'anonymous'" class="submenu">
           <ul class='nav nav-list'>
-            <li class="nav-header"><i class='icon-user'></i><b tal:replace="request/user/username">username</b></li>
+            <li class="nav-header"><i class='icon-user'></i><b tal:replace="python:request.user.username.plain(escape=1)">username</b></li>
             <li>
               <a href="#" tal:attributes="href python:request.indexargs_url('bug', {
                                          '@sort': '-activity',

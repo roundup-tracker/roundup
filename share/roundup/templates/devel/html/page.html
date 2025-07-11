@@ -190,7 +190,7 @@
       </form>
      </li>
      <li tal:condition="python:request.user.username != 'anonymous'" class="submenu">
-      <p class="label"><b tal:replace="request/user/username">username</b></p>
+      <p class="label"><b tal:replace="python:request.user.username.plain(escape=1)">username</b></p>
       <ul>
        <li>
         <a href="#" tal:attributes="href python:request.indexargs_url('bug', {
