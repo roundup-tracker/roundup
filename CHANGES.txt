@@ -13,10 +13,12 @@ Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
 python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 Roundup 2.4.0 is the last release to support Python 2.
 
-2025-XX-XX 2.5.0beta1
+2025-07-13 2.5.0
 
 Fixed:
 
+- XSS issue in devel and responsive templates. Reported by 4bug of
+  ChaMd5 Security Team H1 Group. (John Rouillard).
 - issue2551343 - Remove support for PySQLite. It is unmaintained
   and sqlite3 is used which is the default for a Python
   distribution.  (John Rouillard)
@@ -98,8 +100,6 @@ Fixed:
   Rouillard)
 - fix potential HTTP Response Splitting issue in
   roundup-server. Discovered by CodeQL in CI. (John Rouillard)
-- XSS issue in devel and responsive templates. Reported by 4bug of
-  ChaMd5 Security Team H1 Group. (John Rouillard).
 
 Features:
 
