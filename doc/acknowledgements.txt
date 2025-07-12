@@ -46,6 +46,8 @@ Randy - reported issue 2551396
 
 Tobias Herp - patch for issue 1895197
 
+4bug of ChaMd5 Security Team H1 Group - XSS vulnerability report
+
 2.4
 ---
 
