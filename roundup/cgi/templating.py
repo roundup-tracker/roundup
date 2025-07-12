@@ -3630,13 +3630,13 @@ class TemplatingUtils:
     def html_calendar(self, request):
         """Generate a HTML calendar.
 
-        `request`  the roundup.request object
-                   - @template : name of the template
-                   - form      : name of the form to store back the date
-                   - property  : name of the property of the form to store
-                                 back the date
-                   - date      : current date
-                   - display   : when browsing, specifies year and month
+        `request` - the roundup.request object
+           - @template : name of the template
+           - form      : name of the form to store back the date
+           - property  : name of the property of the form to store
+             back the date
+           - date      : date marked as current value on calendar
+           - display   : when browsing, specifies year and month
 
         html will simply be a table.
         """
