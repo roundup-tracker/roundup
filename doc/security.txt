@@ -164,10 +164,10 @@ You should see::
   gpg:          There is no indication that the signature belongs to the owner.
   Primary key fingerprint: 411E 354B 5D1A F261 25D6  2122 1F2D D0CB 756A 76D8
 
-which verifies the tarball integrity. The WARNING is expected and the
-date corresponds to the newest renewal of the Roundup key. As long as
-you see the output starting with "Good signature from" followed by the
-Key Info for your key, everything is OK.
+which verifies the tarball integrity. The WARNING is expected.
+The date should be close to the release date of the version of Roundup.
+As long as you see the output starting with "Good signature from"
+followed by the Key Info above, everything is OK.
 
 If something is wrong you will see::
 
