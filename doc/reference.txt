@@ -2735,7 +2735,10 @@ The following variables are available to templates.
   - "user" a HTMLItem instance for the current user
   - "language" as determined by the browser or configuration
   - "classname" the current classname (possibly None)
-  - "template" the current template (suffix, also possibly None)
+  - "template" the current template (e.g. for the ``issue.item.html``
+    template the template would be the ``item`` suffix on the
+    classname. It can also be the empty string (e.g. with the
+    ``home.html`` template).
 **config**
   This variable holds all the values defined in the tracker config.ini
   file (e.g. TRACKER_NAME, etc.)

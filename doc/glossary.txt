@@ -81,12 +81,18 @@ Roundup Glossary
 
    template
 
-      this term has two meanings depending on context.
+      this term has three meanings depending on context.
 
       It refers to files that are processed by a templating engine to
       produce output suitable for machine or human consumption. For
       example a template could produce a html page that includes the
       name of the user.
+
+      It is an property of the request object in the templating
+      system. Templates that are used with a specific class (e.g.
+      ``issue.item.html``) will have this entry set to the middle
+      element (``item`` in this example). For templates like
+      ``home.html`` the element will be set to the empty string.
 
       It also can mean a **Tracker template**. This is a set of files
       used to install a new tracker. Tracker templates define a
