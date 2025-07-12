@@ -119,6 +119,9 @@ There are actually two different issues under this heading.
      ``tal:content``
   2. use of ``tal:replace`` on unsafe input
 
+See the `security page for a link to CVE-2025-53865
+<security.html#cve-announcements>`_.
+
 In the discussion below, the :term:`html directory` means one or
 more directories listed in the ``templates`` key of your
 tracker's ``config.ini`` file.
