@@ -7,6 +7,8 @@
 from __future__ import print_function
 import unittest, os, shutil, errno, pytest, sys, difflib, re
 
+from contextlib import contextmanager 
+
 from roundup.anypy import xmlrpc_
 MultiCall = xmlrpc_.client.MultiCall
 from roundup.cgi.exceptions import *
@@ -26,14 +28,9 @@ from roundup.anypy.xmlrpc_ import client
 
 if client.defusedxml:
     skip_defusedxml = lambda func, *args, **kwargs: func
-
-    skip_defusedxml_used = mark_class(pytest.mark.skip(
-        reason='Skipping non-defusedxml tests: defusedxml library in use'))
 else:
     skip_defusedxml = mark_class(pytest.mark.skip(
         reason='Skipping defusedxml tests: defusedxml library not available'))
-    
-    skip_defusedxml_used = lambda func, *args, **kwargs: func
 
 if sys.version_info[0] > 2:
     skip_python2 = lambda func, *args, **kwargs: func
@@ -41,6 +38,19 @@ else:
     skip_python2 = mark_class(pytest.mark.skip(
         reason='Skipping test under python 2'))
 
+@contextmanager
+def disable_defusedxml():
+    # if defusedxml not loaded, do nothing
+    if 'defusedxml' not in sys.modules:
+        yield
+        return
+
+    sys.modules['defusedxml'].xmlrpc.unmonkey_patch()
+    try:
+        yield
+    finally:
+        # restore normal defused xmlrpc functions
+        sys.modules['defusedxml'].xmlrpc.monkey_patch()
 
 class XmlrpcTest(object):
 
@@ -340,9 +350,9 @@ class XmlrpcTest(object):
         self.XmlBomb(expectIn=b"defusedxml.common.EntitiesForbidden")
 
     @skip_python2
-    @skip_defusedxml_used
     def testNonDefusedXmlBomb(self):
-        self.XmlBomb(expectIn=b"1234567890"*511)
+        with disable_defusedxml():
+            self.XmlBomb(expectIn=b"1234567890"*511)
 
     def XmlBomb(self, expectIn=None):
 
