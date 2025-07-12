@@ -298,10 +298,10 @@ class Client:
       should be sent to the client
     - "response_code" is the HTTP response code to send to the client
     - "translator" is TranslationService instance
-    - "client-nonce" is a unique value for this client connection. Can be
-       used as a nonce for CSP headers and to sign javascript code
-       presented to the browser. This is different from the CSRF nonces
-       and can not be used for anti-csrf measures.
+    - "clientnonce" is a unique value for this client connection. Can be
+      used as a nonce for CSP headers and to sign javascript code
+      presented to the browser. This is different from the CSRF nonces
+      and can not be used for anti-csrf measures.
 
     During the processing of a request, the following attributes are used:
 
