@@ -259,3 +259,6 @@ linkcheck_ignore = [
 ]
 
 linkcheck_timeout = 10  # seconds
+
+# getting 429 on www.gnu.org
+linkcheck_retry_on_rate_limit = True
