@@ -3758,7 +3758,7 @@ class TemplatingUtils:
            file where you can use linters/minifiers and other
            tools on it.
 
-           A TAL example:
+           A TAL example::
 
              <script tal:attributes="nonce request/client/client_nonce"
              tal:content="python:utils.readfile('mylibrary.js')"></script>
