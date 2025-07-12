@@ -72,13 +72,7 @@ Roundup release checklist:
 
       python3 setup.py check --restructuredtext --metadata --strict
    
-6.  Clean out all *.orig, *.rej, .#* files from the source.
-
-      find . -name '*.orig' -exec rm {} \;
-      find . -name '*.rej' -exec rm {} \;
-      find . -name '.#*' -exec rm {} \;
-
-6a. Rebuild .mo translation files in distribution
+6. Rebuild .mo translation files in distribution
 
       cd locale
       make
@@ -89,7 +83,15 @@ Roundup release checklist:
       python3 setup.py clean --all
       rm -rf build/share  # deletes locale .mo files
 
-    Build including new .mo files built in 6a.
+    Clean out all *.orig, *.rej, .#* files from the source.
+
+      find . -name '*.orig' -exec rm {} \;
+      find . -name '*.rej' -exec rm {} \;
+      find . -name '.#*' -exec rm {} \;
+
+7a.
+
+    Build including new .mo files built in 6.
 
       python3 setup.py build
 
@@ -99,6 +101,7 @@ Roundup release checklist:
 
       cd doc
       make
+      cd ..
 
     runs commands to turn man pages into html files and adds them to
     html_extra/man_pages subdir. Then it generates html text from
@@ -113,10 +116,11 @@ Roundup release checklist:
 
     (if you find sdist a little verbose, add "--quiet" to the end of the
      command)
+
 9a. 2021/04/17 skip this for now. Need to make sure that whl installs
     executable scripts properly and update these directions to test.
 
-       python2 setup.py bdist_wheel; python3 setup.py bdist_wheel
+       python3 setup.py bdist_wheel
 
     to create binary distributions in wheel format. (egg format is
     deprecated.)
@@ -143,6 +147,7 @@ Roundup release checklist:
 
     any file with a count of 2 or more needs to be removed from
     MANIFEST.in and possibly cleaned out of the build tree.
+
 10b: if you added/removed files rebuild starting at step 6a.
 
 11. Unpack the new tarball created in dist/roundup-<version>.tar.gz
