@@ -2480,22 +2480,59 @@ The basic TAL commands are:
 **tal:replace="expression"**
    Replace this tag with the result of the expression. For example::
 
-    <span tal:replace="request/user/realname" />
+    <span tal:replace="request/user/id" />
 
    The example would replace the <span> tag and its contents with the
-   user's realname. If the user's realname was "Bruce", then the
-   resultant output would be "Bruce".
+   user's id. If the user's id was "3" the resulting output would be
+   "3".
+
+   You need to be a little careful with ``tal:replace``. Unlike
+   ``tal:content``, it doesn't always escape the output. For example
+   if you used::
+
+      <tal:x tal:replace="request/user/realname" />
+
+   it would replace the contents with the value of the user's
+   realname. The realname is something the user can control. The user
+   could include something like::
+
+      Bruce<script>alert("hello there");</script>
+
+   This would result in an alert box popping up when the page was
+   loaded. Attackers could use this `XSS exploit`_ for malicious
+   purposes.
+
+   Generally you would use tal:replace when calling a utility function
+   using a :ref:`Python expression <python expression>` that generates
+   trusted HTML.
+
+   If you are inserting untrusted content, it is better to use
+   ``tal:content`` with tags that disappear as described below.
+
+   .. _`XSS exploit`: https://owasp.org/www-community/attacks/xss/
 
 **tal:content="expression"**
-   Replace the contents of this tag with the result of the expression.
-   For example::
+   Replace the contents of this tag (but not the tag itself) with the
+   result of the expression.  For example::
 
-    <span tal:content="request/user/realname">user's name appears here
-    </span>
+     <span tal:content="request/user/realname">user's name appears here
+     </span>
 
    This example would replace the contents of the ``<span>`` tag with the
    user's realname. If the user's realname was "Bruce" then the
    output will be ``<span>Bruce</span>``.
+
+   ``tal:content`` replaces special HTML claracters like ``<`` with an
+   HTML entitity ``&lt;``. This makes it safer to use when inserting
+   untrusted data. To have ``tal:content`` insert unescaped HTML, you
+   need to use the `structure modifier`_.
+
+   If the tag is an unknown ``tal:`` tag, TAL removes the tag. So
+   evaulating:
+
+         <tal:x tal:replace="request/user/realname" />
+
+   results in ``Bruce``.
 
 **tal:attributes="attribute expression; attribute expression; ..."**
    Set attributes on this tag to the results of expressions. For
@@ -2574,6 +2611,8 @@ attribute values may be one of the following forms:
    expression in the interpolation decorator ``${ ... }`` is a
    path expression as above.
 
+.. _`python expression`:
+
 **Python Expressions** - e.g. ``python: 1+1`` 
    These expressions give the full power of Python. All the "root level"
    variables are available, so ``python:item.status.checklist()`` is
@@ -2581,6 +2620,8 @@ attribute values may be one of the following forms:
    ``checklist`` is a method.
 
 Modifiers:
+
+.. _`structure modifier`:
 
 **structure** - e.g. ``structure python:msg.content.plain(hyperlink=1)``
    The result of expressions are *escaped* to be safe for HTML
