@@ -32,10 +32,10 @@ Roundup Issue Tracker
 
      <!-- supported python versions: <img src="https://shields.io/pypi/pyversions/roundup"> -->
      <!-- license: <img src="https://img.shields.io/pypi/l/roundup"> -->
-     <!-- changes since 2.4.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.4.0/master?sort=semver"> -->
+     <!-- changes since 2.5.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.5.0/master?sort=semver"> -->
      <!-- status beta, stable, mature.... <img src="https://img.shields.io/pypi/status/roundup"> -->
      <!-- mozilla observatory <img src="https://img.shields.io/mozilla-observatory/grade/www.roundup-tracker.org?publish"> -->
-     <!-- commits from last named release: <img alt="GitHub commits difference between two branches/tags/commits" src="https://img.shields.io/github/commits-difference/roundup-tracker/roundup?base=2.4.0&head=master">a -->
+     <!-- commits from last named release: <img alt="GitHub commits difference between two branches/tags/commits" src="https://img.shields.io/github/commits-difference/roundup-tracker/roundup?base=2.5.0&head=master">a -->
      <!-- newest tag by date - use for alpha/beta release notifications?
      <img alt="GitHub tag (latest by date)" src="https://img.shields.io/github/v/tag/roundup-tracker/roundup"> -->
 
@@ -79,10 +79,10 @@ in the Software Carpentry “Track” design competition.
 Roundup is highly customizable, allowing users to tailor the system to
 their specific needs and preferences.
 
-The latest stable version of Roundup is 2.4.0, which includes bug
-fixes and additional features compared to the previous 2.3.0 release.
+The latest stable version of Roundup is 2.5.0, which includes bug
+fixes and additional features compared to the previous 2.4.0 release.
 
-Roundup is compatible with Python 2.7.12+ or 3.6+.
+Roundup is compatible with Python 3.7+.
 
 .. admonition:: Python 2 Support
 
@@ -96,69 +96,74 @@ Roundup is compatible with Python 2.7.12+ or 3.6+.
 Release Highlights
 ==================
 
-Some improvements from the 2.3.0 release are:
+Some improvements from the 2.4.0 release are:
 
-* three CVE's have been fixed. One requires changes to your
-  tracker's home directory. The other two are fixed by
-  installing 2.4.0.  See
-  https://www.roundup-tracker.org/docs/security.html for
-  details and instructions on how to fix these in 2.4.0 and
-  earlier releases.
+* **XSS vulnerability with devel and responsive templates fixed**
 
-* new classhelper component thanks to a team of students
-  from CS682 at U-Mass Boston. This fixes many issues with
-  the old classhelper. It is implemented as a web-component
-  and needs REST interface access. It will fall back to the
-  classic classhelper if REST is not available or if the
-  browser does not support web-components.
+  Just before release an XSS security issue with trackers based on
+  the devel or responsive templates was discovered. The `updating
+  directions`_ include instructions on fixing this issue with the
+  html templates from earlier releases. (CVE-2025-53865)
 
-* fix Windows Python installation using pip. It used to go
-  into an infinite loop during install or download. Also fix
-  installation of shared files (templates) so roundup-admin
-  can find them.
+  .. _`updating directions`: docs/upgrading.html#cve-2025-53865
 
-* using ``@current_user`` as a value in a search URL for a
-  user property will use the current logged in user. Now you
-  can share searches like: "My issues" as "my" will become
-  the current logged in user.
+* **The property/field advanced search expression feature has been
+  enhanced and documented.**
 
-* login failures to the REST/XML-RPC interfaces are now rate
-  limited to limit password guessing attacks.
+  Search expressions are usually built using the
+  expression editor on the search page. They can be built manually
+  by modifying the search URL but the RPN search expression format
+  was undocumented. Errors in expressions could return results that
+  didn't match the user's intent. This release documents the RPN
+  expression syntax, adds basic expression error detection, and
+  improves error reporting.
 
-* utf8mb4 is the default charset for MySQL. This requires
-  migrating your database using the mysql client. You can
-  choose to keep the older character set in config.ini.
+* **The default hash method for password storage is more secure.**
 
-* PostgreSQL services defined in pg_service.conf can be
-  used.  PostgreSQL schemas are supported to eliminate the
-  need for the roundup user to have database
-  creation/deletion privileges.
+  We use PBKDF2 with SHA512 (was SHA1). With this change you can
+  lower the value of password_pbkdf2_default_rounds in your
+  tracker's config.ini. Check the upgrading documentation for more
+  info. (Note this may cause longer authentication times, the
+  upgrade doc describes how to downgrade the hash method if required.)
 
-* fix out of memory issue when importing larger trackers
-  into PostgreSQL.
+* **Roundup's session token is now prefixed with the magic
+  ``__Secure__`` tag when using HTTPS.**
 
-* multiple roundup-admin improvements: display protected
-  properties (like creation date), better formatting of
-  output, command history. Also on windows, pyreadline3 is
-  supported to provide an editable interactive command line.
+  This adds another layer of protection in addition to the
+  existing ``Secure`` property that comes with the session cookie.
 
-* an experimental wsgi performance improvement in 2.3.0 is
-  now now the default and is opt-out.
+* **Data authorization can be done at the database level speeding up
+  display of index pages.**
 
-* new template functions: utils.readfile and
-  utils.expandfile. Javascript that is included in the
-  Python core will be moved to external files and be able to
-  have values from Roundup substituted in the Javascript.
+  Roundup verifies the user's authorization for the data fetched
+  from the database after retrieving data from the database. A new
+  optional ``filter`` argument has been added to Permission
+  objects. When the administrator supplies a filter function, it
+  can boost performance with SQL server databases by pushing
+  selection criteria to the database. By offloading some
+  permission checks to the database, less data is retrieved from
+  the database. This leads to quicker display of index pages with
+  reduced CPU and network traffic.
 
-* allow content-type of a template to be set from inside the
-  template.  This allows returning json or xml from a
-  template without a .json or .xml extention.
+* **The REST endpoint can supply binary data (images, pdf, ...) to
+  its clients.**
 
-* fix import/export on windows to use Unix style line
-  endings fixing export/import on Windows and making exports
-  portable across platforms.
+  Requesting binary data from a REST endpoint has been a
+  hassle. Since JSON can't handle binary data, images (and other
+  binary data) need to be encoded. This makes them significantly
+  larger. The workaround was to use a non-REST endpoint for fetching
+  non-text attachments. This update lets the REST endpoint return
+  raw message or file content data. You can utilize the
+  ``binary_content`` endpoint along with an appropriate ``Accept``
+  header (e.g. ``image/jpeg``) in your request.
 
-More info on the 79 changes can be found in the `change notes`_.
+* **Extract translatable strings from your tracker easily.**
+
+  The ``roundup-gettext`` tool has been enhanced to extract
+  translatable strings from detectors and extensions. This will
+  simplify the process of translating your trackers.
+
+More info on the 42 changes can be found in the `change notes`_.
 
 Roundup Use Cases
 =================
