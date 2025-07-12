@@ -6,8 +6,8 @@ NR < 9 {next}
 
 # To prevent new file generation from causing the secret_key to
 # change, we replace the secret key with a fixed value.
-/^# Default: [0-9A-z+=]{44}/ {sub(/[0-9A-z+=]{44}/, SECRET_KEY)}
-/^secret_key = [0-9A-z+=]{44}/ {sub(/[0-9A-z+=]{44}/, SECRET_KEY)}
+/^# Default: [0-9A-z+=/]{44}/ {sub(/[0-9A-z+=/]{44}/, SECRET_KEY)}
+/^secret_key = [0-9A-z+=/]{44}/ {sub(/[0-9A-Za-z+=/]{44}/, SECRET_KEY)}
 
 # When we see a section [label]:
 #  emit section index marker,
