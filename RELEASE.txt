@@ -147,10 +147,10 @@ Roundup release checklist:
 
 11. Unpack the new tarball created in dist/roundup-<version>.tar.gz
     file in /tmp then
-      a) run tests using installed pytest run under python2 and
-         python3. (python2 -m pytest test/; python3 -m pytest test/)
+      a) run tests using installed pytest run under
+         python3. (python3 -m pytest test/)
       b) demo.py
-    with all available Python versions.
+    with all available Python 3 versions.
 11a. (TBD how to test wheel binary distribution before uploading.)
 
 11b. Generate GPG signature file
@@ -269,11 +269,25 @@ Roundup release checklist:
      You may need to explicitly update/refresh the scanners with:
      "docker pull anchore/grype:latest" and similarly for
      aquasec/trivy if used.
+
+     Note that some security issues may show up. If they are in the
+     underlying OS package we can't do anything but make sure the
+     latest python:3-alpine package is used to build the image. Look
+     at the index digest on the image release page and compare it to
+     the sha256 at the top of the Dockerfile.
+
 17d. test roundup in demo mode:
 
         docker run -it --rm -p 8917:8080 \
          -v $PWD/tracker:/usr/src/app/tracker \
          rounduptracker/roundup:2.4.0 demo
+
+     FIXME: right now the external port number (8917) in the above
+       command is hardcoded in DOCKER. It can be overridden usng
+       PORT_8080=9017 for example. However the host is always
+       localhost. Consider replacing PORT_8080 with ORIGIN="host:port"
+       or ORIGIN="port" so that the web URL can be made correct when
+       running docker on a remote server.
 
 17e. push to DockerHub login (login using 'docker login <username>'
      first and user must be member of rounduptracker org with ability
