@@ -10,7 +10,8 @@ Roundup Features
 
 Roundup is an easy-to-use and -install issue-tracking system with
 web, e-mail and command-line interfaces. Based on the winning design
-from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
+from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design
+competition. 
 
 **Installation and Setup**
 
@@ -34,11 +35,11 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 
 - Manage your issues your way. Handle bugs, features, milestones, 
   user feedback, fleet maintenance, office issues etc.
+- Issues become a mini mailing list to keep everyone informed.
 - Searches on specific properties (e.g. open issues with a high
-  priority) can be saved and reused or shared with outer users.
+  priority) can be saved and reused or shared with other users.
 - Full Text Search for quick searches across messages.
 - Keeps a detailed history of issue changes.
-- Issues become a mini mailing list to keep everyone informed.
 - Email is a first class method for interacting with issues.
 
 **Scalability and Performance**
@@ -77,7 +78,7 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 - Users can sign up through the web interface or new user creation
   can be limited to admin users.
 - Can use an `external user database`_ (LDAP, password file)
-- Self-server password reset for users via email.
+- Self-serve password reset for users via email.
 
 **Email Integration and Automation**
 
@@ -97,9 +98,9 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 
 **Remote Access Interfaces**
 
+- `RESTful API`_ accessible with basic HTTP authentication or optional JWT.
 - `XMLRPC interface`_ for remote tracker access with basic
   HTTP authentication.
-- `RESTful API`_ accessible with basic HTTP authentication or optional JWT.
 - Configurable CORS support for third-party web pages.
 - Ability to generate and authenticate JSON Web Tokens (JWT).
 
