@@ -65,8 +65,12 @@ from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
 - Your data remains on your servers.
 - You can choose if AI can access the data.
 - Can use HTTPS for security over the web.
-- Fine-grained authorization (ABAC, PEBAC) based on user and resource
-  properties.
+- Fine-grained authorization (`ABAC`_, `ReBAC`_, `RBAC`_) based on
+  user, resource, and external properties.
+
+.. _`ABAC`: https://en.wikipedia.org/wiki/Attribute-based_access_control 
+.. _`ReBAC`: https://en.wikipedia.org/wiki/Relationship-based_access_control
+.. _`RBAC`: https://en.wikipedia.org/wiki/Role-based_access_control
 
 **Documentation and User Management**
 
