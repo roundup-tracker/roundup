@@ -39,6 +39,11 @@ http://web.archive.org/web/20140618231150/http://sourceforge.net/apps/trac/sourc
     cd ${project_home}
     vim logbuch.txt
 
+[ Note: all the files in the project home except htdocs that make up
+  the website were gone. I created a new logbuch.txt file. We need to
+  build the docs outside the sourceforge envirnment and rsync them in
+  as there is no longer a working sphinx environment. ]
+
 If you get a "not trusting" error the problem is that the .hg files in
 use are not owned by you and hg won't use them. Add this to your
 ~/.hgrc file (create file if needed)
