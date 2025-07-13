@@ -63,6 +63,7 @@ sourceforge_dev_sync:  ## sync html directory to sourceforce /dev_docs subdir
         # IS NOT (and must not be) SET
 	read -p "sync to dev_docs y/N? " resp; echo "$$resp" | grep -i "^y"
 	rsync -av --no-times --delete --exclude 'docs_backup*' \
+              --exclude '.buildinfo' \
               --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
               html/. \
               web.sourceforge.net:/home/project-web/roundup/htdocs/dev_docs/.
