@@ -261,20 +261,32 @@ matches only one command, e.g. l == li == lis == list."""))
         for command in commands:
             h = _(command.__doc__).split('\n')
             name = command.__name__[3:]
-            usage = h[0].replace('<','&lt;').replace('>','&gt;')[7:]
+            #  first line is "<name> <params and stuff>
+            usage = h[0][len(name) + 1:].replace('<','&lt;').replace('>','&gt;')[7:]
             print("""
 <tr><td valign=top><strong>%(name)s</strong></td>
-    <td><tt>- %(usage)s</tt>
-<pre>""" % locals())
+    <td><p><tt>%(usage)s</tt></p>
+""" % locals())
             indent = indent_re.match(h[1])
             if indent: indent = len(indent.group(1))  # noqa: E701
-            for line in h[1:]:
+            lines_to_process = len(h[1:])
+            print('<p>')
+            for lineno, line in enumerate(h[1:]):
                 line = line.replace('<','&lt;').replace('>','&gt;')
                 if indent:
-                    print(line[indent:])
+                    clean_line = line[indent:]
                 else:
-                    print(line)
-            print('</pre></td></tr>\n')
+                    clean_line = line
+                if not clean_line:
+                    print('</p><p>')
+                    continue
+                if clean_line.startswith('    '): # indented example line
+                    print("<pre>%s</pre>" % clean_line)
+                else:
+                    print(clean_line)
+                if lineno == lines_to_process:
+                    print('</p>')
+            print('</td></tr>\n')
         print("</table>")
 
     def help_all(self):
@@ -857,6 +869,7 @@ Command help:
     def do_genconfig(self, args, update=False):
         ''"""Usage: genconfig filename
         Create a new tracker config file with default values in filename.
+        See also updateconfig.
         """
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
@@ -1211,10 +1224,13 @@ Command help:
         The files used in the import are:
 
         <class>.csv
-          This must define the same properties as the class (including
-          having a "header" line with those property names.)
+          This must define the same properties as the class
+          (including having a "header" line with those
+          property names.)
+
         <class>-journals.csv
-          This defines the journals for the items being imported.
+         This defines the journals for the items
+         being imported.
 
         The imported nodes will have the same nodeid as defined in the
         import file, thus replacing any existing content.
@@ -1597,10 +1613,10 @@ Erase it? Y/N: """) % locals())
         A period is specified using the suffixes "y", "m", and "d". The
         suffix "w" (for "week") means 7 days.
 
-              "3y" means three years
-              "2y 1m" means two years and one month
-              "1m 25d" means one month and 25 days
-              "2w 3d" means two weeks and three days
+            "3y" means three years
+            "2y 1m" means two years and one month
+            "1m 25d" means one month and 25 days
+            "2w 3d" means two weeks and three days
 
         Date format is "YYYY-MM-DD" eg:
             2001-01-01
@@ -2086,22 +2102,22 @@ Erase it? Y/N: """) % locals())
         explicitly defined by defining the property as "name:width".
         For example::
 
-          roundup> table priority id,name:10
-          Id Name
-          1  fatal-bug
-          2  bug
-          3  usability
-          4  feature
+            roundup> table priority id,name:10
+            Id Name
+            1  fatal-bug
+            2  bug
+            3  usability
+            4  feature
 
         Also to make the width of the column the width of the label,
         leave a trailing : without a width on the property. For example::
 
-          roundup> table priority id,name:
-          Id Name
-          1  fata
-          2  bug
-          3  usab
-          4  feat
+            roundup> table priority id,name:
+            Id Name
+            1  fata
+            2  bug
+            3  usab
+            4  feat
 
         will result in a the 4 character wide "Name" column.
         """
