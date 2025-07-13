@@ -2190,7 +2190,7 @@ value, and replace the ``times`` value.
 
 Note that the json returned after the operation will include the new
 value of the ``times`` value so your code can verify that it worked.
-This does potentially leak info about the previous id's in the field.
+This leaks info about the previous id's in the field.
 
 Create rest endpoints
 ~~~~~~~~~~~~~~~~~~~~~
