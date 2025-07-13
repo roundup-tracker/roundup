@@ -102,7 +102,8 @@ competition.
 - `XMLRPC interface`_ for remote tracker access with basic
   HTTP authentication.
 - Configurable CORS support for third-party web pages.
-- Ability to generate and authenticate JSON Web Tokens (JWT).
+- Ability to `generate and authenticate JSON Web Tokens (JWT)
+  <rest.html#changing-access-roles-with-json-web-tokens>`_.
 
 .. _`auditors and reactors`: reference.html#auditor-or-reactor
 .. _`customize`: customizing.html
