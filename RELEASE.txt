@@ -167,10 +167,10 @@ Roundup release checklist:
      can add  --local=roundup-devel@lists.sourceforge.net.
      This will create a file by the name <filename>.tar.gz.asc.
 
-     Move file to website/www/signature directory
+     Move file to website/www/signatures directory
 
        mv <filename>.tar.gz.asc ../website/www/signatures/.
-       hg add ../website/www/signature/<filename>.tar.gz.asc
+       hg add ../website/www/signatures/<filename>.tar.gz.asc
        # commiting the file will be done in step 12
        cd ..
 
