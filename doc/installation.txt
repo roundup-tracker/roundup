@@ -1442,6 +1442,63 @@ nginx configuration below.
 If you are customizing a docker continer to use gunicorn, see
 https://pythonspeed.com/articles/gunicorn-in-docker/.
 
+.. index:: pair: web interface; Waitress
+   single: wsgi; Waitress
+
+Waitress Installation
+~~~~~~~~~~~~~~~~~~~~~
+
+Waitress is a pure Python WSGI server. It runs on Windows and you
+could use IIS or other web server to reverse proxy HTTP to it.
+
+You can use Waitress to serve Roundup without a proxy. It's not
+recommended, but it can be used on a local network where roundup can't
+be accessed from the internet.
+
+Assuming you have installed Roundup in a virtual environment (venv),
+install ``waitress`` and ``paste`` into the same venv using
+pip. ``paste`` is optional, but it provides logging middleware that
+produces standard combined format HTTP connection logs. You need to
+modify the file wsgi.py (obtained from ``frontends/wsgi.py``) to
+invoke waitress. It will look like::
+
+    # If you installed roundup to the system locations
+    # using pip you don't need to change this
+    # section. If you installed roundup in a custom
+    # location, uncomment these lines and change the
+    # path in the append() method to your custom path.
+    #import sys
+    #sys.path.append('/custom/location/where/roundup/is/installed')
+
+    # Obtain the WSGI request dispatcher
+    from roundup.cgi.wsgi_handler import RequestDispatcher
+
+    # Set the path to tracker home.
+    tracker_home = 'demo'
+
+    # Definition signature for app: app(environ, start_response):
+    # If using apache mod_wsgi change app to application.
+    app =  RequestDispatcher(tracker_home)
+
+    from waitress import serve
+    # Optional replaced TransLogger(app) with app if not installed
+    from paste.translogger import TransLogger
+    serve(TransLogger(app),
+	  host='0.0.0.0',
+	  port=8917,
+	  url_prefix=f"/{tracker_home}/")
+
+This will make Roundup available to any host on your local network at
+port 8917 under the ``/demo/`` path. Run it with ``python wsgi.py``.
+If you want to run just on the local loopback interface, replace
+``0.0.0.0`` with ``127.0.0.1``
+
+`See the Waitress docs`_ for more info on configuring waitress
+including putting it behind a proxy, IPV6 support etc.
+
+.. _`See the Waitress docs`:
+   https://docs.pylonsproject.org/projects/waitress/en/stable/
+
 .. index:: pair: web interface; uWSGI
    single: wsgi; uWSGI
 
