@@ -512,3 +512,7 @@ aside.footnote > span + p { margin-block-start: unset; }
 }
 */
 
+/* move the target off the top of the viewport by a little */
+:target {
+  scroll-margin-block-start: 2em;
+}
