@@ -1892,7 +1892,7 @@ To edit the status of all items in the item index view, edit the
    and at the bottom of that table add::
 
      </table>
-    </form
+    </form>
 
    making sure you match the ``</table>`` from the list table, not the
    navigation table or the subsequent form table.
