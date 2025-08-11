@@ -25,7 +25,6 @@
 
   <tal:if condition="context/is_view_ok">
   <tal:def define="batch request/batch;">
-  <form name=dummyform>
     <table width="100%"
       tal:define="template string:help-list"
       metal:use-macro="templates/help/macros/batch_navi"
@@ -42,7 +41,7 @@
       </tr>
      </table>
 
-  <form name=dummyform>
+  <form name="dummyform">
   <table class="classhelp"
     tal:define="
        props python:request.form['properties'].value.split(',');
