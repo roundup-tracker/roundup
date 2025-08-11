@@ -5,8 +5,8 @@ from roundup import hyperdb
 from roundup.date import Date, Interval
 from roundup.cgi.actions import *
 from roundup.cgi.client import add_message
-from roundup.cgi.exceptions import Redirect, Unauthorised, SeriousError, FormError
-from roundup.exceptions import RateLimitExceeded, Reject
+from roundup.cgi.exceptions import RateLimitExceeded, Redirect, Unauthorised, SeriousError, FormError
+from roundup.exceptions import Reject
 
 from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
 from roundup.anypy.cmp_ import NoneAndDictComparable
