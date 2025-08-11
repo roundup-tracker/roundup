@@ -203,15 +203,18 @@ class BasicDatabase(SessionCommon):
         ''' Remove session records that haven't been used for a week. '''
         now = time.time()
         week = 60*60*24*7
+        a_week_ago = now - week
         for sessid in self.list():
             sess = self.get(sessid, '__timestamp', None)
             if sess is None:
                 self.updateTimestamp(sessid)
                 continue
-            interval = now - sess
-            if interval > week:
+            if a_week_ago > sess:
                 self.destroy(sessid)
 
+        run_time = time.time() - now
+        if run_time > 3:
+            self.log_warning("clean() took %.2fs", run_time)
 
 class Sessions(BasicDatabase):
     name = 'sessions'
