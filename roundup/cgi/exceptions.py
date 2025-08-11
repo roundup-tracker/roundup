@@ -15,22 +15,29 @@ class RoundupCGIException(RoundupException):
 
 
 class HTTPException(RoundupCGIException):
+    """Base exception for all HTTP error codes."""
     pass
 
 
 class Redirect(HTTPException):
+    """HTTP 302 status code"""
     pass
 
 
 class NotFound(HTTPException):
+    """HTTP 404 status code unless self.response_code is set to
+       400 prior to raising exception.
+    """
     pass
 
 
 class NotModified(HTTPException):
+    """HTTP 304 status code"""
     pass
 
 
 class PreconditionFailed(HTTPException):
+    """HTTP 412 status code"""
     pass
 
 
