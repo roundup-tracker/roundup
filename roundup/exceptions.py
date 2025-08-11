@@ -12,10 +12,6 @@ class LoginError(RoundupException):
     pass
 
 
-class RateLimitExceeded(Exception):
-    pass
-
-
 class Unauthorised(RoundupException):
     pass
 

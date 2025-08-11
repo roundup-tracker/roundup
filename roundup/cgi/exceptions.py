@@ -24,6 +24,11 @@ class Redirect(HTTPException):
     pass
 
 
+class NotModified(HTTPException):
+    """HTTP 304 status code"""
+    pass
+
+
 class NotFound(HTTPException):
     """HTTP 404 status code unless self.response_code is set to
        400 prior to raising exception.
@@ -31,13 +36,13 @@ class NotFound(HTTPException):
     pass
 
 
-class NotModified(HTTPException):
-    """HTTP 304 status code"""
+class PreconditionFailed(HTTPException):
+    """HTTP 412 status code"""
     pass
 
 
-class PreconditionFailed(HTTPException):
-    """HTTP 412 status code"""
+class RateLimitExceeded(HTTPException):
+    """HTTP 429 error code"""
     pass
 
 

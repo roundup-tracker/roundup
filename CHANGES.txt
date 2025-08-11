@@ -13,6 +13,19 @@ Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
 python 3.6 or newer (3.4/3.5 might work, but they are not tested).
 Roundup 2.4.0 is the last release to support Python 2.
 
+2026-XX-XX 2.6.0
+
+Fixed:
+
+- performance improvement to session_dbm.py:clean(). Also add warning
+  log message if clean takes longer than 3 seconds. (John Rouillard)
+- move RateLimitExceeded exception from roundup.exceptions to
+  roundup.cgi.exceptions. Also it now inherits from HTTPException
+  rather than Exception since it is an HTTP exception. (John
+  Rouillard)
+
+Features:
+
 2025-07-13 2.5.0
 
 Fixed:

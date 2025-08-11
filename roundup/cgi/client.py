@@ -40,6 +40,7 @@ from roundup.cgi.exceptions import (
     IndexerQueryError,
     NotFound,
     NotModified,
+    RateLimitExceeded,
     Redirect,
     SendFile,
     SendStaticFile,
@@ -48,7 +49,6 @@ from roundup.cgi.exceptions import (
 from roundup.cgi.form_parser import FormParser
 from roundup.exceptions import (
     LoginError,
-    RateLimitExceeded,
     Reject,
     RejectRaw,
     Unauthorised,

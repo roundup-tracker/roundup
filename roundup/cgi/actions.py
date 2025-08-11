@@ -11,8 +11,9 @@ from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
 from roundup.anypy.strings import StringIO
 from roundup.cgi import exceptions, templating
+from roundup.cgi.exceptions import RateLimitExceeded
 from roundup.cgi.timestamp import Timestamped
-from roundup.exceptions import RateLimitExceeded, Reject, RejectRaw
+from roundup.exceptions import Reject, RejectRaw
 from roundup.i18n import _
 from roundup.mailgw import uidFromAddress
 from roundup.rate_limit import Gcra, RateLimit
