@@ -296,7 +296,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if not db_type or hasattr(anydbm, 'whichdb'):
             if __debug__:
                 logging.getLogger('roundup.hyperdb.backend').debug(
-                    "opendb anydbm.open(%r, 'c')" % path)
+                    "opendb anydbm.open(%(path)r, 'c')",
+                    {"path": path,})
             return anydbm.open(path, 'c')
 
         # in Python <3 it anydbm was a little dumb so manually open the
