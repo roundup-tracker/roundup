@@ -31,7 +31,7 @@ from roundup.anypy import scandir_
 from roundup.anypy import urllib_
 from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
-from roundup.anypy.strings import StringIO, is_us, s2u, u2s, us2s
+from roundup.anypy.strings import StringIO, b2s, bs2b, is_us, s2u, u2s, us2s
 from roundup.cgi import TranslationService, ZTUtils
 from roundup.cgi.timestamp import pack_timestamp
 from roundup.exceptions import RoundupException
@@ -3614,6 +3614,113 @@ class TemplatingUtils:
     def html_quote(self, html):
         """HTML-quote the supplied text."""
         return html_escape(html)
+
+    def embed_form_fields(self, excluded_fields=None):
+        """Used to create a hidden input field for each client.form element
+
+           :param: excluded_fields string or something with
+                   __contains__ dunder method (tuple, list, set...).
+
+           Limitations: It ignores file input fields.
+        """
+        if excluded_fields is None:
+            excluded_fields = ()
+        elif isinstance(excluded_fields, str):
+            excluded_fields = (excluded_fields,)
+        elif hasattr(excluded_fields, '__contains__'):
+            pass
+        else:
+            raise ValueError(self._(
+                'The excluded_fields parameter is invalid.'
+                'It must have a __contains__ method.')
+            )
+
+        rtn = []
+
+        for field in self.client.form.list:
+            if field.name in excluded_fields:
+                continue
+
+            if field.filename is not None:
+                import base64
+                # FIXME if possible
+                rtn.append(
+                    '<pre hidden data-name="%s" data-filename="%s" data-mimetype="%s">%s</pre>' %
+                    (
+                        html_escape(field.name, quote=True),
+                        html_escape(field.filename, quote=True),
+                        html_escape(field.type, quote=True),
+                        b2s(base64.b64encode(bs2b(field.value))),
+                    )
+                )
+                continue
+
+            hidden_input = (
+                """<input type="hidden" name="%s" value="%s">""" %
+	        (
+                    html_escape(field.name, quote=True),
+                    html_escape(field.value, quote=True)
+                )
+            )
+
+            rtn.append(hidden_input)
+
+        return "\n".join(rtn)
+
+
+    """
+    Possible solution to file retention issue:
+    From: https://stackoverflow.com/questions/16365668/pre-populate-html-form-f
+
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(['file 1 content'], 'file 1.txt'));
+    transfer.items.add(new File(['file 2 content'], 'file 2.txt'));
+    document.querySelector('input').files = transfer.files;
+
+    document.querySelector('form').addEventListener('submit', e => {
+         e.preventDefault();
+         console.log(...new FormData(e.target));
+    });
+
+    <form>
+      <input name="files" type="file" multiple /> <br />
+      <button>Submit</button>
+    </form>
+
+    Name would be @file for Roundup.
+
+    see also: https://developer.mozilla.org/en-US/docs/Web/API/File/File
+
+    open question: how to make sure the file contents are safely encoded
+    in javascript and yet still are saved properly on the server when
+    the form is submitted.
+
+    maybe base64? https://developer.mozilla.org/en-US/docs/Glossary/Base64
+    size increase may be an issue.
+    <pre id="file1-contents"
+         style="display: none">base64datastartshere...</pre>
+    then atob(pre.text) as file content?
+
+    const transfer = new DataTransfer();
+    file_list = document.querySelectorAll('pre[data-mimetype]');
+    file_list.forEach( file => 
+        transfer.items.add(
+           new File([window.atob(file.textContent)],
+           file.dataset.filename,
+           {"type": file.dataset.mimetype})
+        )
+    )
+
+    form = document.querySelector("form")
+    file_input = document.createElement('input')
+    file_input.setAttribute("hidden", "")
+    file_input = form.appendChild(file_input)
+    file_input.setAttribute("type", "file")
+    file_input.setAttribute("name", "@file")
+    file_input.setAttribute("multiple", "")
+    file_input.files = transfer.files
+
+    """
 
     def __getattr__(self, name):
         """Try the tracker's templating_utils."""

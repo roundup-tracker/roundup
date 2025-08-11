@@ -3577,6 +3577,11 @@ be added to the variable by using extensions_.
      - set_http_response sets the HTTP response code for the request.
    * - :meth:`url_quote <roundup.cgi.templating.TemplatingUtils.url_quote>`
      - quote some text as safe for a URL (ie. space, %, ...)
+   * - :meth:`embed_form_fields <roundup.cgi.templating.TemplatingUtils.embed_form_fields>`
+     - Creates a hidden input for each of the client's form fields. It
+       also embeds base64 encoded file contents into pre tags and
+       processes that informtion back into a file input control.
+
 
 -----
 

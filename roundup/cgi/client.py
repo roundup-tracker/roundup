@@ -41,6 +41,7 @@ from roundup.cgi.exceptions import (
     NotFound,
     NotModified,
     RateLimitExceeded,
+    Reauth,
     Redirect,
     SendFile,
     SendStaticFile,
@@ -960,6 +961,8 @@ class Client:
 
         except SeriousError as message:
             self.write_html(str(message))
+        except Reauth as e:
+            self.reauth(e)
         except Redirect as url:
             # let's redirect - if the url isn't None, then we need to do
             # the headers, otherwise the headers have been set before the
@@ -1916,6 +1919,44 @@ class Client:
         if template_override is not None:
             self.template = template_override
 
+    def reauth(self, exception):
+        """Processing for a Reauth exception raised from an auditor.
+
+           Can be overridden by code in tracker's interfaces.py.
+        """
+        
+        from roundup.anypy.vendored.cgi import MiniFieldStorage
+
+        original_action = self.form['@action'].value if '@action' \
+            in self.form else ""
+        original_template = self.template
+
+        self.template = 'reauth'
+        self.form.list = [ x for x in self.form.list
+                           if x.name not in ('@action',
+                                             '@csrf',
+                                             '@template'
+                                             )]
+
+        # save the action and template used when the Reauth as
+        # triggered. Will be used to resolve the change by the reauth
+        # action when when reauth password verified.
+        if '@next_action' not in self.form.list:
+            self.form.list.append(MiniFieldStorage('@next_action',
+                                                   original_action))
+        if '@next_template' not in self.form.list:
+            self.form.list.append(MiniFieldStorage('@next_template',
+                                                   original_template))
+
+        if exception.args and "@reauth_message" not in self.form.list:
+            self.form.list.append(
+                MiniFieldStorage('@reauth_message',
+                                 html_escape(exception.args[0])
+                )
+            )
+
+        self.write_html(self.renderContext())
+
     # re for splitting designator, see also dre_url above this one
     # doesn't strip leading 0's from the id. Why not??
     dre = re.compile(r'([^\d]+)(\d+)')
@@ -2365,6 +2406,7 @@ class Client:
         ('show',        actions.ShowAction),  # noqa: E241
         ('export_csv',  actions.ExportCSVAction),  # noqa: E241
         ('export_csv_id',  actions.ExportCSVWithIdAction),  # noqa: E241
+        ('reauth',      actions.ReauthAction),  # noqa: E241
     )
 
     def handle_action(self):

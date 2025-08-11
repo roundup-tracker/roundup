@@ -23,7 +23,8 @@ __all__ = ['Action', 'ShowAction', 'RetireAction', 'RestoreAction',
            'SearchAction',
            'EditCSVAction', 'EditItemAction', 'PassResetAction',
            'ConfRegoAction', 'RegisterAction', 'LoginAction', 'LogoutAction',
-           'NewItemAction', 'ExportCSVAction', 'ExportCSVWithIdAction']
+           'NewItemAction', 'ExportCSVAction', 'ExportCSVWithIdAction',
+           'ReauthAction']
 
 
 class Action:
@@ -1842,6 +1843,134 @@ class ExportCSVWithIdAction(Action):
         self.client.request.close_connection = True
 
         return '\n'
+
+class ReauthAction(Action):
+    '''Allow an auditor to require change verification with user's password.
+
+       When changing sensitive information (e.g. passwords) it is
+       useful to ask for a validated authorization. This makes sure
+       that the user is present by typing their password.
+
+       In an auditor adding::
+
+          if 'password' in newvalues and not getattr(db, 'reauth_done', False):
+             raise Reauth()
+
+       will present the user with a authorization page when the
+       password is changed.  The page is generated from the
+       _generic.reauth.html template by default.
+
+       Once the user enters their password and submits the page, the
+       password will be verified using:
+       roundup.cgi.actions:LoginAction::verifyPassword().  If the
+       password is correct the original change is done.
+
+       To prevent the auditor from trigering another Reauth, the
+       attribute "reauth_done" is added to the db object. As a result,
+       the getattr call will return True and not raise Reauth.
+
+       You get one reauth for the submitted change. Note you cannot
+       Reauth multiple properties separately. If you need to auth
+       multiple properties separately, you need to reject the change
+       and force the user to submit each sensitive property separately.
+       For example::
+
+          if 'password' in newvalues and 'realname' in newvalues:
+             raise Reject('Changing the username and the realname '
+                          'at the same time is not allowed. Please '
+                          'submit two changes.')
+
+          if 'password' in newvalues and not getattr(db, 'reauth_done', False):
+             raise Reauth()
+
+          if 'realname' in newvalues and not getattr(db, 'reauth_done', False):
+             raise Reauth()
+
+        Limitations: It can not handle file input fields.
+
+        See also: client.py:Client:reauth() which can be changed
+        using interfaces.py in your tracker.
+    '''
+
+    def handle(self):
+        ''' Handle a form with a reauth request.
+        '''
+
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            raise Reject(self._('Invalid request'))
+
+        if '@reauth_password' not in self.form:
+            self.client.add_error_message(self._('Password incorrect.'))
+            return
+
+        # Verify password
+        login = self.client.get_action_class('login')(self.client)
+        if not self.verifyPassword():
+            self.client.add_error_message(self._("Password incorrect."))
+            self.client.template = "reauth"
+
+            # Strip fields that are added by the template. All
+            # the rest of the fields in self.form.list are added
+            # as hidden fields by the reauth template.
+            self.form.list = [ x for x in self.form.list
+                               if x.name not in (
+                                       '@action',
+                                       '@csrf',
+                                       '@reauth_password',
+                                       '@template',
+                                       'submit'
+                               )
+                              ]
+            return
+
+        # extract the info we need to preserve/reinject into
+        # the next action.
+        
+        if '@next_action' not in self.form: # required to look up next action
+            self.client.add_error_message(
+                self._('Missing action to be authorized.'))
+            return
+
+        action = self.form['@next_action'].value.lower()
+
+        next_template = None;  # optional
+        if '@next_template' in self.form:
+            next_template = self.form['@next_template'].value
+
+        # rewrite the form for redisplay
+        # remove all the reauth_form_fields leaving just the original
+        # form fields from the form that trigered the reauth.
+        # We extracted @next_* above to route to the original action
+        # and template.
+
+        reauth_form_fields = ('@reauth_password', '@template',
+                              '@next_template', '@action',
+                              '@next_action', '@csrf', 'submit')
+
+        self.form.list = [ x for x in self.form.list
+                              if x.name not in reauth_form_fields
+                          ]
+
+        try:
+            action_klass = self.client.get_action_class(action)
+
+            # set the template to go back to
+            # use "" not None as this value gets encoded and None is invalid
+            self.client.template = next_template if next_template else ""
+            # use this in detector (to skip reauth
+            self.client.db.reauth_done = True
+            
+            # should raise exception Redirect
+            action_klass(self.client).execute()
+
+        except (ValueError, Reject) as err:
+            escape = not isinstance(err, RejectRaw)
+            self.add_error_message(str(err), escape=escape)
+
+    def verifyPassword(self):
+        login = self.client.get_action_class('login')(self.client)
+        return login.verifyPassword(self.userid,
+                                    self.form['@reauth_password'].value)
 
 
 class Bridge(BaseAction):
