@@ -5,7 +5,7 @@ import shutil, errno, pytest, json, gzip, mimetypes, os, re
 from roundup import date as rdate
 from roundup import i18n
 from roundup import password
-from roundup.anypy.strings import b2s
+from roundup.anypy.strings import b2s, s2b
 from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
@@ -377,7 +377,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         
              enter good password
              verify on user page (look for
-                              "(the default is 0)" hint for timezone)
+                              "(the default is" hint for timezone)
              verify new name present
              verify success banner
         """
@@ -434,8 +434,16 @@ class BaseTestCases(WsgiSetup, ClientSetup):
                 return self.fields
 
 
+        # for some reason the lookup works with anydbm but
+        # returns a cursor closed error under postgresql.
+        # adding setup/teardown to TestPostgresWsgiServer
+        # with self.db = self.instance.open('admin') looks like
+        # it caused the wsgi server to hang. So hardcode the id.
+        #  self.db.user.lookup('reauth')
+        reauth_id = '4'
+
         user_url = "%s/user%s" % (self.url_base(),
-                                  self.db.user.lookup('reauth'))
+                                  reauth_id)
 
         session, _response = self.create_login_session()
         
@@ -522,8 +530,9 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         self.assertNotIn(b'id="reauth_form"', pass_reauth.content)
         self.assertNotIn(b'Please enter your password to continue with',
                       pass_reauth.content)
-        self.assertIn(b'user 4 realname edited ok', pass_reauth.content)
-        self.assertIn(b'(the default is 0)', pass_reauth.content)
+        self.assertIn(b'user %s realname edited ok' % s2b(reauth_id),
+                      pass_reauth.content)
+        self.assertIn(b'(the default is', pass_reauth.content)
         
     def test_cookie_attributes(self):
         session, _response = self.create_login_session()
@@ -1831,12 +1840,32 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         # set up and open a tracker
         cls.instance = db_test_base.setupTracker(cls.dirname, cls.backend)
 
+        # add an auditor that triggers a Reauth
+        with open("%s/detectors/reauth.py" % cls.dirname, "w") as f:
+            auditor = dedent("""
+              from roundup.cgi.exceptions import Reauth
+
+              def trigger_reauth(db, cl, nodeid, newvalues):
+                  if 'realname' in newvalues and not hasattr(db, 'reauth_done'):
+                      raise Reauth('Add an optional message to the user')
+
+              def init(db):
+                  db.user.audit('set', trigger_reauth, priority=110)
+             """)
+            f.write(auditor)
+
         # open the database
         cls.db = cls.instance.open('admin')
 
         # add a user without edit access for status.
         cls.db.user.create(username="fred", roles='User',
             password=password.Password('sekrit'), address='fred@example.com')
+
+        # add a user for reauth tests
+        cls.db.user.create(username="reauth",
+                           realname="reauth test user",
+                           password=password.Password("reauth"),
+                           address="reauth@example.com", roles="User")
 
         # set the url the test instance will run at.
         cls.db.config['TRACKER_WEB'] = cls.tracker_web
@@ -1845,11 +1874,15 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         cls.db.config.MAIL_HOST = "localhost"
         cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
 
+        # also report it in the web.
+        cls.db.config.WEB_DEBUG = "yes"
+
         # added to enable csrf forgeries/CORS to be tested
         cls.db.config.WEB_CSRF_ENFORCE_HEADER_ORIGIN = "required"
         cls.db.config.WEB_ALLOWED_API_ORIGINS = "https://client.com"
         cls.db.config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH'] = "required"
 
+        # use native indexer
         cls.db.config.INDEXER = "native-fts"
 
         # disable web login rate limiting. The fast rate of tests
@@ -1867,6 +1900,8 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         # re-open the database to get the updated INDEXER
         cls.db = cls.instance.open('admin')
 
+        # add an issue to allow testing retrieval.
+        # also used for text searching.
         result = cls.db.issue.create(title="foo bar RESULT")
 
         # add a message to allow retrieval
@@ -1874,6 +1909,16 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
                                    content = "a message foo bar RESULT",
                                    date=rdate.Date(),
                                    messageid="test-msg-id")
+
+        # add a query using @current_user
+        result = cls.db.query.create(
+            klass="issue",
+            name="I created",
+            private_for=None,
+            url=("@columns=title,id,activity,status,assignedto&"
+                 "@sort=activity&@group=priority&@filter=creator&"
+                 "@pagesize=50&@startwith=0&creator=%40current_user")
+            )
 
         cls.db.commit()
         cls.db.close()
@@ -1899,8 +1944,7 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
 
 @skip_requests
 class TestApiRateLogin(WsgiSetup):
-    """Class to run test in BaseTestCases with the cache_tracker
-       feature flag enabled when starting the wsgi server
+    """Test api rate limiting on login use sqlite db.
     """
 
     backend = 'sqlite'
