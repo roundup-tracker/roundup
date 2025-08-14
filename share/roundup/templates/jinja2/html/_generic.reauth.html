@@ -27,13 +27,13 @@
   <input type="submit" name="submit"
 	 value="{% trans %} Authorize Change {% endtrans %}">
   <input name="@csrf" type="hidden"
-	 value="{{ python:utils.anti_csrf_nonce() }}">
+	 value="{{ utils.anti_csrf_nonce() }}">
 
-  {{ utils.embed_form_fields(('submit',)) }}
+  {{ utils.embed_form_fields(('submit',))|u|safe }}
 
   </form>
 
-<script nonce="{{ request.client.client_nonce() }}">
+<script nonce="{{ request.client.client_nonce }}">
 /* This IIFE decodes the base64 file contents in the pre blocks,
    creates a new file blob for each one. Then adds a multiple file
    input and attaches all the files to it.
