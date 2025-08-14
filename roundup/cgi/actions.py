@@ -75,18 +75,18 @@ class Action:
         validates:
 
         For each component, Appendix A of RFC 3986 says the following
-        are allowed:
+        are allowed::
 
-        pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-        query         = *( pchar / "/" / "?" )
-        unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
-        pct-encoded   = "%" HEXDIG HEXDIG
-        sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
-                         / "*" / "+" / "," / ";" / "="
+          pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+          query         = *( pchar / "/" / "?" )
+          unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+          pct-encoded   = "%" HEXDIG HEXDIG
+          sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+                           / "*" / "+" / "," / ";" / "="
 
         Checks all parts with a regexp that matches any run of 0 or
         more allowed characters. If the component doesn't validate,
-        raise ValueError. Don't attempt to urllib_.quote it. Either
+        raise ValueError. Don't attempt to ``urllib_.quote`` it. Either
         it's correct as it comes in or it's a ValueError.
 
         Finally paste the whole thing together and return the new url.
@@ -1886,7 +1886,7 @@ class ReauthAction(Action):
           if 'realname' in newvalues and not getattr(db, 'reauth_done', False):
              raise Reauth()
 
-        Limitations: It can not handle file input fields.
+        Limitations: Handling file inputs requires JavaScript on the browser.
 
         See also: client.py:Client:reauth() which can be changed
         using interfaces.py in your tracker.
@@ -1968,6 +1968,13 @@ class ReauthAction(Action):
             self.add_error_message(str(err), escape=escape)
 
     def verifyPassword(self):
+        """Verify the reauth password/token
+
+           This can be overridden using interfaces.py.
+
+           The default implementation uses the
+           LoginAction::verifyPassword() method.
+        """
         login = self.client.get_action_class('login')(self.client)
         return login.verifyPassword(self.userid,
                                     self.form['@reauth_password'].value)

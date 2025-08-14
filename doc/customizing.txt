@@ -1815,6 +1815,60 @@ Some simple javascript might help in the last step. If you have high volume
 you could search for all currently-Pending users and do a bulk edit of all
 their roles at once (again probably with some simple javascript help).
 
+.. _sensitive_changes:
+
+Confirming Users Making Sensitive Account Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some changes to account data: user passwords or email addresses are
+particularly sensitive. The `OWASP Authentication`_ recommendations
+include asking for a re-authentication or confirmation step when making
+these changes. This can be easily implemented using an auditor.
+
+Create a file in your detectors directory with the following
+contents::
+
+    from roundup.cgi.exceptions import Reauth
+
+    def confirmid(db, cl, nodeid, newvalues):
+
+        if hasattr(db, 'reauth_done'):
+           # the user has confirmed their identity
+           return
+
+        # if the password or email are changing, require id confirmation
+        if 'password' in newvalues:
+            raise Reauth('Add an optional message to the user')
+
+        if 'address' in newvalues:
+            raise Reauth('Add an optional message to the user')
+
+    def init(db):
+        db.user.audit('set', confirmid, priority=110)
+
+If a change is made to any user's password or address fields, the user
+making the change will be shown a page where they have to enter an
+identity verifier (by default the invoking user's account password).
+If the verifier is successfully verified it will set the
+``reauth_done`` attribute on the db object and reprocess the change.
+
+The default auditor priority is 100. This auditor is set to run
+**after** most other auditors. This allows the user to correct any
+failing information on the form before being asked to confirm their
+identity. Once they confirm their identity the change is expected to
+be committed without issue. See :ref:`Confirming the User` for
+details on customizing the verification operation.
+
+Also you could use an existing auditor and add::
+
+      if 'someproperty' in newvalues and not hasattr(db, 'reauth_done'):
+        raise Reauth('Need verification before changing someproperty')
+
+at the end of the auditor (after all checks are done) to force user
+verification. Just make sure you import Reauth at the top of the file.
+
+.. _`OWASP Authentication`:
+   https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#require-re-authentication-for-sensitive-features
 
 Changes to the Web User Interface
 ---------------------------------
@@ -2435,6 +2489,10 @@ The `reference document`_ also has examples:
 * `Extending the configuration file
   <reference.html#extending-the-configuration-file>`_.
 * `Adding a new Permission <reference.html#adding-a-new-permission>`_
+
+as does the design document:
+
+* `detector examples <design.html#detector-example>`_
 
 Examples on the Wiki
 ====================

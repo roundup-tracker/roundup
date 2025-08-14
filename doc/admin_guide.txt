@@ -1729,6 +1729,8 @@ IMAPS_OAUTH:
    single: roundup-admin; man page reference
    pair: roundup-admin; designator
 
+.. _`roundup-admin templates`:
+
 Using roundup-admin
 ===================
 

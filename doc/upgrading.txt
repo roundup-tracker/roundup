@@ -117,56 +117,21 @@ When changing sensitive information (e.g. passwords) it is
 useful to ask for a validated authorization. This makes sure
 that the user is present by typing their password.
 
-In an auditor adding::
+You can add this to your auditors using the example
+:ref:`sensitive_changes`.
 
-   from roundup.cgi.exceptions import Reauth
-
-   if 'password' in newvalues and not getattr(db, 'reauth_done', False):
-      raise Reauth('Add an optional message to the user')
-
-will present the user with a authorization page and optional message
-when the password is changed.  The page is generated from the
-``_generic.reauth.html`` template by default.
-
-Once the user enters their password and submits the page, the
-password will be verified using:
-
-    roundup.cgi.actions:LoginAction::verifyPassword()
-
-If the password is correct the original change is done.
-
-To prevent the auditor from trigering another Reauth, the
-attribute ``reauth_done`` is added to the db object. As a result,
-the getattr call will return True and not raise Reauth.
-
-You get one reauth for a submitted change. Note you cannot Reauth
-multiple properties separately. If you need to auth multiple
-properties separately, you need to reject the change and force the
-user to submit each sensitive property separately.  For example::
-
-   if 'password' in newvalues and 'realname' in newvalues:
-      raise Reject('Changing the username and the realname '
-		   'at the same time is not allowed. Please '
-		   'submit two changes.')
-
-   if 'password' in newvalues and not getattr(db, 'reauth_done', False):
-      raise Reauth()
-
-   if 'realname' in newvalues and not getattr(db, 'reauth_done', False):
-      raise Reauth()
-
-See also: client.py:Client:reauth(self, exception) which can be changed
-using interfaces.py in your tracker.
-
-You should copy ``_generic.reauth.html`` into your tracker's html
-subdirectory. See the classic template directory for a copy. If you
-are using jinja2, see the jinja2 template directory.  Then you can
-raise a Reauth exception and have the proper page displayed.
+To use this, you must copy ``_generic.reauth.html`` into your
+tracker's html subdirectory. See the classic template directory for a
+copy. If you are using jinja2, see the jinja2 template directory.
+Then you can raise a Reauth exception and have the proper page
+displayed.
 
 Also javascript *MUST* be turned on if this is used with a file
 input. If JavaScript is not turned on, attached files are lost during
 the reauth step. Information from other types of inputs (password,
 date, text etc.) do not need JavaScript to work.
+
+See :ref:`Confirming the User` in the reference manual for details.
 
 .. index:: Upgrading; 2.4.0 to 2.5.0
 

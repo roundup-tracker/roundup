@@ -3618,10 +3618,18 @@ class TemplatingUtils:
     def embed_form_fields(self, excluded_fields=None):
         """Used to create a hidden input field for each client.form element
 
-           :param: excluded_fields string or something with
-                   __contains__ dunder method (tuple, list, set...).
+           :param excluded_fields:
+              these fields will not have a hidden field created for them.
+              Value can be a string or multiple strings contained in
+              something with a __contains__ dunder method:
+              tuple, list, set....
 
-           Limitations: It ignores file input fields.
+           File input fields are represented by a <pre> tag with
+           base64 encoded contents and attributes to store the
+           filename and mimetype.  It requires JavaScript on the
+           browser to turn these <pre> tags back into files that can
+           be submitted with the form.
+
         """
         if excluded_fields is None:
             excluded_fields = ()

@@ -99,7 +99,9 @@ Roundup Glossary
 	 tracker with a particular look and feel, :term:`schema`,
 	 permissions model, and :term:`detectors`. Roundup ships with
 	 five templates and people on the net `have produced other
-	 templates`_
+	 templates`_. You can find the installed location of the
+	 standard Roundup templates using the :ref:`roundup-admin
+	 templates <roundup-admin templates>` command.
 
 
    tracker

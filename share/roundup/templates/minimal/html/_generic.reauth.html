@@ -16,7 +16,7 @@
     your change.</p>
 
   <form id="reauth_form" method="POST" enctype="multipart/form-data">
-    <input name="@reauth_password" type="password" autofocus>
+    <input name="@reauth_password" type="password" spellcheck="false" autofocus>
     <input type="hidden" name="@action" value="reauth">
     <input type="submit" name="submit" value=" Authorize Change "
 	   i18n:attributes="value">
@@ -64,61 +64,67 @@
 'use strict';
 
 (function attach_file_data() {
+  console.time('reattach_files');
 
-    const pre_file_list = document.querySelectorAll('pre[data-mimetype]');
-    /* if no files, skip all this. */
-    if (! pre_file_list.length) return;
+  /* skip file entries without a name (created by empty file input) */
+  const pre_file_list = document.querySelectorAll(
+    'pre[data-filename]:not([data-filename=""]');
+  /* if no files, skip all this. */
+  if (! pre_file_list.length) {
+    console.timeEnd('reattach_files');
+    return;
+  }
 
+  function base64ToUint8Array(base64String) {
+    // source: google search AI: "turn atob into uint8array javascript"
 
-    function base64ToUint8Array(base64String) {
-	// source: google search AI: "turn atob into uint8array javascript"
+    // Decode the Base64 string
+    const binaryString = window.atob(base64String);
 
-	// Decode the Base64 string
-	const binaryString = window.atob(base64String);
+    // Create a Uint8Array with the same length as the binary string
+    const uint8Array = new Uint8Array(binaryString.length);
 
-	// Create a Uint8Array with the same length as the binary string
-	const uint8Array = new Uint8Array(binaryString.length);
-	
-	// Populate the Uint8Array with the character codes
-	for (let i = 0; i < binaryString.length; i++) {
-	    uint8Array[i] = binaryString.charCodeAt(i);
-	}
-
-	return uint8Array;
+    // Populate the Uint8Array with the character codes
+    for (let i = 0; i < binaryString.length; i++) {
+      uint8Array[i] = binaryString.charCodeAt(i);
     }
+    return uint8Array;
+  }
 
-    const transfer = new DataTransfer();
+  const transfer = new DataTransfer();
 
-    pre_file_list.forEach( file => 
-	transfer.items.add(
-	    new File([base64ToUint8Array(file.textContent)],
-		     file.dataset.filename,
-		     {"type": file.dataset.mimetype}
-		    )
-	)
+  pre_file_list.forEach( file =>
+    transfer.items.add(
+      new File([base64ToUint8Array(file.textContent)],
+	       file.dataset.filename,
+	       {"type": file.dataset.mimetype}
+	      )
     )
+  )
 
-    const form = document.querySelector("#reauth_form")
-    if (!form) alert("Unable to find form with id=reauth_form on page.\n\n" +
-                     "Please notify your administrator")
-    let file_input = document.createElement('input')
-    /* make it hidden first so no flash on screen */
-    file_input.setAttribute("hidden", "")
-    file_input = form.appendChild(file_input)
-    /* Set the rest of the attributes now that is in the DOM.
-       One report said some attributes only worked once it
-       was added to the	DOM.
-    */
-    file_input.setAttribute("type", "file")
-    file_input.setAttribute("name", "@file")
-    /* Put all the files on one file input rather than
-       separate inputs. AFAICT there is no benefit to
-       creating a bunch of single file inputs and assigning
-       the files one by one.
-    */
-    file_input.setAttribute("multiple", "")
-    file_input.files = transfer.files
-})()
+  const form = document.querySelector("#reauth_form")
+  if (!form) alert("Unable to find form with id=reauth_form on page.\n\n" +
+                   "Please notify your administrator")
+  let file_input = document.createElement('input')
+  /* make it hidden first so no flash on screen */
+  file_input.setAttribute("hidden", "")
+  file_input = form.appendChild(file_input)
+  /* Set the rest of the attributes now that is in the DOM.
+     One report said some attributes only worked once it
+     was added to the	DOM.
+  */
+  file_input.setAttribute("type", "file")
+  file_input.setAttribute("name", "@file")
+  /* Put all the files on one file input rather than
+     separate inputs. AFAICT there is no benefit to
+     creating a bunch of single file inputs and assigning
+     the files one by one.
+  */
+  file_input.setAttribute("multiple", "")
+  file_input.files = transfer.files
+
+  console.timeEnd('reattach_files');
+})()	
 </script>
 </td>
 </tal:block>

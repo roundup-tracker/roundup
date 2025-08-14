@@ -1406,10 +1406,12 @@ class Client:
 
            Header is ok (return True) if ORIGIN is missing and it is a GET.
            Header is ok if ORIGIN matches the base url.
-           If this is a API call:
-             Header is ok if ORIGIN matches an element of allowed_api_origins.
-             Header is ok if allowed_api_origins includes '*' as first
-               element and credentials is False.
+           If this is an API call:
+
+           * Header is ok if ORIGIN matches an element of allowed_api_origins.
+           * Header is ok if allowed_api_origins includes '*' as first
+             element and credentials is False.
+
            Otherwise header is not ok.
 
            In a credentials context, if we match * we will return
