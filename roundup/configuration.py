@@ -7,27 +7,25 @@ __docformat__ = "restructuredtext"
 # Roundup if used with Python 2 because it generates unicode objects
 # where not expected by the Python code.  Thus, a version check is
 # used here instead of try/except.
-import sys
-import getopt
+import binascii
 import errno
+import getopt
 import logging
 import logging.config
 import os
 import re
-import time
 import smtplib
+import sys
+import time
 
 import roundup.date
-
+from roundup.anypy import random_
 from roundup.anypy.strings import b2s
-import roundup.anypy.random_ as random_
-import binascii
+from roundup.backends import list_backends
 from roundup.i18n import _
 
-from roundup.backends import list_backends
-
 if sys.version_info[0] > 2:
-    import configparser			 # Python 3
+    import configparser  # Python 3
 else:
     import ConfigParser as configparser  # Python 2
 
@@ -172,10 +170,8 @@ class Option:
             self.aliases = []
         self.aliases.insert(0, self.name)
         # convert default to internal representation
-        if default is NODEFAULT:
-            _value = default
-        else:
-            _value = self.str2value(default)
+        _value = default if default is NODEFAULT else self.str2value(default)
+
         # value is private.  use get() and set() to access
         self._value = self._default_value = _value
 
@@ -250,17 +246,15 @@ class Option:
             if _description:
                 _desc_lines.extend(_description.split("\n"))
         # comment out the setting line if there is no value
-        if self.isset():
-            _is_set = ""
-        else:
-            _is_set = "#"
+        _is_set = "" if self.isset() else "#"
+
         _rv = "# %(description)s\n# Default: %(default)s\n" \
             "%(is_set)s%(name)s = %(value)s\n" % {
                 "description": "\n# ".join(_desc_lines),
                 "default": self.value2str(self._default_value),
                 "name": self.setting,
                 "value": self.value2str(self._value),
-                "is_set": _is_set
+                "is_set": _is_set,
             }
         return _rv
 
@@ -393,6 +387,19 @@ class HtmlToTextOption(Option):
             raise OptionValueError(self, value, self.class_description)
 
 
+class HtmlVersionOption(Option):
+    """Accept html4 only for now. Raise error for xhtml which is not
+       supported in roundup 2.4 and newer."""
+
+    class_description = "Allowed values: html4"
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in ("html4"):
+            return _val
+        else:
+            raise OptionValueError(self, value, self.class_description)
+
 class EmailBodyOption(Option):
 
     """When to replace message body or strip quoting: always, never
@@ -411,8 +418,8 @@ class EmailBodyOption(Option):
 class IsolationOption(Option):
     """Database isolation levels"""
 
-    allowed = ['read uncommitted', 'read committed', 'repeatable read',
-               'serializable']
+    allowed = ('read uncommitted', 'read committed', 'repeatable read',
+               'serializable')
     class_description = "Allowed values: %s" % ', '.join("'%s'" % a
                                                          for a in allowed)
 
@@ -426,7 +433,7 @@ class IsolationOption(Option):
 class IndexerOption(Option):
     """Valid options for indexer"""
 
-    allowed = ['', 'xapian', 'whoosh', 'native', 'native-fts']
+    allowed = ('', 'xapian', 'whoosh', 'native', 'native-fts')
     class_description = "Allowed values: %s" % ', '.join("'%s'" % a
                                                          for a in allowed)
 
@@ -434,7 +441,7 @@ class IndexerOption(Option):
     #    SELECT cfgname FROM pg_ts_config;
     # on a postgresql 14.1 server.
     # So the best we can do is hardcode this.
-    valid_langs = ["simple",
+    valid_langs = ("simple",
                    "custom1",
                    "custom2",
                    "custom3",
@@ -467,7 +474,7 @@ class IndexerOption(Option):
                    "swedish",
                    "tamil",
                    "turkish",
-                   "yiddish"]
+                   "yiddish")
 
     def str2value(self, value):
         _val = value.lower()
@@ -550,10 +557,8 @@ class SpaceSeparatedListOption(Option):
     class_description = "A list of space separated elements."
 
     def get(self):
-        pathlist = []
         _val = Option.get(self)
-        for elem in _val.split():
-            pathlist.append(elem)
+        pathlist = list(_val.split())
         if pathlist:
             return pathlist
         else:
@@ -568,13 +573,12 @@ class OriginHeadersListOption(Option):
     class_description = "A list of space separated case sensitive\norigin headers 'scheme://host'."
 
     def set(self, _val):
-        pathlist = self._value = []
-        for elem in _val.split():
-            pathlist.append(elem)
+        pathlist = list(_val.split())
         if '*' in pathlist and pathlist[0] != '*':
             raise OptionValueError(
                 self, _val,
                 "If using '*' it must be the first element.")
+        self._value = pathlist
 
     def _value2str(self, value):
         return ','.join(value)
@@ -599,7 +603,7 @@ class MultiFilePathOption(Option):
             if elem and not os.path.isabs(elem):
                 pathlist.append(os.path.join(self.config["HOME"], elem))
             else:
-                pathlist.append(elem)
+                pathlist.append(os.path.normpath(elem))
         if pathlist:
             return pathlist
         else:
@@ -827,6 +831,27 @@ class SecretNullableOption(NullableOption, SecretOption):
     class_description = SecretOption.class_description
 
 
+class ListSecretOption(SecretOption):
+    # use get from SecretOption
+    def get(self):
+        value = SecretOption.get(self)
+        return [x.lstrip() for x in value.split(',')]
+
+    class_description = SecretOption.class_description
+
+    def validate(self, options):  # noqa: ARG002  --  options unused
+        if self.name == "WEB_JWT_SECRET":
+            secrets = self.get()
+            invalid_secrets = [x for x in secrets[1:] if len(x) < 32]
+            if invalid_secrets:
+                raise OptionValueError(
+                    self, ", ".join(secrets),
+                    "One or more secrets less then 32 characters in length\n"
+                    "found: %s" % ', '.join(invalid_secrets))
+        else:
+            self.get()
+
+
 class RedisUrlOption(SecretNullableOption):
     """Do required check to make sure known bad parameters are not
        put in the url.
@@ -851,7 +876,7 @@ class SessiondbBackendOption(Option):
        Fail with error and suggestions if they are incompatible.
     """
 
-    compatibility_matrix = [
+    compatibility_matrix = (
         ('anydbm', 'anydbm'),
         ('anydbm', 'redis'),
         ('sqlite', 'anydbm'),
@@ -859,7 +884,7 @@ class SessiondbBackendOption(Option):
         ('sqlite', 'redis'),
         ('mysql', 'mysql'),
         ('postgresql', 'postgresql'),
-        ]
+        )
 
     def validate(self, options):
         ''' make sure session db is compatible with primary db.
@@ -878,14 +903,13 @@ class SessiondbBackendOption(Option):
 
             redis_available = False
             try:
-                import redis                                    # noqa: F401
+                import redis  # noqa: F401
                 redis_available = True
             except ImportError:
                 if sessiondb_backend == 'redis':
-                    valid_session_backends = ', '.join(sorted(list(
+                    valid_session_backends = ', '.join(sorted(
                         [x[1] for x in self.compatibility_matrix
-                         if x[0] == rdbms_backend and x[1] != 'redis'])
-                    ))
+                         if x[0] == rdbms_backend and x[1] != 'redis']))
                     raise OptionValueError(
                         self, sessiondb_backend,
                         "Unable to load redis module. Please install "
@@ -894,12 +918,10 @@ class SessiondbBackendOption(Option):
 
             if ((rdbms_backend, sessiondb_backend) not in
                     self.compatibility_matrix):
-
-                valid_session_backends = ', '.join(sorted(list(
-                    set([x[1] for x in self.compatibility_matrix
+                valid_session_backends = ', '.join(sorted(
+                    {x[1] for x in self.compatibility_matrix
                          if x[0] == rdbms_backend and
-                         (redis_available or x[1] != 'redis')])
-                )))
+                         (redis_available or x[1] != 'redis')}))
 
                 raise OptionValueError(
                     self, sessiondb_backend,
@@ -962,7 +984,7 @@ class RegExpOption(Option):
                         description, aliases)
 
     def _value2str(self, value):
-        assert isinstance(value, self.RE_TYPE)
+        assert isinstance(value, self.RE_TYPE)  # noqa: S101  -- assert is ok
         return value.pattern
 
     def str2value(self, value):
@@ -978,8 +1000,22 @@ class RegExpOption(Option):
         return re.compile(value, self.flags)
 
 
+class LogLevelOption(Option):
+    """A log level, one of none, debug, info, warning, error, critical"""
+
+    values = "none debug info warning error critical".split()
+    class_description = "Allowed values: %s" % (', '.join(values))
+
+    def str2value(self, value):
+        _val = value.lower()
+        if _val in self.values:
+            return _val
+        else:
+            raise OptionValueError(self, value, self.class_description)
+
+
 try:
-    import jinja2                                           # noqa: F401
+    import jinja2  # noqa: F401
     jinja2_avail = "Available found"
 except ImportError:
     jinja2_avail = "Unavailable needs"
@@ -1031,12 +1067,12 @@ SETTINGS = (
             "If no domain is specified then the config item\n"
             "mail -> domain is added."),
         (Option, "email_from_tag", "",
-            "Additional text to include in the \"name\" part\n"
+            'Additional text to include in the "name" part\n'
             "of the From: address used in nosy messages.\n"
-            "If the sending user is \"Foo Bar\", the From: line\n"
-            "is usually: \"Foo Bar\" <issue_tracker@tracker.example>\n"
-            "the EMAIL_FROM_TAG goes inside the \"Foo Bar\" quotes like so:\n"
-            "\"Foo Bar EMAIL_FROM_TAG\" <issue_tracker@tracker.example>"),
+            'If the sending user is "Foo Bar", the From: line\n'
+            'is usually: "Foo Bar" <issue_tracker@tracker.example>\n'
+            'the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:\n'
+            '"Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>'),
         (Option, "new_web_user_roles", "User",
             "Roles that a user gets when they register\n"
             "with Web User Interface.\n"
@@ -1060,14 +1096,10 @@ SETTINGS = (
             'or "both" (these are the three allowed values).\n'
             'The dispatcher is configured using the DISPATCHER_EMAIL\n'
             ' setting.'),
-        (Option, "html_version", "html4",
+        (HtmlVersionOption, "html_version", "html4",
             "This setting should be left at the default value of html4.\n"
-            "Support is ending for xhtml mode.\n"
-            "HTML version to generate. The templates are html4 by default.\n"
-            "If you wish to make them xhtml, then you'll need to change\n"
-            "this setting to 'xhtml' too so all auto-generated HTML\n"
-            "is compliant.\n"
-            "Allowed values: html4, xhtml"),
+            "Support for xhtml has been disabled.\n"
+            "HTML version to generate. The templates are html4 by default."),
         (TimezoneOption, "timezone", TimezoneOption.defaulttz,
             "Default timezone offset,\n"
             "applied when user's timezone is not set.",
@@ -1107,10 +1139,11 @@ SETTINGS = (
             "get the error 'Error: field larger than field limit' during\n"
             "import."),
         (IntegerNumberGeqZeroOption, 'password_pbkdf2_default_rounds',
-         '2000000',
+         '250000',
             "Sets the default number of rounds used when encoding passwords\n"
-            "using the PBKDF2 scheme. Set this to a higher value on faster\n"
-            "systems which want more security.\n"
+            "using any PBKDF2 scheme. Set this to a higher value on faster\n"
+            "systems which want more security. Use a minimum of 250000\n"
+            "for PBKDF2-SHA512 which is the default hash in Roundup 2.5.\n"
             "PBKDF2 (Password-Based Key Derivation Function) is a\n"
             "password hashing mechanism that derives hash from the\n"
             "password and a random salt. For authentication this process\n"
@@ -1142,7 +1175,7 @@ SETTINGS = (
             "nosy messages.\n"
             "If the value is unset (default) the roundup tracker's\n"
             "email address (above) is used.\n"
-            "If set to \"AUTHOR\" then the primary email address of the\n"
+            'If set to "AUTHOR" then the primary email address of the\n'
             "author of the change will be used as the reply-to\n"
             "address. This allows email exchanges to occur outside of\n"
             "the view of roundup and exposes the address of the person\n"
@@ -1257,6 +1290,8 @@ and will yield an error message."""),
             """Whether to enable i18n for the rest endpoint. Enable it if
 you want to enable translation based on browsers lang
 (if enabled), trackers lang (if set) or environment."""),
+        (LogLevelOption, 'rest_logging', 'none',
+            "Log-Level for REST errors."),
         (IntegerNumberGeqZeroOption, 'api_calls_per_interval', "0",
          "Limit API calls per api_interval_in_sec seconds to\n"
          "this number.\n"
@@ -1297,18 +1332,6 @@ Set this to 'no' to ignore the field and accept the post.
             """csrf_tokens have a limited lifetime. If they are not
 used they are purged from the database after this
 number of minutes. Default (20160) is 2 weeks."""),
-        (CsrfSettingOption, 'csrf_enforce_token', "yes",
-            """How do we deal with @csrf fields in posted forms.
-Set this to 'required' to block the post and notify
-    the user if the field is missing or invalid.
-Set this to 'yes' to block the post and notify the user
-    if the token is invalid, but accept the form if
-    the field is missing.
-Set this to 'logfailure' to log a notice to the roundup
-    log if the field is invalid or missing, but accept
-    the post.
-Set this to 'no' to ignore the field and accept the post.
-            """),
         (CsrfSettingOption, 'csrf_enforce_header_X-REQUESTED-WITH', "yes",
             """This is only used for xmlrpc and rest requests. This test is
 done after Origin and Referer headers are checked. It only
@@ -1326,7 +1349,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing.
+    the header is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -1338,7 +1361,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing.
+    the header is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -1369,7 +1392,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing.
+    the header is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -1382,7 +1405,7 @@ Set this to 'required' to block the post and notify
     the user if the header is missing or invalid.
 Set this to 'yes' to block the post and notify the user
     if the header is invalid, but accept the form if
-    the field is missing.
+    the header is missing.
 Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
@@ -1422,20 +1445,53 @@ always passes, so setting it less than 1 is not recommended."""),
             "(Note the default value changes every time\n"
             "     roundup-admin updateconfig\n"
             "is run, so it must be explicitly set to a non-empty string.\n"),
-        (SecretNullableOption, "jwt_secret", "disabled",
-            "This is used to generate/validate json web tokens (jwt).\n"
-            "Even if you don't use jwts it must not be empty.\n"
-            "If less than 256 bits (32 characters) in length it will\n"
-            "disable use of jwt. Changing this invalidates all jwts\n"
-            "issued by the roundup instance requiring *all* users to\n"
-            "generate new jwts. This is experimental and disabled by\n"
-            "default. It must be persistent across application restarts.\n"),
+        (ListSecretOption, "jwt_secret", "disabled",
+            "This is used to sign/validate json web tokens\n"
+            "(JWT). Even if you don't use JWTs it must not be\n"
+            "empty. You can use multiple secrets separated by a\n"
+            "comma ','. This allows for secret rotation. The newest\n"
+            "secret should be placed first and used for signing. The\n"
+            "rest of the secrets are used for validating an old JWT.\n"
+            "If the first secret is less than 256 bits (32\n"
+            "characters) in length JWTs are disabled. If other secrets\n"
+            "are less than 32 chars, the application will exit. Removing\n"
+            "a secret from this list invalidates all JWTs signed with\n"
+            "the secret. JWT support is experimental and disabled by\n"
+            "default. The secrets must be persistent across\n"
+            "application restarts.\n"),
+        (BooleanOption, "use_browser_date_input", "no",
+            "HTML input elements for Date properties: This determines\n"
+            "if we use the input type 'datetime-local' (or 'date') for\n"
+            "date input fields. If the option is turned off (the default),\n"
+            "the type is set to 'text'. Since the widgets generated by\n"
+            "browsers determine the date format from the language\n"
+            "setting (it is currently not possible to force the\n"
+            "international date format server-side) and some browsers\n"
+            "ignore the date format set by the operating system, the\n"
+            "default is 'no'."),
+        (BooleanOption, "use_browser_number_input", "no",
+            "HTML input elements for Number properties: This determines\n"
+            "if we use the input type 'number' for Number (and Integer)\n"
+            "properties. If set to 'no' we use input type 'text'."),
     )),
     ("rdbms", (
         (DatabaseBackend, 'backend', NODEFAULT,
             "Database backend."),
+        (BooleanOption, "debug_filter", "no",
+	    "Filter debugging: Permissions can define additional filter\n"
+            "functions that are used when checking permissions on results\n"
+            "returned by the database. This is done to improve\n"
+            "performance since the filtering is done in the database\n"
+            "backend, not in python (at least for the SQL backends). The\n"
+            "user is responsible for making the filter return the same\n"
+            "set of results as the check function for a permission. So it\n"
+            "makes sense to aid in debugging (and performance\n"
+            "measurements) to allow turning off the usage of filter\n"
+            "functions using only the check functions."),
         (Option, 'name', 'roundup',
-            "Name of the database to use.",
+            "Name of the database to use. For Postgresql, this can\n"
+            "be database.schema to use a specific schema within\n"
+            "a Postgres database.",
             ['MYSQL_DBNAME']),
         (NullableOption, 'host', 'localhost',
             "Database server host.",
@@ -1451,6 +1507,10 @@ always passes, so setting it less than 1 is not recommended."""),
         (SecretNullableOption, 'password', 'roundup',
             "Database user password.",
             ['MYSQL_DBPASSWORD']),
+        (NullableOption, 'service', '',
+            "Name of the PostgreSQL connection service for this Roundup\n"
+            "instance. Only used in Postgresql connections. You need to set\n"
+            "up a pg_service.conf file usable by psql use this option."),
         (NullableOption, 'read_default_file', '~/.my.cnf',
             "Name of the MySQL defaults file.\n"
             "Only used in MySQL connections."),
@@ -1458,17 +1518,30 @@ always passes, so setting it less than 1 is not recommended."""),
             "Name of the group to use in the MySQL defaults file (.my.cnf).\n"
             "Only used in MySQL connections."),
         (Option, 'mysql_charset', 'utf8mb4',
-            "Charset to use for mysql connection,\n"
-            "use 'default' for the mysql default, no charset option\n"
-            "is used when creating the connection in that case.\n"
+            "Charset to use for mysql connection and databases.\n"
+            "If set to 'default', no charset option is used when\n"
+            "creating the db connection and utf8mb4 is used for the\n"
+            "database charset.\n"
             "Otherwise any permissible mysql charset is allowed here.\n"
             "Only used in MySQL connections."),
+        (Option, 'mysql_collation', 'utf8mb4_unicode_ci',
+            "Comparison/order to use for mysql database/table collations.\n"
+            "When upgrading, you can use 'utf8' to match the\n"
+            "depricated 'utf8mb3'. This must be compatible with the\n"
+            "mysql_charset setting above. Only used by MySQL."),
+        (Option, 'mysql_binary_collation', 'utf8mb4_0900_bin',
+            "Comparison/order to use for mysql database/table collations\n"
+            "when matching case. When upgrading, you can use 'utf8_bin'\n"
+            "to match the depricated 'utf8mb3_bin' collation. This must\n"
+            "be compatible with the mysql_collation above. Only used\n"
+            "by MySQL."),
         (IntegerNumberGeqZeroOption, 'sqlite_timeout', '30',
             "Number of seconds to wait when the SQLite database is locked\n"
             "Default: use a 30 second timeout (extraordinarily generous)\n"
             "Only used in SQLite connections."),
         (IntegerNumberGeqZeroOption, 'cache_size', '100',
-            "Size of the node cache (in elements)"),
+            "Size of the node cache (in elements). Used to keep the\n"
+            "most recently used data in memory."),
         (BooleanOption, "allow_create", "yes",
             "Setting this option to 'no' protects the database against\n"
             "table creations."),
@@ -1498,8 +1571,8 @@ always passes, so setting it less than 1 is not recommended."""),
             "Set the database cursor for filter queries to serverside\n"
             "cursor, this avoids caching large amounts of data in the\n"
             "client. This option only applies for the postgresql backend."),
-    ), "Settings in this section (except for backend) are used\n"
-        " by RDBMS backends only."
+    ), "Most settings in this section (except for backend and debug_filter)\n"
+       "are used by RDBMS backends only.",
     ),
     ("sessiondb", (
         (SessiondbBackendOption, "backend", "",
@@ -1544,7 +1617,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "Do not include the '@' symbol."),
         (Option, "host", NODEFAULT,
             "SMTP mail host that roundup will use to send mail",
-            ["MAILHOST"],),
+            ["MAILHOST"]),
         (Option, "username", "", "SMTP login name.\n"
             "Set this if your mail host requires authenticated access.\n"
             "If username is not empty, password (below) MUST be set!"),
@@ -1554,8 +1627,10 @@ always passes, so setting it less than 1 is not recommended."""),
             "Default port to send SMTP on.\n"
             "Set this if your mail server runs on a different port."),
         (NullableOption, "local_hostname", '',
-            "The local hostname to use during SMTP transmission.\n"
-            "Set this if your mail server requires something specific."),
+            "The (fully qualified) host/ domain name (FQDN) to use during\n"
+            "SMTP sessions. If left blank, the underlying SMTP library will\n"
+            "attempt to detect your FQDN. Set this if your mail server\n"
+            "requires something specific.\n"),
         (BooleanOption, "tls", "no",
             "If your SMTP mail host provides or requires TLS\n"
             "(Transport Layer Security) then set this option to 'yes'."),
@@ -1587,19 +1662,20 @@ always passes, so setting it less than 1 is not recommended."""),
             "of the actor is added which protects the mail address of the\n"
             "actor from being exposed at mail archives, etc."),
     ), "Outgoing email options.\n"
-     "Used for nosy messages and approval requests"),
+     "Used for nosy messages, password reset and registration approval\n"
+     "requests."),
     ("mailgw", (
         (EmailBodyOption, "keep_quoted_text", "yes",
             "Keep email citations when accepting messages.\n"
-            "Setting this to \"no\" strips out \"quoted\" text\n"
-            "from the message. Setting this to \"new\" keeps quoted\n"
+            'Setting this to "no" strips out "quoted" text\n'
+            'from the message. Setting this to "new" keeps quoted\n'
             "text only if a new issue is being created.\n"
             "Signatures are also stripped.",
             ["EMAIL_KEEP_QUOTED_TEXT"]),
         (EmailBodyOption, "leave_body_unchanged", "no",
-            "Setting this to \"yes\" preserves the email body\n"
+            'Setting this to "yes" preserves the email body\n'
             "as is - that is, keep the citations _and_ signatures.\n"
-            "Setting this to \"new\" keeps the body only if we are\n"
+            'Setting this to "new" keeps the body only if we are\n'
             "creating a new issue.",
             ["EMAIL_LEAVE_BODY_UNCHANGED"]),
         (Option, "default_class", "issue",
@@ -1613,19 +1689,19 @@ always passes, so setting it less than 1 is not recommended."""),
             "the language of the tracker instance."),
         (Option, "subject_prefix_parsing", "strict",
             "Controls the parsing of the [prefix] on subject\n"
-            "lines in incoming emails. \"strict\" will return an\n"
+            'lines in incoming emails. "strict" will return an\n'
             "error to the sender if the [prefix] is not recognised.\n"
-            "\"loose\" will attempt to parse the [prefix] but just\n"
+            '"loose" will attempt to parse the [prefix] but just\n'
             "pass it through as part of the issue title if not\n"
-            "recognised. \"none\" will always pass any [prefix]\n"
+            'recognised. "none" will always pass any [prefix]\n'
             "through as part of the issue title."),
         (Option, "subject_suffix_parsing", "strict",
             "Controls the parsing of the [suffix] on subject\n"
-            "lines in incoming emails. \"strict\" will return an\n"
+            'lines in incoming emails. "strict" will return an\n'
             "error to the sender if the [suffix] is not recognised.\n"
-            "\"loose\" will attempt to parse the [suffix] but just\n"
+            '"loose" will attempt to parse the [suffix] but just\n'
             "pass it through as part of the issue title if not\n"
-            "recognised. \"none\" will always pass any [suffix]\n"
+            'recognised. "none" will always pass any [suffix]\n'
             "through as part of the issue title."),
         (Option, "subject_suffix_delimiters", "[]",
             "Defines the brackets used for delimiting the prefix and \n"
@@ -1635,14 +1711,14 @@ always passes, so setting it less than 1 is not recommended."""),
         (Option, "subject_content_match", "always",
             "Controls matching of the incoming email subject line\n"
             "against issue titles in the case where there is no\n"
-            "designator [prefix]. \"never\" turns off matching.\n"
-            "\"creation + interval\" or \"activity + interval\"\n"
+            'designator [prefix]. "never" turns off matching.\n'
+            '"creation + interval" or "activity + interval"\n'
             "will match an issue for the interval after the issue's\n"
             "creation or last activity. The interval is a standard\n"
             "Roundup interval."),
         (BooleanOption, "subject_updates_title", "yes",
             "Update issue title if incoming subject of email is different.\n"
-            "Setting this to \"no\" will ignore the title part of"
+            'Setting this to "no" will ignore the title part of'
             " the subject\nof incoming email messages.\n"),
         (RegExpOption, "refwd_re", r"(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+",
             "Regular expression matching a single reply or forward\n"
@@ -1745,13 +1821,13 @@ always passes, so setting it less than 1 is not recommended."""),
             ["ADD_RECIPIENTS_TO_NOSY"]),
         (Option, "email_sending", "single",
             "Controls the email sending from the nosy reactor. If\n"
-            "\"multiple\" then a separate email is sent to each\n"
-            "recipient. If \"single\" then a single email is sent with\n"
+            '"multiple" then a separate email is sent to each\n'
+            'recipient. If "single" then a single email is sent with\n'
             "each recipient as a CC address."),
         (IntegerNumberGeqZeroOption, "max_attachment_size", sys.maxsize,
             "Attachments larger than the given number of bytes\n"
             "won't be attached to nosy mails. They will be replaced by\n"
-            "a link to the tracker's download page for the file.")
+            "a link to the tracker's download page for the file."),
     ), "Nosy messages sending"),
     ("markdown", (
         (BooleanOption, "break_on_newline", "no",
@@ -1846,7 +1922,7 @@ class Config:
         *not* have aliases!
 
         """
-        if description or not (section in self.section_descriptions):
+        if description or (section not in self.section_descriptions):
             self.section_descriptions[section] = description
         for option_def in options:
             klass = option_def[0]
@@ -1958,7 +2034,7 @@ class Config:
         for (name, letter) in options.items():
             cfg_name = name.upper()
             short_opt = "-" + letter[0]
-            name = name.lower().replace("_", "-")
+            name = name.lower().replace("_", "-")  # noqa: PLW2901 change name
             cfg_names.update({short_opt: cfg_name, "--" + name: cfg_name})
 
             short_options += letter
@@ -1989,7 +2065,7 @@ class Config:
         extra_options = []
         for (opt, arg) in optlist:
             if (opt in booleans):  # and not arg
-                arg = "yes"
+                arg = "yes"  # noqa: PLW2901 -- change arg
             try:
                 name = cfg_names[opt]
             except KeyError:
@@ -2088,25 +2164,25 @@ class Config:
         _tmp_file = os.path.splitext(ini_file)[0]
         _bak_file = _tmp_file + ".bak"
         _tmp_file = _tmp_file + ".tmp"
-        _fp = open(_tmp_file, "wt")
-        _fp.write("# %s configuration file\n" % self._get_name())
-        _fp.write("# Autogenerated at %s\n" % time.asctime())
-        need_set = self._get_unset_options()
-        if need_set:
-            _fp.write("\n# WARNING! Following options need adjustments:\n")
-            for section, options in need_set.items():
-                _fp.write("#  [%s]: %s\n" % (section, ", ".join(options)))
-        for section in self.sections:
-            comment = self.section_descriptions.get(section, None)
-            if comment:
-                _fp.write("\n# ".join([""] + comment.split("\n")) + "\n")
-            else:
-                # no section comment - just leave a blank line between sections
-                _fp.write("\n")
-            _fp.write("[%s]\n" % section)
-            for option in self._get_section_options(section):
-                _fp.write("\n" + self.options[(section, option)].format())
-        _fp.close()
+        with open(_tmp_file, "wt") as _fp:
+            _fp.write("# %s configuration file\n" % self._get_name())
+            _fp.write("# Autogenerated at %s\n" % time.asctime())
+            need_set = self._get_unset_options()
+            if need_set:
+                _fp.write("\n# WARNING! Following options need adjustments:\n")
+                for section, options in need_set.items():
+                    _fp.write("#  [%s]: %s\n" % (section, ", ".join(options)))
+            for section in self.sections:
+                comment = self.section_descriptions.get(section, None)
+                if comment:
+                    _fp.write("\n# ".join([""] + comment.split("\n")) + "\n")
+                else:
+                    # no section comment - just leave a blank line between sections
+                    _fp.write("\n")
+                _fp.write("[%s]\n" % section)
+                for option in self._get_section_options(section):
+                    _fp.write("\n" + self.options[(section, option)].format())
+
         if os.access(ini_file, os.F_OK):
             if os.access(_bak_file, os.F_OK):
                 os.remove(_bak_file)
@@ -2235,12 +2311,12 @@ class CoreConfig(Config):
     def _get_unset_options(self):
         need_set = Config._get_unset_options(self)
         # remove MAIL_PASSWORD if MAIL_USER is empty
-        if "password" in need_set.get("mail", []):
-            if not self["MAIL_USERNAME"]:
-                settings = need_set["mail"]
-                settings.remove("password")
-                if not settings:
-                    del need_set["mail"]
+        if "password" in need_set.get("mail", []) and \
+           not self["MAIL_USERNAME"]:
+            settings = need_set["mail"]
+            settings.remove("password")
+            if not settings:
+                del need_set["mail"]
         return need_set
 
     def _get_name(self):
@@ -2265,10 +2341,9 @@ class CoreConfig(Config):
         _file = self["LOGGING_FILENAME"]
         # set file & level on the roundup logger
         logger = logging.getLogger('roundup')
-        if _file:
-            hdlr = logging.FileHandler(_file)
-        else:
-            hdlr = logging.StreamHandler(sys.stdout)
+        hdlr = logging.FileHandler(_file) if _file else \
+            logging.StreamHandler(sys.stdout)
+
         formatter = logging.Formatter(
             '%(asctime)s %(levelname)s %(message)s')
         hdlr.setFormatter(formatter)

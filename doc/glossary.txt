@@ -32,6 +32,29 @@ Roundup Glossary
       a dash '-', and a number. E.g. ``file-1``. These are used to create
       new instances of a class via the web interface.
 
+   detectors
+      There are two types of detectors that execute Python code in
+      response to changes to the database.
+
+      auditors
+	are run before a permanent change is made to the database.
+	They validate that the change is allowed. For example is
+	the current user allowed to change the status field.
+
+      reactors
+	are run after a change has been committed to the
+	database. They are used to perform actions like sending
+	notification messages, updating other tickets etc.
+
+   html directory
+      there is a directory called **html** in tracker homes. This
+      contains html files (called templates) that are processed by the
+      templating processor (TAL or jinja2) for delivery to a web
+      client. However there is also a ``templates`` setting in the
+      tracker's ``config.ini`` file. The default value for this is
+      ``html``. However any directories listed as templates should be
+      considered an ``html directory``
+
    hyperdb
       a software layer between the user and the underlying :term:`db`.
       It is responsible for mutating the underlying db when the schema
@@ -56,6 +79,31 @@ Roundup Glossary
       tracker. Contained in the file ``schema.py``. The permissions
       for the schema items are usually defined in the same file.
 
+   template
+
+      this term has three meanings depending on context.
+
+      1. files that are processed by a templating engine to
+         produce output suitable for machine or human consumption. For
+         example a template could produce a html page that includes the
+         name of the user.
+
+      2. a property of the request object in the templating
+         system. Templates that are used with a specific class (e.g.
+         ``issue.item.html``) will have this entry set to the middle
+         element (``item`` in this example). For templates like
+         ``home.html`` the element will be set to the empty string.
+
+      3. a **Tracker template**. This is a set of files
+	 used to install a new tracker. Tracker templates define a
+	 tracker with a particular look and feel, :term:`schema`,
+	 permissions model, and :term:`detectors`. Roundup ships with
+	 five templates and people on the net `have produced other
+	 templates`_. You can find the installed location of the
+	 standard Roundup templates using the :ref:`roundup-admin
+	 templates <roundup-admin templates>` command.
+
+
    tracker
       the schema and hyperdb that forms one issue tracker
 
@@ -68,5 +116,6 @@ Roundup Glossary
 
 Back to `Table of Contents`_
 
+.. _`have produced other templates`: https://wiki.roundup-tracker.org/TrackerTemplates
 .. _`Table of Contents`: ../docs.html
 

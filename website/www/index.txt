@@ -32,10 +32,10 @@ Roundup Issue Tracker
 
      <!-- supported python versions: <img src="https://shields.io/pypi/pyversions/roundup"> -->
      <!-- license: <img src="https://img.shields.io/pypi/l/roundup"> -->
-     <!-- changes since 2.2.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.2.0/master?sort=semver"> -->
+     <!-- changes since 2.5.0 <img src="https://img.shields.io/github/commits-since/roundup-tracker/roundup/2.5.0/master?sort=semver"> -->
      <!-- status beta, stable, mature.... <img src="https://img.shields.io/pypi/status/roundup"> -->
      <!-- mozilla observatory <img src="https://img.shields.io/mozilla-observatory/grade/www.roundup-tracker.org?publish"> -->
-     <!-- commits from last named release: <img alt="GitHub commits difference between two branches/tags/commits" src="https://img.shields.io/github/commits-difference/roundup-tracker/roundup?base=2.2.0&head=master">a -->
+     <!-- commits from last named release: <img alt="GitHub commits difference between two branches/tags/commits" src="https://img.shields.io/github/commits-difference/roundup-tracker/roundup?base=2.5.0&head=master">a -->
      <!-- newest tag by date - use for alpha/beta release notifications?
      <img alt="GitHub tag (latest by date)" src="https://img.shields.io/github/v/tag/roundup-tracker/roundup"> -->
 
@@ -79,71 +79,91 @@ in the Software Carpentry “Track” design competition.
 Roundup is highly customizable, allowing users to tailor the system to
 their specific needs and preferences.
 
-The latest stable version of Roundup is 2.3.0, which includes bug
-fixes and additional features compared to the previous 2.2.0 release.
+The latest stable version of Roundup is 2.5.0, which includes bug
+fixes and additional features compared to the previous 2.4.0 release.
 
-Roundup is compatible with Python 2.7.12+ or 3.6+.
+Roundup is compatible with Python 3.7+.
 
 .. admonition:: Python 2 Support
 
-   Despite the initial intention to provide support for Python 2 until
-   2025, several Continuous Integration (CI) services are
-   discontinuing their resources for testing with Python 2. It is
-   recommended to utilize Python 3 for the deployment of new trackers,
-   while existing trackers should be `upgraded to use Python 3.
+   Python 2 support ends with release 2.4.0 (July 2024).
+   Several Continuous Integration (CI) services are
+   discontinuing their resources for testing with Python 2.
+   Use Python 3 for the deployment of new trackers.
+   Existing trackers should be `upgraded to use Python 3.
    <docs/upgrading.html#python-3-support-info>`_
 
 Release Highlights
 ==================
 
-Some improvements from the 2.2.0 release are:
+Some improvements from the 2.4.0 release are:
 
-* Dockerfile demo mode implemented. This allows quick evaluation as
-  well as the ability to spin up a configured tracker to customise.
+* **XSS vulnerability with devel and responsive templates fixed**
 
-* SQLite backends can use WAL mode to reduce blocking between readers
-  and writers improving concurrent use.
+  Just before release an XSS security issue with trackers based on
+  the devel or responsive templates was discovered. The `updating
+  directions`_ include instructions on fixing this issue with the
+  html templates from earlier releases. (CVE-2025-53865)
 
-* Redis can be used for session database with SQLite and dbm
-  backends. Provides a major performance improvement.
+  .. _`updating directions`: docs/upgrading.html#cve-2025-53865
 
-* roundup-mailgw can use OAUTH authentication to SMTP
-  server. (roundup-mailgw command line options changed as a result.)
+* **The property/field advanced search expression feature has been
+  enhanced and documented.**
 
-* Postgres full text index can now be enabled.
+  Search expressions are usually built using the
+  expression editor on the search page. They can be built manually
+  by modifying the search URL but the RPN search expression format
+  was undocumented. Errors in expressions could return results that
+  didn't match the user's intent. This release documents the RPN
+  expression syntax, adds basic expression error detection, and
+  improves error reporting.
 
-* Modifications to in-reply-to threading when there are multiple
-  matches resulting in more predictable handling of messages.
+* **The default hash method for password storage is more secure.**
 
-* Many updates to documentation to make it scannable, useful and
-  work on mobile.
+  We use PBKDF2 with SHA512 (was SHA1). With this change you can
+  lower the value of password_pbkdf2_default_rounds in your
+  tracker's config.ini. Check the upgrading documentation for more
+  info. (Note this may cause longer authentication times, the
+  upgrade doc describes how to downgrade the hash method if required.)
 
-* Admin documentation includes a section on setting up Content
-  Security Policy (CSP) to better secure your Roundup trackers.
+* **Roundup's session token is now prefixed with the magic
+  ``__Secure__`` tag when using HTTPS.**
 
-* REST now allows rate limiting headers to be accessed by client
-  JavaScript.
+  This adds another layer of protection in addition to the
+  existing ``Secure`` property that comes with the session cookie.
 
-* Default number of rounds for PBKDF2 updated to 2M to account for
-  improvements in password crackers and CPU power.
+* **Data authorization can be done at the database level speeding up
+  display of index pages.**
 
-* Support PBKDF2 with SHA512 for password storage to improve
-  resistance to password crackers.
+  Roundup verifies the user's authorization for the data fetched
+  from the database after retrieving data from the database. A new
+  optional ``filter`` argument has been added to Permission
+  objects. When the administrator supplies a filter function, it
+  can boost performance with SQL server databases by pushing
+  selection criteria to the database. By offloading some
+  permission checks to the database, less data is retrieved from
+  the database. This leads to quicker display of index pages with
+  reduced CPU and network traffic.
 
-* Deprecate SSHA password hash function.
+* **The REST endpoint can supply binary data (images, pdf, ...) to
+  its clients.**
 
-* roundup-admin reindex can be done in batches to manage load
-  incurred by reindexing.
+  Requesting binary data from a REST endpoint has been a
+  hassle. Since JSON can't handle binary data, images (and other
+  binary data) need to be encoded. This makes them significantly
+  larger. The workaround was to use a non-REST endpoint for fetching
+  non-text attachments. This update lets the REST endpoint return
+  raw message or file content data. You can utilize the
+  ``binary_content`` endpoint along with an appropriate ``Accept``
+  header (e.g. ``image/jpeg``) in your request.
 
-* roundup-admin can list available templates and their installed
-  locations. This is useful when installing via pip or in a docker
-  container as supporting files are not stored in the usual locations
-  like /usr/share/roundup.
+* **Extract translatable strings from your tracker easily.**
 
-* Crash fixes in detector handling, configuration handling, fix for
-  sorting of multilinks.
+  The ``roundup-gettext`` tool has been enhanced to extract
+  translatable strings from detectors and extensions. This will
+  simplify the process of translating your trackers.
 
-More info on the 53 changes can be found in the `change notes`_.
+More info on the 42 changes can be found in the `change notes`_.
 
 Roundup Use Cases
 =================
@@ -177,16 +197,17 @@ install Roundup. After you've unpacked the source, just run "``python
 demo.py``" and load up the URL it prints out!
 
 Follow the source gratification mode with these steps (change the
-``-2.3.0`` version identifier to match your downloaded file).
+``-2.4.0`` version identifier to match your downloaded file).
 
 1. ``python3 -m pip download roundup``
-2. ``tar -xzvf roundup-2.3.0.tar.gz``
+2. ``tar -xzvf roundup-2.4.0.tar.gz``
 
-   * if you don't have a tar command (e.g windows), use:
-     ``python -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.3.0.tar.gz``
+   * if you don't have a tar command (e.g windows), use::
+
+       python -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.4.0.tar.gz
 
 
-3. ``cd roundup-2.3.0``
+3. ``cd roundup-2.4.0``
 4. ``python3 demo.py``
 
 (The source download can also be used to `create a custom Docker

@@ -1,3 +1,4 @@
+# ruff: noqa: ARG001
 try:
     from secrets import choice, randbelow, token_bytes
 
@@ -20,6 +21,7 @@ except ImportError:
         # don't completely throw away the existing state, but add some
         # more random state to the existing state
         def seed(v=None):
+            # ruff: noqa: PLC0415
             import os
             import time
             _r.seed((_r.getstate(),
@@ -39,9 +41,9 @@ except ImportError:
         return _r.randint(0, i - 1)
 
     if hasattr(_os, 'urandom'):
-        def token_bytes(l):
-            return _os.urandom(l)
+        def token_bytes(size):
+            return _os.urandom(size)
     else:
-        def token_bytes(l):
-            _bchr = chr if str == bytes else lambda x: bytes((x,))
-            return b''.join([_bchr(_r.getrandbits(8)) for i in range(l)])
+        def token_bytes(size):
+            _bchr = chr if str is bytes else lambda x: bytes((x,))
+            return b''.join([_bchr(_r.getrandbits(8)) for i in range(size)])

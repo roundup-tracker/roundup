@@ -223,6 +223,20 @@ Additional notes for each keyword:
   ``-----END CERTIFICATE-----``.
   If not specified, roundup will generate a temporary, self-signed certificate
   for use.
+**loghttpvialogger** section
+  If you:
+
+    * have **loghttpvialogger** enabled
+    * use **pidfile**
+    * use a logging config file in the tracker's config.ini
+
+  it is essential to specify absolute paths for log files in the
+  tracker's logging.config file.  The use of pidfile causes the
+  server to switch to the root directory ('/'). As a result
+  relative paths in the logging ini configuration file (as
+  opposed to the tracker's config.ini) will be written to the
+  system's root directory. The access error will cause the server
+  to exit.
 **trackers** section
   Each line denotes a mapping from a URL component to a tracker home.
   Make sure the name part doesn't include any url-unsafe characters like
@@ -243,6 +257,8 @@ move the exsiting config.ini to config.bak and replace it with the
 roundup-server's config.ini. This will make the tracker in the
 directory fail to start util the original config.ini is restored.
 
+.. _configuring-compression:
+
 Configuring Compression
 =======================
 
@@ -258,6 +274,8 @@ your proxy (e.g. nginx or apache) or wsgi server (uwsgi) is configured
 to compress responses on the fly. The python standard library includes
 gzip support. For brotli or zstd you will need to install packages. See
 the `installation documentation`_ for details.
+
+.. index:: single: interfaces.py; configuring http compression
 
 Some assets will not be compressed on the fly. Assets with mime types
 of "image/png" or "image/jpeg" will not be compressed. You
@@ -320,6 +338,72 @@ get the gzip version and not a brotli compressed version. This
 mechanism allows the admin to allow use of brotli and zstd for
 dynamic content, but not for static content.
 
+.. _browser_handling_attached_files:
+
+.. index:: single: interfaces.py; Controlling browser handling of attached files
+
+Controlling Browser Handling of Attached Files
+==============================================
+
+You may be aware of the ``allow_html_file`` `config.ini setting
+<reference.html#config-ini-section-web>`_. When set to yes, it permits
+html files to be attached and displayed in the browser as html
+files. The underlying mechanism used to enable/disable attaching HTML
+is exposed using ``interfaces.py``.
+
+Similar to ``Client.precompressed_mime_types`` above, there is a
+``Client.mime_type_allowlist``. If a mime type is present in this
+list, an attachment with this mime type is served to the browser. If
+the mime type is not present, the mime type is set to
+``application/octet-stream`` which causes the browser to download the
+attachment to a file.
+
+In release 2.4.0, the mime type ``application/pdf`` was removed from
+the precompressed_mime_types list. This prevents the browser from
+executing scripts that may be included in the PDF file. If you trust
+the individuals uploading PDF files to your tracker and wish to allow
+viewing PDF files from your tracker, you can do so by editing your
+tracker's "interfaces.py" file. Adding::
+
+  from roundup.cgi.client import Client
+  Client.mime_type_allowlist.append('application/pdf')
+
+will permit the PDF files to be viewed in the browser rather than
+downloaded to a file.
+
+Similarly, you can remove a mime type (e.g. audio/oog) using::
+
+  from roundup.cgi.client import Client
+  Client.mime_type_allowlist.remove('audio/oog')
+
+which will force the browser to save the attachment to a file rather
+than playing the audio file.
+
+.. index:: single: interfaces.py; setting REST maximum result limit
+
+Configuring REST Maximum Result Limit
+=====================================
+
+To prevent denial of service (DOS) and limit user wait time for an
+unbounded request, the REST endpoint has a maximum limit on the number
+of rows that can be returned. By default, this is set to 10 million.
+This setting applies to all users of the REST interface. If you want
+to change this limit, you can add the following code to the
+``interfaces.py`` file in your tracker::
+
+    # change max response rows
+    from roundup.rest import RestfulInstance
+    RestfulInstance.max_response_row_size = 26
+
+This code will set the maximum number of rows to 25 (one less than the
+value). Note that this setting is rarely used and is not available in
+the tracker's ``config.ini`` file. Setting it through this mechanism
+allows you to enter a string or number that may break Roundup, such as
+"asdf" or 0. In general, it is recommended to keep the limit at its
+default value. However, this option is available for cases when a
+request requires more than 10 million rows and pagination using
+``@page_index`` and ``@page_size=9999999`` is not possible.
+
 Adding a Web Content Security Policy (CSP)
 ==========================================
 
@@ -373,6 +457,8 @@ when invoked.
 More secure CSPs can also be created. However because of the ability
 to customise the web interface, it is difficult to provide guidance.
 
+.. _dynamic_csp:
+
 Dynamic CSP
 -----------
 
@@ -399,7 +485,7 @@ directory that generates the CSP on the fly. For example::
     }
 
 
-    def AddHtmlHeaders(client, header_dict=None):
+    def AddHtmlHeaders(self, header_dict=None):
 	''' Generate https headers from dict use default security headers
 
 	    Setting the header with a value of None will not inject the
@@ -407,36 +493,41 @@ directory that generates the CSP on the fly. For example::
 
 	    Header values will be formatted with a dictionary including a
 	    nonce. Use to set a nonce for inline scripts.
+
+	    self is an instance of the TemplatingUtilities class, so
+	    you have access to self.client as well as any functions added
+	    using registerUtil.
 	'''
 	try:
-	    if client.client_nonce is None:
+	    if self.client.client_nonce is None:
 		# logger.warning("client_nonce is None")
-		client.client_nonce = client.session_api._gen_sid()
+		self.client.client_nonce = self.client.session_api._gen_sid()
 	except AttributeError:
-	    # client.client_nonce doesn't exist, create it
+	    # self.client.client_nonce doesn't exist, create it
 	    # logger.warning("client_nonce does not exist, creating")
-	    client.client_nonce = client.session_api._gen_sid()
+	    self.client.client_nonce = client.session_api._gen_sid()
 
 	headers = default_security_headers.copy()
 	if isinstance(header_dict, dict):
             headers.update(header_dict)
 
-	client_headers = client.additional_headers
+	client_headers = self.client.additional_headers
 
 	for header, value in list(headers.items()):
 	    if value is None:
 		continue
 	    client_headers[header] = value.format(
-                nonce=client.client_nonce)
+                nonce=self.client.client_nonce)
 
     def init(instance):
-        instance.registerUtil('AddHtmlHeaders', AddHtmlHeaders)
+        # Note the use of the new (in version 2.5) registerUtilMethod
+        instance.registerUtilMethod('AddHtmlHeaders', AddHtmlHeaders)
 
 
 Adding the following to ``page.html`` right after the opening
 ``<html....`>`` tag::
 
-   <tal:code tal:content="python:utils.AddHtmlHeaders(request.client)" />
+   <tal:code tal:content="python:utils.AddHtmlHeaders()" />
 
 will invoke ``AddHtmlHeaders()`` to add the CSP header with the nonce.
 
@@ -452,6 +543,42 @@ to::
         src="javascript.js"></script>
 
 for each script, object or style tag.
+
+If you are using a version of Roundup before version 2.5, you need to
+replace ``instance.registerUtilMethod`` with
+``instance.registerUtil``. For example::
+
+    def init(instance):
+        instance.registerUtil('AddHtmlHeaders', AddHtmlHeaders)
+
+The AddHtmlHeaders function needs to be changed so that ``self.client``
+is replaced by ``client``::
+
+    # replace self parameter with client
+    def AddHtmlHeaders(client, header_dict=None):
+	''' Generate https headers from dict use default security headers
+
+	    Setting the header with a value of None will not inject the
+	    header and can override the default set.
+
+	    Header values will be formatted with a dictionary including a
+	    nonce. Use to set a nonce for inline scripts.
+	'''
+
+	### Then change all references to self.client to client
+
+	try:
+	    if client.client_nonce is None:  # note self.client -> client
+		# logger.warning("client_nonce is None")
+		client.client_nonce = self.client.session_api._gen_sid()
+
+	...
+
+Lastly the client must be passed explicitly when calling
+AddHtmlHeaders. The call looks like::
+
+   <tal:code tal:content="python:utils.AddHtmlHeaders(request.client)" />
+
 
 Remediating ``unsafe-inline``
 -----------------------------
@@ -486,6 +613,374 @@ the trusted function in base_javascript to replace the ignored ``onX``
 handlers.
 
 .. _CSP: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+
+Classhelper Web Component
+=========================
+
+Version 2.4.0 provides a new classhelper popup written as a web
+component. By installing 3 files and editing the tracker's templates
+you can enable the new component.
+
+The `development of this component was done by team-03
+<https://github.com/UMB-CS-682-Team-03/tracker>`_ of the
+Spring 2024 CS682 graduate software engineering SDL capstone
+class at the University of Massachusetts - Boston. Their
+documentation is copied/adapted below.
+
+File Installation
+-----------------
+
+There are three files to install in your tracker. You can
+copy them from the template directory for the classic
+tracker. The location of the template file can be obtained
+by running: ``roundup-admin templates`` and looking for the
+path value of the classic template. If the path value is
+``/path/to/template``, copy::
+
+ /path/to/template/html/classhelper.js
+ /path/to/template/html/classhelper.css
+ /path/to/template/html/_generic.translation
+
+to your tracker's html directory.
+
+Wrapping the Classic Classhelper
+--------------------------------
+
+To allow your users to select items in the web interface
+using the new classhelper, you should edit the template files
+in the ``html/`` subdirectory of your tracker. Where you see
+code like::
+
+ <th i18n:translate="">Superseder</th>
+  <td>
+    <span tal:replace="structure
+          python:context.superseder.field(showid=1,size=20)" />
+    <span tal:condition="context/is_edit_ok"
+	  tal:replace="structure
+	               python:db.issue.classhelp('id,title',
+		       property='superseder', pagesize=100)" />
+     [...]
+ </td>
+
+change it to wrap the classhelp span like this::
+
+ <th i18n:translate="">Superseder</th>
+  <td>
+    <span tal:replace="structure
+          python:context.superseder.field(showid=1,size=20)" />
+    <roundup-classhelper
+      data-popup-title="Superseder Classhelper - {itemDesignator}"
+      data-search-with="title,status,keyword[]-name">
+      <span tal:condition="context/is_edit_ok"
+	    tal:replace="structure
+                         python:db.issue.classhelp('id,title',
+                         property='superseder', pagesize=100)" />
+    </roundup-classhelper>
+     [...]
+ </td>
+
+which displays a three part classhelper.
+
+  1. the search pane includes a text search box for the `title`
+     and `status` properties and a dropdown for the keyword property,
+     sorted by name in descending order.
+  2. the selection pane will show 100 search results per page.
+     It also allows the user to move to the next or previous result
+     page.
+  3. the accumulator at the bottom shows all the selected items. It
+     also has buttons to accept the items or cancel the
+     classhelper, leaving the original page unchanged.
+
+Note that the user class is a little different because users without
+an Admin role can't search for a user by Role. So we hide the Role
+search element for non admin users. Starting with::
+
+  <th i18n:translate="">Nosy List</th>
+  <td>
+    <span tal:replace="structure context/nosy/field" />
+    <span tal:condition="context/is_edit_ok" tal:replace="structure
+	  python:db.user.classhelp('username,realname,address',
+	  property='nosy', width='600'" />
+  </td>
+
+wrap the classhelp span with ``<roundup-classhelper>`` like::
+
+  <th i18n:translate="">Nosy List</th>
+  <td>
+    <span tal:replace="structure context/nosy/field" />
+    <roundup-classhelper tal:define="search string:name,phone,roles[]"
+			 tal:attributes="data-search-with python:search
+			 if request.user.hasRole('Admin') else
+			 ','.join(search.split(',')[:-1])">
+      <span tal:condition="context/is_edit_ok" tal:replace="structure
+	    python:db.user.classhelp('username,realname,address',
+	    property='nosy', width='600'" />
+    </roundup-classhelper>
+  </td>
+
+The ``','.join(search.split(',')[:-1])`` removes the last element of
+the search string (``roles[]``) if the user does not have the Admin
+role.
+
+Loading the <roundup-classhelper> Script
+----------------------------------------
+
+To make the ``<roundup-classhelper>`` wrappers work, you
+have to load the classhelper.js script. Add the following
+html script tag in the head section of page.html::
+
+  <script type="text/javascript" src="@@file/classhelper.js">
+  </script>
+
+You can place it anywhere before ``</head>``. This will make
+it available on all pages.
+
+The script will also work if it is loaded at the end of the
+body. It can also be added to the ``more-javascript`` slot
+in one of the templates (see ``user.item.html`` for an
+example) if you don't want the overhead of loading the script
+on every page.
+
+You may want to minimize and precompress the file. Using
+dynamic compression, the file is 10k when compressed with
+gzip (8k with brotli). If you minimize the file first with
+`rjsmin <https://pypi.org/project/rjsmin/>`_ and then
+compress it, it's about 6k. See the information about using
+precompressed files in the :ref:`section on compression
+<configuring-compression>`.
+
+<roundup-classhelper> configuration
+-----------------------------------
+
+There are two attributes used to configure the classhelper.
+
+data-popup-title:
+  * this attribute is optional. A reasonable default is
+    provided if it is missing.
+  * Adding ``data-popup-title`` changes the title of the popup
+    window with the value of the attribute.
+  * ``{itemDesignator}`` can be used inside the attribute value
+    to replace it with the current classhelper usage context.
+    E.G. ``data-popup-title="Nosy List Classhelper - {itemDesignator}"``
+    will display the popup window title as ``Nosy List Classhelper - issue24``
+
+data-search-with:
+  * this attribute is optional. If it is not set, a search
+    panel is not created to allow the user to search within
+    the class.
+  * Adding ``data-search-with`` specifies the fields that can
+    be used for searching. For example when invoking the
+    classhelper for the issue class, using
+    ``data-search-with="title,status,keyword"`` wil enable
+    three search fields.
+  * The search can be customized using the following syntax:
+
+    * Adding ``[]`` at then end of a field (``"status[]"``)
+      will displays a dropdown for the "status" field
+      listing all the values the user can access. E.G.::
+
+         <roundup-classhelper
+             data-search-with="title,status[],keyword[]">
+           <span tal:condition="context/is_edit_ok"
+             tal:replace="structure
+             python:db.issue.classhelp('id,title',
+             property='superseder', pagesize=100)" />
+         </roundup-classhelper>
+
+      will create a search pane with a text search for title
+      and dropdowns for status and keyword.
+
+    * Adding a sort key after the ``[]`` allows you to
+      select the order of the elements in the dropdown. For
+      example ``keyword[]+name`` sorts the keyword
+      dropdown in ascending order by name. While
+      ``keyword[]-name`` sorts the keyword dropdown in
+      descending order by name. If the sort order is not
+      specified, the default order for the class is used.
+
+<roundup-classhelper> styling
+-----------------------------
+
+The roundup-classhelper component uses minimal styling so it
+can blend in with most trackers. If you want to change the
+styling, you can modify the classhelper.css file in the html
+directory. Even though roundup-classhelper is a web
+component, it doesn't use the shadow DOM. If you don't know
+what this means, it just means that it's easy to style.
+
+Getting the web component to load changes to the css file is
+a bit tricky. The browser caches the old file and you have
+to resort to tricks to make it get a new copy of the file.
+
+One way to do this is to open to the ``classhelper.css``
+file in your browser and force refresh it. To do this:
+
+   1. Open the home page for your Roundup issue tracker in a
+      web browser.
+
+   2. In the address bar, append ``@@file/classhelper.css``
+      to the end of your Roundup URL. For example, if your
+      Roundup URL is ``https://example.com/tracker/``, the
+      URL you should visit would be
+      ``https://example.com/tracker/@@file/classhelper.css``.
+
+   3. This will open the ``classhelper.css`` file in your browser.
+
+   4. Press ``Ctrl+Shift+R`` (on Windows and Linux) or
+      ``Cmd+Shift+R`` (on macOS). This triggers a hard
+      refresh of the page, which forces the browser to
+      reload the file and associated resources from the
+      server.
+
+This should resolve any issues caused by cached or outdated
+files. It is possible that you have to open devtools and set
+the disable cache option in the network panel in extreme
+cases.
+
+Also during development, you might want to `set a very low
+cache time
+<customizing.html#changing-cache-control-headers>`_ for
+classhelper.css using something like::
+
+   Client.Cache_Control['classhelper.css'] = "public, max-age=10"
+
+
+Translations
+------------
+
+To set up translations for the <roundup-classhelper>
+component, follow these steps.
+
+  1. Create a ``messages.pot`` file by running
+     ``roundup-gettext <tracker_home_directory>``. This
+     creates ``locale/messages.pot`` in your tracker's home
+     directory. It extracts all translatable strings from
+     your tracker. We will use it as a base template for the
+     new strings you want to translate.
+  2. See if you already have a ``.po`` translation file for
+     your language in the tracker's locale/ directory. If you
+     don't, copy ``messages.pot`` to a .po file for the
+     language you want to translate. For example German
+     would be at ``de.po`` English would be at ``en.po``
+     (for example if you want to change the ``apply`` button
+     to say ``Do It``.
+
+  3. Edit the new .po file. After the header, add the
+     translation entries for the <roundup-classhelper>
+     component. For example `next` and `submit` are
+     displayed in English when the rest of the interface is
+     in German. Add::
+
+        msgid "submit"
+        msgstr "gehen"
+
+        msgid "next"
+        msgstr "nächste"
+
+        msgid "name"
+        msgstr "name"
+
+     Note: the value for `msgid` is case sensitive. You can
+     see the msgid for static strings by looking for
+     ``CLASSHELPER_TRANSLATION_KEYWORDS`` in classhelper.js.
+
+  4. Save the .po file.
+
+  5. Restart your Roundup instance.
+
+This should display the missing translations, for more
+details refer to the `translation (i18n) section of the
+developers documentation
+<developers.html#extracting-translatable-messages>`_.
+
+The default title used for read only popups can be changed by using
+the translation mechanism. Use the following::
+
+  msgid "Info on {className} - {itemDesignator} - Classhelper"
+  msgstr "{itemDesignator} - info on {className}"
+
+in ``en.po`` to reformat the title for the English language. Note that
+``{classname}`` is only supported in the default title.
+
+In addition to the default template you can translate a title set
+using ``data-popup-title`` by matching the template as the msgid.
+Using an example above::
+
+  msgid "Nosy List Classhelper - {itemDesignator}"
+  msgstr "Nosy List Klassenhelfer - {itemDesignator}"
+
+placed in ``de.po`` will translate the title into German.
+
+Troubleshooting
+---------------
+
+The roundup-classhelper will fallback to using the classic
+classhelper if:
+
+  * the user doesn't have REST access
+  * the browser doesn't support web components
+
+It will display an alert modal dialog to the user before triggering
+the classic classhelper as a fallback. A detailed error will be
+printed to the browser console. The console is visible in devtools and
+can be opened by pressing the ``F12`` key.
+
+You can disable the classhelper on a per URL basis by adding
+``#classhelper-wc-toggle`` to the end of the URL. This will prevent
+the web component from starting up.
+
+Also you can set ``DISABLE_CLASSHELP = true`` at the top of
+classhelper.js to disable the classhelper without having to make any
+changes to your templates.
+
+Advanced Configuration
+----------------------
+
+The classhelper.js file has a few tweakable options for use
+by advanced users. The endpoint for the roles list requires
+the user to have Admin rights. You can add your own roles
+endpoint with a different authorization mechanism.  The
+following code can be added to your tracker's interfaces.py.
+You can create this file if it doesn't exist. This code
+creates a new REST endpoint at ``/rest/roles``::
+
+  from roundup.rest import Routing, RestfulInstance, _data_decorator
+
+  class RestfulInstance:
+
+	  @Routing.route("/roles", 'GET')
+	  @_data_decorator
+	  def get_roles(self, input):
+	      """Return all defined roles. The User class property
+		 roles is a string but simulate it as a MultiLink
+		 to an actual Roles class.
+	      """
+	      return 200, {"collection":
+		  [{"id": rolename,"name": rolename}
+		      for rolename in list(self.db.security.role.keys())]}
+
+
+See the `REST documentation <rest.html>`_ for details on
+using ``interfaces.py`` to add new REST endpoints.
+
+The code above allows any user with REST access to see all
+the roles defined in the tracker.
+
+To make classhelper.js use this new endpoint, look for::
+
+
+  const ALTERNATIVE_DROPDOWN_PATHNAMES = {
+    "roles": "/rest/data/user/roles"
+  }
+
+and change it to::
+
+  const ALTERNATIVE_DROPDOWN_PATHNAMES = {
+    "roles": "/rest/roles"
+  }
+
+Users may have to perform a hard reload to cache this change
+on their system.
 
 Configuring native-fts Full Text Search
 =======================================
@@ -555,8 +1050,8 @@ languages are supported.
 2. tsquery - described at the beginning of `Parsing Queries`_ with
    to_tsquery. It is enabled by starting the search phrase with ``ts:``.
 
-.. _Parsing Queries: \
-   https://www.postgresql.org/docs/14/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
+.. _Parsing Queries:
+    https://www.postgresql.org/docs/current/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES
 
 Websearch provides a more natural style of search and supports:
 
@@ -602,19 +1097,19 @@ requires reindexing.
 The `configuration list can be obtained using using psql's`_
 ``\dF`` command.
 
-.. _configuration list can be obtained using using psql's: \
+.. _configuration list can be obtained using using psql's:
     https://www.postgresql.org/docs/current/textsearch-psql.html
 
 Roundup includes a hardcoded list for all languages supported by
 PostgreSQL 14.1. The list includes 5 custom "languages"
 ``custom1`` ... ``custom5`` to allow you to set up your `own textsearch
-configuration`_ using one of the custom names. Depending on your
+configuration`_ using one of the custom names.  Depending on your
 PostgreSQL version, we may allow an invalid language to be configured.
 You will see an error about ``text search configuration ... does not
 exist``.
 
-.. _own textsearch configuration: \
-  https://www.postgresql.org/docs/14/textsearch-configuration.html
+.. _own textsearch configuration:
+    https://www.postgresql.org/docs/current/textsearch-configuration.html
 
 It may be possible to append to this list using the tracker's
 interfaces.py. For details, see ``test/test_indexer.py`` in the
@@ -690,7 +1185,7 @@ sqlite databases for storing the session and otk data.
 The following table shows which primary databases support
 different session database backends:
 
-.. table:: D - default if unconfigured, X - compatible choice
+.. table:: D - default if unconfigured, + - compatible choice
   :class: captionbelow
 
   +---------------+--------+--------+-------+-------+------------+
@@ -698,9 +1193,9 @@ different session database backends:
   +---------------+--------+--------+-------+-------+------------+
   |primary db     | anydbm | sqlite | redis | mysql | postgresql |
   +===============+========+========+=======+=======+============+
-  |anydbm         |    D   |        |   X   |       |            |
+  |anydbm         |    D   |        |   \+  |       |            |
   +---------------+--------+--------+-------+-------+------------+
-  |sqlite         |    X   |    D   |   X   |       |            |
+  |sqlite         |    \+  |    D   |   \+  |       |            |
   +---------------+--------+--------+-------+-------+------------+
   |mysql          |        |        |       |   D   |            |
   +---------------+--------+--------+-------+-------+------------+
@@ -751,7 +1246,7 @@ SSL certificate. `Securing Redis`_ has more details.
 
 .. _Redis: https://redis.io
 .. _redis-py: https://pypi.org/project/redis/
-.. _Securing Redis: https://redis.io/docs/manual/security/
+.. _Securing Redis: https://redis.io/docs/latest/operate/oss_and_stack/management/security/
 
 
 Users and Security
@@ -914,10 +1409,14 @@ Steps you may take:
 
 2. If you're using an RDBMS backend, make a backup of its contents now.
 3. Make a backup of the tracker home itself.
-4. Stop the tracker web and email frontends.
-5. Install the new version of the software::
+4. Stop the tracker web, email frontends and any scheduled
+   (cron) jobs that access the tracker.
+5. Install the new version of the software in a new virtual
+   environment::
 
-    python setup.py install
+    python3 -m venv /path/to/env
+    . /path/to/env/bin/activate
+    python3 pip install roundup
 
 6. Follow the steps in the `upgrading documentation`_ for all the
    versions between your original version and the new version.
@@ -1230,6 +1729,8 @@ IMAPS_OAUTH:
    single: roundup-admin; man page reference
    pair: roundup-admin; designator
 
+.. _`roundup-admin templates`:
+
 Using roundup-admin
 ===================
 
@@ -1245,7 +1746,9 @@ Examples above show how to use it to:
 * creating a new user from the command line
 * list/find users in the tracker
 
-The basic usage is::
+The basic usage is:
+
+.. code-block:: text
 
  Usage: roundup-admin [options] [<command> <arguments>]
 
@@ -1282,7 +1785,7 @@ The basic usage is::
   genconfig <filename>
   get property designator[,designator]*
   help topic
-  history designator [skipquiet]
+  history designator [skipquiet] [raw]
   import import_dir
   importtables export_dir
   initialise [adminpw]
@@ -1406,6 +1909,33 @@ and feed it to roundup-admin on standard input. E.G.
 (for more details see https://issues.roundup-tracker.org/issue2550789.)
 
 .. index:: ! roundup-admin; usage in scripts
+
+Using Interactively
+-------------------
+
+You can edit the command line using left/right arrow keys to move the
+cursor. Using the up/down arrow keys moves among commands. It will
+save your commands between roundup-admin sessions. This is supported
+on Unix/Linux and Mac's. On windows you should install the pyreadline3
+package (see `installation documentation`_).
+
+Using the ``history_length`` pragma you can set the saved history size
+for just one session.
+
+You can add initialization commands to ``~/.roundup_admin_rlrc``. It
+will be loaded when roundup-admin starts. This is the mechanism to
+persistently set the number of history commands, change editing modes
+(Vi vs. Emacs). Note that redefining the history file will not work.
+
+If you are using GNU readline, ``set history-size 10``. If your
+installation uses libedit (macs), it should be possible to
+persistently set the history size using ``history size
+10``. Pyreadline3 can set history length using
+``history_length(10)``. See the documentation for example syntax:
+https://pythonhosted.org/pyreadline/usage.html#configuration-file.
+
+History is saved to the file ``.roundup_admin_history`` in your home
+directory (for windows usually ``\Users\<username>``.
 
 Using with the shell
 --------------------
@@ -1552,6 +2082,14 @@ used differently. You can't directly compare them.
     Importing and setting numbers. It's not a problem. However setting
     can (and must) always be higher than the Importing number.
 
+Interactive Help
+----------------
+
+The help command produces the following output for all the commands.
+
+
+.. raw:: html
+   :file: admin_help.html
 
 .. _`customisation documentation`: customizing.html
 .. _`reference documentation`: reference.html

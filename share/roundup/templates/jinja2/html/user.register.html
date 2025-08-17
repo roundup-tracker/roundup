@@ -32,13 +32,13 @@
       <tr>
         <th>{% trans %}Login Password{% endtrans %}</th>
         <td>
-          <input type='password' name='password' required>
+          <input spellcheck='false' type='password' name='password' required>
         </td>
       </tr>
       <tr>
         <th>{% trans %}Confirm Password{% endtrans %}</th>
         <td>
-          <input type='password' name='@confirm@password'>
+          <input spellcheck='false' type='password' name='@confirm@password'>
         </td>
       </tr>
       {% if request.user.hasPermission('Web Roles') %}

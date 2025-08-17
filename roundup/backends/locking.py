@@ -30,6 +30,7 @@ from roundup.backends import portalocker
 
 def acquire_lock(path, block=1):
     '''Acquire a lock for the given path
+       File is closed in caller not by unlock.
     '''
     file = open(path, 'w')
     if block:

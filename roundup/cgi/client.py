@@ -15,36 +15,48 @@ import socket
 import stat
 import sys
 import time
-
 from email.mime.multipart import MIMEMultipart
 from traceback import format_exc
+
 try:
     from OpenSSL.SSL import SysCallError
 except ImportError:
     class SysCallError(Exception):
         pass
 
-from roundup.anypy.cgi_ import cgi
 import roundup.anypy.email_  # noqa: F401  -- patches for email library code
-import roundup.anypy.random_ as random_   # quality of random checked below
-
 from roundup import hyperdb, rest, xmlrpc
 
-from roundup.anypy import http_, urllib_, xmlrpc_
-from roundup.anypy.cookie_ import BaseCookie, CookieError, get_cookie_date, \
-    SimpleCookie
+# quality of random checked below
+from roundup.anypy import http_, random_, urllib_, xmlrpc_
+from roundup.anypy.cgi_ import cgi
+from roundup.anypy.cookie_ import BaseCookie, CookieError, SimpleCookie, get_cookie_date
 from roundup.anypy.html import html_escape
-from roundup.anypy.strings import s2b, b2s, bs2b, uchr, is_us
-
-from roundup.cgi import accept_language, actions, cgitb, templating, \
-    TranslationService
+from roundup.anypy.strings import b2s, bs2b, is_us, s2b, uchr
+from roundup.cgi import TranslationService, accept_language, actions, cgitb, templating
 from roundup.cgi.exceptions import (
-    DetectorError, FormError, IndexerQueryError, NotFound, NotModified,
-    Redirect, SendFile, SendStaticFile, SeriousError)
+    DetectorError,
+    FormError,
+    IndexerQueryError,
+    NotFound,
+    NotModified,
+    RateLimitExceeded,
+    Reauth,
+    Redirect,
+    SendFile,
+    SendStaticFile,
+    SeriousError,
+)
 from roundup.cgi.form_parser import FormParser
+from roundup.exceptions import (
+    LoginError,
+    Reject,
+    RejectRaw,
+    Unauthorised,
+    UsageError,
+)
 
-from roundup.exceptions import LoginError, RateLimitExceeded, Reject, \
-                               RejectRaw, Unauthorised, UsageError
+from roundup.mlink_expr import ExpressionError
 
 from roundup.mailer import Mailer, MessageSendError
 
@@ -93,6 +105,9 @@ def add_message(msg_list, msg, escape=True):
     msg_list.append(msg)
     return msg_list  # for unittests
 
+# if set to False via interfaces.py do not log a warning when
+# xmlrpc is used and defusedxml is not installed.
+WARN_FOR_MISSING_DEFUSEDXML = True
 
 default_err_msg = ''"""<html><head><title>An error has occurred</title></head>
 <body><h1>An error has occurred</h1>
@@ -182,8 +197,12 @@ class Session:
         self.session_db = client.db.getSessionManager()
 
         # parse cookies for session id
-        self.cookie_name = 'roundup_session_%s' % \
-            re.sub('[^a-zA-Z]', '', client.instance.config.TRACKER_NAME)
+        if self.client.secure:
+            cookie_template = '__Secure-roundup_session_%s'
+        else:
+            cookie_template = 'roundup_session_%s'
+        self.cookie_name = cookie_template % \
+                re.sub('[^a-zA-Z]', '', client.instance.config.TRACKER_NAME)
         cookies = LiberalCookie(client.env.get('HTTP_COOKIE', ''))
         if self.cookie_name in cookies:
             try:
@@ -280,10 +299,10 @@ class Client:
       should be sent to the client
     - "response_code" is the HTTP response code to send to the client
     - "translator" is TranslationService instance
-    - "client-nonce" is a unique value for this client connection. Can be
-       used as a nonce for CSP headers and to sign javascript code
-       presented to the browser. This is different from the CSRF nonces
-       and can not be used for anti-csrf measures.
+    - "clientnonce" is a unique value for this client connection. Can be
+      used as a nonce for CSP headers and to sign javascript code
+      presented to the browser. This is different from the CSRF nonces
+      and can not be used for anti-csrf measures.
 
     During the processing of a request, the following attributes are used:
 
@@ -380,6 +399,32 @@ class Client:
     except ImportError:
         pass
 
+    # everything not here is served as 'application/octet-stream'
+    # Moved to class so it can be modified from interfaces.py
+    # Adding:
+    #  from roundup.cgi.client import Client
+    #  Client.mime_type_allowlist.append('application/pdf')
+    # will permit pdf files to be displayed in the browser rather than
+    # downloaded to a file.
+
+    mime_type_allowlist = [
+        'text/plain',
+        'text/x-csrc',    # .c
+        'text/x-chdr',    # .h
+        'text/x-patch',   # .patch and .diff
+        'text/x-python',  # .py
+        'text/xml',
+        'text/csv',
+        'text/css',
+        'image/gif',
+        'image/jpeg',
+        'image/png',
+        'image/svg+xml',
+        'image/webp',
+        'audio/ogg',
+        'video/webm',
+    ]
+
     # mime types of files that are already compressed and should not be
     # compressed on the fly. Can be extended/reduced using interfaces.py.
     # This excludes types from being compressed. Should we have a list
@@ -449,23 +494,36 @@ class Client:
             # will never arrive.
             # If not defined, set CONTENT_LENGTH to 0 so it doesn't
             # hang reading the data.
-            if self.env['REQUEST_METHOD'] in ['OPTIONS', 'DELETE', 'PATCH']:
-                if 'CONTENT_LENGTH' not in self.env:
-                    self.env['CONTENT_LENGTH'] = 0
-                    logger.debug("Setting CONTENT_LENGTH to 0 for method: %s",
-                                 self.env['REQUEST_METHOD'])
+            if self.env['REQUEST_METHOD'] in ['OPTIONS', 'DELETE', 'PATCH'] \
+                and 'CONTENT_LENGTH' not in self.env:
+                self.env['CONTENT_LENGTH'] = 0
+                logger.debug("Setting CONTENT_LENGTH to 0 for method: %s",
+                             self.env['REQUEST_METHOD'])
 
             # cgi.FieldStorage must save all data as
             # binary/bytes. Subclass BinaryFieldStorage does this.
             # It's a workaround for a bug in cgi.FieldStorage. See class
             # def for details.
             self.form = BinaryFieldStorage(fp=request.rfile, environ=env)
-            # In some case (e.g. content-type application/xml), cgi
-            # will not parse anything. Fake a list property in this case
-            if self.form.list is None:
-                self.form.list = []
         else:
             self.form = form
+
+        # When the CONTENT-TYPE is not 'application/x-www-form-urlencoded':
+        # or multipart/*, cgi.(Mini)FieldStorage sets the list property to
+        # None. Initialize an empty list property in this case so we can
+        # query the list in all cases.
+        try:
+            if (self.form.list is None):
+                self.form.list = []
+        except AttributeError:
+            # self.form should always be some type of
+            # FieldStorage. If we get an AttributeError,
+            # print what the form is.
+            # FIXME: plan on removing this in 2028 to improve
+            # performance if there are no reports of it being triggered.
+            logger.error(("Invalid self.form found (please report "
+                         "to the roundup-users mailing list): %s") % self.form)
+            raise
 
         # turn debugging on/off
         try:
@@ -503,8 +561,7 @@ class Client:
 
     def _gen_nonce(self):
         """ generate a unique nonce """
-        n = b2s(base64.b32encode(random_.token_bytes(40)))
-        return n
+        return b2s(base64.b32encode(random_.token_bytes(40)))
 
     def setTranslator(self, translator=None):
         """Replace the translation engine
@@ -560,7 +617,7 @@ class Client:
         # Pull the raw XML out of the form.  The "value" attribute
         # will be the raw content of the POST request.
         assert self.form.file
-        input = self.form.value
+        input_data = self.form.value
         # So that the rest of Roundup can query the form in the
         # usual way, we create an empty list of fields.
         self.form.list = []
@@ -619,11 +676,13 @@ class Client:
             csrf_ok = False  # we had an error, failed check
 
         if csrf_ok is True:
+            if WARN_FOR_MISSING_DEFUSEDXML and (not xmlrpc_.client.defusedxml):
+                logger.warning(self._("XMLRPC endpoint is not using defusedxml. Improve security by installing defusedxml."))
             handler = xmlrpc.RoundupDispatcher(self.db,
                                                self.instance.actions,
                                                self.translator,
                                                allow_none=True)
-            output = handler.dispatch(input)
+            output = handler.dispatch(input_data)
 
         self.setHeader("Content-Type", "text/xml")
         self.setHeader("Content-Length", str(len(output)))
@@ -632,8 +691,11 @@ class Client:
     def is_cors_preflight(self):
         return (
             self.env['REQUEST_METHOD'] == "OPTIONS"
-            and self.request.headers.get("Access-Control-Request-Headers")
             and self.request.headers.get("Access-Control-Request-Method")
+               # technically Access-Control-Request-Headers (ACRH) is
+               # optional, but we require the header x-requested-with,
+               # so ACRH will be present.
+            and self.request.headers.get("Access-Control-Request-Headers")
             and self.request.headers.get("Origin"))
 
     def handle_preflight(self):
@@ -672,9 +734,32 @@ class Client:
             return
         except RateLimitExceeded as err:
             output = s2b("%s" % str(err))
-            # PYTHON2:FIXME http_.client.TOO_MANY_REQUESTS missing
-            # python2 so use numeric code.
-            self.reject_request(output, status=429)
+            self.reject_request(output,
+                                status=http_.client.TOO_MANY_REQUESTS)
+            return
+
+        # Handle CORS preflight request. We know rest is enabled
+        # because handle_rest is called. Preflight requests
+        # are unauthenticated, so no need to check permissions.
+        if (self.is_cors_preflight()):
+                # Origin header must be defined to get here
+            if self.is_origin_header_ok(api=True):
+                self.handle_preflight()
+            else:
+                # origin is not authorized for REST
+                msg = self._("Client is not allowed to use Rest Interface.")
+                output = s2b(
+                    '{ "error": { "status": 400, "msg": "%s" } }' % msg)
+                self.reject_request(output,
+                                message_type="application/json",
+                                status=400)
+            return
+
+        if not self.db.security.hasPermission('Rest Access', self.userid):
+            output = s2b('{ "error": { "status": 403, "msg": "Forbidden." } }')
+            self.reject_request(output,
+                                message_type="application/json",
+                                status=403)
             return
 
         # verify Origin is allowed on all requests including GET.
@@ -682,30 +767,30 @@ class Client:
         if not self.is_origin_header_ok(api=True):
             if 'HTTP_ORIGIN' not in self.env:
                 msg = self._("Required Header Missing")
+                err = "REST request missing 'Origin' header by user %(user)s."
             else:
                 msg = self._("Client is not allowed to use Rest Interface.")
+                err = "REST request 'Origin' (%(origin)s) unauthorized by user %(user)s."
 
             # Use code 400. Codes 401 and 403 imply that authentication
             # is needed or authenticated person is not authorized.
-            # Preflight doesn't do authentication.
             output = s2b(
                 '{ "error": { "status": 400, "msg": "%s" } }' % msg)
             self.reject_request(output,
                                 message_type="application/json",
                                 status=400)
-            return
-
-        # Handle CORS preflight request. We know rest is enabled
-        # because handle_rest is called. Preflight requests
-        # are unauthenticated, so no need to check permissions.
-        if (self.is_cors_preflight()):
-            self.handle_preflight()
-            return
-        elif not self.db.security.hasPermission('Rest Access', self.userid):
-            output = s2b('{ "error": { "status": 403, "msg": "Forbidden." } }')
-            self.reject_request(output,
-                                message_type="application/json",
-                                status=403)
+            # Would be nice to log the original source address here to
+            # allow firewalling in case of abuse/attack. Especially if
+            # anonymous is allowed REST access. However,
+            #    self.request.connection.getpeername()
+            # only gets us 127.0.0.1 when a proxy is used. I think the
+            # same is true of wsgi mode (but it might be a UNIX domain
+            # socket address). The upstream server needs to supply the
+            # real IP as it sees it and we need to consume it. There
+            # is no method for this that handles all the ways roundup
+            # can be run AFAIK. So no IP address, just user.
+            logger.error(err, {"user": self.user,
+                               "origin": self.env.get('HTTP_ORIGIN', None)})
             return
 
         self.check_anonymous_access()
@@ -816,16 +901,13 @@ class Client:
                 except (UsageError, Unauthorised) as msg:
                     csrf_ok = False
                     self.form_wins = True
-                    self._error_message = msg.args
+                    self.add_error_message(' '.join(msg.args))
 
-                if csrf_ok:
-                    # csrf checks pass. Run actions etc.
-                    # possibly handle a form submit action (may change
-                    # self.classname and self.template, and may also
-                    # append error/ok_messages)
-                    html = self.handle_action()
-                else:
-                    html = None
+                # If csrf checks pass. Run actions etc.
+                # handle_action() may handle a form submit action.
+                # It can change self.classname and self.template,
+                # and may also append error/ok_messages.
+                html = self.handle_action() if csrf_ok else None
 
                 if html:
                     self.write_html(html)
@@ -857,7 +939,13 @@ class Client:
                 # exception handlers.
                 self.determine_language()
                 self.db.i18n = self.translator
+                # prevent application/octet-stream mime type in header
+                # from being changed to some other type by the browser
+                # when mime sniffing.
                 self.setHeader("X-Content-Type-Options", "nosniff")
+                # prevent script execution in downloaded SVG, XML files
+                # (or HTML files if enabled).
+                self.setHeader("Content-Security-Policy", "script-src 'none'")
                 self.serve_file(designator)
             except SendStaticFile as file:
                 self.serve_static_file(str(file))
@@ -873,6 +961,8 @@ class Client:
 
         except SeriousError as message:
             self.write_html(str(message))
+        except Reauth as e:
+            self.reauth(e)
         except Redirect as url:
             # let's redirect - if the url isn't None, then we need to do
             # the headers, otherwise the headers have been set before the
@@ -890,7 +980,7 @@ class Client:
                 self.response_code = http_.client.UNAUTHORIZED
                 realm = self.instance.config.TRACKER_NAME
                 self.setHeader("WWW-Authenticate",
-                               "Basic realm=\"%s\"" % realm)
+                               'Basic realm="%s"' % realm)
             else:
                 self.response_code = http_.client.FORBIDDEN
             self.renderFrontPage(str(message))
@@ -983,7 +1073,7 @@ class Client:
 
            Do it only once an hour.
         """
-        hour = 60*60
+        hour = 60 * 60
         now = time.time()
 
         # XXX: hack - use OTK table to store last_clean time information
@@ -1048,10 +1138,7 @@ class Client:
 
             def _decode_charref(matchobj):
                 num = matchobj.group(1)
-                if num[0].lower() == 'x':
-                    uc = int(num[1:], 16)
-                else:
-                    uc = int(num)
+                uc = int(num[1:], 16) if num[0].lower() == 'x' else int(num)
                 return uchr(uc)
 
             for field_name in self.form:
@@ -1111,23 +1198,40 @@ class Client:
             self.setHeader("WWW-Authenticate", "Basic")
             raise LoginError('Support for jwt disabled.')
 
-        secret = self.db.config.WEB_JWT_SECRET
-        if len(secret) < 32:
+        # If first ',' separated token is < 32, jwt is disabled.
+        # If second or later tokens are < 32 chars, the config system
+        # stops the tracker from starting so insecure tokens can not
+        # be used.
+        CHARS_FOR_256_BIT_KEY = 32
+        if len(self.db.config.WEB_JWT_SECRET[0]) < CHARS_FOR_256_BIT_KEY:
             # no support for jwt, this is fine.
             self.setHeader("WWW-Authenticate", "Basic")
             raise LoginError('Support for jwt disabled by admin.')
 
-        try:  # handle jwt exceptions
-            token = jwt.decode(challenge, secret,
-                               algorithms=['HS256'],
-                               audience=self.db.config.TRACKER_WEB,
-                               issuer=self.db.config.TRACKER_WEB)
-        except jwt.exceptions.InvalidTokenError as err:
-            self.setHeader("WWW-Authenticate", "Basic, Bearer")
-            self.make_user_anonymous()
-            raise LoginError(str(err))
+        last_error = "Unknown error validating bearer token."
 
-        return (token)
+        for secret in self.db.config.WEB_JWT_SECRET:
+            try:  # handle jwt exceptions
+                return jwt.decode(challenge, secret,
+                                  algorithms=['HS256'],
+                                  audience=self.db.config.TRACKER_WEB,
+                                  issuer=self.db.config.TRACKER_WEB)
+
+            except jwt.exceptions.InvalidSignatureError as err:
+                # Try more signatures.
+                # If all signatures generate InvalidSignatureError,
+                # we exhaust the loop and last_error is used to
+                # report the final (but not only) InvalidSignatureError
+                last_error = str(err)  # preserve for end of loop
+            except jwt.exceptions.InvalidTokenError as err:
+                self.setHeader("WWW-Authenticate", "Basic, Bearer")
+                self.make_user_anonymous()
+                raise LoginError(str(err))
+
+        # reach here only if no valid signature was found
+        self.setHeader("WWW-Authenticate", "Basic, Bearer")
+        self.make_user_anonymous()
+        raise LoginError(last_error)
 
     def determine_user(self, is_api=False):
         """Determine who the user is"""
@@ -1223,7 +1327,7 @@ class Client:
 
                     # will be used later to override the get_roles method
                     # having it defined as truthy allows it to be used.
-                    override_get_roles = lambda self: iter_roles(  # noqa: E731
+                    override_get_roles = lambda self: iter_roles(  # noqa: ARG005
                         ','.join(token['roles']))
 
         # if user was not set by http authorization, try session lookup
@@ -1278,7 +1382,9 @@ class Client:
         if isinstance(action, list):
             raise SeriousError(
                 self._('broken form: multiple @action values submitted'))
-        elif action != '':
+        if action != '':
+            # '' is value when no action parameter was found so run
+            # this to extract action string value when action found.
             action = action.value.lower()
         if action in ('login', 'register'):
             return
@@ -1290,8 +1396,8 @@ class Client:
             return
 
         # otherwise for everything else
-        if self.user == 'anonymous':
-            if not self.db.security.hasPermission('Web Access', self.userid):
+        if self.user == 'anonymous' and \
+            not self.db.security.hasPermission('Web Access', self.userid):
                 raise Unauthorised(self._("Anonymous users are not "
                                           "allowed to use the web interface"))
 
@@ -1300,10 +1406,12 @@ class Client:
 
            Header is ok (return True) if ORIGIN is missing and it is a GET.
            Header is ok if ORIGIN matches the base url.
-           If this is a API call:
-             Header is ok if ORIGIN matches an element of allowed_api_origins.
-             Header is ok if allowed_api_origins includes '*' as first
-               element and credentials is False.
+           If this is an API call:
+
+           * Header is ok if ORIGIN matches an element of allowed_api_origins.
+           * Header is ok if allowed_api_origins includes '*' as first
+             element and credentials is False.
+
            Otherwise header is not ok.
 
            In a credentials context, if we match * we will return
@@ -1314,10 +1422,7 @@ class Client:
         try:
             origin = self.env['HTTP_ORIGIN']
         except KeyError:
-            if self.env['REQUEST_METHOD'] == 'GET':
-                return True
-            else:
-                return False
+            return self.env['REQUEST_METHOD'] == 'GET'
 
         # note base https://host/... ends host with with a /,
         # so add it to origin.
@@ -1339,11 +1444,8 @@ class Client:
         # allowing credentials. See:
         # https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
         # under Credentials Requests and Wildcards
-        if (allowed_origins and allowed_origins[0] == '*'
-            and not credentials):
-            return True
-
-        return False
+        return (allowed_origins and allowed_origins[0] == '*'
+                and not credentials)
 
     def is_referer_header_ok(self, api=False):
         referer = self.env['HTTP_REFERER']
@@ -1466,7 +1568,7 @@ class Client:
             "ORIGIN",
             "REFERER",
             "X-FORWARDED-HOST",
-            "HOST"
+            "HOST",
             ]
 
         header_pass = 0  # count of passing header checks
@@ -1495,7 +1597,7 @@ class Client:
                     logger.error(logmsg)
                     raise Unauthorised(self._("Invalid Referer: %s") % (
                         referer))
-                elif enforce == 'logfailure':
+                if enforce == 'logfailure':
                     logger.warning(logmsg)
             else:
                 header_pass += 1
@@ -1514,7 +1616,7 @@ class Client:
                 if enforce in ('required', 'yes'):
                     logger.error(logmsg)
                     raise Unauthorised(self._("Invalid Origin %s" % origin))
-                elif enforce == 'logfailure':
+                if enforce == 'logfailure':
                     logger.warning(logmsg)
             else:
                 header_pass += 1
@@ -1534,7 +1636,7 @@ class Client:
                         logger.error(logmsg)
                         raise Unauthorised(self._(
                             "Invalid X-FORWARDED-HOST %s") % host)
-                    elif enforce == 'logfailure':
+                    if enforce == 'logfailure':
                         logger.warning(logmsg)
                 else:
                     header_pass += 1
@@ -1558,7 +1660,7 @@ class Client:
                     if enforce in ('required', 'yes'):
                         logger.error(logmsg)
                         raise Unauthorised(self._("Invalid HOST %s") % host)
-                    elif enforce == 'logfailure':
+                    if enforce == 'logfailure':
                         logger.warning(logmsg)
                 else:
                     header_pass += 1
@@ -1569,21 +1671,20 @@ class Client:
             raise UsageError(self._("Unable to verify sufficient headers"))
 
         enforce = config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH']
-        if api:
-            if enforce in ['required', 'yes']:
-                # if we get here we have usually passed at least one
-                # header check. We check for presence of this custom
-                # header for xmlrpc/rest calls only.
-                # E.G. X-Requested-With: XMLHttpRequest
-                # Note we do not use CSRF nonces for xmlrpc/rest requests.
-                #
-                # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
-                if 'HTTP_X_REQUESTED_WITH' not in self.env:
-                    logger.error(self._(
-                        ''"csrf X-REQUESTED-WITH xmlrpc required header "
-                        ''"check failed for user%s."),
-                                 current_user)
-                    raise UsageError(self._("Required Header Missing"))
+        if api and enforce in ['required', 'yes']:
+            # if we get here we have usually passed at least one
+            # header check. We check for presence of this custom
+            # header for xmlrpc/rest calls only.
+            # E.G. X-Requested-With: XMLHttpRequest
+            # Note we do not use CSRF nonces for xmlrpc/rest requests.
+            #
+            # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Protecting_REST_Services:_Use_of_Custom_Request_Headers
+            if 'HTTP_X_REQUESTED_WITH' not in self.env:
+                logger.error(self._(
+                    ''"csrf X-REQUESTED-WITH xmlrpc required header "
+                    ''"check failed for user%(userid)s."),
+                    {"userid": current_user})
+                raise UsageError(self._("Required Header Missing"))
 
         # Expire old csrf tokens now so we don't use them.  These will
         # be committed after the otks.destroy below.  Note that the
@@ -1621,14 +1722,16 @@ class Client:
         if key is None:  # we do not have an @csrf token
             if enforce == 'required':
                 logger.error(self._(
-                    "Required csrf field missing for user%s"), current_user)
+                    "Required csrf field missing for user%(userid)s"),
+                             {"userid": current_user})
                 raise UsageError(self._(
                     ''"We can't validate your session (csrf failure). "
                     ''"Re-enter any unsaved data and try again."))
-            elif enforce == 'logfailure':
+            if enforce == 'logfailure':
                 # FIXME include url
-                logger.warning(self._("csrf field not supplied by user%s"),
-                               current_user)
+                logger.warning(self._(
+                    "csrf field not supplied by user%(userid)s"),
+                    {"userid": current_user})
             else:
                 # enforce is either yes or no. Both permit change if token is
                 # missing
@@ -1652,7 +1755,7 @@ class Client:
                 raise UsageError(self._(
                     ''"We can't validate your session (csrf failure). "
                     ''"Re-enter any unsaved data and try again."))
-            elif enforce == 'logfailure':
+            if enforce == 'logfailure':
                 logger.warning(logmsg)
 
         if current_session != nonce_session:
@@ -1669,7 +1772,7 @@ class Client:
                 raise UsageError(self._(
                     ''"We can't validate your session (csrf failure). "
                     ''"Re-enter any unsaved data and try again."))
-            elif enforce == 'logfailure':
+            if enforce == 'logfailure':
                 logger.warning(logmsg)
 
         # we are done and the change can occur.
@@ -1690,18 +1793,16 @@ class Client:
         # open the database or only set the user
         if not hasattr(self, 'db'):
             self.db = self.instance.open(username)
-            self.db.tx_Source = "web"
-        else:
-            if self.instance.optimize:
+        elif self.instance.optimize:
                 self.db.setCurrentUser(username)
-                self.db.tx_Source = "web"
-            else:
-                self.db.close()
-                self.db = self.instance.open(username)
-                self.db.tx_Source = "web"
-                # The old session API refers to the closed database;
-                # we can no longer use it.
-                self.session_api = Session(self)
+        else:
+            self.db.close()
+            self.db = self.instance.open(username)
+            # The old session API refers to the closed database;
+            # we can no longer use it.
+            self.session_api = Session(self)
+
+        self.db.tx_Source = "web"
 
     # match designator in URL stripping leading 0's. So:
     # https://issues.roundup-tracker.org/issue002551190 is the same as
@@ -1781,13 +1882,13 @@ class Client:
             else:
                 self.template = ''
             return
-        elif path[0] in ('_file', '@@file'):
+        if path[0] in ('_file', '@@file'):
             raise SendStaticFile(os.path.join(*path[1:]))
-        else:
-            self.classname = path[0]
-            if len(path) > 1:
-                # send the file identified by the designator in path[0]
-                raise SendFile(path[0])
+
+        self.classname = path[0]
+        if len(path) > 1:
+            # send the file identified by the designator in path[0]
+            raise SendFile(path[0])
 
         # see if we got a designator
         m = dre.match(self.classname)
@@ -1819,6 +1920,44 @@ class Client:
         # see if we have a template override
         if template_override is not None:
             self.template = template_override
+
+    def reauth(self, exception):
+        """Processing for a Reauth exception raised from an auditor.
+
+           Can be overridden by code in tracker's interfaces.py.
+        """
+        
+        from roundup.anypy.vendored.cgi import MiniFieldStorage
+
+        original_action = self.form['@action'].value if '@action' \
+            in self.form else ""
+        original_template = self.template
+
+        self.template = 'reauth'
+        self.form.list = [ x for x in self.form.list
+                           if x.name not in ('@action',
+                                             '@csrf',
+                                             '@template'
+                                             )]
+
+        # save the action and template used when the Reauth as
+        # triggered. Will be used to resolve the change by the reauth
+        # action when when reauth password verified.
+        if '@next_action' not in self.form.list:
+            self.form.list.append(MiniFieldStorage('@next_action',
+                                                   original_action))
+        if '@next_template' not in self.form.list:
+            self.form.list.append(MiniFieldStorage('@next_template',
+                                                   original_template))
+
+        if exception.args and "@reauth_message" not in self.form.list:
+            self.form.list.append(
+                MiniFieldStorage('@reauth_message',
+                                 html_escape(exception.args[0])
+                )
+            )
+
+        self.write_html(self.renderContext())
 
     # re for splitting designator, see also dre_url above this one
     # doesn't strip leading 0's from the id. Why not??
@@ -1857,28 +1996,8 @@ class Client:
         # --- mime-type security
         # mime type detection is performed in cgi.form_parser
 
-        # everything not here is served as 'application/octet-stream'
-        mime_type_allowlist = [
-            'text/plain',
-            'text/x-csrc',    # .c
-            'text/x-chdr',    # .h
-            'text/x-patch',   # .patch and .diff
-            'text/x-python',  # .py
-            'text/xml',
-            'text/csv',
-            'text/css',
-            'application/pdf',
-            'image/gif',
-            'image/jpeg',
-            'image/png',
-            'image/svg+xml',
-            'image/webp',
-            'audio/ogg',
-            'video/webm',
-        ]
-
         if self.instance.config['WEB_ALLOW_HTML_FILE']:
-            mime_type_allowlist.append('text/html')
+            self.mime_type_allowlist.append('text/html')
 
         try:
             mime_type = klass.get(nodeid, 'type')
@@ -1888,7 +2007,7 @@ class Client:
         if not mime_type:
             mime_type = 'text/plain'
 
-        if mime_type not in mime_type_allowlist:
+        if mime_type not in self.mime_type_allowlist:
             mime_type = 'application/octet-stream'
 
         # --/ mime-type security
@@ -1915,7 +2034,7 @@ class Client:
 
         lmt = klass.get(nodeid, 'activity').timestamp()
 
-        self._serve_file(lmt, mime_type, content, filename)
+        self._serve_file(lmt, None, mime_type, content, filename)
 
     def serve_static_file(self, file):
         """ Serve up the file named from the templates dir
@@ -1932,9 +2051,10 @@ class Client:
 
             for p in prefix:
                 # if last element of STATIC_FILES ends with '/-',
-                # we failed to find the file and we should
-                # not look in TEMPLATES. So raise exception.
-                if dir_option == 'STATIC_FILES' and p[-2:] == '/-':
+                # or \- on windows, we failed to find the file
+                # and should not look in TEMPLATES. So raise exception.
+                if (dir_option == 'STATIC_FILES' and p[-1:] == '-' and
+                    p[-2:-1] in ('/', '\\')):
                     raise NotFound(file)
 
                 # ensure the load doesn't try to poke outside
@@ -1943,9 +2063,9 @@ class Client:
                 filename = os.path.normpath(os.path.join(p, file))
                 if os.path.isfile(filename) and filename.startswith(p):
                     break  # inner loop over list of directories
-                else:
-                    # reset filename to None as sentinel for use below.
-                    filename = None
+
+                # reset filename to None as sentinel for use below.
+                filename = None
 
             # break out of outer loop over options
             if filename:
@@ -1954,17 +2074,11 @@ class Client:
         if filename is None:  # we didn't find a filename
             raise NotFound(file)
 
-        # last-modified time
-        lmt = os.stat(filename)[stat.ST_MTIME]
-
         # detemine meta-type
         file = str(file)
         mime_type = mimetypes.guess_type(file)[0]
         if not mime_type:
-            if file.endswith('.css'):
-                mime_type = 'text/css'
-            else:
-                mime_type = 'text/plain'
+            mime_type = 'text/css' if file.endswith('.css') else 'text/plain'
 
         # get filename: given a/b/c.js extract c.js
         fn = file.rpartition("/")[2]
@@ -1977,31 +2091,68 @@ class Client:
             self.additional_headers['Cache-Control'] = \
                             self.Cache_Control[mime_type]
 
-        self._serve_file(lmt, mime_type, '', filename)
+        self._serve_file(None, None, mime_type, '', filename)
 
-    def _serve_file(self, lmt, mime_type, content=None, filename=None):
-        """ guts of serve_file() and serve_static_file()
+    def _serve_file(self, lmt, etag, mime_type, content=None, filename=None):
+        """guts of serve_file() and serve_static_file()
+
+            if lmt or etag are None, derive them from file filename.
+
+            Handles if-modified-since and if-none-match etag
+            conditional gets.
+
+            It produces an raw etag header without encoding suffix.
+            But it adds Accept-Encoding to the vary header.
+
         """
+        if filename:
+            stat_info = os.stat(filename)
 
-        # spit out headers
-        self.additional_headers['Last-Modified'] = email.utils.formatdate(lmt)
+            if lmt is None:
+                # last-modified time
+                lmt = stat_info[stat.ST_MTIME]
+            if etag is None:
+                # FIXME: maybe etag should depend on encoding.
+                # it is an apache compatible etag without encoding.
+                etag = '"%x-%x-%x"' % (stat_info[stat.ST_INO],
+                                       stat_info[stat.ST_SIZE],
+                                       stat_info[stat.ST_MTIME])
 
-        ims = None
-        # see if there's an if-modified-since...
-        #    used if this is run behind a non-caching http proxy
-        if hasattr(self.request, 'headers'):
-            ims = self.request.headers.get('if-modified-since')
-        elif 'HTTP_IF_MODIFIED_SINCE' in self.env:
-            # cgi will put the header in the env var
-            ims = self.env['HTTP_IF_MODIFIED_SINCE']
-        if ims:
-            ims = email.utils.parsedate(ims)[:6]
-            lmtt = time.gmtime(lmt)[:6]
-            if lmtt <= ims:
+            # spit out headers for conditional request
+            self.setHeader("ETag", etag)
+            self.additional_headers['Last-Modified'] = \
+                email.utils.formatdate(lmt, usegmt=True)
+
+            inm = None
+            # ETag is a more strict check than modified date. Use etag
+            # check if available. Skip testing modified data.
+            if hasattr(self.request, 'headers'):
+                inm = self.request.headers.get('if-none-match')
+            elif 'HTTP_IF_NONE_MATCH' in self.env:
+                # maybe the cgi will put the header in the env var
+                inm = self.env['HTTP_IF_NONE_MATCH']
+            if inm and etag == inm:
+                # because we can compress, always set Accept-Encoding
+                # value. Otherwise caches can serve up the wrong info
+                # if their cached copy has no compression.
+                self.setVary("Accept-Encoding")
+                '''
+                to solve issue2551356 I may need to determine
+                the content encoding.
                 if (self.determine_content_encoding()):
-                    # set vary header as though we were returning 200
-                    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary
-                    self.setVary("Accept-Encoding")
+                '''
+                raise NotModified
+
+            if self.if_not_modified_since(lmt):
+                # because we can compress, always set Accept-Encoding
+                # value. Otherwise caches can serve up the wrong info
+                # if their cached copy has no compression.
+                self.setVary("Accept-Encoding")
+                '''
+                  to solve issue2551356 I may need to determine
+                  the content encoding.
+                  if (self.determine_content_encoding()):
+                '''
                 raise NotModified
 
         # don't set until we are sure we are sending a response body.
@@ -2012,6 +2163,27 @@ class Client:
         else:
             self.additional_headers['Content-Length'] = str(len(content))
             self.write(content)
+
+    def if_not_modified_since(self, lmt):
+        ims = None
+        # see if there's an if-modified-since...
+        if hasattr(self.request, 'headers'):
+            ims = self.request.headers.get('if-modified-since')
+        elif 'HTTP_IF_MODIFIED_SINCE' in self.env:
+            # cgi will put the header in the env var
+            ims = self.env['HTTP_IF_MODIFIED_SINCE']
+
+        if ims:
+            datestamp = email.utils.parsedate(ims)
+            if datestamp is not None:
+                ims = datestamp[:6]
+            else:
+                # set to beginning of time so whole file will be sent
+                ims = (0, 0, 0, 0, 0, 0)
+            lmtt = time.gmtime(lmt)[:6]
+            return lmtt <= ims
+
+        return False
 
     def send_error_to_admin(self, subject, html, txt):
         """Send traceback information to admin via email.
@@ -2066,13 +2238,10 @@ class Client:
         # templates, just leave view alone.
         if (view and view.find('|') != -1):
             # we have alternate templates, parse them apart.
-            (oktmpl, errortmpl) = view.split("|", 2)
-            if self._error_message:
-                # we have an error, use errortmpl
-                view = errortmpl
-            else:
-                # no error message recorded, use oktmpl
-                view = oktmpl
+            (oktmpl, errortmpl) = view.split("|", 1)
+
+            # Choose the right template
+            view = errortmpl if self._error_message else oktmpl
 
         loader = self.instance.templates
 
@@ -2092,7 +2261,7 @@ class Client:
             else:
                 # try path/class.view
                 tplname = '%s/%s.%s' % (
-                    view[:slash_loc], name, view[slash_loc+1:])
+                    view[:slash_loc], name, view[slash_loc + 1:])
 
         if loader.check(tplname):
             return tplname
@@ -2105,7 +2274,7 @@ class Client:
         if slash_loc == -1:
             generic = '_generic.%s' % view
         else:
-            generic = '%s/_generic.%s' % (view[:slash_loc], view[slash_loc+1:])
+            generic = '%s/_generic.%s' % (view[:slash_loc], view[slash_loc + 1:])
         if loader.check(generic):
             return generic
 
@@ -2123,7 +2292,7 @@ class Client:
             # catch errors so we can handle PT rendering errors more nicely
             args = {
                 'ok_message': self._ok_message,
-                'error_message': self._error_message
+                'error_message': self._error_message,
             }
             pt = self.instance.templates.load(tplname)
             # let the template render figure stuff out
@@ -2131,14 +2300,19 @@ class Client:
                 result = pt.render(self, None, None, **args)
             except IndexerQueryError as e:
                 result = self.renderError(e.args[0])
+            except ExpressionError as e:
+                self.add_error_message(str(e))
+                self.template = "search"
+                result = self.renderContext()
 
-            self.additional_headers['Content-Type'] = pt.content_type
+            if 'Content-Type' not in self.additional_headers:
+                self.additional_headers['Content-Type'] = pt.content_type
             if self.env.get('CGI_SHOW_TIMING', ''):
                 if self.env['CGI_SHOW_TIMING'].upper() == 'COMMENT':
                     timings = {'starttag': '<!-- ', 'endtag': ' -->'}
                 else:
                     timings = {'starttag': '<p>', 'endtag': '</p>'}
-                timings['seconds'] = time.time()-self.start
+                timings['seconds'] = time.time() - self.start
                 s = self._(
                     '%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n'
                 ) % timings
@@ -2176,8 +2350,7 @@ class Client:
                 # than the one we tried to generate above.
                 if sys.version_info[0] > 2:
                     raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
-                else:
-                    exec('raise exc_info[0], exc_info[1], exc_info[2]')  # nosec
+                exec('raise exc_info[0], exc_info[1], exc_info[2]')  # nosec
 
     def renderError(self, error, response_code=400, use_template=True):
         self.response_code = response_code
@@ -2209,7 +2382,7 @@ class Client:
 
         args = {
             'ok_message': self._ok_message,
-            'error_message': self._error_message
+            'error_message': self._error_message,
         }
 
         try:
@@ -2221,20 +2394,21 @@ class Client:
 
     # these are the actions that are available
     actions = (
-        ('edit',        actions.EditItemAction),
-        ('editcsv',     actions.EditCSVAction),
-        ('new',         actions.NewItemAction),
-        ('register',    actions.RegisterAction),
-        ('confrego',    actions.ConfRegoAction),
-        ('passrst',     actions.PassResetAction),
-        ('login',       actions.LoginAction),
-        ('logout',      actions.LogoutAction),
-        ('search',      actions.SearchAction),
-        ('restore',     actions.RestoreAction),
-        ('retire',      actions.RetireAction),
-        ('show',        actions.ShowAction),
-        ('export_csv',  actions.ExportCSVAction),
-        ('export_csv_id',  actions.ExportCSVWithIdAction),
+        ('edit',        actions.EditItemAction),  # noqa: E241
+        ('editcsv',     actions.EditCSVAction),  # noqa: E241
+        ('new',         actions.NewItemAction),  # noqa: E241
+        ('register',    actions.RegisterAction),  # noqa: E241
+        ('confrego',    actions.ConfRegoAction),  # noqa: E241
+        ('passrst',     actions.PassResetAction),  # noqa: E241
+        ('login',       actions.LoginAction),  # noqa: E241
+        ('logout',      actions.LogoutAction),  # noqa: E241
+        ('search',      actions.SearchAction),  # noqa: E241
+        ('restore',     actions.RestoreAction),  # noqa: E241
+        ('retire',      actions.RetireAction),  # noqa: E241
+        ('show',        actions.ShowAction),  # noqa: E241
+        ('export_csv',  actions.ExportCSVAction),  # noqa: E241
+        ('export_csv_id',  actions.ExportCSVWithIdAction),  # noqa: E241
+        ('reauth',      actions.ReauthAction),  # noqa: E241
     )
 
     def handle_action(self):
@@ -2264,8 +2438,8 @@ class Client:
         if isinstance(action, list):
             raise SeriousError(
                 self._('broken form: multiple @action values submitted'))
-        else:
-            action = action.value.lower()
+
+        action = action.value.lower()
 
         try:
             action_klass = self.get_action_class(action)
@@ -2274,8 +2448,8 @@ class Client:
             if isinstance(action_klass, type('')):
                 # old way of specifying actions
                 return getattr(self, action_klass)()
-            else:
-                return action_klass(self).execute()
+
+            return action_klass(self).execute()
         except (ValueError, Reject) as err:
             escape = not isinstance(err, RejectRaw)
             self.add_error_message(str(err), escape=escape)
@@ -2340,8 +2514,8 @@ class Client:
                    (enc in accept_encoding):
                     if not list_all:
                         return enc
-                    else:
-                        encoding_list.append(enc)
+
+                    encoding_list.append(enc)
 
         # Return value must evaluate to false in boolean context if no
         # acceptable encoding is found. If an (non-identity) encoding
@@ -2350,14 +2524,14 @@ class Client:
         #   Maybe raise a 406 from here?
         if not list_all:
             return None
-        else:
-            return encoding_list
+        return encoding_list
 
     def setVary(self, header):
         '''Vary header will include the new header. This will append
            if Vary exists.'''
 
-        if ('Vary' in self.additional_headers):
+        if ('Vary' in self.additional_headers and
+            header not in self.additional_headers['Vary']):
             self.additional_headers['Vary'] += ", %s" % header
         else:
             self.additional_headers['Vary'] = header
@@ -2375,6 +2549,7 @@ class Client:
         # abort if already encoded (e.g. served from
         # precompressed file or cache on disk)
         if ('Content-Encoding' in self.additional_headers):
+            # Vary: 'Accept-Encoding' is set when Content-encoding set
             return byte_content
 
         # abort if file-type already compressed
@@ -2382,6 +2557,8 @@ class Client:
            (self.additional_headers['Content-Type'] in
                 self.precompressed_mime_types):
             return byte_content
+
+        self.setVary('Accept-Encoding')
 
         encoder = None
         # return same content if unable to compress
@@ -2421,7 +2598,6 @@ class Client:
             # and add Content-Encoding and Vary header.
             self.additional_headers['Content-Length'] = str(len(new_content))
             self.additional_headers['Content-Encoding'] = encoder
-            self.setVary('Accept-Encoding')
             try:
                 current_etag = self.additional_headers['ETag']
             except KeyError:
@@ -2560,7 +2736,7 @@ class Client:
             # If the condition doesn't match the entity tag, then we
             # must send the client the entire file.
             if if_range != etag:
-                return
+                return None
         # The grammar for the Range header value is:
         #
         #   ranges-specifier = byte-ranges-specifier
@@ -2715,10 +2891,32 @@ class Client:
             # Hence the intermediate proxy should/must match
             # Accept-Encoding and ETag to determine whether to return
             # a 304 or report cache miss and fetch from origin server.
+            #
+            # RFC 9110 8.8.3.3 shows a different strong entity tag
+            # generated for gzip and non gzip replies.
             etag = '"%x-%x-%x"' % (stat_info[stat.ST_INO],
                                    length,
                                    stat_info[stat.ST_MTIME])
             self.setHeader("ETag", etag)
+
+            inm = self.request.headers.get('If-None-Match')
+            if (inm):
+                inm_etags = inm.split(',')
+                inm_etags = [tag.strip() for tag in inm_etags]
+                if etag in inm_etags:
+                    self.setHeader('ETag', etag)
+                    self.setVary('Accept-Encoding')
+                    raise NotModified
+
+                # need to check for etag-compression_code:
+                # a41932-8b5-664ce93d-zstd or a41932-8b5-664ce93d-gzip
+                tag_prefix = etag[:-1] + '-'
+                for inm_etag in inm_etags:
+                    if inm_etag.startswith(tag_prefix):
+                        self.setHeader('ETag', inm_etag)
+                        self.setVary('Accept-Encoding')
+                        raise NotModified
+
             # RFC 2616 14.5: Accept-Ranges
             #
             # Let the client know that we will accept range requests.
@@ -2748,13 +2946,10 @@ class Client:
             self._socket_op(self.request.sendfile, filename, offset, length)
             return
         # Fallback to the "write" operation.
-        f = open(filename, 'rb')
-        try:
+        with open(filename, 'rb') as f:
             if offset:
                 f.seek(offset)
             content = f.read(length)
-        finally:
-            f.close()
         self.write(content)
 
     def setHeader(self, header, value):
@@ -2807,7 +3002,7 @@ class Client:
         if self.debug:
             self.headers_sent = headers
 
-    def add_cookie(self, name, value, expire=86400*365, path=None):
+    def add_cookie(self, name, value, expire=86400 * 365, path=None):
         """Set a cookie value to be sent in HTTP headers
 
         Parameters:

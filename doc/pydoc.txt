@@ -1,0 +1,42 @@
+================
+Pydocs from code
+================
+
+.. contents::
+   :local:
+
+Client class
+============
+
+.. autoclass:: roundup.cgi.client::Client
+   :members:
+   
+CGI Action class
+================
+
+Action class and selected derived classes.
+
+Action
+------
+.. autoclass:: roundup.cgi.actions::Action
+   :members:
+
+LoginAction
+------------
+
+.. autoclass:: roundup.cgi.actions::LoginAction
+   :members:
+
+.. _`ReauthAction_pydoc`:
+
+ReauthAction
+------------
+
+.. autoclass:: roundup.cgi.actions::ReauthAction
+   :members:
+   
+Templating Utils class
+======================
+
+.. autoclass:: roundup.cgi.templating::TemplatingUtils
+   :members:

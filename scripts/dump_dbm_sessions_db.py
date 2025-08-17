@@ -25,8 +25,14 @@ if data is not a python object, print will be key: data or
 if pretty printed.
 """
 
-import argparse, dbm, json, marshal, os, sys
+import argparse
+import dbm
+import json
+import marshal
+import os
+import sys
 from datetime import datetime
+
 
 def indent(text, amount, ch=" "):
   """ Found at: https://stackoverflow.com/a/8348914
@@ -80,12 +86,12 @@ except Exception as e:
   except OSError:
     # the file does exist on disk.
     pass
-  exit(1)
+  sys.exit(1)
 
 if args.keysonly:
   for k in sorted(db.keys()):
     print("%s"%k)
-  exit(0)
+  sys.exit(0)
 
 if args.key:
   for k in args.key:
@@ -93,7 +99,7 @@ if args.key:
       print_marshal(k)
     except (ValueError):
       print_raw(k)
-  exit(0)
+  sys.exit(0)
 
 k = db.firstkey()
 while k is not None:

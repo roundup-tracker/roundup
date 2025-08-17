@@ -26,6 +26,7 @@ import getopt
 import io
 import logging
 import os
+import re
 import socket
 import sys     # modify sys.path when running in source tree
 import time
@@ -137,8 +138,18 @@ class SecureHTTPServer(http_.server.HTTPServer):
         self.socket = socket.socket(self.address_family, self.socket_type)
         if ssl_pem:
             ctx = SSL.Context(SSL.TLSv1_2_METHOD)
-            ctx.use_privatekey_file(ssl_pem)
-            ctx.use_certificate_file(ssl_pem)
+            try:
+                ctx.use_privatekey_file(ssl_pem)
+            except SSL.Error:
+                print(_("Unable to find/use key from file: %(pemfile)s") % {"pemfile": ssl_pem})
+                print(_("Does it have a private key surrounded by '-----BEGIN PRIVATE KEY-----' and\n  '-----END PRIVATE KEY-----' markers?"))
+                exit()
+            try:
+                ctx.use_certificate_file(ssl_pem)
+            except SSL.Error:
+                print(_("Unable to find/use certificate from file: %(pemfile)s") % {"pemfile": ssl_pem})
+                print(_("Does it have a certificate surrounded by '-----BEGIN CERTIFICATE-----' and\n  '-----END CERTIFICATE-----' markers?"))
+                exit()
         else:
             ctx = auto_ssl()
         self.ssl_context = ctx
@@ -271,6 +282,15 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             exc, val, tb = sys.exc_info()
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
                 self.log_error('timeout')
+                self.send_response(408)
+                self.send_header('Content-Type', 'text/html')
+
+                output = s2b('''<body><p>Connection timed out</p></body>''')
+                # Close connection
+                self.send_header('Content-Length', len(output))
+                self.end_headers()
+                self.wfile.write(output)
+                self.close_connection = True
             else:
                 self.send_response(400)
                 self.send_header('Content-Type', 'text/html')
@@ -310,12 +330,14 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         if len(keys) == 1:
             self.send_response(302)
             self.send_header('Location', urllib_.quote(keys[0]) + '/index')
+            self.send_header('Content-Length', 0)
             self.end_headers()
-        else:
-            self.send_response(200)
+            return
 
-        self.send_header('Content-Type', 'text/html')
-        self.end_headers()
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        output = []
+
         w = self.wfile.write
 
         if self.CONFIG and self.CONFIG['TEMPLATE']:
@@ -326,16 +348,22 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                      'nothing': None,
                      'true': 1,
                      'false': 0}
-            w(s2b(pt.pt_render(extra_context=extra)))
+            output.append(s2b(pt.pt_render(extra_context=extra)))
         else:
-            w(s2b(_('<html><head><title>Roundup trackers index</title></head>\n'
-                    '<body><h1>Roundup trackers index</h1><ol>\n')))
+            output.append(s2b(_(
+                '<html><head><title>Roundup trackers index</title></head>\n'
+                '<body><h1>Roundup trackers index</h1><ol>\n')))
             keys.sort()
             for tracker in keys:
-                w(s2b('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n' % {
+                output.append(s2b('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n' % {
                     'tracker_url': urllib_.quote(tracker),
                     'tracker_name': html_escape(tracker)}))
-            w(b'</ol></body></html>')
+            output.append(b'</ol></body></html>\n')
+
+        write_output = b"\n".join(output)
+        self.send_header('Content-Length', len(write_output))
+        self.end_headers()
+        w(write_output)
 
     def inner_run_cgi(self):
         ''' This is the inner part of the CGI handling
@@ -379,7 +407,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
 
             return
 
-        i = self.path.rfind('?')
+        i = self.path.find('?')
         if i >= 0:
             # rest starts with /, query is without ?
             rest, query = self.path[:i], self.path[i+1:]
@@ -404,7 +432,12 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             url = '%s://%s%s/' % (protocol, self.headers['host'], rest)
             if query:
                 url += '?' + query
+
+            # Do not allow literal \n or \r in URL to prevent
+            # HTTP Response Splitting
+            url = re.sub("[\r\n]", "", url)
             self.send_header('Location', url)
+            self.send_header('Content-Length', 17)
             self.end_headers()
             self.wfile.write(b'Moved Permanently')
             return
@@ -475,7 +508,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             # config option to control its use.
             # Made available for extensions if the user trusts it.
             # E.g. you may wish to disable recaptcha validation extension
-            # if the ip of the client matches 172.16.0.0.
+            # if the ip of the client matches 198.51.100.X
             env['HTTP_X_FORWARDED_FOR'] = xff
         xfp = self.headers.get('X-Forwarded-Proto', None)
         if xfp:
@@ -515,11 +548,29 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         tracker.Client(tracker, self, env).main()
 
     def address_string(self):
+        """Get IP address of client from:
+               left most element of X-Forwarded-For header element if set
+               client ip address otherwise.
+           if returned string is from X-Forwarded-For append + to string.
+        """
+        from_forwarded_header=""
+        forwarded_for = None
+
+        # if connection timed out, there is no headers property
+        if hasattr(self, 'headers') and ('X-FORWARDED-FOR' in self.headers):
+            forwarded_for = re.split(r'[,\s]',
+                                     self.headers['X-FORWARDED-FOR'],
+                                     maxsplit=1)[0]
+            from_forwarded_header="+"
         if self.LOG_IPADDRESS:
-            return self.client_address[0]
+            return "%s%s" % (forwarded_for or self.client_address[0],
+                             from_forwarded_header)
         else:
-            host, port = self.client_address
-            return socket.getfqdn(host)
+            if forwarded_for:
+                host = forwarded_for
+            else:
+                host, port = self.client_address
+            return "%s%s" % (socket.getfqdn(host), from_forwarded_header)
 
     def log_message(self, format, *args):
         ''' Try to *safely* log to stderr.
@@ -528,7 +579,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             logger = logging.getLogger('roundup.http')
 
             logger.info("%s - - [%s] %s" %
-                        (self.client_address[0],
+                        (self.address_string(),
                          self.log_date_time_string(),
                          format % args))
         else:
@@ -548,8 +599,8 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
 
 def error():
     exc_type, exc_value = sys.exc_info()[:2]
-    return _('Error: %(type)s: %(value)s' % {'type': exc_type,
-                                             'value': exc_value})
+    return _('Error: %(type)s: %(value)s') % {'type': exc_type,
+                                             'value': exc_value}
 
 
 def setgid(group):
@@ -661,6 +712,11 @@ class ServerConfig(configuration.Config):
                 "If set to yes the python logging module is used with "
                 "qualname\n'roundup.http'. Otherwise logging is done to "
                 "stderr or the file\nspecified using the -l/logfile option."),
+            (configuration.BooleanOption, "log_proxy_header", "no",
+                "Use first element of reverse proxy header X-Forwarded-For\n"
+                "as client IP address. This appends a '+' sign to the logged\n"
+                "host ip/name. Use only if server is accessible only via\n"
+                "trusted reverse proxy."),
             (configuration.NullableFilePathOption, "pidfile", "",
                 "File to which the server records "
                 "the process id of the daemon.\n"
@@ -676,8 +732,13 @@ class ServerConfig(configuration.Config):
             (configuration.BooleanOption, "ssl", "no",
                 "Enable SSL support (requires pyopenssl)"),
             (configuration.NullableFilePathOption, "pem", "",
-                "PEM file used for SSL. A temporary self-signed certificate\n"
-                "will be used if left blank."),
+                "PEM file used for SSL. The PEM file must include\n"
+                "both the private key and certificate with appropriate\n"
+                'headers (i.e. "-----BEGIN PRIVATE KEY-----",\n'
+                '"-----END PRIVATE KEY-----" and '
+                '"-----BEGIN CERTIFICATE-----",\n'
+                '"-----END CERTIFICATE-----". A temporary self-signed\n'
+                "certificate will be used if left blank."),
             (configuration.WordListOption, "include_headers", "",
                 "Comma separated list of extra headers that should\n"
                 "be copied into the CGI environment.\n"
@@ -710,6 +771,7 @@ class ServerConfig(configuration.Config):
         "multiprocess": "t:",
         "template": "i:",
         "loghttpvialogger": 'L',
+        "log_proxy_header": 'P',
         "ssl": "s",
         "pem": "e:",
         "include_headers": "I:",
@@ -840,11 +902,11 @@ class ServerConfig(configuration.Config):
                 raise socket.error(_(
                     "Unable to bind to port %(port)s, "
                     "access not allowed, "
-                    "errno: %(errno)s %(msg)s" % {
+                    "errno: %(errno)s %(msg)s") % {
                         "port": self["PORT"],
                         "errno": e.args[0],
                         "msg": e.args[1]}
-                ))
+                )
 
             raise
         # change user and/or group
@@ -928,7 +990,8 @@ def usage(message=''):
  -g <GID>      runs the Roundup web server as this GID
  -d <PIDfile>  run the server in the background and write the server's PID
                to the file indicated by PIDfile. The -l option *must* be
-               specified if -d is used.'''
+               specified if -d is used.
+ -D            run the server in the foreground even when -d is used.'''
     if message:
         message += '\n\n'
     print(_('''\n%(message)sUsage: roundup-server [options] [name=tracker home]*
@@ -950,6 +1013,9 @@ Options:
  -m <children> maximum number of children to spawn in fork multiprocess mode
  -s            enable SSL
  -L            http request logging uses python logging (roundup.http)
+ -P            log client address/name using reverse proxy X-Forwarded-For
+               header and not the connection IP (which is the reverse proxy).
+               Appends a '+' sign to the logged address/name.
  -e <fname>    PEM file containing SSL key and certificate
  -t <mode>     multiprocess mode (default: %(mp_def)s).
                Allowed values: %(mp_types)s.
@@ -1136,6 +1202,9 @@ ERROR: -c is not available because roundup couldn't import
         config.set_logging()
     if config["PIDFILE"]:
         config["PIDFILE"] = os.path.abspath(config["PIDFILE"])
+        if not (config["LOGFILE"] or config["LOGHTTPVIALOGGER"]):
+            print(_("If you specify a PID file you must use -l or -L."))
+            sys.exit(1)
 
     # fork the server from our parent if a pidfile is specified
     if config["PIDFILE"]:

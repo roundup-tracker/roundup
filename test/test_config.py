@@ -15,14 +15,40 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-import unittest
-import logging
+import errno
 import fileinput
-
-import os, shutil, errno, sys
-
+import logging
+import os
 import pytest
+import shutil
+import sys
+import unittest
+
+from os.path import normpath
+
 from roundup import configuration
+from roundup.backends import get_backend, have_backend
+from roundup.hyperdb import DatabaseError
+
+from .db_test_base import config
+
+if not have_backend('postgresql'):
+    # FIX: workaround for a bug in pytest.mark.skip():
+    #   https://github.com/pytest-dev/pytest/issues/568
+    from .pytest_patcher import mark_class
+    skip_postgresql = mark_class(pytest.mark.skip(
+        reason='Skipping PostgreSQL tests: backend not available'))
+else:
+    try:
+        from roundup.backends.back_postgresql import psycopg2, db_command,\
+            get_database_schema_names
+        db_command(config, 'select 1')
+        skip_postgresql = lambda func, *args, **kwargs: func
+    except( DatabaseError ) as msg:
+        from .pytest_patcher import mark_class
+        skip_postgresql = mark_class(pytest.mark.skip(
+            reason='Skipping PostgreSQL tests: database not available'))
+
 
 try:
     import xapian
@@ -194,14 +220,15 @@ class ConfigTest(unittest.TestCase):
     def testStaticFiles(self):
         config = configuration.CoreConfig()
 
+
+        if ("/tmp/bar" == normpath("/tmp/bar/")):
+            result_list = ["./foo", "/tmp/bar"]
+        else:
+            result_list = [".\\foo", "\\tmp\\bar"]
         self.assertEqual(None,
                 config._get_option('STATIC_FILES').set("foo /tmp/bar"))
-
-        self.assertEqual(config.STATIC_FILES,
-                         ["./foo", "/tmp/bar"])
-
-        self.assertEqual(config['STATIC_FILES'],
-                         ["./foo", "/tmp/bar"])
+        print(config.STATIC_FILES)
+        self.assertEqual(config.STATIC_FILES, result_list)
 
     def testIsolationLevel(self):
         config = configuration.CoreConfig()
@@ -623,6 +650,25 @@ class TrackerConfig(unittest.TestCase):
 
         self.assertEqual(v, "test")
 
+    def testListSecret_for_jwt_invalid_secret(self):
+        """A jwt_secret is made of ',' separated strings.
+           If the first string is < 32 characters (like the default
+           value of disabled) then jwt is disabled and no harm done.
+           If any other secrets are <32 characters we raise a red flag
+           on startup to prevent them from being used.
+        """
+        self.munge_configini(mods=[ ("jwt_secret = ", "disable, test"), ])
+
+        config = configuration.CoreConfig()
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config.load(self.dirname)
+
+        print(cm.exception.args)
+        self.assertEqual(
+            cm.exception.args[2],
+            "One or more secrets less then 32 characters in length\nfound: test")
+
     def testSetMailPassword_with_set_username(self):
         """ Set [mail] username and set the password.
             Should have both values set.
@@ -783,7 +829,7 @@ class TrackerConfig(unittest.TestCase):
         self.assertIn("basque", cm.exception.args[2])
 
     @skip_redis
-    def testLoadSessionDbRedis(self):
+    def testLoadSessionDbRedisCompatible(self):
         """ run load to validate config """
 
         config = configuration.CoreConfig()
@@ -800,6 +846,10 @@ class TrackerConfig(unittest.TestCase):
 
         config.validator(config.options)
 
+    @skip_redis
+    @skip_postgresql
+    def testLoadSessionDbRedisIncompatible(self):
+        """ run load to validate config """
         # incompatible pair
         config.RDBMS_BACKEND = "postgresql"
         config.SESSIONDB_BACKEND = "redis"
@@ -894,8 +944,8 @@ class TrackerConfig(unittest.TestCase):
         print(cm.exception)
         self.assertEqual(cm.exception.args[0], self.dirname)
 
-    def testCopyConfig(self):
 
+    def testXhtmlRaisesOptionError(self):
         self.munge_configini(mods=[ ("html_version = ", "xhtml") ])
 
         config = configuration.CoreConfig()
@@ -903,17 +953,34 @@ class TrackerConfig(unittest.TestCase):
         # verify config is initalized to defaults
         self.assertEqual(config['HTML_VERSION'], 'html4')
 
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            # load config
+            config.load(self.dirname)
+
+        print(cm.exception)
+        self.assertEqual(str(cm.exception),
+                         "Invalid value for HTML_VERSION: 'xhtml'\n"
+                         "Allowed values: html4")
+
+    def testCopyConfig(self):
+
+        self.munge_configini(mods=[ ("static_files = ", "html2") ])
+
+        config = configuration.CoreConfig()
+
+        # verify config is initalized to defaults
+        self.assertEqual(config['STATIC_FILES'], None)
+
         # load config
         config.load(self.dirname)
-
-        # loaded new option
-        self.assertEqual(config['HTML_VERSION'], 'xhtml')
+        self.assertEqual(config['STATIC_FILES'], ['_test_instance/html2'])
 
         # copy config
         config_copy = config.copy()
 
         # this should work
-        self.assertEqual(config_copy['HTML_VERSION'], 'xhtml')
+        self.assertEqual(config_copy['STATIC_FILES'], ['_test_instance/html2'])
 
     @skip_py2
     def testConfigValueInterpolateError(self):
@@ -935,7 +1002,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
 
         print(cm.exception)
         self.assertIn("'%' must be followed by '%' or '(', found: '% is invalid'", cm.exception.args[0])
-        self.assertIn("_test_instance/config.ini with section [main] at option admin_email", cm.exception.args[0])
+        self.assertIn(normpath("_test_instance/config.ini") + " with section [main] at option admin_email", cm.exception.args[0])
 
 
         from roundup.admin import AdminTool
@@ -946,7 +1013,11 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
             sys.argv=['main', '-i', self.dirname, 'get', 'tile', 'issue1']
             ret = admin.main()
 
-        expected_err = "Error in _test_instance/config.ini with section [main] at option admin_email: '%' must be followed by '%' or '(', found: '% is invalid'"
+        expected_err = ("Error in " +
+                        normpath("_test_instance/config.ini") +
+                        " with section [main] at option admin_email: '%' "
+                        "must be followed by '%' or '(', found: "
+                        "'% is invalid'")
 
         self.assertEqual(ret, 1)
         out = out.getvalue().strip()

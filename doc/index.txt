@@ -13,6 +13,7 @@ Contents
 
 .. toctree::
    :maxdepth: 2
+   :includehidden:
 
    features
 
@@ -30,6 +31,7 @@ Contents
    glossary
 
    admin_guide
+   man pages <man_pages>
    license
    acknowledgements
 
@@ -39,6 +41,7 @@ Contents
 
    Design Overview <overview>
    Design (original) <design>
+   Software Carpentry and Papers <sc>
 
    developers
 
@@ -47,6 +50,11 @@ Contents
 
    Richard Jones implementation notes <implementation>
    security-history
+
+.. toctree::
+   :hidden:
+
+   pydoc
 
 See: https://wiki.roundup-tracker.org/ReleaseErrata for fixes to
 documentation.

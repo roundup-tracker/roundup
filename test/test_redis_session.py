@@ -45,7 +45,7 @@ class RedisSessionTest(SessionTest):
         SessionTest.setUp(self)
 
         import os
-        if 'pytest_redis_pw' in os.environ:
+        if 'pytest_redis_pw' in os.environ and os.environ['pytest_redis_pw']:
             pw = os.environ['pytest_redis_pw']
             if ':' in pw:
                 # pw is user:password
@@ -57,6 +57,10 @@ class RedisSessionTest(SessionTest):
             pw = ""
 
         # redefine the session db's as redis.
+        # close the existing session databases before opening new ones.
+        self.db.Session.close()
+        self.db.Otk.close()
+
         self.db.config.SESSIONDB_BACKEND = "redis"
         self.db.config.SESSIONDB_REDIS_URL = \
                     'redis://%slocalhost:6379/15?health_check_interval=2' % pw

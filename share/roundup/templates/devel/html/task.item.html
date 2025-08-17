@@ -1,9 +1,9 @@
 <tal:block metal:use-macro="templates/page/macros/frame">
 <title metal:fill-slot="head_title">
 <tal:block condition="context/id" i18n:translate=""
- >Task <span tal:replace="context/id" i18n:name="id"
- />: <span tal:replace="context/title" i18n:name="title"
- /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+ >Task <tal:x tal:content="context/id" i18n:name="id"
+ />: <tal:x tal:content="context/title" i18n:name="title"
+ /> - <tal:x tal:content="config/TRACKER_NAME" i18n:name="tracker"
 /></tal:block>
 <tal:block condition="not:context/id" i18n:translate=""
  >New Task - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
@@ -45,7 +45,7 @@
  <td colspan="3" tal:condition="context/title/is_edit_ok"
      tal:content="structure python:context.title.field(size=60)">title</td>
  <td colspan="3" tal:condition="not:context/title/is_edit_ok">
-  <span tal:content="structure context/title/plain"/>
+  <span tal:content="context/title/plain"/>
   <input type="hidden" name="title" tal:attributes="value context/title">
  </td>
 </tr>

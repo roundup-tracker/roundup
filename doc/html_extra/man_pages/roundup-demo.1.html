@@ -1,0 +1,205 @@
+<!-- Creator     : groff version 1.22.4 -->
+<!-- CreationDate: Sat Jul 12 02:21:20 2025 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<link rel="canonical" href="https://www.roundup-tracker.org/docs/man_pages/roundup-demo.1.html">
+<style type="text/css">
+       p       { max-width: 65ch; margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title>ROUNDUP-DEMO</title>
+
+</head>
+<body>
+
+<h1 align="center">ROUNDUP-DEMO</h1>
+
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#OPTIONS">OPTIONS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#SEE ALSO">SEE ALSO</a><br>
+<a href="#AUTHOR">AUTHOR</a><br>
+
+<hr>
+
+
+<h2>NAME
+<a name="NAME"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">roundup-demo -
+create a roundup &quot;demo&quot; tracker and launch its web
+interface</p>
+
+<h2>SYNOPSIS
+<a name="SYNOPSIS"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>roundup_demo</b>
+[<b>-h</b>] [<b>-b</b> <i>BIND_ADDRESS</i>] [<b>-b</b>
+{<b>anydbm</b>,<b>mysql</b>,<b>sqlite</b>,<b>postgresql</b>}]
+[<b>-t {minimal,jinja2,classic,responsive,devel}] [-p</b>
+<i>PORT</i><b>] [-P</b> <i>URLPORT</i><b>] [-V]
+[</b><i>directory</i><b>] [</b><i>backend</i><b>]
+[nuke]</b></p>
+
+<h2>OPTIONS
+<a name="OPTIONS"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b><i>directory</i></b></p>
+
+<p style="margin-left:22%; margin-top: 1em">The home
+directory for the new demo tracker. (*)</p>
+
+<p style="margin-left:11%;"><i>backend</i></p>
+
+<p style="margin-left:22%; margin-top: 1em">Choose backend
+database. Depricated, use <b>-b</b>.</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="6%">
+
+
+<p><b>nuke</b></p></td>
+<td width="5%"></td>
+<td width="78%">
+
+
+<p>Create a fresh demo tracker (deleting the existing one
+if any). E.G.</p></td></tr>
+</table>
+
+<p style="margin-left:22%;">roundup-demo -b sqlite -t
+classic ./mytracker nuke <br>
+will remove an existing tracker (if present) from the
+directory <b>./mytracker</b>. Then it will create and serve
+a new empty classic tracker using the sqlite backend.</p>
+
+<p style="margin-left:11%;"><b>-h</b>, <b>--help</b></p>
+
+<p style="margin-left:22%; margin-top: 1em">Show the help
+message and exit</p>
+
+<p style="margin-left:11%;"><b>-B</b> <i>BIND_ADDRESS,</i>
+<b>--bind_address</b> <i>BIND_ADDRESS</i></p>
+
+<p style="margin-left:22%; margin-top: 1em">Choose address
+for server to listen at. Use 0.0.0.0 to bind to all
+addreses. Default: 127.0.0.1.</p>
+
+<p style="margin-left:11%;"><b>-b</b>
+{<b>anydbm</b>,<b>mysql</b>,<b>sqlite</b>,<b>postgresql</b>},
+<b>--backend_db</b> <br>
+
+{<b>anydbm</b>,<b>mysql</b>,<b>sqlite</b>,<b>postgresql</b>}</p>
+
+<p style="margin-left:22%; margin-top: 1em">Choose backend
+database. Default: sqlite. Available backends are subject to
+availability on your system.</p>
+
+<p style="margin-left:11%;"><b>-t</b>
+{<b>minimal</b>,<b>jinja2</b>,<b>classic</b>,<b>responsive</b>,<b>devel</b>},
+<b>--template <br>
+{minimal,jinja2,classic,responsive,devel}</b></p>
+
+<p style="margin-left:22%; margin-top: 1em">Use specified
+template when building tracker. (*)</p>
+
+<p style="margin-left:11%;"><b>-h</b> <i>HOSTNAME</i>,
+<b>--hostname</b> <i>HOSTNAME</i></p>
+
+<p style="margin-left:22%; margin-top: 1em">Set the
+hostname used in the URL. This does not make the server
+listen at the hostname. Use the hostname with <b>-B</b> to
+listen on that IP address.</p>
+
+<p style="margin-left:11%;"><b>-p</b> <i>PORT</i>,
+<b>--port</b> <i>PORT</i></p>
+
+<p style="margin-left:22%; margin-top: 1em">Listen at this
+port. Default: search for open port starting at 8917.</p>
+
+<p style="margin-left:11%;"><b>-P</b> <i>URLPORT</i>,
+<b>--urlport</b> <i>URLPORT</i></p>
+
+<p style="margin-left:22%; margin-top: 1em">When using
+docker this option passes the docker external port to the
+demo instance. If using <b>docker ... -p 9090:8917 ...</b>
+this should be set to <b>-P 9090</b>. Default: as selected
+by <b>--port</b>.</p>
+
+<p style="margin-left:11%;"><b>-V</b>, <b>--version</b></p>
+
+<p style="margin-left:22%; margin-top: 1em">Show
+program&rsquo;s version number and exit</p>
+
+<p style="margin-left:11%; margin-top: 1em">If items marked
+with (*) are missing, they will be asked for interactively
+when setting up the tracker.</p>
+
+<h2>DESCRIPTION
+<a name="DESCRIPTION"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">This command
+creates a fresh demo tracker for you to experiment with. The
+email features of Roundup will be turned off (so the nosy
+feature won&rsquo;t send email). It does this by removing
+the <b>nosyreaction.py</b> module from the demo
+tracker&rsquo;s <i>detectors</i> directory. If you wish to
+send email to promote the tracker to production, you will
+need to copy <b>nosyreaction.py</b> from the default tracker
+templates directory. The <b>templates</b> command from
+roundup-admin(1) can help you locate a replacement.</p>
+
+<p style="margin-left:11%; margin-top: 1em">If you wish,
+you may modify the demo tracker by editing its configuration
+files and HTML templates. See the <i>customisation</i>
+manual for information about how to do that.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Once
+you&rsquo;ve fiddled with the demo tracker, you may use it
+as a template for creating your real, live tracker. Simply
+run the <i>roundup-admin</i> command to install the tracker
+from inside the demo tracker home directory, and it will be
+listed as an available template for installation. No data
+will be copied over.</p>
+
+<h2>SEE ALSO
+<a name="SEE ALSO"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em">roundup-admin(1),
+roundup-mailgw(1), roundup-server(1)</p>
+
+<h2>AUTHOR
+<a name="AUTHOR"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">This manpage
+was written by Richard Jones and extensively modified by
+John Rouillard &lt;rouilj@users.sourceforge.net&gt;.</p>
+<hr>
+</body>
+</html>

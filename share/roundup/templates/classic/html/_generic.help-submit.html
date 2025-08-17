@@ -6,11 +6,14 @@
       <tal:block tal:condition="python:'property' in request.form">
       <title>Generic submit page for framed helper windows</title>
       <script language="Javascript" type="text/javascript"
-          tal:content="structure string:<!--
+          tal:content="string:
 // this is the name of the field in the original form that we're working on
 form  = parent.opener.document.${request/form/form/value};
 callingform=form
-field  = '${request/form/property/value}';
+field  = '${request/form/property/value}';">
+</script>
+      <script language="Javascript" type="text/javascript"
+          tal:content="structure string:
 var listform = null
 function listPresent() {
   return document.frm_help.cb_listpresent.checked
@@ -35,8 +38,7 @@ function checkListForm() {
   var bol= listform != null
   alert('checkListForm: bol='+bol)
   return bol
-}
-//-->">
+}">
       </script>
       <script src="@@file/help_controls.js" type="text/javascript"></script>
       </tal:block>

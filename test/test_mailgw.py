@@ -241,7 +241,7 @@ class MailgwTestAbstractBase(DiffHelper):
             self.db.security.getPermission('Create', 'issue'),
             self.db.security.getPermission('Create', 'msg'),
         ]
-        self.db.security.role['anonymous'].permissions = p
+        self.db.security.role['anonymous'].addPermission(*p)
 
     def _create_mailgw(self, message, args=()):
         class MailGW(self.instance.MailGW):
@@ -539,6 +539,9 @@ Subject: [issue] Testing...
 This is a test submission of a new issue.
 ''')
         userlist = self.db.user.list()
+        if os.path.exists(SENDMAILDEBUG):
+            with open(SENDMAILDEBUG) as f:
+                print(f.read())
         assert not os.path.exists(SENDMAILDEBUG)
         self.assertEqual(userlist, self.db.user.list(),
             "user created when it shouldn't have been")
@@ -2867,7 +2870,7 @@ Subject: [issue] Testing...
 
 This is a test submission of a new issue.
 '''
-        self.db.security.role['anonymous'].permissions=[]
+        self.db.security.role['anonymous']._permissions={}
         anonid = self.db.user.lookup('anonymous')
         self.db.user.set(anonid, roles='Anonymous')
         try:
@@ -2888,7 +2891,7 @@ Unknown address: fubar@bork.bork.bork
             self.db.security.getPermission('Register', 'user'),
             self.db.security.getPermission('Web Access', None),
         ]
-        self.db.security.role['anonymous'].permissions=p
+        self.db.security.role['anonymous'].addPermission(*p)
         try:
             self._handle_mail(message)
         except Unauthorized as value:
@@ -2915,7 +2918,7 @@ Unknown address: fubar@bork.bork.bork
             self.db.security.getPermission('Register', 'user'),
             self.db.security.getPermission('Email Access', None),
         ]
-        self.db.security.role['anonymous'].permissions=p
+        self.db.security.role['anonymous'].addPermission(*p)
         self._handle_mail(message)
         m = self.db.user.list()
         m.sort()

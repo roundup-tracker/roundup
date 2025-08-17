@@ -3,8 +3,8 @@ define="edit_ok context/is_edit_ok"
 >
 <title metal:fill-slot="head_title">
 <tal:if condition="context/id" i18n:translate=""
- >User <span tal:replace="context/id" i18n:name="id"
- />: <span tal:replace="context/username" i18n:name="title"
+ >User <tal:x tal:content="context/id" i18n:name="id"
+ />: <tal:x tal:content="context/username" i18n:name="title"
  /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
 /></tal:if>
 <tal:if condition="not:context/id" i18n:translate=""
@@ -66,11 +66,11 @@ define="edit_ok context/is_edit_ok"
  <tal:if condition="edit_ok">
  <tr tal:define="name string:password; label string:Login Password">
   <th metal:use-macro="th_label">Login Password</th>
-  <td><input metal:use-macro="pw_input" type="password"></td>
+  <td><input metal:use-macro="pw_input" spellcheck="false" type="password"></td>
  </tr>
  <tr tal:define="name string:password; label string:Confirm Password">
   <th metal:use-macro="th_label">Confirm Password</th>
-  <td><input metal:use-macro="confirm_input" type="password"></td>
+  <td><input metal:use-macro="confirm_input" spellcheck="false" type="password"></td>
  </tr>
  </tal:if>
  <tal:if condition="python:request.user.hasPermission('Web Roles')">

@@ -56,7 +56,11 @@
  <th i18n:translate="">Superseder</th>
  <td>
   <span tal:replace="structure python:context.superseder.field(showid=1, size=20)" />
-  <span tal:condition="context/is_edit_ok" tal:replace="structure python:db.issue.classhelp('id,title', property='superseder')" />
+  <roundup-classhelper data-search-with="title,status[],keyword[],id">
+    <span tal:condition="context/is_edit_ok"
+	  tal:replace="structure python:db.issue.classhelp('id,title',
+		       property='superseder')" />
+  </roundup-classhelper>
   <span tal:condition="context/superseder">
    <br><span i18n:translate="">View:</span>
      <a tal:repeat="sup context/superseder"
@@ -67,8 +71,17 @@
  <th i18n:translate="">Nosy List</th>
  <td>
   <span tal:replace="structure context/nosy/field" />
-  <span tal:condition="context/is_edit_ok" tal:replace="structure
-python:db.user.classhelp('username,realname,address', property='nosy', width='600')" /><br>
+  <roundup-classhelper
+    tal:define="search string:username,realname,phone,roles[]"
+    tal:attributes="data-search-with python:search
+		    if request.user.hasRole('Admin') else
+		    ','.join(search.split(',')[:-1])">
+    <span tal:condition="context/is_edit_ok"
+	  tal:replace="structure
+		       python:db.user.classhelp(
+		       'username,realname,address',
+		       property='nosy',
+		       width='600')" /></roundup-classhelper><br>
  </td>
 </tr>
 
@@ -78,7 +91,11 @@ python:db.user.classhelp('username,realname,address', property='nosy', width='60
  <th i18n:translate="">Keywords</th>
  <td>
   <span tal:replace="structure context/keyword/field" />
-  <span tal:condition="context/is_edit_ok" tal:replace="structure python:db.keyword.classhelp(property='keyword')" />
+  <roundup-classhelper data-search-with="name">
+    <span tal:condition="context/is_edit_ok"
+	  tal:replace="structure
+		       python:db.keyword.classhelp(property='keyword')" />
+  </roundup-classhelper>
  </td>
 </tr>
 

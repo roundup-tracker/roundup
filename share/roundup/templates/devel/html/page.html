@@ -163,7 +163,7 @@
         <li>
          <tal:span i18n:translate="">Login</tal:span><br/>
          <input size="10" required name="__login_name"/><br/>
-         <input size="10" type="password" required name="__login_password"/><br/>
+         <input size="10" spellcheck="false" type="password" required name="__login_password"/><br/>
 	 <input name="@csrf" type="hidden"
 		tal:attributes="value python:utils.anti_csrf_nonce()">
          <input type="hidden" name="@action" value="Login"/>
@@ -190,7 +190,7 @@
       </form>
      </li>
      <li tal:condition="python:request.user.username != 'anonymous'" class="submenu">
-      <p class="label"><b tal:replace="request/user/username">username</b></p>
+      <p class="label"><b tal:replace="python:request.user.username.plain(escape=1)">username</b></p>
       <ul>
        <li>
         <a href="#" tal:attributes="href python:request.indexargs_url('bug', {
@@ -263,6 +263,7 @@ Last modified: Wed Jun  3 00:02:37 EDT 2009
 <!-- hhmts end -->
   </div> <!-- footer -->
   <pre tal:condition="request/form/deissue | nothing" tal:content="request"></pre>
+  <script type="text/javascript" src='@@file/datecopy.min.js'></script>
  </body>
 </html>
 </tal:block>
@@ -431,9 +432,9 @@ See user.item.html in the classic template for examples.
     tal:attributes="id name; name name; value value; readonly not:edit_ok"
     value="heinz"/>
 <!-- password: type; no initial value -->
-    <input metal:define-macro="user_pw_input" type="password"
+    <input metal:define-macro="user_pw_input" spellcheck="false" type="password"
     tal:attributes="id name; name name; readonly not:edit_ok" value=""/>
-    <input metal:define-macro="user_confirm_input" type="password"
+    <input metal:define-macro="user_confirm_input" spellcheck="false" type="password"
     tal:attributes="id string:confirm_$name; name string:@confirm@$name; readonly not:edit_ok" value=""/>
 
 <!-- SHA: ca32e5f43efcb7c3b4940df6f7a176f6990b15f0 -->

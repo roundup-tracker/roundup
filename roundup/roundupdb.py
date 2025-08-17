@@ -137,7 +137,7 @@ class Database(object):
             # Try to make error message less cryptic to the user.
             if str(e) == 'node with key "%s" exists' % username:
                 raise ValueError(
-                    _("Username '%s' already exists." % username))
+                    _("Username '%s' already exists.") % username)
             else:
                 raise
 
@@ -197,7 +197,7 @@ class DetectorError(RuntimeError):
     pass
 
 
-# deviation from spec - was called IssueClass
+# deviation from spec - was called ItemClass
 class IssueClass:
     """This class is intended to be mixed-in with a hyperdb backend
     implementation. The backend should provide a mechanism that
@@ -227,6 +227,27 @@ class IssueClass:
         # they are listed here to keep things in one place
         ''"actor", ''"activity", ''"creator", ''"creation",
     )
+
+    def _update_properties(self, classname, properties):
+        """The newly-created class automatically includes the "messages",
+        "files", "nosy", and "superseder" properties.  If the 'properties'
+        dictionary attempts to specify any of these properties or a
+        "creation", "creator", "activity" or "actor" property, a ValueError
+        is raised. This method must be called by __init__.
+
+        """
+        if 'title' not in properties:
+            properties['title'] = hyperdb.String(indexme='yes')
+        if 'messages' not in properties:
+            properties['messages'] = hyperdb.Multilink("msg")
+        if 'files' not in properties:
+            properties['files'] = hyperdb.Multilink("file")
+        if 'nosy' not in properties:
+            # note: journalling is turned off as it really just wastes
+            # space. this behaviour may be overridden in an instance
+            properties['nosy'] = hyperdb.Multilink("user", do_journal="no")
+        if 'superseder' not in properties:
+            properties['superseder'] = hyperdb.Multilink(classname)
 
     # New methods:
     def addmessage(self, issueid, summary, text):

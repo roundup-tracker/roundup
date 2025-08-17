@@ -1,15 +1,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html tal:define="property request/form/property/value" >
+<html tal:define="property request/form/property/value | nothing" >
   <head>
       <link rel="stylesheet" type="text/css" href="@@file/style.css" />
       <meta http-equiv="Content-Type"
        tal:attributes="content string:text/html;; charset=${request/client/charset}" />
       <tal:block tal:condition="python:'property' in request.form">
       <title i18n:translate=""><tal:x i18n:name="property"
-       tal:content="property" i18n:translate="" /> help - <span i18n:name="tracker"
+       tal:content="property | default" i18n:translate="" /> help - <span i18n:name="tracker"
        tal:replace="config/TRACKER_NAME" /></title>
       <script language="Javascript" type="text/javascript"
-          tal:content="structure string:
+          tal:content="string:
           // this is the name of the field in the original form that we're working on
           form  = window.opener.document.${request/form/form/value};
           field  = '${request/form/property/value}';">
@@ -23,7 +23,7 @@
        tal:define="batch request/batch;
                    props python:request.form['properties'].value.split(',')">
 
-     <div id="classhelp-controls">
+     <div tal:condition="property" id="classhelp-controls">
        <!--input type="button" name="btn_clear"
               value="Clear" onClick="clearList()"/ -->
        <input type="text" name="text_preview" size="24" class="preview"
@@ -40,7 +40,7 @@
        <th>
         <a tal:define="prev batch/previous" tal:condition="prev"
            tal:attributes="href python:request.indexargs_url(request.classname,
-           {'@template':'help', 'property': request.form['property'].value,
+           {'@template':'help', 'property': property,
             'properties': request.form['properties'].value,
             'form': request.form['form'].value,
             'type': request.form['type'].value,
@@ -56,7 +56,7 @@
        <th>
         <a tal:define="next batch/next" tal:condition="next"
            tal:attributes="href python:request.indexargs_url(request.classname,
-           {'@template':'help', 'property': request.form['property'].value,
+           {'@template':'help', 'property': property,
             'properties': request.form['properties'].value,
             'form': request.form['form'].value,
             'type': request.form['type'].value,
@@ -69,12 +69,12 @@
 
      <table class="classhelp">
        <tr>
-           <th>&nbsp;<b>x</b></th>
+           <th tal:condition="property">&nbsp;<b>x</b></th>
            <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
        </tr>
        <tr tal:repeat="item batch">
          <tal:block tal:define="attr python:item[props[0]]" >
-           <td>
+           <td tal:condition="property">
              <input name="check"
                  onclick="updatePreview();"
                  tal:attributes="type python:request.form['type'].value;
@@ -88,7 +88,7 @@
            </tal:block>
        </tr>
        <tr>
-           <th>&nbsp;<b>x</b></th>
+           <th tal:condition="property">&nbsp;<b>x</b></th>
            <th tal:repeat="prop props" tal:content="prop" i18n:translate=""></th>
        </tr>
      </table>
@@ -96,3 +96,4 @@
  </form>
  </body>
 </html>
+<!-- SHA: b98bdbeee81ffdf2acc9e9c8b17a6110bf60ac7a -->

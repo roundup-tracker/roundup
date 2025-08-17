@@ -26,8 +26,12 @@ SYSSAVE = sys.path
 DOCROOT = os.path.abspath(os.path.dirname(__file__) + "/..")
 sys.path = [os.path.dirname(DOCROOT)]
 try:
-    from roundup import __version__ as VERSION
-    SHORTVER = '.'.join(VERSION.split('.', 2)[:2])
+    if "RELEASE_VERSION" in os.environ:
+        SHORTVER = '.'.join(os.environ['RELEASE_VERSION'].split('.', 2)[:2])
+        VERSION = os.environ['RELEASE_VERSION']
+    else:
+        from roundup import __version__ as VERSION
+        SHORTVER = '.'.join(VERSION.split('.', 2)[:2])
 except ImportError:
     VERSION = SHORTVER = '(unknown version)'
 finally:
@@ -41,9 +45,17 @@ finally:
 # General configuration
 # ---------------------
 
-# Add any Sphinx extension module names here, as strings. They can be extensions
-# coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx_sitemap']
+# Add any Sphinx extension module names here, as strings. They can be
+#  extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+extensions = ['sphinx.ext.autodoc', 'sphinxext.opengraph',
+              'sphinx_sitemap', 'sphinx_tabs.tabs']
+
+sphinx_tabs_valid_builders = ['linkcheck']
+sphinx_tabs_disable_tab_closing = True
+ogp_site_url = "https://www.roundup-tracker.org"
+ogp_image = "_images/index_logged_out.png"
+ogp_image_alt = "The front page of a tracker showing a table of issues and their properties."
+# ogp_description_length = 200
 
 # for sitemap default: "{lang}{version}subdir/{link}"
 sitemap_url_scheme = "{link}"
@@ -62,7 +74,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'Roundup'
-copyright = u'2009-2023, Richard Jones, Roundup-Team'
+copyright = u'2009-2025, Richard Jones, Roundup-Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -90,6 +102,7 @@ exclude_patterns = ['docs/index.txt',
                     'robots.txt',
                     'docs/tracker_config.txt',
                     'COPYING.txt',
+                    'docs/CVE.txt',
                     '_tmp']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
@@ -116,7 +129,8 @@ pygments_style = 'borland'
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = 'default.css'
+html_style = ''
+# 'default.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -243,3 +257,8 @@ linkcheck_ignore = [
     r'https://.../rest/.*',              # dummy example url
     r'http://dev.zope.org/Wikis/DevSite/Projects/ComponentArchitecture/ZPTInternationalizationSupport',                 # dead link, there for historic
 ]
+
+linkcheck_timeout = 10  # seconds
+
+# getting 429 on www.gnu.org
+linkcheck_retry_on_rate_limit = True

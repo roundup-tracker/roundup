@@ -18,19 +18,19 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-
 from __future__ import print_function
-from roundup.dist.command.build_doc import build_doc
-from roundup.dist.command.build import build, list_message_files
-from roundup.dist.command.bdist_rpm import bdist_rpm
-from roundup.dist.command.install_lib import install_lib
+
+import os
+import sys
+from glob import glob
+from sysconfig import get_path
 
 from setuptools import setup
 
-from sysconfig import get_path
-
-import sys, os
-from glob import glob
+from roundup.dist.command.bdist_rpm import bdist_rpm
+from roundup.dist.command.build import build, list_message_files
+from roundup.dist.command.build_doc import build_doc
+from roundup.dist.command.install_lib import install_lib
 
 
 def include(d, e):
@@ -40,7 +40,7 @@ def include(d, e):
 
     'e' -- A glob pattern"""
 
-    return (d, [f for f in glob('%s/%s'%(d, e)) if os.path.isfile(f)])
+    return (d, [f for f in glob('%s/%s' % (d, e)) if os.path.isfile(f)])
 
 
 def mapscript(path):
@@ -51,7 +51,8 @@ def mapscript(path):
     script = module.replace('_', '-')
     return '%s = roundup.scripts.%s:run' % (script, module)
 
-def make_data_files_absolute(data_files, prefix):
+
+def make_data_files_absolute(data_files, prefix, enable=False):
     """Using setuptools data files are put under the egg install directory
        if the datafiles are relative paths. We don't want this. Data files
        like man pages, documentation, templates etc. should be installed
@@ -62,42 +63,61 @@ def make_data_files_absolute(data_files, prefix):
     """
     new_data_files = [ (os.path.join(prefix,df[0]),df[1])
                        for df in data_files ]
+    if enable:
+        return new_data_files
+    return data_files
 
-    return new_data_files
 
 def get_prefix():
     """Get site specific prefix using --prefix, platform lib or
        sys.prefix.
     """
-    prefix_arg=False
-    prefix=""
+    prefix_arg = False
+    prefix = ""
     for a in sys.argv:
         if prefix_arg:
-            prefix=a
+            prefix = a
             break
+
+        # argv[0] can be a PosixPath when setup.py
+        # is invoked by setuptools-py2cfg
+        if not isinstance(a, str):
+            continue
+
         # is there a short form -p or something for this??
         if a.startswith('--prefix'):
             if a == '--prefix':
                 # next argument is prefix
-                prefix_arg=True
+                prefix_arg = True
                 continue
-            else:
-                # strip '--prefix='
-                prefix=a[9:]
+            # strip '--prefix='
+            prefix = a[9:]
     if prefix:
         return prefix
-    else:
-        # start with the platform library
-        plp = get_path('platlib')
-        # nuke suffix that matches lib/* and return prefix
-        head, tail = os.path.split(plp)
-        old_head = None
-        while tail.lower() not in ['lib', 'lib64' ] and head != old_head:
-            old_head = head
-            head, tail = os.path.split(head)
-        if head == old_head:
-            head = sys.prefix
-        return head
+
+    if sys.platform.startswith('win'):
+        # on windows, using pip to install and
+        # prefixing data file paths with c:\path\a\b\...
+        # results in treatment as a relative path.
+        # The result is files are buried under:
+        # platlib\path\a\b\...\share\ and not findable by
+        # Roundup. So return no prefix which places the files at
+        # platlib\share\{doc,locale,roundup} where roundup can
+        # find templates/translations etc.
+        # sigh....
+        return ""
+
+    # start with the platform library
+    plp = get_path('platlib')
+    # nuke suffix that matches lib/* and return prefix
+    head, tail = os.path.split(plp)
+    old_head = None
+    while tail.lower() not in ['lib', 'lib64'] and head != old_head:
+        old_head = head
+        head, tail = os.path.split(head)
+    if head == old_head:
+        head = sys.prefix
+    return head
 
 
 def main():
@@ -120,17 +140,17 @@ def main():
 
     # build list of zope files/directories
     Zope = {}
-    Zope['module'] = [f for f in glob('frontends/ZRoundup/*.py')]
-    Zope['module'].append('frontends/ZRoundup/refresh.txt');
-    Zope['icons'] = [f for f in glob('frontends/ZRoundupscripts/*.gif')]
-    Zope['dtml'] = [f for f in glob('frontends/ZRoundupscripts/*.dtml')]
+    Zope['module'] = list(glob('frontends/ZRoundup/*.py'))
+    Zope['module'].append('frontends/ZRoundup/refresh.txt')
+    Zope['icons'] = list(glob('frontends/ZRoundupscripts/*.gif'))
+    Zope['dtml'] = list(glob('frontends/ZRoundupscripts/*.dtml'))
 
     data_files = [
         ('share/roundup/cgi-bin', ['frontends/roundup.cgi']),
         ('share/roundup/frontends', ['frontends/wsgi.py']),
         ('share/roundup/frontends/ZRoundup', Zope['module']),
         ('share/roundup/frontends/ZRoundup/icons', Zope['icons']),
-        ('share/roundup/frontends/ZRoundup/dtml', Zope['dtml'])
+        ('share/roundup/frontends/ZRoundup/dtml', Zope['dtml']),
     ]
     # install man pages on POSIX platforms
     if os.name == 'posix':
@@ -179,7 +199,8 @@ def main():
     # because the distutils installer will try to use the mbcs codec
     # which isn't available on non-windows platforms. See also
     # http://bugs.python.org/issue10945
-    long_description=open('doc/announcement.txt').read()
+    with open('doc/announcement.txt') as announcement:
+        long_description = announcement.read()
     try:
         # attempt to interpret string as 'ascii'
         long_description.encode('ascii')
@@ -189,19 +210,8 @@ def main():
         sys.exit(42)
 
     setup(name='roundup',
-          version=__version__,
           author="Richard Jones",
           author_email="richard@users.sourceforge.net",
-          maintainer="Ralf Schlatterbeck",
-          maintainer_email="rsc@runtux.com",
-          description="A simple-to-use and -install issue-tracking system"
-            " with command-line, web and e-mail interfaces. Highly"
-            " customisable.",
-          license="OSI Approved: MIT License, Zope Public License, Python Software Foundation License",
-          long_description=long_description,
-          long_description_content_type='text/x-rst',
-          url='https://www.roundup-tracker.org',
-          download_url='https://pypi.org/project/roundup',
           classifiers=['Development Status :: 5 - Production/Stable',
                        #'Development Status :: 4 - Beta',
                        #'Development Status :: 3 - Alpha',
@@ -220,33 +230,61 @@ def main():
                        'Operating System :: Microsoft :: Windows',
                        'Operating System :: POSIX',
                        'Programming Language :: Python',
-                       'Programming Language :: Python :: 2',
-                       'Programming Language :: Python :: 2.7',
                        'Programming Language :: Python :: 3',
-                       'Programming Language :: Python :: 3.6',
                        'Programming Language :: Python :: 3.7',
                        'Programming Language :: Python :: 3.8',
                        'Programming Language :: Python :: 3.9',
                        'Programming Language :: Python :: 3.10',
                        'Programming Language :: Python :: 3.11',
                        'Programming Language :: Python :: 3.12',
+                       'Programming Language :: Python :: 3.13',
+                       'Programming Language :: Python :: Implementation :: CPython',
                        'Topic :: Communications :: Email',
                        'Topic :: Office/Business',
                        'Topic :: Software Development :: Bug Tracking',
                        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
                        ],
-
           # Override certain command classes with our own ones
-          cmdclass= {'build_doc': build_doc,
+          cmdclass={'build_doc': build_doc,
                      'build': build,
                      'bdist_rpm': bdist_rpm,
                      'install_lib': install_lib,
                      },
-          packages=packages,
+          data_files=data_files,
+          description="A simple-to-use and -install issue-tracking system"
+            " with command-line, web and e-mail interfaces. Highly"
+            " customisable.",
+          download_url='https://pypi.org/project/roundup',
           entry_points={
-              'console_scripts': scripts
+              'console_scripts': scripts,
           },
-          data_files=data_files)
+          extras_require={
+              "charting": ['pygal'],
+              "jinja2": ['jinja2'],
+              "extras": ['brotli', 'pytz'],
+              "test": ['pytest > 7.0.0'],
+              },
+          license="OSI Approved: MIT License, Zope Public License,"
+                  " Python Software Foundation License",
+          long_description=long_description,
+          long_description_content_type='text/x-rst',
+          maintainer="Ralf Schlatterbeck",
+          maintainer_email="rsc@runtux.com",
+          packages=packages,
+          project_urls={
+              "Documentation": "https://roundup-tracker.org/docs.html",
+              "Changelog": "https://sourceforge.net/p/roundup/code/ci/tip/tree/CHANGES.txt",
+              "Contact": "https://roundup-tracker.org/contact.html",
+              "IRC": "https://webchat.oftc.net/?randomnick=1&channels=roundup&prompt=1",
+              "Issues": "https://issues.roundup-tracker.org/",
+              "Licenses": "https://roundup-tracker.org/docs/license.html",
+              "Wiki": "https://wiki.roundup-tracker.org/",
+    },
+          python_requires=">=3.7",
+          url='https://www.roundup-tracker.org',
+          version=__version__,
+)
+
 
 if __name__ == '__main__':
 

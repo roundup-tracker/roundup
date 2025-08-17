@@ -20,6 +20,9 @@ Run the server in the background and write the server's PID to the
 file indicated by PIDfile. The -l (or -L) option \fBmust\fP be
 specified if -d is used.
 .TP
+\fB-D\fP
+Run the server in the foreground even if -d is used.
+.TP
 \fB-t\fP \fBfork|thread|debug|none\fP
 Control multi-process mode. \fBdebug\fP and \fBnone\fP are always
 available. If an invalid mode is specified the server starts in
@@ -33,13 +36,26 @@ may need to be increased on a heavily loaded site.  Default 40.
 Sets a filename to log to (instead of stdout). This is required if the -d
 option is used.
 .TP
+\fB-P\fP
+If a reverse proxy is used in front of the roundup-server, the server
+will log the ip address of the proxy, not the client browser. Using -P
+logs the left most entry in the X-Forwarded-For http header as the
+IP address of the client. This address will be logged or resolved to a
+hostname (with \fB-N\fP) and a '+' character will be appended.
+\fB-P\fP should only be used when the
+roundup server is accessible only from trusted proxy hosts. See:
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
+for details and warnings about using the X-Forwarded-For header.
+.TP
 \fB-L\fP
 Have the server log using the Python logger with key roundup.http.
 .TP
 \fB-i\fP \fIfile\fP
 Sets a filename to use as a template for generating the tracker index page.
 The variable "trackers" is available to the template and is a dict of all
-configured trackers.
+configured trackers. If you connect to the root of the server (without
+a tracker name), the default index page is shown. Using \fB-i\fP
+allows you to customize the index page.
 .TP
 \fB-I\fP \fIheader1[,header2,...]\fP
 Pass the header(s) and their values to the backend. This allow-list
@@ -57,9 +73,21 @@ roundup-server.
 \fB-e\fP \fIfile\fP
 Sets a filename containing the PEM file to use for SSL. The PEM file
 must include both the private key and certificate with appropriate
-headers (e.g. "-----BEGIN PRIVATE KEY-----", "-----END PRIVATE
-KEY-----" and "-----BEGIN CERTIFICATE-----", "-----END
-CERTIFICATE-----". If no file is specified, a temporary self-signed
+header/trailer markers:
+
+.EX
+-----BEGIN PRIVATE KEY-----
+-----END PRIVATE KEY-----
+.EE
+
+and
+
+.EX
+-----BEGIN CERTIFICATE-----
+-----END CERTIFICATE-----
+.EE
+
+If no file is specified, a temporary self-signed
 certificate will be used.
 .TP
 \fB-N\fP
@@ -98,14 +126,25 @@ the command-line. For convenience, you may edit the TRACKER_HOMES variable in
 the roundup-server file instead.  Make sure the name part doesn't include any
 url-unsafe characters like spaces, as these confuse the cookie handling in
 browsers like IE.
+.PP
+If you connect to the root directory (I.E. you do not include the
+\fBname\fP component in the URL, the server will display an index page
+of trackers served by roundup-server if more than one tracker is
+defined. If only one tracker is defined it will redirect to the tracker.
 .SH EXAMPLES
 .TP
 .B roundup-server -p 9000 bugs=/var/tracker reqs=/home/roundup/group1
 Start the server on port \fB9000\fP serving two trackers; one under
 \fB/bugs\fP and one under \fB/reqs\fP.
+.PP
+If you connect to the server at the root level (http://host:9000/) it
+will display a list of the available trackers.
 
 .SH CONFIGURATION FILE
 See the "admin_guide" in the Roundup "doc" directory.
+.SH SEE ALSO
+roundup-admin(1), roundup-demo(1), roundup-mailgw(1)
+
 .SH AUTHOR
 This manpage was written by Bastian Kleineidam
 <calvin@debian.org> for the Debian distribution of roundup.

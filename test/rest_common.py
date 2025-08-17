@@ -1,12 +1,16 @@
 import pytest
 import unittest
 import shutil
+import sys
 import errno
+import logging
 
 from time import sleep
 from datetime import datetime, timedelta
 from roundup.anypy.cgi_ import cgi
 from roundup.anypy.datetime_ import utcnow
+from roundup.date import Date
+from roundup.exceptions import UsageError
 from roundup.test.tx_Source_detector import init as tx_Source_init
 
 
@@ -61,10 +65,21 @@ except ImportError:
     skip_jwt = mark_class(pytest.mark.skip(
         reason='Skipping JWT tests: jwt library not available'))
 
+if sys.version_info[0] > 2:
+    skip_on_py2 = lambda func, *args, **kwargs: func
+else:
+    from .pytest_patcher import mark_class
+    skip_on_py2 =mark_class(pytest.mark.skip(
+        reason='Skipping test on Python 2'))
+
 NEEDS_INSTANCE = 1
 
 
 class TestCase():
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
 
     backend = None
     url_pfx = 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/'
@@ -101,6 +116,29 @@ class TestCase():
 
         self.db.user.set('1', address="admin@admin.com")
         self.db.user.set('2', address="anon@admin.com")
+
+        # set up some more stuff for testing
+        self.db.msg.create(
+            author="1",
+            date=Date(),
+            summary="stuff",
+            content="abcdefghi\njklmnop",
+            type="text/markdown"
+        )
+
+        self.db.msg.create(
+            author="1",
+            date=Date(),
+            summary="stuff",
+            content="abcdefghi\njklmnop",
+        )
+
+        self.db.file.create(
+            name="afile",
+            content="PNG\x01abcdefghi\njklmnop",
+            type="image/png"
+        )
+
         self.db.commit()
         self.db.close()
         self.db = self.instance.open('joe')
@@ -140,8 +178,9 @@ class TestCase():
             # must be 32 chars in length minimum (I think this is at least
             # 256 bits of data)
 
-            secret = "TestingTheJwtSecretTestingTheJwtSecret"
-            self.db.config['WEB_JWT_SECRET'] = secret
+            self.old_secret = "TestingTheJwtSecretTestingTheJwtSecret"
+            self.new_secret = "TestingTheNEW JwtSecretTestingTheNEWJwtSecret"
+            self.db.config['WEB_JWT_SECRET'] = self.old_secret
 
             # generate all timestamps in UTC.
             base_datetime = datetime(1970, 1, 1, tzinfo=myutc)
@@ -181,51 +220,59 @@ class TestCase():
             self.claim['expired'] = copy(claim)
             self.claim['expired']['exp'] = expired_ts
             self.jwt['expired'] = tostr(jwt.encode(
-                self.claim['expired'], secret,
+                self.claim['expired'], self.old_secret,
                 algorithm='HS256'))
 
             # generate valid claim with user role
             self.claim['user'] = copy(claim)
             self.claim['user']['exp'] = plus1min_ts
             self.jwt['user'] = tostr(jwt.encode(
-                self.claim['user'], secret,
+                self.claim['user'], self.old_secret,
                 algorithm='HS256'))
+
+            # generate valid claim with user role and new secret
+            self.claim['user_new_secret'] = copy(claim)
+            self.claim['user_new_secret']['exp'] = plus1min_ts
+            self.jwt['user_new_secret'] = tostr(jwt.encode(
+                self.claim['user'], self.new_secret,
+                algorithm='HS256'))
+
             # generate invalid claim bad issuer
             self.claim['badiss'] = copy(claim)
             self.claim['badiss']['iss'] = "http://someissuer/bugs"
             self.jwt['badiss'] = tostr(jwt.encode(
-                self.claim['badiss'], secret,
+                self.claim['badiss'], self.old_secret,
                 algorithm='HS256'))
             # generate invalid claim bad aud(ience)
             self.claim['badaud'] = copy(claim)
             self.claim['badaud']['aud'] = "http://someaudience/bugs"
             self.jwt['badaud'] = tostr(jwt.encode(
-                self.claim['badaud'], secret,
+                self.claim['badaud'], self.old_secret,
                 algorithm='HS256'))
             # generate invalid claim bad sub(ject)
             self.claim['badsub'] = copy(claim)
             self.claim['badsub']['sub'] = str("99")
             self.jwt['badsub'] = tostr(
-                jwt.encode(self.claim['badsub'], secret,
+                jwt.encode(self.claim['badsub'], self.old_secret,
                            algorithm='HS256'))
             # generate invalid claim bad roles
             self.claim['badroles'] = copy(claim)
             self.claim['badroles']['roles'] = ["badrole1", "badrole2"]
             self.jwt['badroles'] = tostr(jwt.encode(
-                self.claim['badroles'], secret,
+                self.claim['badroles'], self.old_secret,
                 algorithm='HS256'))
             # generate valid claim with limited user:email role
             self.claim['user:email'] = copy(claim)
             self.claim['user:email']['roles'] = ["user:email"]
             self.jwt['user:email'] = tostr(jwt.encode(
-                self.claim['user:email'], secret,
+                self.claim['user:email'], self.old_secret,
                 algorithm='HS256'))
 
             # generate valid claim with limited user:emailnorest role
             self.claim['user:emailnorest'] = copy(claim)
             self.claim['user:emailnorest']['roles'] = ["user:emailnorest"]
             self.jwt['user:emailnorest'] = tostr(jwt.encode(
-                self.claim['user:emailnorest'], secret,
+                self.claim['user:emailnorest'], self.old_secret,
                 algorithm='HS256'))
 
         self.db.tx_Source = 'web'
@@ -249,7 +296,8 @@ class TestCase():
             'HTTP_ORIGIN': 'http://tracker.example'
         }
         self.dummy_client = client.Client(self.instance, MockNull(),
-                                          self.client_env, [], None)
+                                          self.client_env,
+                                          cgi.FieldStorage(), None)
         self.dummy_client.request.headers.get = self.get_header
         self.dummy_client.db = self.db
 
@@ -306,7 +354,7 @@ class TestCase():
         except ValueError:
             pass
 
-    def create_sampledata(self):
+    def create_sampledata(self, data_max=3):
         """ Create sample data common to some test cases
         """
         self.create_stati()
@@ -327,6 +375,235 @@ class TestCase():
             status=self.db.status.lookup('open'),
             priority=self.db.priority.lookup('critical')
         )
+
+        if data_max > 10:
+            raise ValueError('data_max must be less than 10')
+
+        if data_max == 3:
+            return
+
+        sample_data = [
+             ["foo6", "normal", "closed"],
+             ["foo7", "critical", "open"],
+             ["foo8", "normal", "open"],
+             ["foo9", "critical", "open"],
+             ["foo10", "normal", "closed"],
+             ["foo11", "critical", "open"],
+             ["foo12", "normal", "closed"],
+             ["foo13", "normal", "open"],
+            
+        ]
+
+        for title, priority, status in sample_data:
+            new_issue = self.db.issue.create(
+                title=title,
+                status=self.db.status.lookup(status),
+                priority=self.db.priority.lookup(priority)
+            )
+
+            if int(new_issue) == data_max:
+                break
+
+    def test_no_next_link_on_full_last_page(self):
+        """Make sure that there is no next link
+           on the last page where the total number of entries
+           is a multiple of the page size.
+        """
+
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
+
+        # Retrieve third user of the total of 3.
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '3'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        results = self.server.get_collection('user', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "3")
+        self.assertEqual(results['data']['@total_size'], 3)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "3"
+        )
+        self.assertNotIn('next', results['data']['@links'])
+        self.dummy_client.additional_headers.clear()
+
+        # Retrieve first user of the total of 3.
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '1'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        results = self.server.get_collection('user', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "1")
+        self.assertEqual(results['data']['@total_size'], 3)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "3"
+        )
+        self.assertIn('next', results['data']['@links'])
+        self.dummy_client.additional_headers.clear()
+
+    def testTotal_size(self):
+        """Make sure that total_size is properly set if @page_size
+           is specified.
+
+           Also test for the cases:
+
+             @page_size >= the max number of retreivable rows.
+                 raises UsageError (and error code 400)
+             @page_size < max retreivable rows, but
+                the amount of matching rows is > max retreivable rows.
+                 total_size/X-Count-Total should be -1
+
+            no @page_size and limit < total results returns
+               limit size and -1 for total.
+
+            Check:
+              http response code
+              length of collection
+              An expected id at end of collection
+              @total_size in payload
+              X-Count-Total in http headers
+                
+        """
+        from roundup.rest import RestfulInstance
+
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
+
+        # Retrieve one user of the total of 3. limit 10M+1
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '1'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        results = self.server.get_collection('user', form)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "1")
+        self.assertEqual(results['data']['@total_size'], 3)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "3"
+        )
+        self.dummy_client.additional_headers.clear()
+
+        # set max number of returned rows
+        self.stored_max = RestfulInstance.max_response_row_size
+        RestfulInstance.max_response_row_size = 2
+
+        # Retrieve whole class (no @page_*) with max rows restricted.
+        form = cgi.FieldStorage()
+        results = self.server.get_collection('user', self.empty_form)
+        # reset so changes don't affect other tests if any assetion fails.
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 2)
+        self.assertEqual(results['data']['collection'][1]['id'], "2")
+        self.assertEqual(results['data']['@total_size'], -1)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "-1"
+        )
+        self.dummy_client.additional_headers.clear()
+
+        # Make sure we can access items that are returned
+        # in rows RestfulInstance.max_response_row_size + 1.
+        # so can we access item 2
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '2'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        RestfulInstance.max_response_row_size = 2
+        results = self.server.get_collection('user', form)
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "2")
+        self.assertEqual(results['data']['@total_size'], -1)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "-1"
+        )
+        self.dummy_client.additional_headers.clear()
+
+        # Same as above, but access item 3
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '3'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        RestfulInstance.max_response_row_size = 2
+        results = self.server.get_collection('user', form)
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "3")
+        self.assertEqual(results['data']['@total_size'], 3)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "3"
+        )
+        self.dummy_client.additional_headers.clear()
+
+        # Retrieve one user but max number of rows is set to 2,
+        # and we retrieve two users from the db.
+        # So we don't know how many total users there are.
+
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '1'),
+            cgi.MiniFieldStorage('@page_size', '1'),
+        ]
+        RestfulInstance.max_response_row_size = 2
+        results = self.server.get_collection('user', form)
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(len(results['data']['collection']), 1)
+        self.assertEqual(results['data']['collection'][0]['id'], "1")
+        self.assertEqual(results['data']['@total_size'], -1)
+        print(self.dummy_client.additional_headers["X-Count-Total"])
+        self.assertEqual(
+            self.dummy_client.additional_headers["X-Count-Total"],
+            "-1"
+        )
+        self.dummy_client.additional_headers.clear()
+
+
+        # Set the page size to be >= the max number of rows returned.
+        # and verify the exception returned.
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@page_index', '2'),
+            cgi.MiniFieldStorage('@page_size', '2'),
+        ]
+        RestfulInstance.max_response_row_size = 2
+        results = self.server.get_collection('user', form)
+        RestfulInstance.max_response_row_size = self.stored_max
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(results['error']['status'], 400)
+        self.assertTrue(isinstance(results['error']['msg'], UsageError))
+        self.assertEqual(results['error']['msg'].args[0],
+                         "Page size 2 must be less than "
+                         "admin limit on query result size: 2.")
+        self.assertTrue('@total_size' not in results)
+        self.assertTrue('@data' not in results)
+        self.assertTrue("X-Count-Total" not in
+                          self.dummy_client.additional_headers)
+
+        # reset environment just in case I forgot a reset above.
+        RestfulInstance.max_response_row_size = self.stored_max
 
     def testGet(self):
         """
@@ -657,7 +934,7 @@ class TestCase():
             {'id': '2',
              'username': 'anonymous',
              'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/2'},
-            {'password': '[password hidden scheme PBKDF2]',
+            {'password': '[password hidden scheme PBKDF2S5]',
              'id': '3',
              'queries': [],
              'username': 'joe',
@@ -682,7 +959,7 @@ class TestCase():
                 'creator': {'id': '1',
                             'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/rest/data/user/1',
                             'username': 'admin'},
-                'password': '[password hidden scheme PBKDF2]',
+                'password': '[password hidden scheme PBKDF2S5]',
                 'queries': [],
                 'username': 'joe'
             }
@@ -758,6 +1035,47 @@ class TestCase():
                 {'link': base_path + '1', 'status': '7', 'id': '1'}]}}
 
         results = self.server.get_collection('issue', form)
+        self.assertDictEqual(expected, results)
+
+    def testGrouping(self):
+        self.maxDiff = 4000
+        self.create_sampledata(data_max=5)
+        self.db.issue.set('1', status='7', priority='4')
+        self.db.issue.set('2', status='2', priority='4')
+        self.db.issue.set('3', status='2', priority='4')
+        self.db.issue.set('4', status='2', priority='2')
+        self.db.issue.set('5', status='2', priority='2')
+        self.db.commit()
+        base_path = self.db.config['TRACKER_WEB'] + 'rest/data/issue/'
+        # change some data for sorting on later
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@fields', 'status,priority'),
+            cgi.MiniFieldStorage('@sort', '-id'),
+            cgi.MiniFieldStorage('@group', '-status,priority'),
+            cgi.MiniFieldStorage('@verbose', '0')
+        ]
+
+        # status is sorted by orderprop (property 'order')
+        expected={'data': {
+            '@total_size': 5,
+            'collection': [
+                {'link': base_path + '1', 'priority': '4',
+                 'status': '7', 'id': '1'},
+                {'link': base_path + '5',  'priority': '2',
+                 'status': '2', 'id': '5'},
+                {'link': base_path + '4',  'priority': '2',
+                 'status': '2', 'id': '4'},
+                {'link': base_path + '3',  'priority': '4',
+                 'status': '2', 'id': '3'},
+                {'link': base_path + '2',  'priority': '4',
+                 'status': '2', 'id': '2'},
+            ]
+        }}
+
+
+        results = self.server.get_collection('issue', form)
+        print(results)
         self.assertDictEqual(expected, results)
 
     def testTransitiveField(self):
@@ -1527,6 +1845,24 @@ class TestCase():
         json_dict = json.loads(b2s(results))
         self.assertEqual(json_dict['error']['msg'],
                          "Unable to process input of type application/jzot")
+        self.assertNotIn("Accept-Patch",
+                         self.server.client.additional_headers)
+        self.server.client.additional_headers = {}
+
+
+        # test with PATCH verb to verify Accept-Patch is correct
+        results = self.server.dispatch("PATCH",
+                            "/rest/data/issue",
+                            form)
+        self.assertEqual(self.server.client.response_code, 415)
+        json_dict = json.loads(b2s(results))
+        self.assertEqual(json_dict['error']['msg'],
+                         "Unable to process input of type application/jzot")
+        self.assertIn("Accept-Patch",
+                         self.server.client.additional_headers)
+        self.assertEqual(self.server.client.additional_headers["Accept-Patch"],
+                        "application/json, application/x-www-form-urlencoded" )
+        self.server.client.additional_headers = {}
 
         # Test GET as well. I am not sure if this should pass or not.
         # Arguably GET doesn't use any form/json input but....
@@ -1535,8 +1871,458 @@ class TestCase():
                             form)
         print(results)
         self.assertEqual(self.server.client.response_code, 415)
+        self.assertNotIn("Accept-Patch",
+                         self.server.client.additional_headers)
+        self.server.client.additional_headers = {}
+
+    def testdetermine_output_formatBadAccept(self):
+        dof = self.server.determine_output_format
+
+        # simulate: /rest/data/issue expect failure unknown accept settings
+        body=b'{ "title": "Joe Doe has problems", \
+                 "nosy": [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": 567890 \
+        }'
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+        self.server.client.env.update(env)
+        headers={"accept": "application/zot; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+
+        (output_type, uri, error) = dof("/rest/data/issue")
+
+        self.assertEqual(self.server.client.response_code, 406)
+        self.assertIn(b"Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/json",
+                      s2b(error['error']['msg']))
+
+        # simulate: /rest/data/issue works, multiple acceptable output, one
+        # is valid
+        self.server.client.response_code = ""
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "POST"
+        }
+        self.server.client.env.update(env)
+        headers={"accept": "application/zot; version=1; q=0.75, "
+                           "application/json; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        (output_type, uri, error) = dof("/rest/data/issue")
+
+        self.assertEqual(self.server.client.response_code, "")
+        self.assertEqual(output_type, "json")
+        self.assertEqual(uri, "/rest/data/issue")
+        self.assertEqual(error, None)
+
+        # test 3 accept is empty. This triggers */* so passes
+        self.server.client.response_code = ""
+        headers={"accept": "",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        (output_type, uri, error) = dof("/rest/data/issue")
+
+        self.assertEqual(self.server.client.response_code, "")
+        self.assertEqual(output_type, "json")
+        self.assertEqual(uri, "/rest/data/issue")
+        self.assertEqual(error, None)
+
+        # test 4 accept is random junk.
+        headers={"accept": "Xyzzy I am not a mime, type;",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        (output_type, uri, error) = dof("/rest/data/issue")
+
+        self.assertEqual(self.server.client.response_code, 400)
+        self.assertEqual(output_type, None)
+        self.assertEqual(uri, "/rest/data/issue")
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/json', error['error']['msg'])
+
+        # test 5 accept mimetype is ok, param is not
+        headers={"accept": "*/*; foo",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        (output_type, uri, error) = dof("/rest/data/issue")
+
+        self.assertEqual(self.server.client.response_code, 400)
+        self.assertEqual(output_type, None)
+        self.assertEqual(uri, "/rest/data/issue")
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', error['error']['msg'])
+
+        # test 6: test paths:
+        #
+        test_suite = [
+            (# use binary_content on a class that doesn't support it
+                {"path": "/rest/data/issue/1/binary_content",
+                 "accept": "",
+                 "response_code": "",
+                 "output_type": None,
+                 "uri": "/rest/data/issue/1/binary_content",
+                 "error": None
+                }),
+            (# use invalid class
+                {"path": "/rest/data/notissue/1/binary_content",
+                 "accept": "",
+                 "response_code": "",
+                 "output_type": None,
+                 "uri": "/rest/data/notissue/1/binary_content",
+                 "error": None
+                }),
+            (# use invalid id
+                {"path": "/rest/data/issue/99/binary_content",
+                 "accept": "",
+                 "response_code": "",
+                 "output_type": None,
+                 "uri": "/rest/data/issue/99/binary_content",
+                 "error": None
+                }),
+        ]
+             
+        for test in test_suite:
+            self.server.client.response_code = ""
+            env = { "CONTENT_TYPE": "application/json",
+                    "CONTENT_LENGTH": len(body),
+                    "REQUEST_METHOD": "GET"
+            }
+            self.server.client.env.update(env)
+            headers={"accept": test["accept"] or
+                     "application/zot; version=1; q=0.75, "
+                     "application/json; version=1; q=0.5",
+                     "content-type": env['CONTENT_TYPE'],
+                     "content-length": env['CONTENT_LENGTH'],
+            }
+
+            self.headers=headers
+            # we need to generate a FieldStorage the looks like
+            #  FieldStorage(None, None, 'string') rather than
+            #  FieldStorage(None, None, [])
+            body_file=BytesIO(body)  # FieldStorage needs a file
+            form = client.BinaryFieldStorage(
+                body_file,
+                headers=headers,
+                environ=env)
+            self.server.client.request.headers.get=self.get_header
+            (output_type, uri, error) = dof(test["path"])
+
+            self.assertEqual(self.server.client.response_code,
+                             test["response_code"])
+            self.assertEqual(output_type, test["output_type"])
+            self.assertEqual(uri, test["uri"])
+            self.assertEqual(error, test["error"])
+
+        # test 7: test paths:
+        #
+        test_suite = [
+            (# use wildcard accept on item and get back json output
+                {"path": "/rest/data/file/1",
+                 "accept": "*/*",
+                 "response_code": "",
+                 "output_type": "json",
+                 "uri": "/rest/data/file/1",
+                 "error": None,
+                 "has_nosniff": False,
+                }),
+            (# use wildcard accept and get back file's actual mime type
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "*/*",
+                 "response_code": "",
+                 "output_type": "image/png",
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+
+                }),
+            (# use json accept and get back json
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/json",
+                 "response_code": "",
+                 "output_type": "json",
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": None,
+                 "has_nosniff": False,
+                }),
+            (# use json accept with invalid number version and get back error
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/json; q=0.5; version=22",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": {'error': {'status': 406, 'msg': 'Unrecognized api version: 22. See /rest without specifying api version for supported versions.'}},
+                 "has_nosniff": False,
+                }),
+            (# use json accept with invalid string version and get back error
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/json; q=0.5; version=z",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": {'error': {'status': 406, 'msg': 'Unrecognized api version: z. See /rest without specifying api version for supported versions.'}},
+                 "has_nosniff": False,
+                }),
+            (# use octet-stream accept and get back octet-stream mime type
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/octet-stream; q=0.9, */*; q=0.5",
+                 "response_code": "",
+                 "output_type": "application/octet-stream",
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use image/png accept and get back image/png mime type
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "application/octet-stream; q=0.9, image/png",
+                 "response_code": "",
+                 "output_type": "image/png",
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use invalid accept and get back error
+                {"path": "/rest/data/file/1/binary_content",
+                 "accept": "image/svg+html",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/file/1/binary_content",
+                 "error": {'error': 
+                           {'status': 406, 'msg': "Requested content type(s) 'image/svg+html' not available.\nAcceptable mime types are: */*, application/octet-stream, image/png"}},
+                 "has_nosniff": False,
+                }),
+            (# use wildcard accept and get back msg's actual mime type
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "*/*",
+                 "response_code": "",
+                 "output_type": "text/markdown",
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use octet-stream accept and get back octet-stream mime type
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "application/octet-stream; q=0.9, */*; q=0.5",
+                 "response_code": "",
+                 "output_type": "application/octet-stream",
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+
+            (# use wildcard text accept and get back msg's actual mime type
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "text/*",
+                 "response_code": "",
+                 "output_type": "text/markdown",
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use wildcard text accept and get back file's actual mime type
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "text/markdown",
+                 "response_code": "",
+                 "output_type": "text/markdown",
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use text/plain accept and get back test/plain
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "text/plain",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": {'error':
+                           {'status': 406, 'msg':
+                            "Requested content type(s) 'text/plain' not available.\nAcceptable mime types are: */*, application/octet-stream, text/*, text/markdown"}},
+                 "has_nosniff": False,
+                }),
+            (# use wildcard accept and get back default msg mime type
+                {"path": "/rest/data/msg/2/binary_content",
+                 "accept": "*/*",
+                 "response_code": "",
+                 "output_type": "text/*",
+                 "uri": "/rest/data/msg/2/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use text/* and get back text/*
+                {"path": "/rest/data/msg/2/binary_content",
+                 "accept": "text/*",
+                 "response_code": "",
+                 "output_type": "text/*",
+                 "uri": "/rest/data/msg/2/binary_content",
+                 "error": None,
+                 "has_nosniff": True,
+                }),
+            (# use text/markdown and get back error
+                {"path": "/rest/data/msg/2/binary_content",
+                 "accept": "text/markdown",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/msg/2/binary_content",
+                 "error": {'error': 
+                           {'status': 406, 'msg':
+                            "Requested content type(s) 'text/markdown' not available.\nAcceptable mime types are: */*, application/octet-stream, text/*"}},
+                 "has_nosniff": False,
+                }),
+            (# use error accept and get back error
+                {"path": "/rest/data/msg/1/binary_content",
+                 "accept": "text/markdown, q=2",
+                 "response_code": 400,
+                 "output_type": None,
+                 "uri": "/rest/data/msg/1/binary_content",
+                 "error": {'error':
+                           {'status': 400, 'msg':
+                            'Unable to parse Accept Header. Invalid media type: q=2. Acceptable types: */*, application/json'}},
+                 "has_nosniff": False,
+                 }),
+            (# use text/* but override with extension of .json get back json
+                {"path": "/rest/data/msg/2/binary_content.json",
+                 "accept": "text/*",
+                 "response_code": "",
+                 "output_type": "json",
+                 "uri": "/rest/data/msg/2/binary_content",
+                 "error": None,
+                 "has_nosniff": False,
+                }),
+            (# use text/* but override with extension of .jon get back error
+                {"path": "/rest/data/msg/2/binary_content.jon",
+                 "accept": "text/*",
+                 "response_code": 406,
+                 "output_type": None,
+                 "uri": "/rest/data/msg/2/binary_content.jon",
+                 "error": {'error':
+                           {'status': 406, 'msg':
+                            "Content type 'jon' requested in URL is not available.\nAcceptable types: json\n"}},
+                 "has_nosniff": False,
+                }),
+        ]
+             
+        for test in test_suite:
+            print(test)
+            self.server.client.response_code = ""
+            self.server.client.additional_headers = {}
+            env = { "CONTENT_TYPE": "application/json",
+                    "CONTENT_LENGTH": len(body),
+                    "REQUEST_METHOD": "GET"
+            }
+            self.server.client.env.update(env)
+            headers={"accept": test["accept"] or
+                     "application/zot; version=1; q=0.75, "
+                     "application/json; version=1; q=0.5",
+                     "content-type": env['CONTENT_TYPE'],
+                     "content-length": env['CONTENT_LENGTH'],
+            }
+
+            self.headers=headers
+            # we need to generate a FieldStorage the looks like
+            #  FieldStorage(None, None, 'string') rather than
+            #  FieldStorage(None, None, [])
+            body_file=BytesIO(body)  # FieldStorage needs a file
+            form = client.BinaryFieldStorage(
+                body_file,
+                headers=headers,
+                environ=env)
+            self.server.client.request.headers.get=self.get_header
+            (output_type, uri, error) = dof(test["path"])
+
+            self.assertEqual(self.server.client.response_code,
+                             test["response_code"])
+            self.assertEqual(output_type, test["output_type"])
+            self.assertEqual(uri, test["uri"])
+            print(error)
+            self.assertEqual(error, test["error"])
+            if test["has_nosniff"]:
+                self.assertIn("X-Content-Type-Options", 
+                              self.server.client.additional_headers)
+                self.assertEqual("nosniff",
+                                 self.server.client.additional_headers['X-Content-Type-Options'])
+            else:
+                self.assertNotIn("X-Content-Type-Options", 
+                              self.server.client.additional_headers)
+
+    def testBadFormAttributeErrorException(self):
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
 
 
+        with self._caplog.at_level(logging.ERROR, logger="roundup"):
+            with self.assertRaises(AttributeError) as exc:
+                self.dummy_client = client.Client(
+                    self.instance, MockNull(), env, [], None)
+
+        self.assertEqual(exc.exception.args[0],
+                         "'list' object has no attribute 'list'")
+
+        # log should look like (with string not broken into parts):
+        #    [('roundup', 40, 
+        #       'Invalid self.form found (please report to the '
+        #       'roundup-users mailing list): []')]
+        log = self._caplog.record_tuples[:]
+        self.assertIn("Invalid self.form found", log[0][2])
 
     def testDispatchBadAccept(self):
         # simulate: /rest/data/issue expect failure unknown accept settings
@@ -1569,10 +2355,11 @@ class TestCase():
         results = self.server.dispatch(env["REQUEST_METHOD"],
                             "/rest/data/issue",
                             form)
-
         print(results)
+        json_dict = json.loads(b2s(results))
         self.assertEqual(self.server.client.response_code, 406)
-        self.assertIn(b"Requested content type 'application/zot; version=1; q=0.5' is not available.\nAcceptable types: */*, application/json", results)
+        self.assertIn("Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/json",
+                      json_dict['error']['msg'])
 
         # simulate: /rest/data/issue works, multiple acceptable output, one
         # is valid
@@ -1603,12 +2390,7 @@ class TestCase():
         print(results)
         self.assertEqual(self.server.client.response_code, 201)
         json_dict = json.loads(b2s(results))
-        # ERROR this should be 1. What's happening is that the code
-        # for handling 406 error code runs through everything and creates
-        # the item. Then it throws a 406 after the work is done when it
-        # realizes it can't respond as requested. So the 406 post above
-        # creates issue 1 and this one creates issue 2.
-        self.assertEqual(json_dict['data']['id'], "2")
+        self.assertEqual(json_dict['data']['id'], "1")
 
 
         # test 3 accept is empty. This triggers */* so passes
@@ -1633,9 +2415,7 @@ class TestCase():
         print(results)
         self.assertEqual(self.server.client.response_code, 201)
         json_dict = json.loads(b2s(results))
-        # This is one more than above. Will need to be fixed
-        # When error above is fixed.
-        self.assertEqual(json_dict['data']['id'], "3")
+        self.assertEqual(json_dict['data']['id'], "2")
 
         # test 4 accept is random junk.
         headers={"accept": "Xyzzy I am not a mime, type;",
@@ -1657,9 +2437,9 @@ class TestCase():
                             form)
 
         print(results)
-        self.assertEqual(self.server.client.response_code, 406)
+        self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
-        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */* application/json', json_dict['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/json', json_dict['error']['msg'])
 
         # test 5 accept mimetype is ok, param is not
         headers={"accept": "*/*; foo",
@@ -1681,9 +2461,92 @@ class TestCase():
                             form)
 
         print(results)
-        self.assertEqual(self.server.client.response_code, 406)
+        self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
-        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */* application/json', json_dict['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', json_dict['error']['msg'])
+
+    @skip_on_py2
+    def testBadJson(self):
+        '''Run some JSON we don't accept through the wringer
+        '''
+        body=b'{ "title": "Joe Doe has problems", \
+                 "nosy": [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": Infinity }'
+
+        expected={ "error":
+                   {"status": 400,
+                    "msg": ("Unacceptable number: Infinity. JSON is: "
+                            + b2s(body)),
+                   }
+        }
+
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "PUT"
+        }
+        self.server.client.env.update(env)
+        headers={"accept": "application/zot; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue/1",
+                            form)
+
+        self.assertEqual(json.loads(results), expected)
+
+        body=b'{ "title": "Joe Doe has problems", \
+                 nosy: [ "1", "3" ], \
+                 "assignedto": "2", \
+                 "abool": true, \
+                 "afloat": 2.3, \
+                 "anint": Infinity }'
+        self.maxDiff = None
+        expected={ "error":
+                   {"status": 400,
+                    "msg": ("Expecting property name enclosed in double "
+                            "quotes: line 1 column 53 (char 52). JSON is: "
+                            + b2s(body)),
+                   }
+        }
+
+        env = { "CONTENT_TYPE": "application/json",
+                "CONTENT_LENGTH": len(body),
+                "REQUEST_METHOD": "PUT"
+        }
+        self.server.client.env.update(env)
+        headers={"accept": "application/zot; version=1; q=0.5",
+                 "content-type": env['CONTENT_TYPE'],
+                 "content-length": env['CONTENT_LENGTH'],
+        }
+
+        self.headers=headers
+        # we need to generate a FieldStorage the looks like
+        #  FieldStorage(None, None, 'string') rather than
+        #  FieldStorage(None, None, [])
+        body_file=BytesIO(body)  # FieldStorage needs a file
+        form = client.BinaryFieldStorage(body_file,
+                                headers=headers,
+                                environ=env)
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch(env["REQUEST_METHOD"],
+                            "/rest/data/issue/1",
+                            form)
+
+        self.assertEqual(json.loads(results), expected)
 
     def testStatsGen(self):
         # check stats being returned by put and get ops
@@ -1848,7 +2711,7 @@ class TestCase():
         results = self.server.dispatch('PUT',
                             "/rest/data/user/%s/realname"%self.joeid,
                             form)
-        self.assertEqual(self.server.client.response_code, 400)
+        self.assertEqual(self.server.client.response_code, 406)
         del(self.headers)
 
         # TEST #2
@@ -2093,27 +2956,20 @@ class TestCase():
         etag = calculate_etag(self.db.issue.getnode("1"),
                               self.db.config['WEB_SECRET_KEY'])
         etagb = etag.strip ('"')
-        env = {"CONTENT_TYPE": "application/json",
-               "CONTENT_LEN": 0,
-               "REQUEST_METHOD": "DELETE" }
+        env = {"REQUEST_METHOD": "DELETE" }
         self.server.client.env.update(env)
         # use text/plain header and request json output by appending
         # .json to the url.
         headers={"accept": "text/plain",
-                 "content-type": env['CONTENT_TYPE'],
                  "if-match": '"%s"'%etagb,
                  "content-length": 0,
         }
         self.headers=headers
-        body_file=BytesIO(b'')  # FieldStorage needs a file
-        form = client.BinaryFieldStorage(body_file,
-                                headers=headers,
-                                environ=env)
         self.server.client.request.headers.get=self.get_header
         self.db.setCurrentUser('admin') # must be admin to delete issue
         results = self.server.dispatch('DELETE',
                             "/rest/data/issue/1.json",
-                            form)
+                            self.empty_form)
         self.assertEqual(self.server.client.response_code, 200)
         print(results)
         json_dict = json.loads(b2s(results))
@@ -2128,13 +2984,14 @@ class TestCase():
         print(results)
         try:  # only verify local copy not system installed copy
             from roundup.dicttoxml import dicttoxml
-            includexml = ', application/xml'
+            includexml = ', xml'
         except ImportError:
             includexml = ''
-        
-        response="Requested content type 'jon' is not available.\n" \
-                 "Acceptable types: */*, application/json%s\n"%includexml
-        self.assertEqual(b2s(results), response)
+
+        json_dict = json.loads(b2s(results))
+        response= ("Content type 'jon' requested in URL is not available.\n"
+                 "Acceptable types: json%s\n") % includexml
+        self.assertEqual(json_dict['error']['msg'], response)
 
         # TEST #9
         # GET: test that version can be set with accept:
@@ -2158,7 +3015,8 @@ class TestCase():
                             "/rest/data/issue/1", form)
         print("9a: " + b2s(results))
         json_dict = json.loads(b2s(results))
-        self.assertEqual(json_dict['error']['status'], 400)
+        # note bad @apiver returns 400 not 406.
+        self.assertEqual(json_dict['error']['status'], 406)
         self.assertEqual(json_dict['error']['msg'],
               "Unrecognized api version: L. See /rest without "
               "specifying api version for supported versions.")
@@ -2170,7 +3028,8 @@ class TestCase():
                             "/rest/data/issue/1", form)
         print("9b: " + b2s(results))
         json_dict = json.loads(b2s(results))
-        self.assertEqual(json_dict['error']['status'], 400)
+        self.assertEqual(self.server.client.response_code, 406)
+        self.assertEqual(json_dict['error']['status'], 406)
         self.assertEqual(json_dict['error']['msg'],
               "Unrecognized api version: z. See /rest without "
               "specifying api version for supported versions.")
@@ -2181,9 +3040,9 @@ class TestCase():
         results = self.server.dispatch('GET',
                             "/rest/data/issue/1", self.empty_form)
         print("9c:" + b2s(results))
-        self.assertEqual(self.server.client.response_code, 400)
+        self.assertEqual(self.server.client.response_code, 406)
         json_dict = json.loads(b2s(results))
-        self.assertEqual(json_dict['error']['status'], 400)
+        self.assertEqual(json_dict['error']['status'], 406)
         self.assertEqual(json_dict['error']['msg'],
               "Unrecognized api version: z. See /rest without "
               "specifying api version for supported versions.")
@@ -2196,9 +3055,9 @@ class TestCase():
         results = self.server.dispatch('GET',
                             "/rest/data/issue/1", self.empty_form)
         print("9d: " + b2s(results))
-        self.assertEqual(self.server.client.response_code, 400)
+        self.assertEqual(self.server.client.response_code, 406)
         json_dict = json.loads(b2s(results))
-        self.assertEqual(json_dict['error']['status'], 400)
+        self.assertEqual(json_dict['error']['status'], 406)
         self.assertEqual(json_dict['error']['msg'],
               "Unrecognized api version: a. See /rest without "
               "specifying api version for supported versions.")
@@ -2306,6 +3165,28 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 404)
 
         del(self.headers)
+
+        # TEST #11
+        # GET: test that /binary_content can be downloaded
+        form = cgi.FieldStorage()
+
+        self.server.client.env.update({'REQUEST_METHOD': 'GET'})
+
+        headers={"accept": "*/*" }
+        self.headers=headers
+        self.server.client.request.headers.get=self.get_header
+        results = self.server.dispatch('GET',
+                            "/rest/data/file/1/binary_content", form)
+
+        self.assertEqual(results, b'PNG\x01abcdefghi\njklmnop')
+        self.assertEqual(self.server.client.additional_headers['Content-Type'],
+                         'image/png')
+        self.assertNotIn("ETag", self.server.client.additional_headers)
+        self.assertEqual(
+            self.server.client.additional_headers["X-Content-Type-Options"],
+            "nosniff")
+
+        print("11: " + b2s(results))
 
     def testAcceptHeaderParsing(self):
         self.server.client.env['REQUEST_METHOD'] = 'GET'
@@ -2429,7 +3310,7 @@ class TestCase():
                                        self.empty_form)
         print(results)
         json_dict = json.loads(b2s(results))
-        self.assertEqual(self.server.client.response_code, 400)
+        self.assertEqual(self.server.client.response_code, 406)
         self.assertEqual(self.server.client.additional_headers['Content-Type'],
                          "application/json")
         self.assertEqual(json_dict['error']['msg'],
@@ -2446,7 +3327,6 @@ class TestCase():
                 "CONTENT_LENGTH": len(body),
                 "REQUEST_METHOD": "POST"
         }
-        body_file=BytesIO(body)  # FieldStorage needs a file
         self.server.client.request.headers.get=self.get_header
         for method in ( "GET", "PUT", "PATCH" ):
             headers={"accept": "application/json; version=1",
@@ -2454,6 +3334,8 @@ class TestCase():
                      "content-length": len(body),
                      "x-http-method-override": "DElETE",
                  }
+            body_file=BytesIO(body)  # FieldStorage needs a file
+
             self.headers=headers
             form = client.BinaryFieldStorage(body_file,
                                          headers=headers,
@@ -2924,8 +3806,7 @@ class TestCase():
         results = self.server.get_element('file', fileid, self.empty_form)
         results = results['data']
         self.assertEqual(self.dummy_client.response_code, 200)
-        self.assertEqual(results['attributes']['content'],
-            {'link': 'http://tracker.example/cgi-bin/roundup.cgi/bugs/file1/'})
+        self.assertIn("link", results['attributes']['content'])
 
         # File content is only shown with verbose=3
         form = cgi.FieldStorage()
@@ -3629,7 +4510,7 @@ class TestCase():
         def wh(s):
             out.append(s)
 
-        secret = self.db.config.WEB_JWT_SECRET
+        secret = self.db.config.WEB_JWT_SECRET[0]
 
         # verify library and tokens are correct
         self.assertRaises(jwt.exceptions.InvalidTokenError,
@@ -3657,8 +4538,9 @@ class TestCase():
             'TRACKER_NAME': 'rounduptest',
             "REQUEST_METHOD": "GET"
         }
+
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -3666,7 +4548,6 @@ class TestCase():
         self.terse_form.list = [
             cgi.MiniFieldStorage('@verbose', '0'),
         ]
-        self.dummy_client.form = cgi.FieldStorage()
         self.dummy_client.form.list = [
             cgi.MiniFieldStorage('@fields', 'username,address'),
         ]
@@ -3682,6 +4563,145 @@ class TestCase():
         self.assertEqual(out[0], b'Invalid Login - Signature has expired')
         del(out[0])
 
+    @skip_jwt
+    def test_user_jwt_key_rotation_mutlisig(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # verify library and tokens are correct
+        self.assertRaises(jwt.exceptions.InvalidTokenError,
+                          jwt.decode, self.jwt['expired'],
+                          self.old_secret,  algorithms=['HS256'],
+                          audience=self.db.config.TRACKER_WEB,
+                          issuer=self.db.config.TRACKER_WEB)
+
+        result = jwt.decode(self.jwt['user_new_secret'],
+                            self.new_secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user'],result)
+
+        result = jwt.decode(self.jwt['user:email'],
+                            self.old_secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user:email'],result)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+
+        # test case where rotation key is used,
+        # add spaces after ',' to test config system
+        self.db.config['WEB_JWT_SECRET'] = "%s,  %s, " % (
+            self.new_secret, self.old_secret
+        )
+
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          cgi.FieldStorage(), None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+
+        # set up for standard user role token
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['user']
+
+        self.dummy_client.main()
+        print(out[0])
+        json_dict = json.loads(b2s(out[0]))
+        print(json_dict)
+        # user will be joe id 3 as auth works
+        self.assertTrue('3', self.db.getuid())
+        # there should be three items in the collection admin, anon, and joe
+        self.assertEqual(3, len(json_dict['data']['collection']))
+        # since this token has no access to email addresses, only joe
+        # should have email addresses. Order is by id by default.
+        self.assertFalse('address' in json_dict['data']['collection'][0])
+        self.assertFalse('address' in json_dict['data']['collection'][1])
+        self.assertTrue('address' in json_dict['data']['collection'][2])
+        del(out[0])
+        self.db.setCurrentUser('admin')
+
+    @skip_jwt
+    def test_user_jwt_key_rotation_sig_failure(self):
+        # self.dummy_client.main() closes database, so
+        # we need a new test with setup called for each test
+        out = []
+        def wh(s):
+            out.append(s)
+
+        # verify library and tokens are correct
+        self.assertRaises(jwt.exceptions.InvalidTokenError,
+                          jwt.decode, self.jwt['expired'],
+                          self.old_secret,  algorithms=['HS256'],
+                          audience=self.db.config.TRACKER_WEB,
+                          issuer=self.db.config.TRACKER_WEB)
+
+        result = jwt.decode(self.jwt['user_new_secret'],
+                            self.new_secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user'],result)
+
+        result = jwt.decode(self.jwt['user:email'],
+                            self.old_secret,  algorithms=['HS256'],
+                            audience=self.db.config.TRACKER_WEB,
+                            issuer=self.db.config.TRACKER_WEB)
+        self.assertEqual(self.claim['user:email'],result)
+
+        # set environment for all jwt tests
+        env = {
+            'PATH_INFO': 'rest/data/user',
+            'HTTP_HOST': 'localhost',
+            'TRACKER_NAME': 'rounduptest',
+            "REQUEST_METHOD": "GET"
+        }
+
+        self.dummy_client = client.Client(self.instance, MockNull(), env,
+                                          cgi.FieldStorage(), None)
+        self.dummy_client.db = self.db
+        self.dummy_client.request.headers.get = self.get_header
+        self.empty_form = cgi.FieldStorage()
+        self.terse_form = cgi.FieldStorage()
+        self.terse_form.list = [
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        self.dummy_client.form = cgi.FieldStorage()
+        self.dummy_client.form.list = [
+            cgi.MiniFieldStorage('@fields', 'username,address'),
+        ]
+        # accumulate json output for further analysis
+        self.dummy_client.write = wh
+
+        # test case where new json secret is in place
+        self.db.config['WEB_JWT_SECRET'] = self.new_secret
+
+        # set up for standard user role token
+        env['HTTP_AUTHORIZATION'] = 'bearer %s'%self.jwt['user']
+        self.dummy_client.main()
+        print(out[0])
+
+        self.assertEqual(out[0], 
+                         b'Invalid Login - Signature verification failed')
+        del(out[0])
+        self.db.setCurrentUser('admin')
 
     @skip_jwt
     def test_user_jwt(self):
@@ -3691,7 +4711,7 @@ class TestCase():
         def wh(s):
             out.append(s)
 
-        secret = self.db.config.WEB_JWT_SECRET
+        secret = self.db.config.WEB_JWT_SECRET[0]
 
         # verify library and tokens are correct
         self.assertRaises(jwt.exceptions.InvalidTokenError,
@@ -3720,7 +4740,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -3762,7 +4782,7 @@ class TestCase():
         def wh(s):
             out.append(s)
 
-        secret = self.db.config.WEB_JWT_SECRET
+        secret = self.db.config.WEB_JWT_SECRET[0]
 
         # verify library and tokens are correct
         self.assertRaises(jwt.exceptions.InvalidTokenError,
@@ -3791,7 +4811,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -3830,7 +4850,7 @@ class TestCase():
         def wh(s):
             out.append(s)
 
-        secret = self.db.config.WEB_JWT_SECRET
+        secret = self.db.config.WEB_JWT_SECRET[0]
 
         # verify library and tokens are correct
         self.assertRaises(jwt.exceptions.InvalidTokenError,
@@ -3859,7 +4879,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -3886,7 +4906,7 @@ class TestCase():
         self.assertTrue(json_dict['error']['msg'], "Forbidden.")
 
     @skip_jwt
-    def test_disabled_jwt(self):
+    def test_admin_disabled_jwt(self):
         # self.dummy_client.main() closes database, so
         # we need a new test with setup called for each test
         out = []
@@ -3901,7 +4921,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -3940,7 +4960,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -3976,7 +4996,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4013,7 +5033,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                          cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()
@@ -4049,7 +5069,7 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
         self.dummy_client = client.Client(self.instance, MockNull(), env,
-                                          [], None)
+                                           cgi.FieldStorage(), None)
         self.dummy_client.db = self.db
         self.dummy_client.request.headers.get = self.get_header
         self.empty_form = cgi.FieldStorage()

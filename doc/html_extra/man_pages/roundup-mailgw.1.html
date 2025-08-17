@@ -1,0 +1,357 @@
+<!-- Creator     : groff version 1.22.4 -->
+<!-- CreationDate: Sat Jul 12 02:21:20 2025 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<link rel="canonical" href="https://www.roundup-tracker.org/docs/man_pages/roundup-mailgw.1.html">
+<style type="text/css">
+       p       { max-width: 65ch; margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title>ROUNDUP-MAILGW</title>
+
+</head>
+<body>
+
+<h1 align="center">ROUNDUP-MAILGW</h1>
+
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#OPTIONS">OPTIONS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#ENVIRONMENT VARIABLES">ENVIRONMENT VARIABLES</a><br>
+<a href="#EXAMPLE">EXAMPLE</a><br>
+<a href="#SEE ALSO">SEE ALSO</a><br>
+<a href="#AUTHOR">AUTHOR</a><br>
+
+<hr>
+
+
+<h2>NAME
+<a name="NAME"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">roundup-mailgw
+- mail gateway for roundup</p>
+
+<h2>SYNOPSIS
+<a name="SYNOPSIS"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>roundup-mailgw</b>
+[<i>-h|--help] [-v] [--version] [-c|--default-class
+default_class] [-S|--set-value [class.]field=value]
+[-O|--oauth-directory directory] [-T|--oauth-token-endpoint
+endpoint-url] [instance_home] [mail source
+[specification]]</i></p>
+
+<h2>OPTIONS
+<a name="OPTIONS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em"><i><b>-v
+--version</b></i></p>
+
+<p style="margin-left:22%;">Print version and exit.</p>
+
+<p style="margin-left:11%;"><b>-c --default-class</b>
+<i>hyperdb class</i></p>
+
+<p style="margin-left:22%;">specify the default tracker
+class - one of issue (the default), msg, file, user etc.
+Overrides the tracker&rsquo;s mailgw <i>default_class</i>
+setting.</p>
+
+<p style="margin-left:11%;"><b>-S --set-value</b>
+<i>[class.]property</i><b>=</b><i>value</i>[<b>;</b><i>property</i><b>=</b><i>value</i>]</p>
+
+<p style="margin-left:22%;">specify the values to set on
+the class specified as prefix using the same format as the
+Subject line property manipulations. If the class prefix is
+left out it defaults to <i>msg</i>. Can also be specified
+with <b>--set-value</b> (and abbreviated to
+<b>--set</b>).</p>
+
+<p style="margin-left:11%;"><b>-O --oauth-directory</b>
+<i>directory</i></p>
+
+<p style="margin-left:22%;">Only with OAuth authentication
+specify the directory containing additional OAuth
+credentials.</p>
+
+<p style="margin-left:11%;"><b>-T
+--oauth-token-endpoint</b> <i>url</i></p>
+
+<p style="margin-left:22%;">Token endpoint URL of your
+cloud provider, only used with OAuth.</p>
+
+<h2>DESCRIPTION
+<a name="DESCRIPTION"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">The roundup
+mail gateway may be called in one of four ways:</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>&bull;</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>without arguments which will use the env var
+ROUNDUP_INSTANCE,</p> </td></tr>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>&bull;</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>with an <i>instance_home</i> as the only argument,</p></td></tr>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>&bull;</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>with both an <i>instance_home</i> and a mail spool file,
+or</p> </td></tr>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>&bull;</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>with both an instance home and a mail source type and
+its specification.</p></td></tr>
+</table>
+
+<p style="margin-left:11%; margin-top: 1em"><b>PIPE</b>
+<br>
+If there is no mail source specified, the mail gateway reads
+a single message from the standard input and submits the
+message to the roundup.mailgw module.</p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>UNIX
+mailbox</b> <br>
+In this case, the gateway reads all messages from the UNIX
+mail spool file and submits each in turn to the
+roundup.mailgw module. The file is emptied once all messages
+have been successfully handled. The file is specified as:
+<b><br>
+mailbox</b> <i>/path/to/mailbox</i></p>
+
+<p style="margin-left:11%; margin-top: 1em">In all of the
+following mail source types, the username and password can
+be stored in a ~/.netrc file. If done so, only the server
+name needs to be specified on the command-line.</p>
+
+<p style="margin-left:11%; margin-top: 1em">The username
+and/or password will be prompted for if not supplied on the
+command-line or in ~/.netrc.</p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>POP</b> <br>
+For the mail source &quot;pop&quot;, the gateway reads all
+messages from the POP server specified and submits each in
+turn to the roundup.mailgw module. The server is specified
+as: <b><br>
+pop</b>
+<i>username</i><b>:</b><i>password</i><b>@</b><i>server</i>
+<br>
+The username and password may be omitted: <b><br>
+pop</b> <i>username</i><b>@</b><i>server</i> <b><br>
+pop</b> <i>server</i> <br>
+are both valid.</p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>POPS</b>
+<br>
+Connect to the POP server over ssl/tls. This supports the
+same notation as POP.</p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>APOP</b>
+<br>
+Same as POP, but using Authenticated POP: <b><br>
+apop</b>
+<i>username</i><b>:</b><i>password</i><b>@</b><i>server</i></p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>IMAP</b>
+<br>
+Connect to an IMAP server. This supports the same notation
+as that of POP mail. <b><br>
+imap</b>
+<i>username</i><b>:</b><i>password</i><b>@</b><i>server</i>
+<br>
+It also allows you to specify a specific mailbox other than
+INBOX using this format: <b><br>
+imap</b>
+<i>username</i><b>:</b><i>password</i><b>@</b><i>server
+mailbox</i></p>
+
+<p style="margin-left:11%; margin-top: 1em"><b>IMAPS</b>
+<br>
+Connect to an IMAP server over ssl/tls. This supports the
+same notation as IMAP. <b><br>
+imaps</b>
+<i>username</i><b>:</b><i>password</i><b>@</b><i>server</i>
+[<i>mailbox</i>]</p>
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>IMAPS_CRAM</b>
+<br>
+Connect to an IMAP server over ssl/tls using CRAM-MD5
+authentication. This supports the same notation as IMAP.
+<b><br>
+imaps_cram</b>
+<i>username</i><b>:</b><i>password</i><b>@</b><i>server</i>
+[<i>mailbox</i>]</p>
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>IMAPS_OAUTH</b>
+<br>
+Connect to an IMAP server over ssl/tls using OAUTH
+authentication. Note that this does not support a password
+in imaps URLs. Instead it uses only the user and server and
+a command-line option for the directory with the files
+<b>access_token</b>, <b>refresh_token</b>,
+<b>client_secret</b>, and <b>client_id</b>. By default this
+directory is <b>oauth</b> in your tracker home directory.
+The access token is tried first and, if expired, the refresh
+token together with the client secret is used to retrieve a
+new access token. Note that both token files need to be
+<i>writeable</i>, the access token is continuously replaced
+and some cloud providers may also renew the refresh token
+from time to time: <b><br>
+imaps_oauth</b> <i>username</i><b>@</b><i>server</i>
+[<i>mailbox</i>] <br>
+The refresh and access tokens (the latter can be left
+empty), the client id and the client secret need to be
+retrieved via cloud provider specific protocols or
+websites.</p>
+
+<h2>ENVIRONMENT VARIABLES
+<a name="ENVIRONMENT VARIABLES"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>ROUNDUP_INSTANCE</b>
+<br>
+This can be used to set the instance directory. If it is
+set, the <i>instance_home</i> argument is optional.</p>
+
+<h2>EXAMPLE
+<a name="EXAMPLE"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">If your msg
+class has a messsagetype property you can set up aliases to
+receive the different types of messages. Setting up an alias
+in your MTA Using:</p>
+
+<p style="margin-left:11%; margin-top: 1em">tracker:
+|/tools/roundup/bin/roundup-mailgw <br>
+-S &quot;msg.messagetype=reply - to all&quot;
+/var/roundup/sysadmin</p>
+
+<p style="margin-left:11%; margin-top: 1em">(the lines are
+split for readability. In the alias file they will be on the
+same line). Replace /tools/roundup/bin/roundup-mailgw by
+your path to the roundup-mailgw. This creates the email
+alias &quot;tracker&quot;. All messages sent to it have
+their messagetype property set to &quot;reply - to
+all&quot;. The roundup tracker instance is located at
+/var/roundup/sysadmin.</p>
+
+<p style="margin-left:11%; margin-top: 1em">A comment alias
+would receive emails at tracker_comment with:</p>
+
+
+<p style="margin-left:11%; margin-top: 1em">tracker_comment:
+|/tools/roundup/bin/roundup-mailgw <br>
+-S &quot;msg.messagetype=to tech&quot;
+/var/roundup/sysadmin</p>
+
+<p style="margin-left:11%; margin-top: 1em">which would be
+a technical message. These messages can trigger different
+workflows based on the messagetype.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Both examples
+use the default class specified in the tracker&rsquo;s
+config.ini (usually the issue class).</p>
+
+<p style="margin-left:11%; margin-top: 1em">You can also
+set properties directly on the issue class. If your
+tracker&rsquo;s issue has a &quot;private&quot; property
+that limits who can view an issue and its messages:</p>
+
+<p style="margin-left:11%; margin-top: 1em">security:
+|/tools/roundup/bin/roundup-mailgw <br>
+-S &quot;issue.private=true&quot; -S
+&quot;issue.keyword+=security&quot; <br>
+/var/roundup/sysadmin</p>
+
+<p style="margin-left:11%; margin-top: 1em">would set the
+private property on a issue to restrict visiblity and mark
+the issue as a security topic using a keyword.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Both examples
+use the default class specified in the tracker&rsquo;s
+config.ini (usually the issue class).</p>
+
+<h2>SEE ALSO
+<a name="SEE ALSO"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em">roundup-admin(1),
+roundup-demo(1), roundup-server(1)</p>
+
+<h2>AUTHOR
+<a name="AUTHOR"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">This manpage
+was written by Bastian Kleineidam &lt;calvin@debian.org&gt;
+for the Debian distribution of roundup.</p>
+
+<p style="margin-left:11%; margin-top: 1em">The main author
+of roundup is Richard Jones
+&lt;richard@users.sourceforge.net&gt;.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Updates by John
+Rouillard &lt;rouilj@users.sourceforge.net&gt; and Ralf
+Schlatterbeck &lt;rsc@runtux.com&gt;.</p>
+<hr>
+</body>
+</html>

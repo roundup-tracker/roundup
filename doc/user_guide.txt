@@ -20,24 +20,23 @@ User Guide
 Your Tracker in a Nutshell
 ==========================
 
-Your tracker holds information about issues in bundles we call *items*.
-An item may be an *issue* (a bug or feature request) or a *user*. The
-issue-ness or user-ness is called the item's *class*. So, for bug
+Your tracker holds information about issues in bundles called *items*.
+An item can be an *issue* (a bug or feature request) or a *user*. The
+issue-ness or user-ness is called the item's *class*. For bug
 reports and features, the class is "issue", and for users the class is
 "user".
 
-Each item in the tracker has an ID number that identifies it along with
-its item class. To identify a particular issue or user, we combine the
-class with the number to create a unique label, so that user 1 (who,
-incidentally, is *always* the "admin" user) is referred to as "user1".
-Issue number 315 is referred to as "issue315". We call that label the
-item's :term:`designator`.
+Each item in the tracker possesses an ID number that identifies it
+alongside its item class. The combination of the class and ID number
+into a label identifies a specific issue or user. For instance, user 1
+(who, by the way, always serves as the "admin" user) gets referred to
+as "user1". Issue number 315 gets denoted as "issue315". This label
+receives the designation of the item's :term:designator.
 
-Items in the database are never deleted, they're just "retired". You
-can still refer to them by ID - hence removing an item won't break
-references to the item. It's just that the item won't appear in any
-listings.
-
+Roundup never deletes items from the database. Instead, items get
+"retired". Viewing the item using its ID is still possible - thus,
+"removing" an item does not disrupt references to it. A retired item
+will not appear in the class listing.
 
 Accessing the Tracker
 ---------------------
@@ -58,11 +57,12 @@ Issue life cycles in Roundup
 
 New issues may be submitted via the web or e-mail.
 
-By default, the issue will have the status "unread". If another message
-is received for the issue, its status will change to "chatting".
+By default, the issue will have the status "unread". When the issue
+receives another message, its status will change to "chatting".
 
-The "home" page for a tracker will generally display all issues which
-are not "resolved".
+Often, the "home" page for a tracker display all open issues (closed
+issues have a status of resolved, or done-cbb (cbb - could be
+better)).
 
 If an issue is closed, and a new message is received then it'll be
 reopened to the state of "chatting".
@@ -101,6 +101,8 @@ The full set of **priority** and **status** values are:
    "resolved"    fix has been released
    ============= =====================================
 
+The tracker you are using may have different priorities and
+statuses. See your tracker admin for local details.
 
 .. _query-tracker:
 
@@ -112,12 +114,25 @@ This means the web interface for entering a new issue, the web interface
 for searching issues, the e-mail interface and even the command-line
 administration tool.
 
+String Properties
+~~~~~~~~~~~~~~~~~
 
-String and Numeric properties
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+These fields just take a plain text value, like ``It's broken``.
 
-These fields just take a simple text value, like ``It's broken``.
+Number Properties
+~~~~~~~~~~~~~~~~~
 
+These fields take a real number with decimal point like ``+12456.78``,
+``-12456.78`` ``12456.78``. It supports scientific/exponent notation
+like ``3.1415E-2``. Decimal commas (e.g. ``123456,78``) or thousand
+separators ``-12,456.78`` are not supported.
+
+Integer Properties
+~~~~~~~~~~~~~~~~~~
+
+These fields take a whole/integer number without decimal marker like
+``123``, ``+123``, ``-123``. Exponents are not supported. Your browser
+may show an up/down arrow spinner to change the value.
 
 Boolean properties
 ~~~~~~~~~~~~~~~~~~
@@ -155,9 +170,23 @@ not set. For example, the following searches on the issues:
 ``keyword=-1``
   match issues with no keywords set
 
+When entering the value for a constrained property you may have a
+helper (also called classhelper) available by clicking on a link
+usually displayed as ``(list)``. See the section `Using the
+Classhelper`_ for details.
 
 Date properties
 ~~~~~~~~~~~~~~~
+
+Date properties can be shown using a native HTML date (or
+datetime-local) element by setting ``use_browser_date_input=yes`` in
+section ``[web]`` in ``config.ini``. This provides a calendar button for
+choosing the date. The date is shown in the normal format for your
+location.
+
+Native date inputs do not allow the use of partial forms as
+defined below.  For this reason, you may edit a date/time
+stamp directly.
 
 Date-and-time stamps are specified with the date in
 international standard format (``yyyy-mm-dd``) joined to the time
@@ -173,7 +202,7 @@ just the year may be omitted.  If the time is given, the time is
 interpreted in the user's local time zone. The Date constructor takes
 care of these conversions. In the following examples, suppose that
 ``yyyy`` is the current year, ``mm`` is the current month, and ``dd`` is
-the current day of the month.
+the current day of the month and the local timezone is GMT-5.
 
 -   "2000-04-17" means <Date 2000-04-17.00:00:00>
 -   "01-25" means <Date yyyy-01-25.00:00:00>
@@ -184,6 +213,30 @@ the current day of the month.
 -   "8:47:11" means <Date yyyy-mm-dd.13:47:11>
 -   the special date "." means "right now"
 
+The native date input doesn't allow copy or paste. Roundup
+enhances the native date field. If you double-click on a native
+date field, it changes to a text input mode with the date already
+selected. You can use control-C to copy the date or control-V to
+paste into the field.  Double-clicking also lets you add seconds
+in a date-time value if you need to.
+
+It will switch back to a date input and save the value when:
+
+- you move to another field using the mouse or the Tab key.
+- you press enter/return (press return again if you want to
+  submit the form).
+
+If you press Escape, it will restore the original value and
+change back to a date input.
+
+When using native date elements in text input mode, the date
+looks like a full data with ``T`` replacing ``.``. If the ``T``
+is missing, the native date elements will not recognize the value
+as a date.
+
+There is no support for activating text mode using the
+keyboard. Tablet/touch support is mixed. Chrome supports
+double-tap to activate text mode input. Firefox does not.
 
 When searching, a plain date entered as a search field will match that date
 exactly in the database.  We may also accept ranges of dates. You can
@@ -440,6 +493,178 @@ the supported format and features.
 
 .. _`documentation for configuring the native-fts`: admin_guide.html#configuring-native-fts-full-text-search
 
+Advanced Searching with Property Expressions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can create more advanced searches in your tracker by using Reverse
+Polish Notation (`RPN`_) to make property expressions. By default,
+when filtering by multiple items, the expression type is 'or'. For
+instance, if you filter the property assignedto by adding the query
+string element ``assignedto=2,3,40``, it matches users numbered ``2 or
+3 or 40``. In RPN, this would be written as ``2, 3, or, 4,
+or``. Roundup uses negative numbers to represent operators. For
+example, using "-1" for a single value (e.g. the assignedto Link
+property, but not the keyword multivalued/MultiLink property) matches
+an issue where the property is 'not set'.
+
+The operators and their corresponding numbers are:
+
+* 'not' is represented by -2
+* 'and' is represented by -3
+* 'or' is represented by -4
+
+So, ``assignedto=2,3,40`` is the same as
+``assignedto=2,3,-4,40,-4``. While this example is the same as
+``2,3,40``, the expression ``keyword=1,2,-3,-2`` filters issues that
+don't have both keywords 1 and 2.
+
+Another example is: ``creator=3,-2,1,-2,-3``. This is the same as the
+expression: ``(not user3) and (not user1)``. Using the rules of logic,
+this is the same as: ``not (user3 or user1)`` which is expressed in
+RPN as ``creator=3,1,-4,-2``. Compare this to ``creator=3,1,-2`` which
+returns issues created by user3 or any user other than user1.
+
+Another example, useful when filtering issues, is::
+
+  keyword=-1,-2,1,8,-3,-2,-3
+
+which returns issues that have one or more keywords set and the issue
+does not have keyword1 and keyword8 both set. In more standard infix
+form::
+
+  not empty and not (keyword1 and keyword8)
+
+Typing these expressions manually can be tiresome and tricky. On the
+search page, there's an expression editor. You can access it by
+clicking on the ``(expr)`` link, which makes creating these
+expressions a bit easier.
+
+If your expression has an error, you will be returned to the search
+page and an error will be reported. For example using the expression
+``1, -3`` to search the nosy property of an issue generates the
+following error::
+
+   There was an error searching issue by nosy using: [1, -3]. The
+   operator -3 (and) at position 2 has too few arguments.
+
+The error message gives you the problem element (``-3``), it's meaning
+(``and``) and its position: the second element. The problem was caused
+because ``and`` requires two arguments, but only one argument (``1``)
+was given.
+
+Another error message::
+
+  There was an error searching issue by status using: [1, 2, -3,
+  -3]. The operator -3 (and) at position 4 has too few arguments.
+
+reports that the second ``-3`` in the 4th position is the problem
+operator. Note that this search expression will never return any
+values. This is because ``status`` is a single value (link) type
+property. It can't have the values ``1`` and ``2``, so the expression
+``1,2,-3`` will never return an issue.
+
+In the examples above, the error was caused by not having enough
+arguments. However you can also have too many arguments. An example of
+this type of message is::
+
+  There was an error searching issue by nosy using: [4, 5, 1, 2, -3,
+  -3]. There are too many arguments for the existing operators. The
+  values on the stack are: [Value 4, (Value 5 AND (Value 1 AND Value
+  2))]
+
+This message gives you the expression as far as it was able to compose
+it, but value 1 is not combined with the rest of the expression. So
+another binary operator is needed to complete the expression.
+
+If you have multiple incorrect expressions in your search, only one
+expression will be reported each time you submit the search.
+
+Using the Classhelper
+---------------------
+
+The classhelper makes finding the id number or name for linked items
+easier.  It is usually invoked from the parent window by clicking on
+the ``(list)`` link. There are two classhelpers: classic and
+component. This documentation discusses the newer component
+classhelper available with Roundup 2.4.0 or newer. If there is a
+problem with the component classhelper, it reports the problem and
+falls back to using the classic classhelper.
+
+The component classhelper is displayed in a popup window. You can
+interact with the original window by moving the popup out of the way
+or minimizing it. If you don't see a popup, check to see if your
+browser has disabled popup windows.
+
+The classhelper has three parts:
+
+ 1. an optional search pane
+ 2. a selection pane
+ 3. an accumulator pane
+
+.. image:: images/classhelper-issue-all.png
+   :width: 675
+   :height: 914
+   :alt: Image of the new component classhelper popup. The image shows
+         the operating system window decorations with a title of "Superseder
+	 Classhelper - issue2". Then it shows a search panel with options to
+	 enter text to search issue titles or status and a select/dropdown
+	 to search by a keyword on the issue. Below the options are search
+	 and reset buttons. Below the search panel is a selection
+	 panel that shows buttons to move to the previous or next pages and
+	 says that it is displaying items 26 to 50. This is followed by a
+	 scrollable table of issues where each row has a checkbox and the
+	 box for issue 114 is checked. At the bottom of the window is a text
+	 box that lists a number of issue numbers including 114. To the
+	 right of the text box are apply and cancel buttons.
+
+
+The search pane has text or select/dropdown fields to search for a
+matching item. The image above shows a search for issues. The Title
+and Status properties can be matched using a text input while the
+Keyword property can be selected from a dropdown. Hitting enter while
+in a text input will trigger a search and the results will be
+displayed below the search pane in the selection pane. Tabbing to the
+search button and pressing enter will also trigger a search. The reset
+button will clear the search form.
+
+Below the search pane is the select pane. It lists the number of items
+displayed (26-50) and includes two buttons to move to the previous or
+next page of search results. If there is no search pane, this will
+display a page of items from all the items in the class. Below the
+pagination component is the scrollable selection table. Each row in
+the table has a checkbox and one or more columns of data about the
+item.  Clicking on a row toggles the item's checkbox and adds or
+removes the id or name for the item in the accumulator's
+display. Arrow keys or tab/shift-tab can be used to scroll through
+each item in the selection table. The space key or enter will
+select/deselect the item. You can jump to the page controls using the
+'<' and '>' keys. Once the page control button is focused, press enter
+to trigger a page change.
+
+The bottom pane consists of a text input called the accumulator
+display. It lists all the items that have been selected. The first two
+items in this example were selected from the previous selection
+page. Next to the display are the apply and cancel buttons. You can
+jump to the apply button quickly by pressing Shift-Enter as long as
+you are not in a search input. Once the apply button is focused, press
+enter to copy the items in the display to the associated field on the
+parent window. If you activate the cancel button or close the window
+using the window decoration, the classhelper will close and not change
+the parent window.
+
+The classhelper can also be used in read-only mode. In this mode, the
+accumulator is not shown. Also the checkboxes are not displayed. To
+close the classhelper in read-only mode use the window decoration or a
+hotkey (e.g. control-w).
+
+You can have multiple classhelpers up at a time. The title on the
+window identifies the property and item the classhelper will
+modify. For example the image shows the superseder for issue2.
+
+Do not refresh the classhelper window using the ``F5`` key. This will
+erase the contents of the window and you will have to close it and
+invoke the link from the parent window again.
+
 Access Controls
 ---------------
 
@@ -538,6 +763,8 @@ items. At the end of the subject line, propname=value pairs can be
 specified in square brackets, using the same conventions as for the
 roundup set shell command.
 
+.. highlight:: text
+
 For example,
 
 - setting the priority of an issue::
@@ -555,6 +782,8 @@ For example,
 - removing yourself from a nosy list and setting the priority::
 
    Subject: Re: [ issue 2 ] we're out of widgets [nosy=-richard;priority=bug]
+
+.. highlight:: python3
 
 In all cases, the message relates to issue 2. The ``Re:`` prefix is
 stripped off.
@@ -676,3 +905,4 @@ If the author of the message is also in the nosy list for the item that
 the message is attached to, then the config var ``MESSAGES_TO_AUTHOR``
 is queried to determine if they get a nosy list copy of the message too.
 
+.. _`RPN`: https://en.wikipedia.org/wiki/Reverse_Polish_notation

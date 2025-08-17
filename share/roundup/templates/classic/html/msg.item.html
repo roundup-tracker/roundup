@@ -2,7 +2,7 @@
 <tal:block metal:use-macro="templates/page/macros/icing">
 <title metal:fill-slot="head_title">
 <tal:block condition="context/id" i18n:translate=""
- >Message <span tal:replace="context/id" i18n:name="id"
+ >Message <tal:x tal:content="context/id" i18n:name="id"
  /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
 /></tal:block>
 <tal:block condition="not:context/id" i18n:translate=""

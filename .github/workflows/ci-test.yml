@@ -19,6 +19,13 @@ on:
     schedule:
         # monthly build/check
         - cron: '23 17 1 * *'
+    workflow_dispatch:
+      inputs:
+        debug_enabled:
+          type: boolean
+          description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+          required: false
+          default: false
 
 # GITHUB_TOKEN only has read repo context.
 permissions:
@@ -45,33 +52,49 @@ jobs:
         # Run in all these versions of Python
         python-version:
           # - "2.7"
-          - "3.10"
-          # - "3.9"
-          - "3.8"
+          - "3.13"
+          # - 3.6 run via include on ubuntu 20.04
           # - "3.7"
-          - "3.11"
+          # - "3.8" run via include for ubuntu-22.04
+          # - "3.9"
+          - "3.10"
+          # - "3.11"
+          - "3.12"
 
         # use for multiple os or ubuntu versions
         #os: [ubuntu-latest, macos-latest, windows-latest]
         # ubuntu latest 22.04 12/2022
-        os: [ubuntu-latest, ubuntu-20.04]
+        # ubuntu latest 24.04 12/2024
+        os: [ubuntu-latest]
 
         # if the ones above fail. fail the build
         experimental: [ false ]
 
         include:
-            # example: if 3.12 fails the jobs still succeeds
-            - python-version: 3.12 
-              os: ubuntu-22.04
+            # example: if this version fails the jobs still succeeds
+            # allow-prereleases in setup-python allows alpha/beta
+            # releases to run. Also allow free threaded python testing
+            - python-version: 3.13t
+              os: ubuntu-24.04
               experimental: true
             
-            # 3.6 not available on new 22.04 runners, so run on 20.04 ubuntu
-            - python-version: 3.6
-              os: ubuntu-20.04
+            # 3.7 not available on new 22.04 runners, so run on 22.04 ubuntu
+            - python-version: 3.7
+              os: ubuntu-22.04
 
-        exclude:
-            # skip all python versions on 20.04 except explicitly included
-            - os: ubuntu-20.04
+            # 3.8 not available on new 24.04 runners, so run on 22.04 ubuntu
+            - python-version: 3.8
+              os: ubuntu-22.04
+
+        #exclude:
+            # skip all python versions on explicit 20.04/24.04 unless
+            # explicitly included
+            #- os: ubuntu-20.04
+            #- os: ubuntu-24.04
+
+            # disable when testing ubuntu-24.04 to speed up
+            # runs.
+            # - os: ubuntu-latest
 
     # run the finalizer for coveralls even if one or more
     # experimental matrix runs fail.
@@ -93,11 +116,11 @@ jobs:
         # if: {{ false }}
           # continue running if step fails
         # continue-on-error: true
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       # Setup version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4.7.1
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
@@ -109,9 +132,43 @@ jobs:
       # Display the Python version being used
       - name: Display Python and key module versions
         run: |
-          python -c "import sys; print('python version: ', sys.version)"
+          python --version --version
+          python -c "import sysconfig; print('GIL IS DISABLED: ', sysconfig.get_config_vars().get('Py_GIL_DISABLED', 'not defined'));"
           python -c "import sqlite3; print('sqlite version: ', sqlite3.sqlite_version)"
           python -c "import setuptools; print('setuptools version: ', setuptools.__version__);"
+
+      # from:
+      # https://hugovk.dev/blog/2025/free-threaded-python-on-github-actions/
+      - name: Set PYTHON_GIL when freethreaded
+        if: endsWith(matrix.python-version, 't')
+        run: |
+          echo "PYTHON_GIL=0" >> "$GITHUB_ENV"
+      - name: Update pip
+        run: python -m pip install --upgrade pip
+
+      # note pytest-env is not needed for redis password as there is
+      # no password on CI's redis.
+      - name: Install pytest and other packages needed for running tests
+        run: pip install flake8 hypothesis mock pytest pytest-cov requests sphinx-tabs
+
+      # https://github.com/mxschmitt/action-tmate
+      # allow remote ssh into the CI container. I need this to debug
+      # some xfail cases 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        timeout-minutes: 10
+        with:
+          limit-access-to-actor: true
+
+      - name: run flake8 - abort for syntax error, otherwise warn only
+        run: |
+            # stop the build for Python syntax errors or undefined names
+            # talgettext is a utility function ignore it.
+            flake8 roundup --count --select=E9,F63,F7,F82 --show-source --statistics --extend-exclude talgettext.py
+            # exit-zero treats all errors as warnings.
+            #   The GitHub editor is 127 chars wide
+            flake8 roundup --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       # Install the databases
       - name: Install mysql/mariadb
@@ -153,26 +210,47 @@ jobs:
           sudo service postgresql restart; sleep 10
           # set up postgresql database
           sudo -u postgres psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
+          sudo -u postgres psql -c "CREATE ROLE rounduptest_schema LOGIN PASSWORD 'rounduptest';" -U postgres
+          sudo -u postgres psql -c "CREATE DATABASE rounduptest_schema;" -U postgres
+          sudo -u postgres psql -c "GRANT CREATE ON DATABASE rounduptest_schema TO rounduptest_schema;" -U postgres
 
       - name: install redis
         run: |
           sudo apt-get install redis
           pip install redis
 
-      - name: Update pip
-        run: python -m pip install --upgrade pip
-
       - name: Install python db libraries
-        run: pip install psycopg2 mysqlclient
+        run: |
+          pip install mysqlclient
+          pip install psycopg2
+
+      # https://github.com/mxschmitt/action-tmate
+      # allow remote ssh into the CI container. I need this to debug
+      # some xfail cases 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        timeout-minutes: 10
+        with:
+          limit-access-to-actor: true
 
       - name: Install auxiliary packages
         run: |
-          sudo apt-get install swig gpgsm libgpgme-dev
+          sudo apt-get install swig gpg gpgsm libgpgme-dev
           # pygments for markdown2 to highlight code blocks
-          pip install 'markdown2<=2.4.8' pygments
+          pip install markdown2 pygments
           # docutils for ReStructuredText
-          pip install beautifulsoup4 brotli docutils gpg jinja2 \
+          pip install beautifulsoup4 brotli docutils jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
+          # gpg on PyPi is currently broken with newer OS platform
+          #   ubuntu 24.04
+          # used for newer Python versions. Temporarily use the
+          # testing index, which contains a newer version of the
+          # bindings on 24.04 or released version for other OS
+          # versions. See issue2551368. 'pip install gpg' should work
+          # at some point when things are released to the production repo.
+          pip install --index-url https://test.pypi.org/simple/ \
+                --extra-index-url https://pypi.org/simple gpg;
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
@@ -213,25 +291,13 @@ jobs:
             diff -u configure.FCS configure || true; \
             ./configure --prefix=$VIRTUAL_ENV --with-python3 --disable-documentation; \
           fi
-          case "$PYTHON_VERSION" in nightly) echo skipping xapian build;; *) make && sudo make install; esac
-
-      - name: Install pytest and other packages needed for running tests
-        run: pip install flake8 mock pytest pytest-cov requests
+          make && sudo make install
 
       - name: Test build roundup and install locale so lang tests work.
         run: |
           sudo apt-get install gettext
           python setup.py build
           (cd locale; make local_install; ls -lR locale/de/LC_MESSAGES)
-
-      - name: run flake8 - abort for syntax error, otherwise warn only
-        run: |
-            # stop the build for Python syntax errors or undefined names
-            # talgettext is a utility function ignore it.
-            flake8 roundup --count --select=E9,F63,F7,F82 --show-source --statistics --extend-exclude talgettext.py
-            # exit-zero treats all errors as warnings.
-            #   The GitHub editor is 127 chars wide
-            flake8 roundup --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       # Run the tests using pytest with test files in tests directory.
       - name: Run tests
@@ -246,18 +312,18 @@ jobs:
               -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
               -W "ignore:unclosed file:ResourceWarning:enum" \
               -v  test/ --cov=roundup
-            if [[ "$PYTHON_VERSION" != "3.6" ]]; then
-              # coverage before 3.6 doesn't support lcov output
               coverage lcov
-            fi
           else
             # python2 case
             pytest -v -r a --durations=20 test/ --cov=roundup
           fi
 
+      - name: Build docs
+        run: python ./setup.py build_doc
+        
       - name: Upload coverage to Codecov
         # see: https://github.com/codecov/codecov-action#usage
-        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
         with:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -265,15 +331,11 @@ jobs:
       - name: Upload coverage to Coveralls
         # python 2.7 and 3.6 versions of coverage can't produce lcov files.
         if: matrix.python-version != '2.7' && matrix.python-version != '3.6'
-        uses: coverallsapp/github-action@3dfc5567390f6fa9267c0ee9c251e4c8c3f18949 # master
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage.lcov
           parallel: run-{{ matrix.python-version }}-{{ matrix.os }}
-
-      - name: test build_doc
-        run: |
-          python ./setup.py build_doc
 
       #- name: test docker build current version ubuntu-latest
       #  if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
@@ -292,6 +354,10 @@ jobs:
       #         -f scripts/Docker/Dockerfile . 
 
 
+      - name: run benchmarks
+        if: "contains(github.event.head_commit.message, 'benchmark')"        
+        run: INCI=1 python test/benchmark.py
+        
   # in parallel build coveralls requires a finish step
   finish:
     needs: test
@@ -301,7 +367,7 @@ jobs:
     
     steps:
       - name: Coveralls Finished
-        uses: coverallsapp/github-action@3dfc5567390f6fa9267c0ee9c251e4c8c3f18949 # master
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true

@@ -3,57 +3,106 @@
 # This script generates a simple report outlining the activity in one
 # tracker for the most recent week.
 
+# A second argument is the negative interval to change period
+# of time.
+
 # This script is free software, you may redistribute it
 # and/or modify under the same terms as Python.
 
+#Example output
+#CREATED:
+#2702: new item
+#
+#RESOLVED:
+#1995: Where is my Power plugs
+#2501: Can you help me with Sanity
+#459: I need Sanity
+#
+#TOP TEN MOST DISCUSSED:
+#2 - 491: Can you help me with Sanity
+#1 - 1995: Where is my Power plugs
+
 from __future__ import print_function
-import sys, math
-from roundup import instance, date
+
+import sys
+
+from roundup import date, instance
+
+# position for arguments
+tracker_home_pos = 1
+optional_interval_pos = 2
+
+# gather args
+arg_len = len(sys.argv)
+# map pos to length by adding 1.
+if arg_len not in [tracker_home_pos + 1, optional_interval_pos + 1]:
+    print('Usage: %s tracker-home [interval -1w]' % sys.argv[0])
+    if (arg_len < tracker_home_pos + 1 ):
+        print('   You need to specify a tracker home directory')
+    sys.exit(1)
+instance_home = sys.argv[tracker_home_pos]
+lookback_interval = sys.argv[optional_interval_pos] if \
+    len(sys.argv) == optional_interval_pos + 1 else '-1w'
 
 # open the instance
-if len(sys.argv) != 2:
-    print('You need to specify an instance home dir')
-instance_home = sys.argv[1]
 instance = instance.open(instance_home)
 db = instance.open('admin')
 
-old = date.Date('-1w')
+old = date.Date(lookback_interval)
 
-created = []
-summary = {}
-messages = []
+created = []   # [issue_id_created_issue]
+summary = {}   # {status_id: [issue_ids in that status]}
+messages = []  # [(number_of_messages, issue_id)]
 
 # loop through all the recently-active issues
 for issue_id in db.issue.filter(None, {'activity': '-1w;'}):
-    num = 0
-    for x,ts,userid,action,data in db.issue.history(issue_id):
-        if ts < old: continue
+    message_count = 0
+    for _x,ts,_userid,action,data in db.issue.history(issue_id):
+        if ts < old:  # history occurred before our current window
+            continue
         if action == 'create':
             created.append(issue_id)
         elif action == 'set' and 'messages' in data:
-            num += 1
-    summary.setdefault(db.issue.get(issue_id, 'status'), []).append(issue_id)
-    messages.append((num, issue_id))
+            message_count += 1
+        summary.setdefault(db.issue.get(issue_id, 'status'),
+                           []).append(issue_id)
+    messages.append((message_count, issue_id))
 
-#print 'STATUS SUMMARY:'
+#print('STATUS SUMMARY:')
 #for k,v in summary.items():
-#    print k, len(v)
+#    print(k, len(v))
 
 print('\nCREATED:')
-print('\n'.join(['%s: %s'%(id, db.issue.get(id, 'title'))
-    for id in created]))
+if created:
+    print('\n'.join(['%s: %s'%(itemid, db.issue.get(itemid, 'title'))
+                     for itemid in created]))
+else:
+    print("No issue created in interval %s" % lookback_interval)
 
 print('\nRESOLVED:')
 resolved_id = db.status.lookup('resolved')
-print('\n'.join(['%s: %s'%(id, db.issue.get(id, 'title'))
-    for id in summary.get(resolved_id, [])]))
+if summary:
+    # deduplicate - duplicates happen when issue with resolved status
+    # has multiple history items (e.g. message or other
+    # change after resolution)
+    resolved_ids = sorted(set(summary.get(resolved_id, [])), key=int)
+    print('\n'.join(['%s: %s' % (itemid, db.issue.get(itemid, 'title'))
+                     for itemid in resolved_ids ]))
+else:
+    print("No issue resolved in interval %s" % lookback_interval)
 
 print('\nTOP TEN MOST DISCUSSED:')
-messages.sort()
-messages.reverse()
-nmax = messages[0][0]
-fmt = '%%%dd - %%s: %%s'%(int(math.log(nmax, 10)) + 1)
-print('\n'.join([fmt%(num, id, db.issue.get(id, 'title'))
-    for num, id in messages[:10]]))
+
+# filter out issues with no messages
+messages = [ message for message in messages if message[0] > 0 ]
+if messages:
+    messages.sort()
+    messages.reverse()
+    nmax = messages[0][0] or 1
+    fmt = '%%%dd - %%s: %%s'%(len(str(nmax)))
+    print('\n'.join([fmt%(num, itemid, db.issue.get(itemid, 'title'))
+                     for num, itemid in messages[:10]]))
+else:
+    print("No issues discussed in interval %s" % lookback_interval)
 
 # vim: set filetype=python ts=4 sw=4 et si

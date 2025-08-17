@@ -5,17 +5,13 @@
 #
 
 import os
-import weakref
-
 from contextlib import contextmanager
 
-from roundup.anypy.html import html_escape
-
 import roundup.instance
-from roundup.cgi import TranslationService
 from roundup.anypy import http_
+from roundup.anypy.html import html_escape
 from roundup.anypy.strings import s2b
-
+from roundup.cgi import TranslationService
 from roundup.cgi.client import BinaryFieldStorage
 
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
@@ -28,8 +24,9 @@ except KeyError:
     http_.server.BaseHTTPRequestHandler.responses[429] = (
          'Too Many Requests',
         'The user has sent too many requests in '
-        'a given amount of time ("rate limiting")'
+        'a given amount of time ("rate limiting")',
     )
+
 
 class Headers(object):
     """ Idea more or less stolen from the 'apache.py' in same directory.
@@ -72,7 +69,7 @@ class RequestHandler(object):
 
     def start_response(self, headers, response_code):
         """Set HTTP response code"""
-        message, explain = BaseHTTPRequestHandler.responses[response_code]
+        message, _explain = BaseHTTPRequestHandler.responses[response_code]
         self.__wfile = self.__start_response('%d %s' % (response_code,
                                                         message), headers)
 
@@ -85,7 +82,8 @@ class RequestHandler(object):
 class RequestDispatcher(object):
     def __init__(self, home, debug=False, timing=False, lang=None,
                  feature_flags=None):
-        assert os.path.isdir(home), '%r is not a directory' % (home,)
+        if not os.path.isdir(home):
+            raise ValueError('%r is not a directory' % (home,))
         self.home = home
         self.debug = debug
         self.timing = timing
@@ -98,7 +96,8 @@ class RequestDispatcher(object):
         else:
             self.translator = None
 
-        if "cache_tracker" in self.feature_flags:
+        if "cache_tracker" not in self.feature_flags or \
+           self.feature_flags["cache_tracker"] is not False:
             self.tracker = roundup.instance.open(self.home, not self.debug)
         else:
             self.preload()
@@ -133,7 +132,8 @@ class RequestDispatcher(object):
         else:
             form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-        if "cache_tracker" in self.feature_flags:
+        if "cache_tracker" not in self.feature_flags or \
+           self.feature_flags["cache_tracker"] is not False:
             client = self.tracker.Client(self.tracker, request, environ, form,
                                          self.translator)
             try:

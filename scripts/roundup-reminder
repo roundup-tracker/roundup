@@ -28,10 +28,12 @@ TODO: possibly make this more general and configurable...
 '''
 
 from __future__ import print_function
+
 import sys
 from email.mime.multipart import MIMEMultipart
 from email.utils import make_msgid
-from roundup import instance, date
+
+from roundup import date, instance
 from roundup.mailer import Mailer
 
 # open the instance
@@ -80,17 +82,17 @@ for user_id in db.user.list():
         continue
 
     # extract this user's issues
-    l = []
+    issues = []
     for issue_id in db.issue.find(assignedto=user_id):
         if db.issue.get(issue_id, 'status') == resolved_id:
             continue
         order = db.priority.get(db.issue.get(issue_id, 'priority'), 'order')
-        l.append((order, db.issue.get(issue_id, 'activity'),
+        issues.append((order, db.issue.get(issue_id, 'activity'),
             db.issue.get(issue_id, 'creation'), issue_id))
 
     # sort the issues by timeliness and creation date
-    l.sort(key=listKey)
-    if not l:
+    issues.sort(key=listKey)
+    if not issues:
         continue
 
     # generate the email message
@@ -110,7 +112,7 @@ for user_id in db.user.list():
     text_lines.append('='*75)
     #             '2 months    213  immediate cc_daemon barfage
     old_priority = None
-    for priority_order, activity_date, creation_date, issue_id in l:
+    for _priority_order, activity_date, creation_date, issue_id in issues:
         priority = db.issue.get(issue_id, 'priority')
         if (priority != old_priority):
             old_priority = priority
@@ -151,7 +153,7 @@ and click on "My Issues". Do NOT respond to this message.
 <tr><th>Created</th> <th>ID</th> <th>Activity</th> <th>Title</th></tr>
 ''')
     old_priority = None
-    for priority_order, activity_date, creation_date, issue_id in l:
+    for _priority_order, activity_date, creation_date, issue_id in issues:
         priority = db.issue.get(issue_id,'priority')
         if (priority != old_priority):
            old_priority = priority

@@ -1,0 +1,164 @@
+<head>
+<title>Roundup: A Simple and Effective Issue Tracker in Python</title>
+</head>
+<body bgcolor="#efefef">
+<table bgcolor="#4040a0" width="100%" border=0 cellspacing=0
+><tr valign=bottom><td>&nbsp;<br>&nbsp;<br
+><font face="helvetica, arial" color="#ffffff"><big><big><strong
+>Roundup Short Paper</strong></big></big></font></td><td align=right
+><a href="http://www.lfw.org/"
+><img src="/images/lfwblue.gif" border=0 width=33 height=22 alt="[LFW]"
+></a></td></tr></table>
+<h3>Roundup: A Simple and Effective Issue Tracker in Python</h3>
+<small><em>Ka-Ping Yee</em>
+(<a href="http://www.lfw.org/ping/roundup.html">original site: http://www.lfw.org/ping/roundup.html</a></small>)
+
+<p>Please note that <strong>there is a new, active Roundup project</strong>
+led by Richard Jones.  Please <a href="http://roundup.sf.net/">visit them
+at SourceForge</a>.
+
+<p>The Roundup prototype is open source.  You can
+<a href="roundup.tar.gz"><strong>download it here</strong>
+(roundup.tar.gz, 32 kb)</a>.
+Or <strong><a href="roundup/roundup.cgi">play with the live prototype!</a>
+</strong>
+When prompted for authentication, you can use
+one of the test accounts: "test", "spam", or "eggs"
+(password same as account name).  Roundup's e-mail address is
+<a href="mailto:roundup---lfw.org">roundup---lfw.org</a>.  You can't
+create new accounts, but you can read the mail spools for
+<a href="test.spool">test</a>,
+<a href="spam.spool">spam</a>, or
+<a href="eggs.spool">eggs</a> here to see what they're getting.
+
+
+<p><em>A <a href="sc-roundup.html">detailed design proposal
+for a more advanced issue-tracking system based on Roundup</a>
+has been submitted to
+<a href="http://www.software-carpentry.com/">Software Carpentry</a>'s
+open source software design competition.</em>  This first-round
+submission was 
+<a href="http://software-carpentry.codesourcery.com/first-round-results.html"
+>selected as a finalist</a>.  A <a href="sc-roundup-2.html">more
+detailed implementation guide</a> was submitted to the 
+<a href="http://software-carpentry.codesourcery.com/second-round-entries.html"
+>second round of the competition</a>.
+
+<p><em>You might also want to check out
+<a href="/python/">other Python-related stuff on this site</a>.</em>
+
+<hr>
+
+<p>This short talk will share some experiences from developing and using
+the issue tracking system used by my development group at ILM.  It integrates
+two modes of access: e-mail for gathering information, and the Web
+for search and retrieval.  We currently work with it daily and it
+does its job pretty well.
+
+<h4>Fine-Grained Mailing Lists</h4>
+
+<p>The key strength of Roundup is that it generates a small virtual
+mailing list for each new issue.  In a way, this is like implementing
+private conversation rooms in e-mail.  Although the mechanism is
+very simple, the emergent properties are quite effective.  Here's
+how it works:
+
+<ol type="a">
+<li>New issues are always submitted by sending an e-mail message.
+This message is saved in a mail spool attached to the newly-created
+issue record, and copied to the relatively large user community of
+the application so everyone knows the issue has been raised.
+
+<li>All e-mail messages sent by Roundup have their "Reply-To"
+field set to send mail back to Roundup, and have the issue's
+ID number in the Subject field.  So, any replies to the
+initial announcement and subsequent threads are all received
+by Roundup and appended to the spool.
+
+<li>Each issue has a "nosy list" of people interested in the
+issue.  Any mail tagged with the issue's ID number is copied
+to this list of people, and any users found in the From:,
+To:, or Cc: fields of e-mail about the issue are automatically
+added to the nosy list.  Whenever a user edits an item in the
+Web interface, they are also added to the list.
+</ol>
+
+<p>The result is that no one ever has to worry about subscribing to
+anything.  Indicating interest in an issue is sufficient, and if you
+want to bring someone new into the conversation, all you need to do
+is Cc: a message to them.  It turns out that no one ever has to worry
+about unsubscribing, either: the nosy lists are so specific in scope
+that the conversation tends to die down by itself when the issue is
+resolved or people no longer find it sufficiently important.  The
+transparent capture of the mail spool attached to each issue also
+yields a nice searchable knowledge repository over time.
+
+<h4>User Interface Decisions</h4>
+
+<p>The web interface to Roundup aims to maximize the density of
+useful information.  Although this principle is important to all
+information presentation, it is especially vital in a web browser
+because of the limited window real estate.  Hence Roundup avoids
+repetitive or unnecessary information and tries to fit as many
+items as possible on the first screen.  For example, Bugzilla
+initially displays seven or eight items of the index; Jitterbug can't
+even manage to fit any items at all in the first screenful, as it's
+taken up by artwork and adminstrative debris.  In contrast, Roundup
+shows you about 25 high-priority issues right away.  Colour indicates
+the status of each item to help the eye sift through the index quickly.
+
+<p>In both Jitterbug and Bugzilla, items are sorted by default by ID,
+a meaningless field.  Sorting by ID puts the issues in order by
+ascending submission date, which banishes recent issues as <em>far</em>
+away as possible at the bottom of the list.  Roundup sorts items
+in sections by priority so the high-priority items are
+immediately visible; within sections, items are sorted by date
+of last activity.  This reveals at a glance where discussion is
+most active, and provides an easy way for anyone to move an issue
+up in the list without changing its priority.
+
+<p><hr>
+(The following has been added for this web page and was not
+part of the short paper in the IPC8 proceedings.)
+
+<h4>Screenshots of the Web Interface</h4>
+
+<p>Here is the <a href="images/roundup-1.png">Roundup index</a>, the first
+thing presented to you when you go to Roundup.  Note the use of
+colour coding and the attempt to dedicate maximum space to the
+description of each issue.
+
+<p>In comparison, here is the <a href="images/jitterbug-1.gif">first
+screen you see when you use Jitterbug</a>.  No information is
+actually visible!  You have to scroll down to the
+<a href="images/jitterbug-2.gif">second screen</a> before you get to
+see any bugs, and even then your view is limited to a paltry
+eight entries.  The boldface on the item descriptions helps,
+but the visual effect of the table is still swamped by the
+powerful green header line -- which contains zero bits of
+new information.
+
+<p>As another example, Bugzilla presents somewhat more information 
+than Jitterbug in its <a href="images/bugzilla-4.gif">index view</a>, but
+forces you to go through three
+bewildering screens replete with form widgets
+(<a href="images/bugzilla-1.gif">one</a>,
+<a href="images/bugzilla-2.gif">two</a>,
+<a href="images/bugzilla-3.gif">three</a>) before you even get to see
+anything.  Examination of the <a href="images/bugzilla-4.gif">index view</a>
+shows that one-third to one-half of the screen area (depending how
+you count it) is wasted on trivialities or empty space, and the
+most important column, the description of each issue,
+is shoved off of the right side of the page.
+
+<p><table bgcolor="#4040a0" width="100%" border=0 cellspacing=0
+><tr valign=bottom><td
+><font face="helvetica, arial" color="#c0c0e0"><small
+>copyright &copy; by
+<a href="http://www.lfw.org/ping/"
+><font color="#c0c0e0">Ka-Ping Yee</font></a>
+updated Sun 2 Jul 2000</td><td align=right
+><font face="helvetica, arial" color="#c0c0e0"
+><small><small>
+</small></small></font></td></tr></table>
+</body>

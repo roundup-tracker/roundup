@@ -30,6 +30,14 @@ from . import gpgmelib
 from email import message_from_string
 
 import pytest
+
+try:
+    from StringIO import cStringIO as IOBuff
+except ImportError:
+    # python 3
+    from io import BytesIO as IOBuff
+
+from roundup.cgi.client import BinaryFieldStorage
 from roundup.hyperdb import String, Password, Link, Multilink, Date, \
     Interval, DatabaseError, Boolean, Number, Node, Integer
 from roundup.mailer import Mailer
@@ -41,8 +49,9 @@ from roundup.cgi import client, actions
 from roundup.cgi.engine_zopetal import RoundupPageTemplate
 from roundup.cgi.templating import HTMLItem
 from roundup.exceptions import UsageError, Reject
+from roundup.mlink_expr import ExpressionError
 
-from roundup.anypy.strings import b2s, s2b, u2s
+from roundup.anypy.strings import b2s, bs2b, s2b, u2s
 from roundup.anypy.cmp_ import NoneAndDictComparable
 from roundup.anypy.email_ import message_from_bytes
 
@@ -160,7 +169,11 @@ def setupSchema(db, create, module):
 class MyTestCase(object):
     def tearDown(self):
         if hasattr(self, 'db'):
-            self.db.close()
+          if hasattr(self.db, 'session'):
+            self.db.session.db.close()
+          if hasattr(self.db, 'otk'):
+            self.db.otk.db.close()
+          self.db.close()
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
 
@@ -197,6 +210,7 @@ class commonDBTest(MyTestCase):
             yield (cls.filter)
             yield (filt_iter_list)
         return self.assertEqual, filter_test_iterator
+
 
     def filteringSetupTransitiveSearch(self, classname='issue'):
         u_m = {}
@@ -407,6 +421,7 @@ class DBTest(commonDBTest):
 
         # test set & retrieve (this time for file contents)
         nid = self.db.file.create(content=ustr)
+        self.db.commit()
         self.assertEqual(self.db.file.get(nid, 'content'), ustr)
         self.assertEqual(self.db.file.get(nid, 'binary_content'), s2b(ustr))
 
@@ -1259,7 +1274,6 @@ class DBTest(commonDBTest):
         expected = {'nosy': (('+', ['1']), ('-', ['3'])),
                     'deadline': date.Date("2016-07-30.22:39:00.000")}
 
-        result.sort()
         print("result unquiet", result)
         (id, tx_date, user, action, args) = result[-1]
         # check piecewise
@@ -1304,7 +1318,6 @@ class DBTest(commonDBTest):
         # Verify last journal entry as admin is a role change
         # from None
         result=self.db.user.history(new_user, skipquiet=False)
-        result.sort()
         ''' result should end like:
           [ ...
           ('3', <Date 2017-04-15.02:06:11.482>, '1', 'set',
@@ -1509,6 +1522,50 @@ class DBTest(commonDBTest):
 
         # we should have the create and last set entries now
         self.assertEqual(jlen-1, len(self.db.getjournal('issue', id)))
+
+    def testCurrentUserLookup(self):
+        # admin is the default
+        f = self.db.user.lookup('@current_user')
+        self.assertEqual(f, "1")
+
+
+        self.db.journaltag = "fred"
+        f = self.db.user.lookup('@current_user')
+        self.assertEqual(f, "2")
+
+    def testCurrentUserIssueFilterLink(self):
+        # admin is the default user
+
+        for user in ['admin', 'fred']:
+            self.db.journaltag = user
+            for commit in (0,1):
+                nid = self.db.issue.create(
+                    title="spam %s %s" % (user, commit),
+                    status='1',
+                    nosy=['2'] if commit else ['1'])
+            self.db.commit()
+
+        self.db.journaltag = 'admin'
+        self.db.issue.set('3', status='2')
+
+        f = self.db.issue.filter(None, {"creator": '@current_user'})
+        self.assertEqual(f, ["1", "2"])
+
+        f = self.db.issue.filter(None, {"actor": '@current_user'})
+        self.assertEqual(f, ["1", "2", "3"])
+
+
+        self.db.journaltag = 'fred'
+        f = self.db.issue.filter(None, {"creator": '@current_user'})
+        self.assertEqual(f, ["3", "4"])
+
+        # check not @current_user
+        f = self.db.issue.filter(None, {"creator": ['@current_user', '-2']})
+        self.assertEqual(f, ["1", "2"])
+
+        # check different prop
+        f = self.db.issue.filter(None, {"actor": '@current_user'})
+        self.assertEqual(f, ["4"])
 
     def testIndexerSearching(self):
         f1 = self.db.file.create(content='hello', type="text/plain")
@@ -2000,6 +2057,43 @@ class DBTest(commonDBTest):
             ae(filt(None, {a: ['-1', None]}, ('+','id'), grp), ['3','4'])
             ae(filt(None, {a: ['1', None]}, ('+','id'), grp), ['1', '3','4'])
 
+    def testFilteringBrokenLinkExpression(self):
+        ae, iiter = self.filteringSetup()
+        a = 'assignedto'
+        for filt in iiter():
+            with self.assertRaises(ExpressionError) as e:
+                filt(None, {a: ['1', '-3']}, ('+','status'))
+            self.assertIn("position 2", str(e.exception))
+            # verify all tokens are consumed
+            self.assertNotIn("%", str(e.exception))
+            self.assertNotIn("%", repr(e.exception))
+
+            with self.assertRaises(ExpressionError) as e:
+                filt(None, {a: ['0', '1', '2', '3', '-3', '-4']},
+                     ('+','status'))
+            self.assertIn("values on the stack are: [Value 0,",
+                          str(e.exception))
+            self.assertNotIn("%", str(e.exception))
+            self.assertNotIn("%", repr(e.exception))
+
+            with self.assertRaises(ExpressionError) as e:
+                # expression tests _repr_ for every operator and
+                # three values
+                filt(None, {a: ['-1', '1', '2', '3', '-3', '-2', '-4']},
+                     ('+','status'))
+            result = str(e.exception)
+            self.assertIn(" AND ", result)
+            self.assertIn(" OR ", result)
+            self.assertIn("NOT(", result)
+            self.assertIn("ISEMPTY(-1)", result)
+            # trigger a KeyError and verify fallback format
+            # is correct. It includes the template with %(name)s tokens,
+            del(e.exception.context['class'])
+            self.assertIn("values on the stack are: %(stack)s",
+                          str(e.exception))
+            self.assertIn("values on the stack are: %(stack)s",
+                          repr(e.exception))
+
     def testFilteringLinkExpression(self):
         ae, iiter = self.filteringSetup()
         a = 'assignedto'
@@ -2160,6 +2254,56 @@ class DBTest(commonDBTest):
             ae(filt(None, {'nosy': '-1'}, ('+','id'), (None,None)), ['1', '2'])
             ae(filt(None, {'nosy': ['1','2']}, ('+', 'status'),
                 ('-', 'deadline')), ['4', '3'])
+
+    def testFilteringBrokenMultilinkExpression(self):
+        ae, iiter = self.filteringSetup()
+        kw1 = self.db.keyword.create(name='Key1')
+        kw2 = self.db.keyword.create(name='Key2')
+        kw3 = self.db.keyword.create(name='Key3')
+        kw4 = self.db.keyword.create(name='Key4')
+        self.db.issue.set('1', keywords=[kw1, kw2])
+        self.db.issue.set('2', keywords=[kw1, kw3])
+        self.db.issue.set('3', keywords=[kw2, kw3, kw4])
+        self.db.issue.set('4', keywords=[kw1, kw2, kw4])
+        self.db.commit()
+        kw = 'keywords'
+        for filt in iiter():
+            with self.assertRaises(ExpressionError) as e:
+                filt(None, {kw: ['1', '-3']}, ('+','status'))
+            self.assertIn("searching issue by keywords", str(e.exception))
+            self.assertIn("position 2", str(e.exception))
+            # verify all tokens are consumed
+            self.assertNotIn("%", str(e.exception))
+            self.assertNotIn("%", repr(e.exception))
+
+            with self.assertRaises(ExpressionError) as e:
+                filt(None, {kw: ['0', '1', '2', '3', '-3', '-4']},
+                     ('+','status'))
+            self.assertIn("searching issue by keywords", str(e.exception))
+            self.assertIn("values on the stack are: [Value 0,",
+                          str(e.exception))
+            self.assertNotIn("%", str(e.exception))
+            self.assertNotIn("%", repr(e.exception))
+
+            with self.assertRaises(ExpressionError) as e:
+                # expression tests _repr_ for every operator and
+                # three values
+                filt(None, {kw: ['-1', '1', '2', '3', '-3', '-2', '-4']},
+                     ('+','status'))
+            result = str(e.exception)
+            self.assertIn("searching issue by keywords", result)
+            self.assertIn(" AND ", result)
+            self.assertIn(" OR ", result)
+            self.assertIn("NOT(", result)
+            self.assertIn("ISEMPTY(-1)", result)
+            # trigger a KeyError and verify fallback format
+            # is correct. It includes the template with %(name)s tokens,
+            del(e.exception.context['class'])
+            self.assertIn("values on the stack are: %(stack)s",
+                          str(e.exception))
+            self.assertIn("values on the stack are: %(stack)s",
+                          repr(e.exception))
+
 
     def testFilteringMultilinkExpression(self):
         ae, iiter = self.filteringSetup()
@@ -2911,6 +3055,115 @@ class DBTest(commonDBTest):
                 ae(filt(None, {'title': ['one', 'two']}, ('+','id'),
                    retired=retire), r[retire][4])
 
+    def setupQuery(self):
+        self.filteringSetup()
+        self.db.user.set('3', roles='User')
+        self.db.user.set('4', roles='User')
+        self.db.user.set('5', roles='User')
+        self.db.commit()
+        self.db.close()
+        self.open_database('bleep')
+        setupSchema(self.db, 0, self.module)
+        cls = self.module.Class
+        query = cls(self.db, "query", klass=String(), name=String(),
+                    private_for=Link("user"))
+        self.db.post_init()
+        # Allow searching query
+        sec = self.db.security
+        p = sec.addPermission(name='Search', klass='query')
+        sec.addPermissionToRole('User', p)
+        # Queries user3
+        default = dict(klass='issue', private_for='3')
+        self.db.query.create(name='c5', **default)
+        self.db.query.create(name='c4', **default)
+        self.db.query.create(name='b4', **default)
+        self.db.query.create(name='b3', **default)
+        # public queries
+        d = dict(default,private_for=None)
+        self.db.query.create(name='a1', **d)
+        self.db.query.create(name='a2', **d)
+        # Queries user5
+        d = dict(default,private_for='5')
+        self.db.query.create(name='other_user1', **d)
+        self.db.query.create(name='other_user2', **d)
+
+        def view_query(db, userid, itemid):
+            q = db.query.getnode(itemid)
+            if q.private_for is None:
+                return True
+            if q.private_for == userid:
+                return True
+            return False
+
+        return view_query
+
+    def testFilteringWithoutPermissionCheck(self):
+        view_query = self.setupQuery()
+        filt = self.db.query.filter
+        r = filt(None, {}, sort=[('+', 'name')])
+        # Gets all queries
+        self.assertEqual(r, ['5', '6', '4', '3', '2', '1', '7', '8'])
+
+    def testFilteringWithPermissionNoFilterFunction(self):
+        view_query = self.setupQuery()
+        perm = self.db.security.addPermission
+        p = perm(name='View', klass='query', check=view_query)
+        self.db.security.addPermissionToRole("User", p)
+        filt = self.db.query.filter_with_permissions
+
+        r = filt(None, {}, sort=[('+', 'name')])
+        # User may see own and public queries
+        self.assertEqual(r, ['5', '6', '4', '3', '2', '1'])
+
+    def testFilteringWithPermissionFilterFunction(self):
+        view_query = self.setupQuery()
+
+        def filter(db, userid, klass):
+            return [dict(filterspec = dict(private_for=['-1', userid]))]
+        perm = self.db.security.addPermission
+        p = perm(name='View', klass='query', check=view_query, filter=filter)
+        self.db.security.addPermissionToRole("User", p)
+        filt = self.db.query.filter_with_permissions
+
+        r = filt(None, {}, sort=[('+', 'name')])
+        # User may see own and public queries
+        self.assertEqual(r, ['5', '6', '4', '3', '2', '1'])
+
+    def testFilteringWithPermissionFilterFunctionOff(self):
+        view_query = self.setupQuery()
+
+        def filter(db, userid, klass):
+            return [dict(filterspec = dict(private_for=['-1', userid]))]
+        perm = self.db.security.addPermission
+        p = perm(name='View', klass='query', check=view_query, filter=filter)
+        self.db.security.addPermissionToRole("User", p)
+        # Turn filtering off
+        self.db.config.RDBMS_DEBUG_FILTER = True
+        filt = self.db.query.filter_with_permissions
+
+        r = filt(None, {}, sort=[('+', 'name')])
+        # User may see own and public queries
+        self.assertEqual(r, ['5', '6', '4', '3', '2', '1'])
+
+    def testFilteringWithManufacturedCheckFunction(self):
+        # We define a permission with a filter function but no check
+        # function. The check function is manufactured automatically.
+        # Then we test the manufactured *check* function only by turning
+        # off the filter function.
+        view_query = self.setupQuery()
+
+        def filter(db, userid, klass):
+            return [dict(filterspec = dict(private_for=['-1', userid]))]
+        perm = self.db.security.addPermission
+        p = perm(name='View', klass='query', filter=filter)
+        self.db.security.addPermissionToRole("User", p)
+        # Turn filtering off
+        self.db.config.RDBMS_DEBUG_FILTER = True
+        filt = self.db.query.filter_with_permissions
+        r = filt(None, {}, sort=[('+', 'name')])
+        # User may see own and public queries
+        self.assertEqual(r, ['5', '6', '4', '3', '2', '1'])
+
 # XXX add sorting tests for other types
 
     # nuke and re-create db for restore
@@ -3276,14 +3529,14 @@ class DBTest(commonDBTest):
                           'Role "admin":\n',
                           ' User may create everything (Create)\n',
                           ' User may edit everything (Edit)\n',
+                          ' User may use the email interface (Email Access)\n',
+                          ' User may access the rest interface (Rest Access)\n',
                           ' User may restore everything (Restore)\n',
                           ' User may retire everything (Retire)\n',
                           ' User may view everything (View)\n',
                           ' User may access the web interface (Web Access)\n',
-                          ' User may access the rest interface (Rest Access)\n',
-                          ' User may access the xmlrpc interface (Xmlrpc Access)\n',
                           ' User may manipulate user Roles through the web (Web Roles)\n',
-                          ' User may use the email interface (Email Access)\n',
+                          ' User may access the xmlrpc interface (Xmlrpc Access)\n',
                           'Role "anonymous":\n', 'Role "user":\n',
                           ' User is allowed to access msg (View for "msg" only)\n',
                           ' Prevent users from seeing roles (View for "user": [\'username\', \'supervisor\', \'assignable\'] only)\n']
@@ -4095,6 +4348,14 @@ class HTMLItemTest(ClassicInitBase):
         ae(bool(issue ['priority']['name']),False)
 
 def makeForm(args):
+    """ Takes a dict of form elements or a FieldStorage.
+
+         FieldStorage is just returned so you can pass the result from
+         makeFormFromString through it cleanly.
+    """
+    if isinstance(args, cgi.FieldStorage):
+        return args
+
     form = cgi.FieldStorage()
     for k,v in args.items():
         if type(v) is type([]):
@@ -4105,6 +4366,33 @@ def makeForm(args):
             form.list.append(x)
         else:
             form.list.append(cgi.MiniFieldStorage(k, v))
+    return form
+
+def makeFormFromString(bstring, env=None):
+    """used for generating a form that looks like a rest or xmlrpc
+       payload. Takes a binary or regular string and stores
+       it in a FieldStorage object.
+
+       :param: bstring - binary or regular string
+       :param" env - dict of environment variables. Names/keys
+               must be uppercase.
+                  e.g. {"REQUEST_METHOD": "DELETE"}
+
+       Ideally this would be part of makeForm, but the env dict
+       is needed here to allow FieldStorage to properly define
+       the resulting object.
+    """
+    rfile=IOBuff(bs2b(bstring))
+
+    # base headers required for BinaryFieldStorage/FieldStorage
+    e = {'REQUEST_METHOD':'POST',
+         'CONTENT_TYPE': 'text/xml',
+         'CONTENT_LENGTH': str(len(bs2b(bstring)))
+         }
+    if env:
+        e.update(env)
+
+    form = BinaryFieldStorage(fp=rfile, environ=e)
     return form
 
 class FileUpload:

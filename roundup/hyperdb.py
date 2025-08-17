@@ -21,6 +21,7 @@
 __docformat__ = 'restructuredtext'
 
 # standard python modules
+import copy
 import logging
 import os
 import re
@@ -29,6 +30,8 @@ import sys
 import traceback
 import weakref
 
+from hashlib import md5
+
 # roundup modules
 from . import date, password
 from .support import ensureParentsExist, PrioList
@@ -36,9 +39,12 @@ from roundup.mlink_expr import Expression
 from roundup.i18n import _
 from roundup.cgi.exceptions import DetectorError
 from roundup.anypy.cmp_ import NoneAndDictComparable
-from roundup.anypy.strings import eval_import
+from roundup.anypy.strings import b2s, bs2b, eval_import
 
 logger = logging.getLogger('roundup.hyperdb')
+
+# marker used for an unspecified keyword argument
+_marker = []
 
 
 #
@@ -193,13 +199,19 @@ class Password(_Type):
 
 
 class Date(_Type):
-    """An object designating a Date property."""
+    """An object designating a Date property.
+       The display_time parameter specifies if we want date and time or
+       date only. Both display_time and format are defaults for the
+       field method of the DateHTMLProperty (for rendering html).
+    """
     def __init__(self, offset=None, required=False, default_value=None,
-                 quiet=False):
+                 quiet=False, display_time='yes', format=None):
         super(Date, self).__init__(required=required,
                                    default_value=default_value,
                                    quiet=quiet)
         self._offset = offset
+        self.display_time = display_time == 'yes'
+        self.format = format
 
     def offset(self, db):
         if self._offset is not None:
@@ -1118,10 +1130,12 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         """
         return node
 
-    def getnode(self, classname, nodeid):
+    def getnode(self, classname, nodeid, allow_abort=True):
         """Get a node from the database.
 
         'cache' exists for backwards compatibility, and is not used.
+        'allow_abort' determines if we allow that the current
+        transaction is aborted due to a data error (e.g. invalid nodeid).
         """
         raise NotImplementedError
 
@@ -1288,9 +1302,7 @@ class Class:
         """
         raise NotImplementedError
 
-    _marker = []
-
-    def get(self, nodeid, propname, default=_marker, cache=1):
+    def get(self, nodeid, propname, default=_marker, cache=1, allow_abort=True):
         """Get the value of a property on an existing node of this class.
 
         'nodeid' must be the id of an existing node of this class or an
@@ -1298,6 +1310,8 @@ class Class:
         of this class or a KeyError is raised.
 
         'cache' exists for backwards compatibility, and is not used.
+        'allow_abort' determines if we allow that the current
+        transaction is aborted due to a data error (e.g. invalid nodeid).
         """
         raise NotImplementedError
 
@@ -1355,8 +1369,10 @@ class Class:
         """
         raise NotImplementedError
 
-    def is_retired(self, nodeid):
+    def is_retired(self, nodeid, allow_abort=True):
         """Return true if the node is rerired
+           'allow_abort' specifies if we allow the transaction to be
+           aborted if a syntactically invalid nodeid is passed.
         """
         raise NotImplementedError
 
@@ -1861,6 +1877,60 @@ class Class:
     # anyway).
     filter_iter = filter
 
+    def filter_with_permissions(self, search_matches, filterspec, sort=[],
+                                group=[], retired=False, exact_match_spec={},
+                                limit=None, offset=None,
+                                permission='View', userid=None):
+        """ Do the same as filter but return only the items the user is
+            entitled to see, running the results through security checks.
+            The userid defaults to the current database user.
+        """
+        if userid is None:
+            userid = self.db.getuid()
+        cn = self.classname
+        sec = self.db.security
+        filterspec = sec.filterFilterspec(userid, cn, filterspec)
+        if exact_match_spec:
+            exact_match_spec = sec.filterFilterspec(userid, cn,
+                                                    exact_match_spec)
+        sort = sec.filterSortspec(userid, cn, sort)
+        group = sec.filterSortspec(userid, cn, group)
+        item_ids = self.filter(search_matches, filterspec, sort, group,
+                               retired, exact_match_spec, limit, offset)
+        check = sec.hasPermission
+        if check(permission, userid, cn, skip_permissions_with_check = True):
+            allowed = item_ids
+        else:
+            debug = self.db.config.RDBMS_DEBUG_FILTER
+            # Note that is_filterable returns True if no permissions are
+            # found. This makes it fail early (with an empty allowed list)
+            # instead of running through all ids with an empty
+            # permission list.
+            if not debug and sec.is_filterable(permission, userid, cn):
+                new_ids = set(item_ids)
+                confirmed = set()
+                for perm in sec.filter_iter(permission, userid, cn):
+                    fargs = perm.filter(self.db, userid, self)
+                    for farg in fargs:
+                        farg.update(sort=[], group=[], retired=None)
+                        result = self.filter(list(new_ids), **farg)
+                        new_ids.difference_update(result)
+                        confirmed.update(result)
+                        # all allowed?
+                        if not new_ids:
+                            break
+                    # all allowed?
+                    if not new_ids:
+                        break
+                # Need to sort again in database
+                allowed = self.filter(confirmed, {}, sort=sort, group=group,
+                                      retired=None)
+            else: # Last resort: filter in python
+                allowed = [id for id in item_ids
+                           if check(permission, userid, cn, itemid=id)]
+        return allowed
+
+
     def count(self):
         """Get the number of nodes in this class.
 
@@ -2103,17 +2173,59 @@ def rawToHyperdb(db, klass, itemid, propname, value, **kw):
 
 
 class FileClass:
-    """ A class that requires the "content" property and stores it on
-        disk.
+    """ This class defines a large chunk of data. To support this, it
+        has a mandatory String property "content" which is saved off
+        externally to the hyperdb.
+
+        The default MIME type of this data is defined by the
+        "default_mime_type" class attribute, which may be overridden by
+        each node if the class defines a "type" String property.
     """
     default_mime_type = 'text/plain'
 
-    def __init__(self, db, classname, **properties):
+    def _update_properties(self, properties):
         """The newly-created class automatically includes the "content"
-        property.
+        and "type" properties. This method must be called by __init__.
         """
         if 'content' not in properties:
             properties['content'] = String(indexme='yes')
+        if 'type' not in properties:
+            properties['type'] = String()
+
+    def create(self, **propvalues):
+        """ snaffle the file propvalue and store in a file
+        """
+        # we need to fire the auditors now, or the content property won't
+        # be in propvalues for the auditors to play with
+        self.fireAuditors('create', None, propvalues)
+
+        # now remove the content property so it's not stored in the db
+        content = propvalues['content']
+        del propvalues['content']
+
+        # do the database create
+        newid = self.create_inner(**propvalues)
+
+        # figure the mime type
+        mime_type = propvalues.get('type', self.default_mime_type)
+
+        # optionally index
+        # This wasn't done for the anydbm backend (but the 'set' method
+        # *did* update the index) so this is probably a bug-fix for anydbm
+        if self.properties['content'].indexme:
+            index_content = content
+            if bytes != str and isinstance(content, bytes):
+                index_content = content.decode('utf-8', errors='ignore')
+            self.db.indexer.add_text((self.classname, newid, 'content'),
+                                     index_content, mime_type)
+
+        # store off the content as a file
+        self.db.storefile(self.classname, newid, None, bs2b(content))
+
+        # fire reactors
+        self.fireReactors('create', newid, None)
+
+        return newid
 
     def export_propnames(self):
         """ Don't export the "content" property
@@ -2141,6 +2253,45 @@ class FileClass:
         ensureParentsExist(dest)
         shutil.copyfile(source, dest)
 
+    def get(self, nodeid, propname, default=_marker, cache=1, allow_abort=True):
+        """ Trap the content propname and get it from the file
+
+        'cache' exists for backwards compatibility, and is not used.
+
+        'allow_abort' determines if we allow that the current
+        transaction is aborted due to a data error (e.g. invalid nodeid).
+        """
+        poss_msg = 'Possibly an access right configuration problem.'
+        if propname == 'content':
+            try:
+                return b2s(self.db.getfile(self.classname, nodeid, None))
+            except IOError as strerror:
+                # BUG: by catching this we don't see an error in the log.
+                return 'ERROR reading file: %s%s\n%s\n%s' % (
+                        self.classname, nodeid, poss_msg, strerror)
+            except UnicodeDecodeError:
+                # if content is not text (e.g. jpeg file) we get
+                # unicode error trying to convert to string in python 3.
+                # trap it and supply an error message. Include md5sum
+                # of content as this string is included in the etag
+                # calculation of the object.
+                return ('%s%s is not text, retrieve using '
+                        'binary_content property. mdsum: %s') % (
+                            self.classname, nodeid,
+                            md5(self.db.getfile(
+                                self.classname,
+                                nodeid,
+                                None)).hexdigest())  # nosec - bandit md5 use ok
+        elif propname == 'binary_content':
+            return self.db.getfile(self.classname, nodeid, None)
+
+        if default is not _marker:
+            return self.subclass.get(self, nodeid, propname, default,
+                                     allow_abort=allow_abort)
+        else:
+            return self.subclass.get(self, nodeid, propname,
+                                     allow_abort=allow_abort)
+
     def import_files(self, dirname, nodeid):
         """ Import the "content" property as a file
         """
@@ -2166,6 +2317,72 @@ class FileClass:
             self.db.indexer.add_text((self.classname, nodeid, 'content'),
                                      index_content, mime_type)
 
+    def index(self, nodeid):
+        """ Add (or refresh) the node to search indexes.
+
+        Use the content-type property for the content property.
+        """
+        # find all the String properties that have indexme
+        for prop, propclass in self.getprops().items():
+            if prop == 'content' and propclass.indexme:
+                mime_type = self.get(nodeid, 'type', self.default_mime_type)
+                index_content = self.get(nodeid, 'binary_content')
+                if bytes != str and isinstance(index_content, bytes):
+                    index_content = index_content.decode('utf-8',
+                                                         errors='ignore')
+                self.db.indexer.add_text((self.classname, nodeid, 'content'),
+                                         index_content, mime_type)
+            elif isinstance(propclass, String) and propclass.indexme:
+                # index them under (classname, nodeid, property)
+                try:
+                    value = str(self.get(nodeid, prop))
+                except IndexError:
+                    # node has been destroyed
+                    continue
+                self.db.indexer.add_text((self.classname, nodeid, prop), value)
+
+    def set(self, itemid, **propvalues):
+        """ Snarf the "content" propvalue and update it in a file
+        """
+        self.fireAuditors('set', itemid, propvalues)
+
+        # create the oldvalues dict - fill in any missing values
+        oldvalues = copy.deepcopy(self.db.getnode(self.classname, itemid))
+        # The following is redundant for rdbms backends but needed for anydbm
+        # the performance impact is so low we that we don't factor this.
+        for name, prop in self.getprops(protected=0).items():
+            if name in oldvalues:
+                continue
+            if isinstance(prop, Multilink):
+                oldvalues[name] = []
+            else:
+                oldvalues[name] = None
+
+        # now remove the content property so it's not stored in the db
+        content = None
+        if 'content' in propvalues:
+            content = propvalues['content']
+            del propvalues['content']
+
+        # do the database update
+        propvalues = self.set_inner(itemid, **propvalues)
+
+        # do content?
+        if content:
+            # store and possibly index
+            self.db.storefile(self.classname, itemid, None, bs2b(content))
+            if self.properties['content'].indexme:
+                index_content = content
+                if bytes != str and isinstance(content, bytes):
+                    index_content = content.decode('utf-8', errors='ignore')
+                mime_type = self.get(itemid, 'type', self.default_mime_type)
+                self.db.indexer.add_text((self.classname, itemid, 'content'),
+                                         index_content, mime_type)
+            propvalues['content'] = content
+
+        # fire reactors
+        self.fireReactors('set', itemid, oldvalues)
+        return propvalues
 
 class Node:
     """ A convenience wrapper for the given node

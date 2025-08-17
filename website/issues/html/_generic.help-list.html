@@ -5,11 +5,10 @@
     <link rel="stylesheet" type="text/css" href="@@file/style.css" />
     <script language="Javascript" type="text/javascript"
         tal:attributes="nonce request/client/client_nonce"
-        tal:content="structure string:<!--
+        tal:content="string:
         // this is the name of the field in the original form that we're working on
         form  = parent.opener.document.${request/form/form/value};
-        field  = '${request/form/property/value}';
-    //-->"></script>
+        field  = '${request/form/property/value}';"></script>
     <script src="@@file/help_controls.js"
 	    tal:attributes="nonce request/client/client_nonce"
 	    type="text/javascript"></script>
@@ -26,7 +25,6 @@
 
   <tal:if condition="context/is_view_ok">
   <tal:def define="batch request/batch;">
-  <form name=dummyform>
     <table width="100%"
       tal:define="template string:help-list"
       metal:use-macro="templates/help/macros/batch_navi"
@@ -43,7 +41,7 @@
       </tr>
      </table>
 
-  <form name=dummyform>
+  <form name="dummyform">
   <table class="classhelp"
     tal:define="
        props python:request.form['properties'].value.split(',');

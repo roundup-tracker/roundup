@@ -31,15 +31,7 @@ try:
     import sqlite3 as sqlite
     sqlite_version = 3
 except ImportError:
-    try:
-        from pysqlite2 import dbapi2 as sqlite
-        if sqlite.version_info < (2, 1, 0):
-            raise ValueError('pysqlite2 minimum version is 2.1.0+ '
-                             '- %s found' % sqlite.version)
-        sqlite_version = 2
-    except ImportError:
-        import sqlite
-        sqlite_version = 1
+    raise ValueError("Unable to import sqlite3.")
 
 
 def db_exists(config):
@@ -61,10 +53,7 @@ class Database(rdbms_common.Database):
     """
 
     # char to use for positional arguments
-    if sqlite_version in (2, 3):
-        arg = '?'
-    else:
-        arg = '%s'
+    arg = '?'
 
     dbtype = "sqlite"
 
@@ -144,21 +133,6 @@ class Database(rdbms_common.Database):
                 self.Otk = sessions_sqlite.OneTimeKeys(self)
         return self.Otk
 
-    def sqlite_busy_handler(self, data, table, count):
-        """invoked whenever SQLite tries to access a database that is locked"""
-        now = time.time()
-        if count == 1:
-            # Timeout for handling locked database (default 30s)
-            self._busy_handler_endtime = now + self.config.RDBMS_SQLITE_TIMEOUT
-        elif now > self._busy_handler_endtime:
-            # timeout expired - no more retries
-            return 0
-        # sleep adaptively as retry count grows,
-        # starting from about half a second
-        time_to_sleep = 0.01 * (2 << min(5, count))
-        time.sleep(time_to_sleep)
-        return 1
-
     def sql_open_connection(self, dbname=None):
         """Open a standard, non-autocommitting connection.
 
@@ -174,14 +148,8 @@ class Database(rdbms_common.Database):
         else:
             db = os.path.join(self.config.DATABASE, 'db')
         logging.getLogger('roundup.hyperdb').info('open database %r' % db)
-        # set timeout (30 second default is extraordinarily generous)
-        # for handling locked database
-        if sqlite_version == 1:
-            conn = sqlite.connect(db=db)
-            conn.db.sqlite_busy_handler(self.sqlite_busy_handler)
-        else:
-            conn = sqlite.connect(db, timeout=self.config.RDBMS_SQLITE_TIMEOUT)
-            conn.row_factory = sqlite.Row
+        conn = sqlite.connect(db, timeout=self.config.RDBMS_SQLITE_TIMEOUT)
+        conn.row_factory = sqlite.Row
 
         # pysqlite2 / sqlite3 want us to store Unicode in the db but
         # that's not what's been done historically and it's definitely
@@ -252,8 +220,21 @@ class Database(rdbms_common.Database):
         pass
 
     def _add_fts5_table(self):
-        self.sql('CREATE virtual TABLE __fts USING fts5(_class, '
+        try:
+            self.sql('CREATE virtual TABLE __fts USING fts5(_class, '
                  '_itemid, _prop, _textblob)')
+        except sqlite.OperationalError:
+            available_options = self.cursor.execute(
+                'pragma compile_options;').fetchall()
+            if 'ENABLE_FTS5' in [opt['compile_options'] for opt 
+                                     in available_options]:
+                # sqlite supports FTS5 something else has gone wrong
+                raise
+            else:
+                # report a useful error message
+                raise  NotImplementedError(
+                    "This version of SQLite was not built with support "
+                    "for FTS5. SQLite version: %s" % sqlite.sqlite_version)
 
     def fix_version_6_tables(self):
         # note sqlite has no limit on column size so v6 fixes
@@ -385,8 +366,6 @@ class Database(rdbms_common.Database):
                             v = entry[name]
                         except IndexError:
                             v = None
-                    elif (sqlite_version == 1 and name in entry):
-                        v = entry[name]
                     else:
                         v = None
                     if name == 'id':
@@ -530,14 +509,13 @@ class Database(rdbms_common.Database):
         vals = (spec.classname, 1)
         self.sql(sql, vals)
 
-    if sqlite_version in (2, 3):
-        def load_journal(self, classname, cols, nodeid):
-            """We need to turn the sqlite3.Row into a tuple so it can be
+    def load_journal(self, classname, cols, nodeid):
+        """We need to turn the sqlite3.Row into a tuple so it can be
             unpacked"""
-            l = rdbms_common.Database.load_journal(self,
-                                                   classname, cols, nodeid)
-            cols = range(5)
-            return [[row[col] for col in cols] for row in l]
+        l = rdbms_common.Database.load_journal(self,
+                                               classname, cols, nodeid)
+        cols = range(5)
+        return [[row[col] for col in cols] for row in l]
 
 
 class sqliteClass:

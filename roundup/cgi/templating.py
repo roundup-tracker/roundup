@@ -21,27 +21,23 @@ __docformat__ = 'restructuredtext'
 
 import calendar
 import csv
+import logging
 import os.path
 import re
 import textwrap
 
-from roundup import hyperdb, date, support
+from roundup import date, hyperdb, support
+from roundup.anypy import scandir_
 from roundup.anypy import urllib_
 from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
-from roundup.anypy.strings import is_us, us2s, s2u, u2s, StringIO
+from roundup.anypy.strings import StringIO, b2s, bs2b, is_us, s2u, u2s, us2s
 from roundup.cgi import TranslationService, ZTUtils
 from roundup.cgi.timestamp import pack_timestamp
 from roundup.exceptions import RoundupException
+
 from .KeywordsExpr import render_keywords_expression_editor
 
-try:
-    from StructuredText.StructuredText import HTML as StructuredText
-except ImportError:
-    try:  # older version
-        import StructuredText
-    except ImportError:
-        StructuredText = None
 try:
     from docutils.core import publish_parts as ReStructuredText
 except ImportError:
@@ -51,6 +47,7 @@ try:
 except ImportError:
     from itertools import izip_longest as zip_longest
 
+logger = logging.getLogger('roundup.template')
 
 # List of schemes that are not rendered as links in rst and markdown.
 _disable_url_schemes = ['javascript', 'data']
@@ -58,8 +55,9 @@ _disable_url_schemes = ['javascript', 'data']
 
 def _import_markdown2():
     try:
-        import markdown2
         import re
+
+        import markdown2
 
         # Note: version 2.4.9 does not work with Roundup as it breaks
         # [issue1](issue1) formatted links.
@@ -186,7 +184,7 @@ def _import_markdown():
 def _import_mistune():
     try:
         import mistune
-        from mistune import Renderer, escape_link, escape
+        from mistune import Renderer, escape, escape_link
 
         mistune._scheme_blacklist = [s + ':' for s in _disable_url_schemes]
 
@@ -286,7 +284,7 @@ class Unauthorised(RoundupException):
 
 class LoaderBase:
     """ Base for engine-specific template Loader class."""
-    def __init__(self, dir):
+    def __init__(self, template_dir):
         # loaders are given the template directory as a first argument
         pass
 
@@ -315,30 +313,32 @@ class LoaderBase:
 class TALLoaderBase(LoaderBase):
     """ Common methods for the legacy TAL loaders."""
 
-    def __init__(self, dir):
-        self.dir = dir
+    def __init__(self, template_dir):
+        self.template_dir = template_dir
 
     def _find(self, name):
         """ Find template, return full path and filename of the
             template if it is found, None otherwise."""
-        realsrc = os.path.realpath(self.dir)
+        realsrc = os.path.realpath(self.template_dir)
         for extension in ['', '.html', '.xml']:
             f = name + extension
             src = os.path.join(realsrc, f)
             realpath = os.path.realpath(src)
             if not realpath.startswith(realsrc):
-                return  # will raise invalid template
+                return None # will raise invalid template
             if os.path.exists(src):
                 return (src, f)
+        return None
 
     def check(self, name):
         return bool(self._find(name))
 
     def precompile(self):
         """ Precompile templates in load directory by loading them """
-        for filename in os.listdir(self.dir):
+        for dir_entry in os.scandir(self.template_dir):
+            filename = dir_entry.name
             # skip subdirs
-            if os.path.isdir(filename):
+            if dir_entry.is_dir():
                 continue
 
             # skip files without ".html" or ".xml" extension - .css, .js etc.
@@ -390,7 +390,7 @@ class TemplateBase:
     content_type = 'text/html'
 
 
-def get_loader(dir, template_engine):
+def get_loader(template_dir, template_engine):
 
     # Support for multiple engines using fallback mechanizm
     # meaning that if first engine can't find template, we
@@ -409,7 +409,7 @@ def get_loader(dir, template_engine):
             from .engine_zopetal import Loader
         else:
             raise Exception('Unknown template engine "%s"' % engine_name)
-        ml.add_loader(Loader(dir))
+        ml.add_loader(Loader(template_dir))
 
     if len(engines) == 1:
         return ml.loaders[0]
@@ -566,10 +566,16 @@ def lookupIds(db, prop, ids, fail_ok=0, num_re=num_re, do_lookup=True):
             else:
                 l.append(item)
                 continue
+
         # if fail_ok, ignore lookup error
         # otherwise entry must be existing object id rather than key value
         if fail_ok:
             l.append(entry)
+        elif entry == '@current_user' and prop.classname == 'user':
+            # as a special case, '@current_user' means the currently
+            # logged-in user
+            l.append(entry)
+
     return l
 
 
@@ -581,7 +587,7 @@ def lookupKeys(linkcl, key, ids, num_re=num_re):
     for entry in ids:
         if num_re.match(entry):
             try:
-                label = linkcl.get(entry, key)
+                label = linkcl.get(entry, key, allow_abort=False)
             except IndexError:
                 # fall back to id if illegal (avoid template crash)
                 label = entry
@@ -601,7 +607,7 @@ def _set_input_default_args(dic):
     # useful e.g for HTML LABELs:
     if 'id' not in dic:
         try:
-            if dic['text'] in ('radio', 'checkbox'):
+            if dic['type'] in ('radio', 'checkbox'):
                 dic['id'] = '%(name)s-%(value)s' % dic
             else:
                 dic['id'] = dic['name']
@@ -622,30 +628,10 @@ def html4_cgi_escape_attrs(**attrs):
                      for k, v in sorted(attrs.items())])
 
 
-def xhtml_cgi_escape_attrs(**attrs):
-    ''' Boolean attributes like 'disabled', 'required'
-        are represented with a value that is the same as
-        the attribute name.. E.G.
-           <input required="required" ...> not <input required ..>
-        The latter is html4 or 5. Recognize booleans by:
-          value is None
-        Code can use None to indicate a pure boolean.
-    '''
-    return ' '.join(['%s="%s"' % (k, html_escape(str(v), True))
-                     if v is not None else '%s="%s"' % (k, k)
-                     for k, v in sorted(attrs.items())])
-
-
 def input_html4(**attrs):
     """Generate an 'input' (html4) element with given attributes"""
     _set_input_default_args(attrs)
     return '<input %s>' % html4_cgi_escape_attrs(**attrs)
-
-
-def input_xhtml(**attrs):
-    """Generate an 'input' (xhtml) element with given attributes"""
-    _set_input_default_args(attrs)
-    return '<input %s/>' % xhtml_cgi_escape_attrs(**attrs)
 
 
 class HTMLInputMixin(object):
@@ -654,12 +640,8 @@ class HTMLInputMixin(object):
         html_version = 'html4'
         if hasattr(self._client.instance.config, 'HTML_VERSION'):
             html_version = self._client.instance.config.HTML_VERSION
-        if html_version == 'xhtml':
-            self.input = input_xhtml
-            self.cgi_escape_attrs = xhtml_cgi_escape_attrs
-        else:
-            self.input = input_html4
-            self.cgi_escape_attrs = html4_cgi_escape_attrs
+        self.input = input_html4
+        self.cgi_escape_attrs = html4_cgi_escape_attrs
         # self._context is used for translations.
         # will be initialized by the first call to .gettext()
         self._context = None
@@ -836,9 +818,9 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not check('Web Access', userid):
             return []
 
-        class_list = [HTMLItem(self._client, self._classname, id)
-                      for id in class_list if
-                      check('View', userid, self._classname, itemid=id)]
+        class_list = [HTMLItem(self._client, self._classname, itemid)
+                      for itemid in class_list if
+                      check('View', userid, self._classname, itemid=itemid)]
 
         return class_list
 
@@ -901,9 +883,10 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         if not check('Web Access', userid):
             return []
 
-        filtered = [HTMLItem(self._client, self.classname, id)
-                    for id in self._klass.filter(None, filterspec, sort, group)
-                    if check('View', userid, self.classname, itemid=id)]
+        filtered = [HTMLItem(self._client, self.classname, itemid)
+                    for itemid in self._klass.filter(None, filterspec,
+                                                     sort, group)
+                    if check('View', userid, self.classname, itemid=itemid)]
         return filtered
 
     def classhelp(self, properties=None, label=''"(list)", width='500',
@@ -974,10 +957,18 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                     group, sort, pagesize, filter)
         onclick = "javascript:help_window('%s', '%s', '%s');return false;" % \
                   (help_url, width, height)
-        return ('<a class="classhelp" data-helpurl="%s" '
+
+        if 'class' in html_kwargs:
+            html_classes = ("classhelp %s" %
+                            html_escape(str(html_kwargs["class"]), True))
+            del html_kwargs["class"]
+        else:
+            html_classes = "classhelp"
+
+        return ('<a class="%s" data-helpurl="%s" '
                 'data-width="%s" data-height="%s" href="%s" '
-                'onclick="%s" %s>%s</a>') % (
-                    help_url, width, height,
+                'target="_blank" onclick="%s" %s>%s</a>') % (
+                    html_classes, help_url, width, height,
                     help_url, onclick, self.cgi_escape_attrs(**html_kwargs),
                     self._(label))
 
@@ -1106,8 +1097,9 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         value = None
         try:
             if int(self._nodeid) > 0:
-                value = self._klass.get(self._nodeid, items[0], None)
-        except ValueError:
+                value = self._klass.get(self._nodeid, items[0], None,
+                                        allow_abort=False)
+        except (IndexError, ValueError):
             value = self._nodeid
         if value is None:
             if isinstance(prop, hyperdb.Multilink):
@@ -1142,7 +1134,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 
     def is_retired(self):
         """Is this item retired?"""
-        return self._klass.is_retired(self._nodeid)
+        return self._klass.is_retired(self._nodeid, allow_abort=False)
 
     def submit(self, label=''"Submit Changes", action="edit", html_kwargs={}):
         """Generate a submit button.
@@ -1503,7 +1495,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
 class _HTMLUser(_HTMLItem):
     """Add ability to check for permissions on users.
     """
-    _marker = []
+    _marker = ('_HTMLUserMarker')
 
     def hasPermission(self, permission, classname=_marker,
                       property=None, itemid=None):
@@ -1698,7 +1690,7 @@ class StringHTMLProperty(HTMLProperty):
             return self._hyper_repl_email(match, '<a href="mailto:%s">%s</a>')
         elif len(match.group('id')) < 10:
             return self._hyper_repl_item(
-                match, '<a href="%(cls)s%(id)s%(fragment)s">%(item)s</a>')
+                match, '<a href="%(cls)s%(itemid)s%(fragment)s">%(item)s</a>')
         else:
             # just return the matched text
             return match.group(0)
@@ -1731,14 +1723,14 @@ class StringHTMLProperty(HTMLProperty):
     def _hyper_repl_item(self, match, replacement):
         item = match.group('item')
         cls = match.group('class').lower()
-        id = match.group('id')
+        itemid = match.group('id')
         fragment = match.group('fragment')
         if fragment is None:
             fragment = ""
         try:
             # make sure cls is a valid tracker classname
             cl = self._db.getclass(cls)
-            if not cl.hasnode(id):
+            if not cl.hasnode(itemid):
                 return item
             return replacement % locals()
         except KeyError:
@@ -1752,7 +1744,7 @@ class StringHTMLProperty(HTMLProperty):
             s = match.group('email')
             return '`%s <mailto:%s>`_' % (s, s)
         elif len(match.group('id')) < 10:
-            return self._hyper_repl_item(match, '`%(item)s <%(cls)s%(id)s>`_')
+            return self._hyper_repl_item(match, '`%(item)s <%(cls)s%(itemid)s>`_')
         else:
             # just return the matched text
             return match.group(0)
@@ -1793,7 +1785,7 @@ class StringHTMLProperty(HTMLProperty):
                     if (prefix, suffix) in {('(', ')')}:
                         if match.string[start-1] == ']':
                             return match.group(0)
-            return self._hyper_repl_item(match, '[%(item)s](%(cls)s%(id)s)')
+            return self._hyper_repl_item(match, '[%(item)s](%(cls)s%(itemid)s)')
         else:
             # just return the matched text
             return match.group(0)
@@ -1829,7 +1821,7 @@ class StringHTMLProperty(HTMLProperty):
             s = self.hyper_re.sub(self._hyper_repl, s)
         return s
 
-    def wrapped(self, escape=1, hyperlink=1):
+    def wrapped(self, escape=1, hyperlink=1, columns=80):
         """Render a "wrapped" representation of the property.
 
         We wrap long lines at 80 columns on the nearest whitespace. Lines
@@ -1841,13 +1833,16 @@ class StringHTMLProperty(HTMLProperty):
         - "escape" turns on/off HTML quoting
         - "hyperlink" turns on/off in-text hyperlinking of URLs, email
           addresses and designators
+        - "columns" sets the column where the wrapping will occur.
+          Default of 80.
         """
         if not self.is_view_ok():
             return self._('[hidden]')
 
         if self._value is None:
             return ''
-        s = '\n'.join(textwrap.wrap(str(self._value), 80))
+        s = '\n'.join(textwrap.wrap(str(self._value), columns,
+                                    break_long_words=False))
         if escape:
             s = html_escape(s)
         if hyperlink:
@@ -1856,19 +1851,6 @@ class StringHTMLProperty(HTMLProperty):
                 s = html_escape(s)
             s = self.hyper_re.sub(self._hyper_repl, s)
         return s
-
-    def stext(self, escape=0, hyperlink=1):
-        """ Render the value of the property as StructuredText.
-
-            This requires the StructureText module to be installed separately.
-        """
-        if not self.is_view_ok():
-            return self._('[hidden]')
-
-        s = self.plain(escape=escape, hyperlink=hyperlink)
-        if not StructuredText:
-            return s
-        return StructuredText(s, level=1, header=0)
 
     def rst(self, hyperlink=1):
         """ Render the value of the property as ReStructuredText.
@@ -2095,6 +2077,10 @@ class NumberHTMLProperty(HTMLProperty):
         if value is None:
             value = ''
 
+        if self._client.db.config.WEB_USE_BROWSER_NUMBER_INPUT:
+            kwargs.setdefault("type", "number")
+        else:
+            kwargs.setdefault("type", "text")
         return self.input(name=self._formname, value=value, size=size,
                           **kwargs)
 
@@ -2133,8 +2119,13 @@ class IntegerHTMLProperty(HTMLProperty):
         if value is None:
             value = ''
 
-        return self.input(name=self._formname, value=value, size=size,
-                          **kwargs)
+        if self._client.db.config.WEB_USE_BROWSER_NUMBER_INPUT:
+            kwargs.setdefault("type", "number")
+        else:
+            kwargs.setdefault("type", "text")
+        if kwargs['type'] == "number":
+            kwargs.setdefault("step", "1")
+        return self.input(name=self._formname, value=value, size=size, **kwargs)
 
     def __int__(self):
         """ Return an int of me
@@ -2160,7 +2151,7 @@ class BooleanHTMLProperty(HTMLProperty):
             If not editable, just display the value via plain().
 
             In addition to being able to set arbitrary html properties
-            using prop=val arguments, the thre arguments:
+            using prop=val arguments, the three arguments:
 
               y_label, n_label, u_label let you control the labels
               associated with the yes, no (and optionally unknown/empty)
@@ -2190,26 +2181,27 @@ class BooleanHTMLProperty(HTMLProperty):
             n_label += '</label>'
 
         checked = value and "checked" or ""
+        kwargs.setdefault("type", "radio")
         if value:
-            y_rb = self.input(type="radio", name=self._formname, value="yes",
+            y_rb = self.input(name=self._formname, value="yes",
                               checked="checked", id="%s_%s" % (
                                   self._formname, 'yes'), **kwargs)
 
-            n_rb = self.input(type="radio", name=self._formname,  value="no",
+            n_rb = self.input(name=self._formname,  value="no",
                               id="%s_%s" % (
                                   self._formname, 'no'), **kwargs)
         else:
-            y_rb = self.input(type="radio", name=self._formname, value="yes",
+            y_rb = self.input(name=self._formname, value="yes",
                               id="%s_%s" % (self._formname, 'yes'), **kwargs)
 
-            n_rb = self.input(type="radio", name=self._formname,  value="no",
+            n_rb = self.input(name=self._formname,  value="no",
                               checked="checked", id="%s_%s" % (
                                   self._formname, 'no'), **kwargs)
 
         if (u_label):
             if (u_label is True):  # it was set via u_label=True
                 u_label = ''       # make it empty but a string not boolean
-            u_rb = self.input(type="radio", name=self._formname,  value="",
+            u_rb = self.input(name=self._formname,  value="",
                               id="%s_%s" % (self._formname, 'unk'), **kwargs)
         else:
             # don't generate a trivalue radiobutton.
@@ -2226,10 +2218,10 @@ class BooleanHTMLProperty(HTMLProperty):
 
 class DateHTMLProperty(HTMLProperty):
 
-    _marker = []
+    _marker = ('HTMLPropertyMarker')
 
     def __init__(self, client, classname, nodeid, prop, name, value,
-                 anonymous=0, offset=None):
+                 anonymous=0, offset=None, display_time=None, format=None):
         HTMLProperty.__init__(self, client, classname, nodeid, prop, name,
                               value, anonymous=anonymous)
         if self._value and not is_us(self._value):
@@ -2237,6 +2229,10 @@ class DateHTMLProperty(HTMLProperty):
         self._offset = offset
         if self._offset is None:
             self._offset = self._prop.offset(self._db)
+        self.display_time = display_time
+        if self.display_time is None:
+            self.display_time = self._prop.display_time
+        self.format = format or self._prop.format
 
     def plain(self, escape=0):
         """ Render a "plain" representation of the property
@@ -2281,22 +2277,52 @@ class DateHTMLProperty(HTMLProperty):
         return DateHTMLProperty(self._client, self._classname, self._nodeid,
                                 self._prop, self._formname, ret)
 
-    def field(self, size=30, default=None, format=_marker, popcal=True,
-              **kwargs):
+
+    def field(self, size=30, default=None, format=_marker, popcal=None,
+              display_time=None, form='itemSynopsis', **kwargs):
         """Render a form edit field for the property
 
         If not editable, just display the value via plain().
 
+        If a format is specified or the use_browser_date_input config
+        option is set to 'no' we use a type="text" input. Otherwise we
+        use a type="date" or type="datetime-local" input depending on
+        the setting of display_time.
+
         If "popcal" then include the Javascript calendar editor.
-        Default=yes.
+        Default=yes for text input fields, otherwise no.
 
         The format string is a standard python strftime format string.
         """
+        if format is self._marker and self.format is not None:
+            format = self.format
         if not self.is_edit_ok():
             if format is self._marker:
                 return self.plain(escape=1)
             else:
                 return self.pretty(format)
+
+        if display_time is None:
+            display_time = self.display_time
+        use_date = self._client.db.config.WEB_USE_BROWSER_DATE_INPUT
+
+        # https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats#local_date_and_time_strings
+        if format is not self._marker or not use_date:
+            kwargs ['type'] = "text"
+            # popcal is None by default, only when explicitly turned off
+            # do we use no popcal
+            popcal = popcal != False
+            # emulate display_time with old-style input
+            if not display_time and format is self._marker:
+                format = '%Y-%m-%d'
+        else:
+            if display_time:
+                kwargs ['type'] = "datetime-local"
+                format = '%Y-%m-%dT%H:%M:%S'
+            else:
+                kwargs ['type'] = "date"
+                format = '%Y-%m-%d'
+            popcal = False
 
         value = self._value
 
@@ -2321,7 +2347,7 @@ class DateHTMLProperty(HTMLProperty):
             s = self.input(name=self._formname, value=value, size=size,
                            **kwargs)
             if popcal:
-                s += self.popcal()
+                s += self.popcal(form=form)
             return s
         else:
             raw_value = value
@@ -2345,7 +2371,7 @@ class DateHTMLProperty(HTMLProperty):
         s = self.input(name=self._formname, value=value, size=size,
                        **kwargs)
         if popcal:
-            s += self.popcal()
+            s += self.popcal(form=form)
         return s
 
     def reldate(self, pretty=1):
@@ -2414,7 +2440,7 @@ class DateHTMLProperty(HTMLProperty):
             date = ""
 
         data_attr = {
-            "data-calurl": '%s?@template=calendar&amp;property=%s&amp;form=%s%s' % (
+            "data-calurl": '%s?@template=calendar&property=%s&form=%s%s' % (
                 self._classname, self._name, form, date),
             "data-width": width,
             "data-height": height
@@ -2549,10 +2575,10 @@ class LinkHTMLProperty(HTMLProperty):
             idparse = self._prop.try_id_parsing
             if k and num_re.match(self._value):
                 try:
-                    value = linkcl.get(self._value, k)
-                except IndexError:
+                    value = linkcl.get(self._value, k, allow_abort=False)
+                except (IndexError, hyperdb.HyperdbValueError) as err:
                     if idparse:
-                        raise
+                        self._client.add_error_message(str(err))
                     value = ''
             else:
                 value = self._value
@@ -2857,7 +2883,10 @@ class MultilinkHTMLProperty(HTMLProperty):
                 showid = 1
             if not showid:
                 k = linkcl.labelprop(1)
-                value = lookupKeys(linkcl, k, value)
+                try:
+                    value = lookupKeys(linkcl, k, value)
+                except (ValueError, IndexError) as err:
+                    self._client.add_error_message (str(err))
             value = ','.join(value)
             kwargs["value"] = value
 
@@ -3018,7 +3047,7 @@ def make_key_function(db, classname, sort_on=None):
 
     def keyfunc(a):
         if num_re.match(a):
-            a = linkcl.get(a, sort_on)
+            a = linkcl.get(a, sort_on, allow_abort=False)
             # In Python3 we may not compare numbers/strings and None
             if a is None:
                 if isinstance(prop, (hyperdb.Number, hyperdb.Integer)):
@@ -3135,18 +3164,18 @@ class HTMLRequest(HTMLInputMixin):
             cls = self.client.db.getclass(self.classname)
         for f, d in zip_longest(fields, dirs):
             if f.startswith('-'):
-                dir, propname = '-', f[1:]
+                direction, propname = '-', f[1:]
             elif d:
-                dir, propname = '-', f
+                direction, propname = '-', f
             else:
-                dir, propname = '+', f
+                direction, propname = '+', f
             # if no classname, just append the propname unchecked.
             # this may be valid for some actions that bypass classes.
             if self.classname and cls.get_transitive_prop(propname) is None:
                 self.client.add_error_message("Unknown %s property %s" % (
                     name, propname))
             else:
-                var.append((dir, propname))
+                var.append((direction, propname))
 
     def _form_has_key(self, name):
         try:
@@ -3309,7 +3338,7 @@ env: %(env)s
 
             This routine generates an html form with hidden elements.
             If you want to have visible form elements in your tal/jinja
-            generated templates use the exclude aray to list the names for
+            generated templates use the exclude array to list the names for
             these elements. This wll prevent the function from creating
             these elements in its output.
         """
@@ -3322,16 +3351,16 @@ env: %(env)s
             add(sc+'columns', ','.join(self.columns))
         if sort:
             val = []
-            for dir, attr in self.sort:
-                if dir == '-':
+            for direction, attr in self.sort:
+                if direction == '-':
                     val.append('-'+attr)
                 else:
                     val.append(attr)
             add(sc+'sort', ','.join(val))
         if group:
             val = []
-            for dir, attr in self.group:
-                if dir == '-':
+            for direction, attr in self.group:
+                if direction == '-':
                     val.append('-'+attr)
                 else:
                     val.append(attr)
@@ -3387,16 +3416,16 @@ env: %(env)s
             l.append(sc+'columns=%s' % (','.join(self.columns)))
         if self.sort and 'sort' not in specials:
             val = []
-            for dir, attr in self.sort:
-                if dir == '-':
+            for direction, attr in self.sort:
+                if direction == '-':
                     val.append('-'+attr)
                 else:
                     val.append(attr)
             l.append(sc+'sort=%s' % (','.join(val)))
         if self.group and 'group' not in specials:
             val = []
-            for dir, attr in self.group:
-                if dir == '-':
+            for direction, attr in self.group:
+                if direction == '-':
                     val.append('-'+attr)
                 else:
                     val.append(attr)
@@ -3457,7 +3486,7 @@ function help_window(helpurl, width, height) {
             return Batch(self.client, [], self.pagesize, self.startwith,
                          classname=self.classname)
 
-        filterspec = self.filterspec
+        fspec = self.filterspec
         sort = self.sort
         group = self.group
 
@@ -3483,8 +3512,9 @@ function help_window(helpurl, width, height) {
             matches = None
 
         # filter for visibility
-        allowed = [id for id in klass.filter(matches, filterspec, sort, group)
-                   if check(permission, userid, self.classname, itemid=id)]
+        allowed = klass.filter_with_permissions(
+            matches, fspec, sort, group, permission=permission, userid=userid
+        )
 
         # return the batch object, using IDs only
         return Batch(self.client, allowed, self.pagesize, self.startwith,
@@ -3592,6 +3622,7 @@ class TemplatingUtils:
     """
     def __init__(self, client):
         self.client = client
+        self._ = self.client._
 
     def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
         return Batch(self.client, sequence, size, start, end, orphan,
@@ -3611,6 +3642,121 @@ class TemplatingUtils:
         """HTML-quote the supplied text."""
         return html_escape(html)
 
+    def embed_form_fields(self, excluded_fields=None):
+        """Used to create a hidden input field for each client.form element
+
+           :param excluded_fields:
+              these fields will not have a hidden field created for them.
+              Value can be a string or multiple strings contained in
+              something with a __contains__ dunder method:
+              tuple, list, set....
+
+           File input fields are represented by a <pre> tag with
+           base64 encoded contents and attributes to store the
+           filename and mimetype.  It requires JavaScript on the
+           browser to turn these <pre> tags back into files that can
+           be submitted with the form.
+
+        """
+        if excluded_fields is None:
+            excluded_fields = ()
+        elif isinstance(excluded_fields, str):
+            excluded_fields = (excluded_fields,)
+        elif hasattr(excluded_fields, '__contains__'):
+            pass
+        else:
+            raise ValueError(self._(
+                'The excluded_fields parameter is invalid.'
+                'It must have a __contains__ method.')
+            )
+
+        rtn = []
+
+        for field in self.client.form.list:
+            if field.name in excluded_fields:
+                continue
+
+            if field.filename is not None:
+                import base64
+                # FIXME if possible
+                rtn.append(
+                    '<pre hidden data-name="%s" data-filename="%s" data-mimetype="%s">%s</pre>' %
+                    (
+                        html_escape(field.name, quote=True),
+                        html_escape(field.filename, quote=True),
+                        html_escape(field.type, quote=True),
+                        b2s(base64.b64encode(bs2b(field.value))),
+                    )
+                )
+                continue
+
+            hidden_input = (
+                """<input type="hidden" name="%s" value="%s">""" %
+	        (
+                    html_escape(field.name, quote=True),
+                    html_escape(field.value, quote=True)
+                )
+            )
+
+            rtn.append(hidden_input)
+
+        return "\n".join(rtn)
+
+
+    """
+    Possible solution to file retention issue:
+    From: https://stackoverflow.com/questions/16365668/pre-populate-html-form-f
+
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(['file 1 content'], 'file 1.txt'));
+    transfer.items.add(new File(['file 2 content'], 'file 2.txt'));
+    document.querySelector('input').files = transfer.files;
+
+    document.querySelector('form').addEventListener('submit', e => {
+         e.preventDefault();
+         console.log(...new FormData(e.target));
+    });
+
+    <form>
+      <input name="files" type="file" multiple /> <br />
+      <button>Submit</button>
+    </form>
+
+    Name would be @file for Roundup.
+
+    see also: https://developer.mozilla.org/en-US/docs/Web/API/File/File
+
+    open question: how to make sure the file contents are safely encoded
+    in javascript and yet still are saved properly on the server when
+    the form is submitted.
+
+    maybe base64? https://developer.mozilla.org/en-US/docs/Glossary/Base64
+    size increase may be an issue.
+    <pre id="file1-contents"
+         style="display: none">base64datastartshere...</pre>
+    then atob(pre.text) as file content?
+
+    const transfer = new DataTransfer();
+    file_list = document.querySelectorAll('pre[data-mimetype]');
+    file_list.forEach( file => 
+        transfer.items.add(
+           new File([window.atob(file.textContent)],
+           file.dataset.filename,
+           {"type": file.dataset.mimetype})
+        )
+    )
+
+    form = document.querySelector("form")
+    file_input = document.createElement('input')
+    file_input.setAttribute("hidden", "")
+    file_input = form.appendChild(file_input)
+    file_input.setAttribute("type", "file")
+    file_input.setAttribute("name", "@file")
+    file_input.setAttribute("multiple", "")
+    file_input.files = transfer.files
+
+    """
+
     def __getattr__(self, name):
         """Try the tracker's templating_utils."""
         if not hasattr(self.client.instance, 'templating_utils'):
@@ -3626,13 +3772,13 @@ class TemplatingUtils:
     def html_calendar(self, request):
         """Generate a HTML calendar.
 
-        `request`  the roundup.request object
-                   - @template : name of the template
-                   - form      : name of the form to store back the date
-                   - property  : name of the property of the form to store
-                                 back the date
-                   - date      : current date
-                   - display   : when browsing, specifies year and month
+        `request` - the roundup.request object
+           - @template : name of the template
+           - form      : name of the form to store back the date
+           - property  : name of the property of the form to store
+             back the date
+           - date      : date marked as current value on calendar
+           - display   : when browsing, specifies year and month
 
         html will simply be a table.
         """
@@ -3642,7 +3788,7 @@ class TemplatingUtils:
         display = request.form.getfirst("display", date_str)
         template = request.form.getfirst("@template", "calendar")
         form = request.form.getfirst("form")
-        property = request.form.getfirst("property")
+        aproperty = request.form.getfirst("property")
         curr_date = ""
         try:
             # date_str and display can be set to an invalid value
@@ -3679,7 +3825,7 @@ class TemplatingUtils:
         res = []
 
         base_link = "%s?@template=%s&property=%s&form=%s&date=%s" % \
-                    (request.classname, template, property, form, curr_date)
+                    (request.classname, template, aproperty, form, curr_date)
 
         # navigation
         # month
@@ -3741,6 +3887,104 @@ class TemplatingUtils:
         res.append('</table></td></tr></table>')
         return "\n".join(res)
 
+    def readfile(self, name, optional=False):
+        """Used to inline a file from the template directory.
+
+           Used to inline file content into a template. If file
+           is not found in the template directory and
+           optional=False, it reports an error to the user via a
+           NoTemplate exception. If optional=True it returns an
+           empty string when it can't find the file.
+
+           Useful for inlining JavaScript kept in an external
+           file where you can use linters/minifiers and other
+           tools on it.
+
+           A TAL example::
+
+             <script tal:attributes="nonce request/client/client_nonce"
+             tal:content="python:utils.readfile('mylibrary.js')"></script>
+
+           This method does not expands any tokens in the file.
+           See expandfile() for replacing tokens in the file.
+        """
+        file_result = self.client.instance.templates._find(name)
+
+        if file_result is None:
+            if optional:
+                return ""
+            template_name = self.client.selectTemplate(
+                self.client.classname, self.client.template)
+            raise NoTemplate(self._(
+                "Unable to read or expand file '%(name)s' "
+                "in template '%(template)s'.") % {
+                    "name": name, 'template': template_name})
+
+        fullpath, name = file_result
+        with open(fullpath) as f:
+            contents = f.read()
+        return contents
+
+    def expandfile(self, name, values=None, optional=False):
+        """Read a file and replace token placeholders.
+
+           Given a file name and a dict of tokens and
+           replacements, read the file from the tracker template
+           directory. Then replace all tokens of the form
+           '%(token_name)s' with the values in the dict. If the
+           values dict is set to None, it acts like
+           readfile(). In addition to values passed into the
+           method, the value for the tracker base directory taken
+           from TRACKER_WEB is available as the 'base' token. The
+           client_nonce used for Content Security Policy (CSP) is
+           available as 'client_nonce'.  If a token is not in the
+           dict, an empty string is returned and an error log
+           message is logged. See readfile for an usage example.
+        """
+        # readfile() raises NoTemplate if optional = false and
+        # the file is not found. Returns empty string if file not
+        # found and optional = true. File contents otherwise.
+        contents = self.readfile(name, optional=optional)
+
+        if values is None or not contents: # nothing to expand
+            return contents
+        tokens = {'base': self.client.db.config.TRACKER_WEB,
+                  'client_nonce': self.client.client_nonce}
+        tokens.update(values)
+        try:
+            return contents % tokens
+        except KeyError as e:
+            template_name = self.client.selectTemplate(
+                self.client.classname, self.client.template)
+            fullpath, name = self.client.instance.templates._find(name)
+            logger.error(
+                "When running expandfile('%(fullpath)s') in "
+                "'%(template)s' there was no value for token: '%(token)s'.",
+                {'fullpath': fullpath, 'token': e.args[0],
+                 'template': template_name})
+            return ""
+        except ValueError as e:
+            fullpath, name = self.client.instance.templates._find(name)
+            logger.error(self._(
+                "Found an incorrect token when expandfile applied "
+                "string subsitution on '%(fullpath)s'. "
+                "ValueError('%(issue)s') was raised. Check the format "
+                "of your named conversion specifiers."),
+                {'fullpath': fullpath, 'issue': e.args[0]})
+            return ""
+
+    def set_http_response(self, code):
+        '''Set the HTTP response code to the integer `code`.
+            Example::
+
+              <tal:x
+               tal:replace="python:utils.set_response(404);"
+              />
+
+
+            will make the template return code 404 (not found).
+            '''
+        self.client.response_code = code
 
 class MissingValue(object):
     def __init__(self, description, **kwargs):

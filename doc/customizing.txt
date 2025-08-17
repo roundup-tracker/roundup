@@ -94,7 +94,7 @@ caches the schema).
    
     <tr> 
      <th>Due Date</th> 
-     <td tal:content="structure python:context.due_date.field(format='%Y-%m-%d')" /> 
+     <td tal:content="structure python:context.due_date.field(display_time=False)" />
     </tr>
 
 3. Add the property to the ``issue.index.html`` page::
@@ -803,6 +803,11 @@ C. Add the timelog listing from step 5. to the ``msg.item.html`` template
     
     <table class="messages">
 
+The wiki includes an `auditor that extracts specially formatted timelog
+entries from emails`_ sent to the tracker.
+
+.. _auditor that extracts specially formatted timelog
+   entries from emails: https://wiki.roundup-tracker.org/TimelogAuditor
 
 Tracking different types of issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1095,6 +1100,11 @@ So you could reimplement this as something like::
         username = self.db.user.get(self.userid, 'username')
         # now verify the password supplied against the LDAP store
 
+Other External Databases
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+See examples for `Shibboleth`_ and info about using `OAUTH`_ in the
+Roundup Wiki.
 
 Changes to Tracker Behaviour
 ----------------------------
@@ -1871,6 +1881,60 @@ Some simple javascript might help in the last step. If you have high volume
 you could search for all currently-Pending users and do a bulk edit of all
 their roles at once (again probably with some simple javascript help).
 
+.. _sensitive_changes:
+
+Confirming Users Making Sensitive Account Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some changes to account data: user passwords or email addresses are
+particularly sensitive. The `OWASP Authentication`_ recommendations
+include asking for a re-authentication or confirmation step when making
+these changes. This can be easily implemented using an auditor.
+
+Create a file in your detectors directory with the following
+contents::
+
+    from roundup.cgi.exceptions import Reauth
+
+    def confirmid(db, cl, nodeid, newvalues):
+
+        if hasattr(db, 'reauth_done'):
+           # the user has confirmed their identity
+           return
+
+        # if the password or email are changing, require id confirmation
+        if 'password' in newvalues:
+            raise Reauth('Add an optional message to the user')
+
+        if 'address' in newvalues:
+            raise Reauth('Add an optional message to the user')
+
+    def init(db):
+        db.user.audit('set', confirmid, priority=110)
+
+If a change is made to any user's password or address fields, the user
+making the change will be shown a page where they have to enter an
+identity verifier (by default the invoking user's account password).
+If the verifier is successfully verified it will set the
+``reauth_done`` attribute on the db object and reprocess the change.
+
+The default auditor priority is 100. This auditor is set to run
+**after** most other auditors. This allows the user to correct any
+failing information on the form before being asked to confirm their
+identity. Once they confirm their identity the change is expected to
+be committed without issue. See :ref:`Confirming the User` for
+details on customizing the verification operation.
+
+Also you could use an existing auditor and add::
+
+      if 'someproperty' in newvalues and not hasattr(db, 'reauth_done'):
+        raise Reauth('Need verification before changing someproperty')
+
+at the end of the auditor (after all checks are done) to force user
+verification. Just make sure you import Reauth at the top of the file.
+
+.. _`OWASP Authentication`:
+   https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#require-re-authentication-for-sensitive-features
 
 Changes to the Web User Interface
 ---------------------------------
@@ -1878,17 +1942,26 @@ Changes to the Web User Interface
 Adding action links to the index page
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Add a column to the ``item.index.html`` template.
+Add a column to the ``item.index.html`` template.  In that column add
+a form to trigger the action. Note: the form must use the POST method
+for security.
 
 Resolving the issue::
 
-  <a tal:attributes="href
-     string:issue${i/id}?:status=resolved&:action=edit">resolve</a>
+    <form method="POST" tal:attributes="action string:issue${i/id}">
+      <button tal:replace="structure
+        python:context.submit(label='resolve', action='edit')" />
+      <input type="hidden" name="status" value="resolved">
+    </form>
 
 "Take" the issue::
 
-  <a tal:attributes="href
-     string:issue${i/id}?:assignedto=${request/user/id}&:action=edit">take</a>
+    <form method="POST" tal:attributes="action string:issue${i/id}">
+      <button tal:replace="structure
+        python:context.submit(label='take', action='edit')" />
+      <input type="hidden" name="assignedto"
+        tal:attributes="value request/user/id">
+    </form>
 
 ... and so on.
 
@@ -1921,43 +1994,82 @@ To edit the status of all items in the item index view, edit the
 ``issue.index.html``:
 
 1. add a form around the listing table (separate from the existing
-   index-page form), so at the top it reads::
+   index-page form), so at the top it reads:
 
-    <form method="POST" tal:attributes="action request/classname">
-     <table class="list">
+   .. tabs::
 
-   and at the bottom of that table::
+      .. code-tab:: html TAL
+
+        <form method="POST" tal:attributes="action request/classname">
+        <table class="list">
+
+      .. code-tab:: html Jinja2
+
+         <form method="POST" action='issue{{ context.id }}' class='form-inline'>
+         <table class="list">
+
+
+   and at the bottom of that table add::
 
      </table>
-    </form
+    </form>
 
    making sure you match the ``</table>`` from the list table, not the
    navigation table or the subsequent form table.
 
-2. in the display for the issue property, change::
+2. in the display for the issue property, change:
 
-    <td tal:condition="request/show/status"
-        tal:content="python:i.status.plain() or default">&nbsp;</td>
+   .. tabs::
 
-   to::
+      .. code-tab:: html TAL
 
-    <td tal:condition="request/show/status"
-        tal:content="structure i/status/field">&nbsp;</td>
+         <td tal:condition="request/show/status"
+            tal:content="python:i.status.plain() or default">&nbsp;</td>
 
+      .. code-tab:: html Jinja2
+
+         {% if request.show.status %}
+         <td>{{ issue.status.plain()|u }}</td>
+         {% endif %}
+
+   to:
+
+   .. tabs::
+
+      .. code-tab:: html TAL
+
+         <td tal:condition="request/show/status"
+            tal:content="structure i/status/field">&nbsp;</td>
+
+      .. code-tab:: html Jinja2
+
+         {% if request.show.status %}
+         <td>{{ issue.status.menu()|u|safe }}</td>
+         {% endif %}
+         <!-- untested -->
+ 
    this will result in an edit field for the status property.
 
 3. after the ``tal:block`` which lists the index items (marked by
-   ``tal:repeat="i batch"``) add a new table row::
+   ``tal:repeat="i batch"``) add a new table row:
 
-    <tr>
-     <td tal:attributes="colspan python:len(request.columns)">
-      <input name="@csrf" type="hidden"		
-           tal:attributes="value python:utils.anti_csrf_nonce()">
-      <input type="submit" value=" Save Changes ">
-      <input type="hidden" name="@action" value="edit">
-      <tal:block replace="structure request/indexargs_form" />
-     </td>
-    </tr>
+   .. tabs::
+
+      .. code-tab:: html TAL
+
+	 <tr>
+	  <td tal:attributes="colspan python:len(request.columns)">
+	   <input name="@csrf" type="hidden"		
+		tal:attributes="value python:utils.anti_csrf_nonce()">
+	   <input type="submit" value=" Save Changes ">
+	   <input type="hidden" name="@action" value="edit">
+	   <tal:block replace="structure request/indexargs_form" />
+	  </td>
+	 </tr>
+
+      .. code-tab:: html Jinja2
+
+         To Be Written
 
    which gives us a submit button, indicates that we are performing an
    edit on any changed statuses, and provides a defense against cross
@@ -2189,6 +2301,8 @@ string in the nosy reaction function.
 Changing How the Core Code Works
 --------------------------------
 
+.. index:: single: interfaces.py; cache-control headers
+
 Changing Cache-Control Headers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2215,6 +2329,7 @@ path in the tracker's `config.ini`. In the example above:
 
 Note that a file name match overrides the mime type settings.
 
+.. index:: single: interfaces.py; password complexity checking
 
 Implement Password Complexity Checking
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2253,6 +2368,8 @@ your tracker (same place as schema.py)::
 it replaces the setPassword method in the Password class. The new
 version validates that the password is sufficiently complex. Then it
 passes off the setting of password to the original method.
+
+.. index:: single: interfaces.py; interpreting time interval values
 
 Enhance Time Intervals Forms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2439,6 +2556,10 @@ The `reference document`_ also has examples:
   <reference.html#extending-the-configuration-file>`_.
 * `Adding a new Permission <reference.html#adding-a-new-permission>`_
 
+as does the design document:
+
+* `detector examples <design.html#detector-example>`_
+
 Examples on the Wiki
 ====================
 
@@ -2446,11 +2567,13 @@ Even more examples of customisation have been contributed by
 users. They can be found on the `wiki
 <https://wiki.roundup-tracker.org/CustomisationExamples>`_.
 
+.. _change the rate limiting method: rest.html#creating-custom-rate-limits
 .. _`design documentation`: design.html
 .. _`developer's guide`: developers.html
-.. _`rest interface documentation`: rest.html#programming-the-rest-api
-.. _change the rate limiting method: rest.html#creating-custom-rate-limits
 .. _`directions in the rest interface documentation`: rest.html#enabling-the-rest-api
+.. _oauth: https://wiki.roundup-tracker.org/OauthAuthentication
+.. _`rest interface documentation`: rest.html#programming-the-rest-api
+.. _`shibboleth`: https://wiki.roundup-tracker.org/ShibbolethLogin
 .. _`xmlrpc interface documentation`: xmlrpc.html#through-roundup
 .. _`zxcvbn`: https://github.com/dwolfhub/zxcvbn-python
  

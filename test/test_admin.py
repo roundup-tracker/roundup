@@ -134,6 +134,10 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
+        # set history_features to disable loading/saving history
+        # and loading rc file. Otherwise file gets large and
+        # breaks testing or overwrites the users history file.
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -194,6 +198,18 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'create', 'issue',
+                      'title="bar foo bar"', 'assignedto=admin',
+                      'superseder=1,2']
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '3')
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, 'get', 'assignedto',
                       'issue2' ]
             ret = self.admin.main()
@@ -206,6 +222,32 @@ class AdminTest(object):
 
         self.admin=AdminTool()
         with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-d',
+                      'get', 'assignedto',
+                      'issue2' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, 'user2')
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-d', '-S', ':',
+                      'get', 'assignedto',
+                      'issue2' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, 'user2')
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, 'get', 'superseder',
                       'issue2' ]
             ret = self.admin.main()
@@ -214,6 +256,57 @@ class AdminTest(object):
         out = out.getvalue().strip()
         err = err.getvalue().strip()
         self.assertEqual(out, "['1']")
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'get', 'superseder',
+                      'issue3' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, "['1', '2']")
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-d',
+                      'get', 'superseder',
+                      'issue3' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, "issue1\nissue2")
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c', '-d',
+                      'get', 'superseder',
+                      'issue3' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out, "issue1,issue2")
+        self.assertEqual(len(err), 0)
+
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-d',
+                      'get', 'title',
+                      'issue3' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        self.assertEqual(out.split('\n')[0], "Error: property title is not of type Multilink or Link so -d flag does not apply.")
         self.assertEqual(len(err), 0)
 
         self.admin=AdminTool()
@@ -253,6 +346,20 @@ class AdminTest(object):
         self.assertEqual(out.index(expected_err), 0)
         self.assertEqual(len(err), 0)
 
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'get', 'title', 'issue500']
+            ret = self.admin.main()
+
+        expected_err = 'Error: no such issue node "500"'
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        err = err.getvalue().strip()
+        print(out)
+        self.assertEqual(out.index(expected_err), 0)
+        self.assertEqual(len(err), 0)
+
     def testInit(self):
         self.admin=AdminTool()
         sys.argv=['main', '-i', self.dirname, 'install', 'classic', self.backend]
@@ -262,9 +369,11 @@ class AdminTest(object):
         self.assertTrue(os.path.isfile(self.dirname + "/config.ini"))
         self.assertTrue(os.path.isfile(self.dirname + "/schema.py"))
 
+        nopath= '/tmp/noSuchDirectory/nodir'
+        norealpath = os.path.realpath(nopath + "/..")
         self.admin=AdminTool()
         with captured_output() as (out, err):
-            sys.argv=['main', '-i', '/tmp/noSuchDirectory/nodir', 'install', 'classic', self.backend]
+            sys.argv=['main', '-i', nopath, 'install', 'classic', self.backend]
             ret = self.admin.main()
 
         out = out.getvalue().strip()
@@ -272,7 +381,7 @@ class AdminTest(object):
         print(out)
         self.assertEqual(ret, 1)
         self.assertIn('Error: Instance home parent directory '
-                      '"/tmp/noSuchDirectory" does not exist', out)
+                      '"%s" does not exist' % norealpath, out)
 
     def testInitWithConfig_ini(self):
         from roundup.configuration import CoreConfig
@@ -303,7 +412,90 @@ class AdminTest(object):
         self.assertTrue(os.path.isfile(self.dirname + "/config.ini"))
         self.assertTrue(os.path.isfile(self.dirname + "/schema.py"))
         config=CoreConfig(self.dirname)
-        self.assertEqual(config['MAIL_DEBUG'], self.dirname + "/SendMail.LOG")
+        self.assertEqual(config['MAIL_DEBUG'],
+                         os.path.normpath(self.dirname + "/SendMail.LOG"))
+
+    def testList(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+        self.install_init()
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'list', 'user',
+                      'username' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '1: admin\n   2: anonymous')
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'list', 'user' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, '1,2')
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'list', 'user', 'username' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, 'admin,anonymous')
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'list', 'user', 'roles' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 0)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, 'Admin,Anonymous')
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, 'list', 'user',
+                      'foo' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out.split('\n')[0],
+                         'Error: user has no property "foo"')
+
+
+        self.admin=AdminTool()
+
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname, '-c',
+                      'list', 'user',
+                      'bar' ]
+            ret = self.admin.main()
+
+        self.assertEqual(ret, 1)
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out.split('\n')[0],
+                         'Error: user has no property "bar"')
 
     def testFind(self):
         ''' Note the tests will fail if you run this under pdb.
@@ -373,6 +565,34 @@ class AdminTest(object):
         # out can be "['2', '1']" or "['1', '2']"
         # so eval to real list so Equal can do a list compare
         self.assertEqual(sorted(eval(out)), ['1', '2'])
+
+        # Reopen the db closed by previous filter call
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' 1,2 should return all entries that have assignedto
+                either admin or anonymous
+            '''
+            sys.argv=['main', '-i', self.dirname, '-c', '-d',
+                      'find', 'issue', 'assignedto=admin,anonymous']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "issue1,issue2")
+
+        # Reopen the db closed by previous filter call
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            ''' 1,2 should return all entries that have assignedto
+                either admin or anonymous
+            '''
+            sys.argv=['main', '-i', self.dirname, '-S', ':',
+                      'find', 'issue', 'assignedto=admin,anonymous']
+            ret = self.admin.main()
+
+        out = out.getvalue().strip()
+        print(out)
+        self.assertEqual(out, "1:2")
 
     def testGenconfigUpdate(self):
         ''' Note the tests will fail if you run this under pdb.
@@ -472,7 +692,8 @@ class AdminTest(object):
 
         ### test replacement of old default value
         replace_in_file(self.dirname + "/config.ini",
-                        "= 2000000", "= 10000")
+                        "= 250000", "= 10000")
+
         with captured_output() as (out, err):
             sys.argv=['main', '-i', self.dirname, 'update',
                       self.dirname + "/config2.ini"]
@@ -480,13 +701,13 @@ class AdminTest(object):
 
         out = out.getvalue().strip()
         print(out)
-        expected = "from old default of 10000 to new default of 2000000."
+        expected = "from old default of 10000 to new default of 250000."
 
         self.assertIn(expected, out)
         self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
         self.assertEqual(find_in_file(self.dirname + "/config2.ini",
-                                     "^password_.*= 2000000$"),
-                         "password_pbkdf2_default_rounds = 2000000")
+                                     "^password_.*= 250000$"),
+                         "password_pbkdf2_default_rounds = 250000")
 
         # Reopen the db closed by previous call
         self.admin=AdminTool()
@@ -502,7 +723,7 @@ class AdminTest(object):
         out = out.getvalue().strip()
         print(out)
         expected = ("Update 'password_pbkdf2_default_rounds' to a number "
-                    "equal to or larger\nthan 2000000.")
+                    "equal to or larger\n  than 250000.")
 
         self.assertIn(expected, out)
         self.assertTrue(os.path.isfile(self.dirname + "/config2.ini"))
@@ -822,6 +1043,20 @@ class AdminTest(object):
         print(err.getvalue().strip())
         self.assertEqual(out, "issue1:issue2")
 
+        # Reopen the db closed by previous filter call
+        # 
+        # case: transitive property invalid match
+        self.admin=AdminTool()
+        with captured_output() as (out, err):
+            sys.argv=['main', '-i', self.dirname,
+                      '-d', 'filter', 'issue',
+                      'assignedto.username=A']
+            ret = self.admin.main()
+        out = out.getvalue().strip()
+        print("me: " + out)
+        print(err.getvalue().strip())
+        self.assertEqual(out, "['issue1', 'issue2']")
+
     def testPragma_reopen_tracker(self):
         """test that _reopen_tracker works.
         """
@@ -837,6 +1072,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -858,6 +1094,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -889,6 +1126,7 @@ class AdminTest(object):
 
             self.install_init()
             self.admin=AdminTool()
+            self.admin.settings['history_features'] = 2
             sys.argv=['main', '-i', self.dirname]
 
             with captured_output() as (out, err):
@@ -910,6 +1148,7 @@ class AdminTest(object):
 
             self.install_init()
             self.admin=AdminTool()
+            self.admin.settings['history_features'] = 2
             sys.argv=['main', '-i', self.dirname]
 
             with captured_output() as (out, err):
@@ -929,6 +1168,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -942,7 +1182,7 @@ class AdminTest(object):
         self.assertIn(expected, out)
         expected = 'Error: Argument must be setting=value, was given: arg.'
         self.assertIn(expected, out)
-        expected = 'Error: Unknown setting foo.'
+        expected = 'Error: Unknown setting foo. Try "pragma list".'
         self.assertIn(expected, out)
 
         # -----
@@ -951,6 +1191,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -970,6 +1211,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -991,6 +1233,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1011,6 +1254,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1028,6 +1272,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1048,6 +1293,7 @@ class AdminTest(object):
 
         self.install_init()
         self.admin=AdminTool()
+        self.admin.settings['history_features'] = 2
         sys.argv=['main', '-i', self.dirname]
 
         with captured_output() as (out, err):
@@ -1175,33 +1421,33 @@ class AdminTest(object):
             ret = self.admin.main()
 
             result = """Role "user":
- User may access the web interface (Web Access)
  User may use the email interface (Email Access)
  User may access the rest interface (Rest Access)
+ User may access the web interface (Web Access)
  User may access the xmlrpc interface (Xmlrpc Access)
- User is allowed to access issue (View for "issue" only)
- User is allowed to edit issue (Edit for "issue" only)
- User is allowed to create issue (Create for "issue" only)
- User is allowed to access file (View for "file" only)
- User is allowed to edit file (Edit for "file" only)
  User is allowed to create file (Create for "file" only)
- User is allowed to access msg (View for "msg" only)
- User is allowed to edit msg (Edit for "msg" only)
- User is allowed to create msg (Create for "msg" only)
- User is allowed to access keyword (View for "keyword" only)
- User is allowed to edit keyword (Edit for "keyword" only)
+ User is allowed to edit file (Edit for "file" only)
+ User is allowed to access file (View for "file" only)
+ User is allowed to create issue (Create for "issue" only)
+ User is allowed to edit issue (Edit for "issue" only)
+ User is allowed to access issue (View for "issue" only)
  User is allowed to create keyword (Create for "keyword" only)
+ User is allowed to edit keyword (Edit for "keyword" only)
+ User is allowed to access keyword (View for "keyword" only)
+ User is allowed to create msg (Create for "msg" only)
+ User is allowed to edit msg (Edit for "msg" only)
+ User is allowed to access msg (View for "msg" only)
  User is allowed to access priority (View for "priority" only)
+ User is allowed to create queries (Create for "query" only)
+ User is allowed to edit their queries (Edit for "query" only)
+ User is allowed to restore their queries (Restore for "query" only)
+ User is allowed to retire their queries (Retire for "query" only)
+  (Search for "query" only)
+ User is allowed to view their own and public queries (View for "query" only)
  User is allowed to access status (View for "status" only)
+ User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
   (View for "user": ('id', 'organisation', 'phone', 'realname', 'timezone', 'username') only)
  User is allowed to view their own user details (View for "user" only)
- User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
- User is allowed to view their own and public queries (View for "query" only)
-  (Search for "query" only)
- User is allowed to edit their queries (Edit for "query" only)
- User is allowed to retire their queries (Retire for "query" only)
- User is allowed to restore their queries (Restore for "query" only)
- User is allowed to create queries (Create for "query" only)
 """
         print(out.getvalue())
 
@@ -1251,52 +1497,52 @@ New Email users get the Role "User"
 Role "admin":
  User may create everything (Create)
  User may edit everything (Edit)
+ User may use the email interface (Email Access)
+ User may access the rest interface (Rest Access)
  User may restore everything (Restore)
  User may retire everything (Retire)
  User may view everything (View)
  User may access the web interface (Web Access)
- User may access the rest interface (Rest Access)
- User may access the xmlrpc interface (Xmlrpc Access)
  User may manipulate user Roles through the web (Web Roles)
- User may use the email interface (Email Access)
+ User may access the xmlrpc interface (Xmlrpc Access)
 Role "anonymous":
  User may access the web interface (Web Access)
- User is allowed to register new user (Register for "user" only)
- User is allowed to access issue (View for "issue" only)
  User is allowed to access file (View for "file" only)
- User is allowed to access msg (View for "msg" only)
+ User is allowed to access issue (View for "issue" only)
  User is allowed to access keyword (View for "keyword" only)
+ User is allowed to access msg (View for "msg" only)
  User is allowed to access priority (View for "priority" only)
  User is allowed to access status (View for "status" only)
+ User is allowed to register new user (Register for "user" only)
   (Search for "user" only)
 Role "user":
- User may access the web interface (Web Access)
  User may use the email interface (Email Access)
  User may access the rest interface (Rest Access)
+ User may access the web interface (Web Access)
  User may access the xmlrpc interface (Xmlrpc Access)
- User is allowed to access issue (View for "issue" only)
- User is allowed to edit issue (Edit for "issue" only)
- User is allowed to create issue (Create for "issue" only)
- User is allowed to access file (View for "file" only)
- User is allowed to edit file (Edit for "file" only)
  User is allowed to create file (Create for "file" only)
- User is allowed to access msg (View for "msg" only)
- User is allowed to edit msg (Edit for "msg" only)
- User is allowed to create msg (Create for "msg" only)
- User is allowed to access keyword (View for "keyword" only)
- User is allowed to edit keyword (Edit for "keyword" only)
+ User is allowed to edit file (Edit for "file" only)
+ User is allowed to access file (View for "file" only)
+ User is allowed to create issue (Create for "issue" only)
+ User is allowed to edit issue (Edit for "issue" only)
+ User is allowed to access issue (View for "issue" only)
  User is allowed to create keyword (Create for "keyword" only)
+ User is allowed to edit keyword (Edit for "keyword" only)
+ User is allowed to access keyword (View for "keyword" only)
+ User is allowed to create msg (Create for "msg" only)
+ User is allowed to edit msg (Edit for "msg" only)
+ User is allowed to access msg (View for "msg" only)
  User is allowed to access priority (View for "priority" only)
+ User is allowed to create queries (Create for "query" only)
+ User is allowed to edit their queries (Edit for "query" only)
+ User is allowed to restore their queries (Restore for "query" only)
+ User is allowed to retire their queries (Retire for "query" only)
+  (Search for "query" only)
+ User is allowed to view their own and public queries (View for "query" only)
  User is allowed to access status (View for "status" only)
+ User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
   (View for "user": ('id', 'organisation', 'phone', 'realname', 'timezone', 'username') only)
  User is allowed to view their own user details (View for "user" only)
- User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
- User is allowed to view their own and public queries (View for "query" only)
-  (Search for "query" only)
- User is allowed to edit their queries (Edit for "query" only)
- User is allowed to retire their queries (Retire for "query" only)
- User is allowed to restore their queries (Restore for "query" only)
- User is allowed to create queries (Create for "query" only)
 """
         print(out.getvalue())
 
@@ -1334,43 +1580,50 @@ New Email users get the Role "User"
 Role "admin":
  User may create everything (Create)
  User may edit everything (Edit)
+ User may use the email interface (Email Access)
+ User may access the rest interface (Rest Access)
  User may restore everything (Restore)
  User may retire everything (Retire)
  User may view everything (View)
  User may access the web interface (Web Access)
- User may access the rest interface (Rest Access)
- User may access the xmlrpc interface (Xmlrpc Access)
  User may manipulate user Roles through the web (Web Roles)
- User may use the email interface (Email Access)
+ User may access the xmlrpc interface (Xmlrpc Access)
 Role "anonymous":
  User may access the web interface (Web Access)
- User is allowed to register new user (Register for "user" only)
- User is allowed to access issue (View for "issue" only)
  User is allowed to access file (View for "file" only)
- User is allowed to access msg (View for "msg" only)
+ User is allowed to access issue (View for "issue" only)
  User is allowed to access keyword (View for "keyword" only)
+ User is allowed to access msg (View for "msg" only)
  User is allowed to access priority (View for "priority" only)
  User is allowed to access status (View for "status" only)
+ User is allowed to register new user (Register for "user" only)
   (Search for "user" only)
 Role "user":
- User may access the web interface (Web Access)
  User may use the email interface (Email Access)
  User may access the rest interface (Rest Access)
+ User may access the web interface (Web Access)
  User may access the xmlrpc interface (Xmlrpc Access)
- User is allowed to access issue (View for "issue" only)
- User is allowed to edit issue (Edit for "issue" only)
- User is allowed to create issue (Create for "issue" only)
- User is allowed to access file (View for "file" only)
- User is allowed to edit file (Edit for "file" only)
  User is allowed to create file (Create for "file" only)
- User is allowed to access msg (View for "msg" only)
- User is allowed to edit msg (Edit for "msg" only)
- User is allowed to create msg (Create for "msg" only)
- User is allowed to access keyword (View for "keyword" only)
- User is allowed to edit keyword (Edit for "keyword" only)
+ User is allowed to edit file (Edit for "file" only)
+ User is allowed to access file (View for "file" only)
+ User is allowed to create issue (Create for "issue" only)
+ User is allowed to edit issue (Edit for "issue" only)
+ User is allowed to access issue (View for "issue" only)
  User is allowed to create keyword (Create for "keyword" only)
+ User is allowed to edit keyword (Edit for "keyword" only)
+ User is allowed to access keyword (View for "keyword" only)
+ User is allowed to create msg (Create for "msg" only)
+ User is allowed to edit msg (Edit for "msg" only)
+ User is allowed to access msg (View for "msg" only)
  User is allowed to access priority (View for "priority" only)
+ User is allowed to create queries (Create for "query" only)
+ User is allowed to edit their queries (Edit for "query" only)
+ User is allowed to restore their queries (Restore for "query" only)
+ User is allowed to retire their queries (Retire for "query" only)
+  (Search for "query" only)
+ User is allowed to view their own and public queries (View for "query" only)
  User is allowed to access status (View for "status" only)
+ User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
   (View for "user": ('id', 'organization', 'phone', 'realname', 'timezone', 'username') only)
 
   **Invalid properties for user: ['organization']

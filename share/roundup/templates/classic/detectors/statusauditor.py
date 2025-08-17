@@ -43,7 +43,11 @@ def chatty(db, cl, nodeid, newvalues):
         'STATUSAUDITOR_CHATTING_REQUIRES_TWO_USERS' ]
     )
     except InvalidOptionError:
-        raise InvalidOptionError("Option STATUSAUDITOR_CHATTING_REQUIRES_TWO_USERS not found in detectors/config.ini. Contact tracker admin to fix.")
+        chatting_requires_two_users = False
+        # NOTE if this is hit, detectors/config.ini needs to be updated with:
+        #   [statusauditor]
+        #   chatting_requires_two_users = yes
+        # to enable or no to disable (same as default)
         
     # don't fire if there's no new message (ie. chat)
     if 'messages' not in newvalues:

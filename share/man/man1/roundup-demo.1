@@ -1,4 +1,4 @@
-.TH ROUNDUP-SERVER 1 "27 July 2004"
+.TH ROUNDUP-DEMO 1 "27 July 2004"
 .SH NAME
 roundup-demo \- create a roundup "demo" tracker and launch its web interface
 .SH SYNOPSIS
@@ -33,7 +33,7 @@ tracker using the sqlite backend.
 
 Show the help message and exit
 .TP
-\fB-b\fp \fIBIND_ADDRESS\fI, \fB--bind_address\fP \fIBIND_ADDRESS\fP
+\fB-B\fp \fIBIND_ADDRESS\fI, \fB--bind_address\fP \fIBIND_ADDRESS\fP
 
 Choose address for server to listen at. Use 0.0.0.0 to bind to all addreses.
 Default: 127.0.0.1.
@@ -51,15 +51,21 @@ sqlite. Available backends are subject to availability on your system.
 
 Use specified template when building tracker. (*)
 .TP
+\fB-h\fP \fIHOSTNAME\fP, \fB--hostname\fP \fIHOSTNAME\fP
+
+Set the hostname used in the URL. This does not make the server listen
+at the hostname. Use the hostname with \fB-B\fP to listen on that IP
+address.
+.TP
 \fB-p\fP \fIPORT\fP, \fB--port\fP \fIPORT\fP
 
 Listen at this port. Default: search for open port starting at 8917.
 .TP
-\fB-P\fP \fIURLPORT\fP, \fB--urlport\fP \fIURLPORT\fP When using
+\fB-P\fP \fIURLPORT\fP, \fB--urlport\fP \fIURLPORT\fP
 
-docker this option passes the docker external port to the demo
-instance. If using \fBdocker ... -p 9090:8917 ...\fP this should be
-set to \fB-P 9090\fP. Default: as selected by \fB--port\fP.
+When using docker this option passes the docker external port to the
+demo instance. If using \fBdocker ... -p 9090:8917 ...\fP this should
+be set to \fB-P 9090\fP. Default: as selected by \fB--port\fP.
 .TP
 \fB-V\fP, \fB--version\fP
 
@@ -74,7 +80,7 @@ This command creates a fresh demo tracker for you to experiment
 with. The email features of Roundup will be turned off (so the nosy
 feature won't send email). It does this by removing the
 \fBnosyreaction.py\fP module from the demo tracker's \fIdetectors\fP
-directory. If you wish to send email to promote the trcker to
+directory. If you wish to send email to promote the tracker to
 production, you will need to copy \fBnosyreaction.py\fP from the
 default tracker templates directory.  The \fBtemplates\fP command from
 roundup-admin(1) can help you locate a replacement.
@@ -89,6 +95,8 @@ command to install the tracker from inside the demo tracker home directory,
 and it will be listed as an available template for installation. No data
 will be copied over.
 .SH SEE ALSO
+
+roundup-admin(1), roundup-mailgw(1), roundup-server(1)
 
 .SH AUTHOR
 This manpage was written by Richard Jones and extensively modified by

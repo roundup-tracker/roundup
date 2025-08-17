@@ -82,7 +82,7 @@ def initlog(*allargs):
     send an error message).
 
     """
-    global log, logfile, logfp
+    global log, logfp
     warnings.warn("cgi.log() is deprecated as of 3.10. Use logging instead",
                   DeprecationWarning, stacklevel=2)
     if logfile and not logfp:

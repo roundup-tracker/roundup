@@ -1,0 +1,108 @@
+.. comments:
+   This file is a temporary way to post CVE notifications before
+   a release.
+
+   Document the CVE fix info in upgrading.txt. We extract the sections
+   from upgrading.txt that deal with the CVE into a separate CVE.html.
+   An updated docs/security.html and docs/CVE.html provide the details
+   on a between release CVE announcment.
+
+   Publishing upgrading.txt would include info on the to be released
+   roundup software and wouldn't match the rest of the release docs.
+
+   To extract the info from upgrading.txt to use in CVE.html, add a
+   commented out a reference anchor in upgrading.txt. Then in CVE.txt
+   we use an include directive with start-after and end-before options
+   to exract the sections from upgrading.txt into CVE.html.
+
+   The extracted section in CVE.txt gets the same anchor that is in
+   upgrading.txt, but is is not commented out. This allows us to swap
+   out CVE.txt and uncomment the reference in upgrading.txt. Then
+   rerunning sphinx-build will make security.html point to the sections
+   in upgrading.html.
+
+   For example, in upgrading.txt add a
+
+   .. comment: _CVE-2024-39124:
+
+   before the section for the CVE (use the real CVE number). At the
+   end of the CVE section add an end comment:
+
+   .. comment: end of CVE include marker
+
+   Update security.txt with a :ref: to the CVE section. E.G. a
+   security.txt references look like:
+
+     * `CVE-2024-39124`_ - :ref:`classhelpers (_generic.help.html) are
+    vulnerable to an XSS attack. <CVE-2024-39124>` Requires fixing
+    tracker homes.
+
+   where <CVE-2024-39124> is the reference. The same reference anchor
+   is present (commented out) in upgrading.txt. In CVE.txt you
+   replicate the existing anchor and include to extract the content
+   section from upgrading.txt. E.G.
+
+   .. _CVE-2024-39124:
+
+   .. include:: upgrading.txt
+      :start-after: .. comment: _CVE-2024-39124:
+      :end-before: .. comment: end of CVE
+
+   After building the docs, install docs/security.html and
+   docs/CVE.html on the web site. Reference:
+
+       https://www.roundup-tracker.org/docs/security.html
+   
+   in the CVE announcement from Mitre.
+
+   When the release is ready, replace 'comment: _CVE' with '_CVE' in
+   upgrading.txt. This makes the anchors in upgrading.txt live.
+
+   Then disable CVE.txt by removing CVE.txt from contents.txt in the
+   toctree hidden section. Also add docs/CVE.txt to exclude_patterns in
+   conf.py.
+
+   No change needs to happen to security.txt as it's using a :ref: and
+   we just changed the location for the ref so sphinx will get the
+   links correct.
+
+   Now build the docs and publish to the web site.
+
+===========
+Roundup CVE
+===========
+
+This is a list of remediation for CVE's that are not fixed in the
+latest release. When the latest release fixes the CVE, see `the
+upgrading doc <upgrading.html>`_ for these details.
+
+.. contents::
+   :local:
+   :depth: 2
+
+.. _CVE-2024-39124:
+
+.. note::
+
+   Prior to the release of Roundup 2.4.0, you can access updated
+   tracker templates that address CVE-2024-39124 from
+   `CVE-2024-39124-templates.zip
+   <../CVE-2024-39124-templates.zip>`_. Download and extract the zip
+   file to generate a templates subdirectory containing the classic,
+   minimal and other tracker templates.
+
+.. include:: upgrading.txt
+   :start-after: .. comment: _CVE-2024-39124:
+   :end-before: .. comment:
+
+.. _CVE-2024-39125:
+
+.. include:: upgrading.txt
+   :start-after: .. comment: _CVE-2024-39125:
+   :end-before: .. comment:
+
+.. _CVE-2024-39126:
+
+.. include:: upgrading.txt
+   :start-after: .. comment: _CVE-2024-39126:
+   :end-before: .. comment: end of CVE include marker

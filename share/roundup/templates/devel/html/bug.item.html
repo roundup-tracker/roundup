@@ -1,9 +1,9 @@
 <tal:block metal:use-macro="templates/page/macros/frame">
 <title metal:fill-slot="head_title">
 <tal:block condition="context/id" i18n:translate=""
- >Bug <span tal:replace="context/id" i18n:name="id"
- />: <span tal:replace="context/title" i18n:name="title"
- /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+ >Bug <tal:x tal:content="context/id" i18n:name="id"
+ />: <tal:x tal:content="context/title" i18n:name="title"
+ /> - <tal:x tal:content="config/TRACKER_NAME" i18n:name="tracker"
 /></tal:block>
 <tal:block condition="not:context/id" i18n:translate=""
  >New Bug report - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
@@ -45,7 +45,7 @@
  <td colspan="3" tal:condition="context/title/is_edit_ok"
      tal:content="structure python:context.title.field(size=40)">title</td>
  <td colspan="3" tal:condition="not:context/title/is_edit_ok">
-  <span tal:content="structure context/title/plain"/>
+  <span tal:content="context/title/plain"/>
   <input type="hidden" name="title" tal:attributes="value context/title">
  </td>
 </tr>
@@ -176,21 +176,21 @@
 <tr tal:condition="context/is_edit_ok">
  <th><tal:block i18n:translate="">Patch</tal:block>:</th>
  <td colspan="3">
-   <input type="hidden" name="@link@patches" value="patches-1"/>
-   <input type="file" name="patches-1@content" size="35"/>
+   <input type="hidden" name="@link@patches" value="patch-1"/>
+   <input type="file" name="patch-1@content" size="35"/>
  </td>
 </tr>
 <tr tal:condition="context/is_edit_ok">
  <th><tal:block i18n:translate="">Patch Description</tal:block>:</th>
- <td colspan=3><input type="edit" name="patches-1@description" size="40"></td>
+ <td colspan=3><input type="edit" name="patch-1@description" size="40"></td>
 </tr>
 <tr tal:condition="context/is_edit_ok">
  <th><tal:block i18n:translate="">Repository</tal:block>:</th>
- <td colspan=3><input type="edit" name="patches-1@repository" size="40"></td>
+ <td colspan=3><input type="edit" name="patch-1@repository" size="40"></td>
 </tr>
 <tr tal:condition="context/is_edit_ok">
  <th><tal:block i18n:translate="">Repo. Revision</tal:block>:</th>
- <td colspan=3><input type="edit" name="patches-1@revision" size="40"></td>
+ <td colspan=3><input type="edit" name="patch-1@revision" size="40"></td>
 </tr>
 -->
 </table>

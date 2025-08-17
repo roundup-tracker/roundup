@@ -339,14 +339,17 @@ class Get_IndexerTest(anydbmOpener, unittest.TestCase):
         # mangle things so we can test AssertionError at end
         # get_indexer()
         from roundup.configuration import IndexerOption
-        IndexerOption.allowed.append("unrecognized_indexer")
+        io_orig = IndexerOption.allowed
+        io = list(io_orig)
+        io.append("unrecognized_indexer")
+        IndexerOption.allowed = tuple(io)
         self.db.config['INDEXER'] = "unrecognized_indexer"
 
         with self.assertRaises(AssertionError) as cm:
             indexer = get_indexer(self.db.config, self.db)
 
         # unmangle state
-        IndexerOption.allowed.pop()
+        IndexerOption.allowed = io_orig
         self.assertNotIn("unrecognized_indexer", IndexerOption.allowed)
         self.db.config['INDEXER'] = ""
 
@@ -371,6 +374,10 @@ class RDBMSIndexerTest(object):
         self.dex = Indexer(self.db)
     def tearDown(self):
         if hasattr(self, 'db'):
+            # commit any outstanding cursors.
+            # close() doesn't actually close file handle on
+            #    windows unless commit() is called.
+            self.db.commit()
             self.db.close()
         if os.path.exists(config.DATABASE):
             shutil.rmtree(config.DATABASE)
@@ -580,7 +587,10 @@ class postgresqlFtsIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
         import psycopg2
 
         from roundup.configuration import IndexerOption
-        IndexerOption.valid_langs.append("foo")
+        io_orig = IndexerOption.valid_langs
+
+        io = list(io_orig)
+        io.append("foo")
         self.db.config["INDEXER_LANGUAGE"] = "foo"
 
         with self.assertRaises(psycopg2.errors.UndefinedObject) as ctx:
@@ -596,6 +606,7 @@ class postgresqlFtsIndexerTest(postgresqlOpener, RDBMSIndexerTest, IndexerTest):
         self.db.rollback()
 
         self.db.config["INDEXER_LANGUAGE"] = "english"
+        IndexerOption.valid_langs = io_orig
 
     def testNullChar(self):
        """Test with null char in string. Postgres FTS throws a ValueError

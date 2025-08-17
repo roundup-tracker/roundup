@@ -29,7 +29,7 @@ class Timestamped:
         try:
             created = unpack_timestamp(self.form[field].value)
         except KeyError:
-            raise FormError(_("Form is corrupted, missing: %s." % field))
+            raise FormError(_("Form is corrupted, missing: %s.") % field)
         if time.time() - created < delay:
             raise FormError(_("Responding to form too quickly."))
         return True

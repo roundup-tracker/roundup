@@ -94,15 +94,9 @@ class RoundupInstance:
     def filter(self, classname, search_matches, filterspec,
                sort=[], group=[]):
         cl = self.db.getclass(classname)
-        uid = self.db.getuid()
-        security = self.db.security
-        filterspec = security.filterFilterspec(uid, classname, filterspec)
-        sort = security.filterSortspec(uid, classname, sort)
-        group = security.filterSortspec(uid, classname, group)
-        result = cl.filter(search_matches, filterspec, sort=sort, group=group)
-        check = security.hasPermission
-        x = [id for id in result if check('View', uid, classname, itemid=id)]
-        return x
+        return cl.filter_with_permissions(
+            search_matches, filterspec, sort=sort, group=group
+        )
 
     def lookup(self, classname, key):
         cl = self.db.getclass(classname)

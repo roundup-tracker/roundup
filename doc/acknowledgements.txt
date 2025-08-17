@@ -16,6 +16,38 @@ ideas and everything else that helped!
 
 .. _`Announcement with changelog for current release.`: announcement.html
 
+2.5
+---
+
+2.5.0
+~~~~~
+
+Maintainer: John Rouillard
+
+Release Manager: John Rouillard
+
+Developer activity by changesets::
+
+
+  rouilj@ieee.org  222 *****************************************************
+  rsc@runtux.com    27 ******
+
+Other contributers:
+
+Christof Meerwald - reported issue 2551387
+
+Ludwig Reiter - reported issue 2551074
+
+Marcus Priesch - patch for issue 2551287
+
+Paul Schwabauer - updates to gpg python module so it still works for Roundup.
+
+Randy - reported issue 2551396
+
+Tobias Herp - patch for issue 1895197
+
+4bug of ChaMd5 Security Team H1 Group - XSS vulnerability report
+
 2.4
 ---
 
@@ -28,11 +60,19 @@ Release Manager: John Rouillard
 
 Developer activity by changesets::
 
-  TBD
+  rouilj@ieee.org                               532 **************************
+  rsc@runtux.com                                  2
+  Marcus Preisch                                  1
+  Norbert Schlemmer "Noschvie on github.com"      1
 
-Other contributers
+Other contributers:
 
-Norbert Schlemmer
+Norbert Schlemmer - docker support
+
+Bharath Kanama, Nikunj Thakkar, Patel Malav - classhelper web
+component development.
+
+Alec Romano (4rdr) - identified multiple security issues
 
 2.3
 ---

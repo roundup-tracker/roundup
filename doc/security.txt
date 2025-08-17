@@ -1,20 +1,57 @@
 .. meta::
     :description:
         Documentation on how to report security issues with
-        Roundup. Also index to security related portions in other
-        Roundup documentation. How to verify distribution using gpg.
+        Roundup. Index to recent security related (CVE) descriptions
+        in other Roundup documentation. How to verify distribution
+        using gpg.
 
 .. index::
    single: Reporting Security Issues
+   single: CVE announcements
    single: Security Issues, Reporting
+   single: Security Issues, Remediation
+   single: Security Issues, CVE announcements
 
 
 =======================
 Roundup Security Issues
 =======================
 
-This page documents how to report security issues and verify the
-signatures for Roundup releases.
+This page documents CVE's fixed starting with version 2.4.0, how to
+report security issues, and verify the signatures for Roundup
+source release tarballs.
+
+.. contents::
+   :local:
+   :depth: 2
+
+CVE Announcements
+-----------------
+
+  * `CVE-2025-53865`_ - :ref:`XSS security issue with devel or
+    responsive templates <CVE-2025-53865>`. Fixed in release 2.5.0,
+    directions available for fixing trackers based on these templates.
+
+  * `CVE-2024-39124`_ - :ref:`classhelpers (_generic.help.html) are
+    vulnerable to an XSS attack. <CVE-2024-39124>` Requires fixing
+    tracker homes.
+  * `CVE-2024-39125`_ - :ref:`if Referer header is set to a script tag,
+    it will be executed. <CVE-2024-39125>` Fixed in release 2.4.0,
+    directions available for fixing in prior versions.
+  * `CVE-2024-39126`_ - :ref:`PDF, XML and SVG files downloaded from an
+    issue can contain embedded JavaScript which is
+    executed. <CVE-2024-39126>` Fixed in release 2.4.0, directions
+    available for fixing in prior versions.
+
+.. _CVE-2025-53865:
+        https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-53865
+.. _CVE-2024-39124:
+        https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-39124
+.. _CVE-2024-39125:
+        https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-39125
+.. _CVE-2024-39126:
+        https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-39126
+
 
 Reporting Security Issues
 -------------------------
@@ -88,8 +125,8 @@ Once you have loaded the public key, you need a detached signature for
 your release.
 
 
-Download and Verify with Detached Signature
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Download Detached Signature and Verify
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This needs to be done once for each release you wish to verify.
 
@@ -102,6 +139,9 @@ with 1.6.0 have been moved and are linked below:
 
 .. rst-class:: multicol
 
+* `2.5.0 <../signatures/roundup-2.5.0.tar.gz.asc>`_
+* `2.4.0 <../signatures/roundup-2.4.0.tar.gz.asc>`_
+* `2.4.0b2 <../signatures/roundup-2.4.0b2.tar.gz.asc>`_
 * `2.3.0 <../signatures/roundup-2.3.0.tar.gz.asc>`_
 * `2.3.0b2 <../signatures/roundup-2.3.0b2.tar.gz.asc>`_
 * `2.2.0 <../signatures/roundup-2.2.0.tar.gz.asc>`_
@@ -125,10 +165,10 @@ You should see::
   gpg:          There is no indication that the signature belongs to the owner.
   Primary key fingerprint: 411E 354B 5D1A F261 25D6  2122 1F2D D0CB 756A 76D8
 
-which verifies the tarball integrity. The WARNING is expected and the
-date corresponds to the newest renewal of the Roundup key. As long as
-you see the output starting with "Good signature from" followed by the
-Key Info for your key, everything is OK.
+which verifies the tarball integrity. The WARNING is expected.
+The date should be close to the release date of the version of Roundup.
+As long as you see the output starting with "Good signature from"
+followed by the Key Info above, everything is OK.
 
 If something is wrong you will see::
 
@@ -136,5 +176,6 @@ If something is wrong you will see::
   gpg:                using RSA key 411E354B5D1AF26125D621221F2DD0CB756A76D8
   gpg: BAD signature from "Roundup Team (signing key for roundup releases) <roundup-devel at lists.sourceforge.net>"
 
-**do not use** the tarball if the signature is BAD. Email the
-roundup-devel mailing list if you have this happen to you.
+**do not use** the tarball if the signature is BAD. Email the mailing
+list: roundup-devel at lists.sourceforge.net if you have this happen
+to you.

@@ -128,16 +128,19 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mysqlclient; fi
   # https://issues.roundup-tracker.org/issue2551267
   - if [[ $TRAVIS_PYTHON_VERSION == "3."* ]]; then pip install gpg; fi
-  - pip install psycopg2
+  - if [[ $TRAVIS_PYTHON_VERSION == "2."* ]]; then pip install scandir; fi
   - pip install redis
   - pip install pytz whoosh pyjwt requests
   - pip install jinja2
+  - pip install psycopg2
+  # note pytest-env is not needed for redis password as there is
+  # no password on CI's redis.
   - pip install pytest-cov
   - pip install beautifulsoup4
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install docutils; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* ]]; then pip install mistune==0.8.4; fi
   - if [[ $TRAVIS_PYTHON_VERSION != "3.4"* && $TRAVIS_PYTHON_VERSION != "2."* ]]; then pip install Markdown; fi
-  - pip install 'markdown2<=2.4.8'
+  - pip install markdown2
   - pip install brotli==1.0.9
   # zstd fails to build under python nightly aborting test.
   # allow testing to still happen if the optional package doesn't install.
@@ -155,6 +158,9 @@ before_script:
   - sudo service postgresql restart; sleep 30
   # set up postgresql database
   - psql -c "CREATE ROLE rounduptest WITH CREATEDB LOGIN PASSWORD 'rounduptest';" -U postgres
+  - psql -c "CREATE ROLE rounduptest_schema LOGIN PASSWORD 'rounduptest';" -U postgres
+  - psql -c "CREATE DATABASE rounduptest_schema;" -U postgres
+  - psql -c "GRANT CREATE ON DATABASE rounduptest_schema TO rounduptest_schema;" -U postgres
 
   # build the .mo translation files and install them into a tree
   # (locale/locale under roundup directory root) 
@@ -179,6 +185,7 @@ script:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2."* ]]; then
     python -m pytest -v -r a --maxfail=5 test/ --cov=roundup;
     fi
+  - python -m pip install sphinx-tabs
   - ./setup.py build_doc
 
 after_success:

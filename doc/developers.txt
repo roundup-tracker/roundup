@@ -119,6 +119,29 @@ sqlite`` and get a working Roundup server. This will start
 the server using the ``sqlite`` backend. The code is in the
 ``roundup`` subdirectory.
 
+To test internationalization in your environment, you have to
+process the locale sub-directory into a form that roundup's
+i18n code will recognize. To do this use:
+
+  make -C locale local_install
+
+which will compile the ``.po`` source files into binary
+``.mo`` files and install them under
+``locale/locale/<LANGUAGE_CODE>/LC_MESSAGES/roundup.mo``. For
+German this will be
+``locale/locale/de/LC_MESSAGES/roundup.mo``. 
+
+By default this requires ``msgfmt`` from the the GNU gettext tools
+installed on your system. If you do not have ``msgfmt`` installed, you
+can use:
+
+  make -C locale local_install MSGFMT="python3 ../roundup/msgfmt.py"
+
+Also to compile a single .po file, you can invoke ``python
+roundup/msgfmt.py po_file mo_file`` to compile your .po file to a .mo
+file. It's slow but seems to work in basic tests. The msgfmt.py file
+is used by Roundup to compile out of date .po files.
+
 Submitting Changes
 ------------------
 
@@ -181,6 +204,26 @@ If you set the environment variable SENDMAILDEBUG to a filename,
 roundup will write each email message that it sends to that file
 instead to the internet.  This environment variable is independent of
 the python -O flag.
+
+Documentation Notes
+-------------------
+
+All docs are written using sphinx. Use pip or your package manager to
+install sphinx. In addition you will need to install a couple of
+sphinx extensions to process the files. A requirement's file can be
+found in docs/requirement.pip or website/www/requirements.pip. You can
+install these requirements using ``python -m pip install -r
+<path_to_requirements_file>``.
+
+The extensions sphinx-sitemap generates a sitemap when building for
+the website. The sphinx-tabs extension generates tabs for displaying
+code examples in both TAL and Jinja2.
+
+To build the documentation distributed with a Roundup release, run
+``python setup.py build_doc`` at the root of the source tree. To build
+docs for the website, see the ``updating www.roundup-tracker.org``
+section of ``website/README.txt`` or TL;DR ``cd website/www; make
+html``.
 
 Testing Notes
 -------------
@@ -252,7 +295,8 @@ How stuff works:
    Interface uses language selected by currently authenticated user.
 
 Additional details may be found in `GNU gettext`_ and Python `gettext
-module`_ documentation.
+module`_ documentation. Additional information on ``.po`` translation
+files can also be found at pology_.
 
 `Roundup source distribution`_ includes POT and PO files for message
 translators, and also pre-built MO files to facilitate installations
@@ -305,6 +349,29 @@ of translation completeness.  For example, string ``</ol></body></html>``
 script) has no human readable parts at all, and needs no translations.
 Such strings are left untranslated in PO files, and are reported
 as such by PO status checkers (e.g. ``msgfmt --statistics``).
+
+Hints for the translator can be added by adding a comment block
+starting with ``# .Hint``. The hints will be extracted into the .pot
+file and merged to the .po files used by the translators. This can add
+context to how the string is used. For example from admin.py::
+
+  # .Hint read as: assignedto was admin(1)
+  # where assignedto is the property
+  # admin is the key name for value 1
+  _("%(prop)s was %(name)s(%(value)s)")
+
+is shown in the .po file as::
+
+  #. .Hint read as: assignedto was admin(1)
+  #. where assignedto is the property
+  #. admin is the key name for value 1
+  #: ../roundup/admin.py:1091
+  #, python-format
+  msgid "%(prop)s was %(name)s(%(value)s)"
+  msgstr ""
+
+allowing the translator to see the replaced string so they can
+understand how name and value are used.
 
 Command Line Interfaces
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -473,13 +540,32 @@ For on-site i18n, Roundup provides command-line utility::
 
   roundup-gettext <tracker_home>
 
-extracting translatable messages from tracker's html templates.
+extracting translatable messages from tracker's html templates and
+detectors / extensions (assuming `polib`_ is installed) [2]_.
 This utility creates message template file ``messages.pot`` in
 ``locale`` subdirectory of the tracker home directory.  Translated
-messages may be put in *locale*.po files (where *locale* is selected
-locale name) in the same directory, e.g.: ``locale/ru.po``.
+messages may be put in *locale*.po files (where *locale* is the two
+character locale name) in the same directory, e.g.: ``locale/ru.po``.
 These message catalogs are searched prior to system-wide translations
 kept in the ``share`` directory.
+
+If you are creating your own ``.po`` file from scratch rather than
+using ``roundup-gettext``, you must have the minimal preamble
+specifying the format of the file. This::
+
+  msgid ""
+  msgstr ""
+  "Content-Type: text/plain; charset=UTF-8\n"
+
+should be present as the first translatable string in your .po file.
+If you use ``roundup-gettext`` it will add a full preamble including
+``Content-Type``. If the preamble is missing, using characters outside
+of the ASCII range will cause Roundup to crash with a
+UnicodeDecodeError.
+
+.. [2] Note that it will not extract `deferred translations`_
+         from detectors or extensions. Those have to be manually
+         added to messages.pot.
 
 Translating Messages
 ^^^^^^^^^^^^^^^^^^^^
@@ -508,7 +594,7 @@ tools that may help you with this process:
  - `poEdit`_ by Vaclav Slavik.  Very nice cross-platform GUI editor.
 
  - `Lokalize`_. A replacement for KBabel. Being part of `KDE`_, it
-    works in X windows only. Haven't had much experience with it, though.
+   works in X windows only. Haven't had much experience with it, though.
 
  - ``po-mode`` for `emacs`_.  One of `GNU gettext`_ tools.  Very handy,
    definitely recommended if you are comfortable with emacs.  Cannot
@@ -521,6 +607,8 @@ tools that may help you with this process:
    prefer this, as i have patched this plugin a bit.  I have also
    informed the original plugin author about these changes, but got
    no reply so far.
+
+Additional information on ``.po`` files can be found at pology_.
 
 Compiling Message Catalogs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -581,9 +669,11 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _Plural Forms:
    https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
 .. _po filetype plugin:
-    https://vim.sourceforge.io/scripts/script.php?script_id=695
+    https://www.vim.org/scripts/script.php?script_id=64
 .. _PO utilities: https://github.com/pinard/po-utils
+.. _polib: https://polib.readthedocs.io
 .. _poEdit: https://poedit.net/
+.. _pology: http://pology.nedohodnik.net/doc/user/en_US/ch-poformat.html
 .. _pylint: https://pylint.pycqa.org/en/latest/
 .. _Roundup Source:
 .. _Roundup source distribution:
@@ -601,4 +691,4 @@ At run time, Roundup automatically compiles message catalogs whenever
    https://pagetemplates.readthedocs.io/en/latest/history/TALESSpecification13.html
 .. _TravisCI: https://app.travis-ci.com/github/roundup-tracker/roundup
 .. _vim: https://www.vim.org/
-.. _ZPTInternationalization: http://grok.zope.org/doc/community/view_generation/i18n_of_your_app.html
+.. _ZPTInternationalization: https://web.archive.org/web/20120804003011/http://grok.zope.org/doc/community/view_generation/i18n_of_your_app.html

@@ -23,9 +23,12 @@ ARG source=local
 
 # parameterize the sha256 sum to pin version of python:3-alpine
 # Must use the same version in both build stages.
-ARG SHA256=a5d1738d6abbdff3e81c10b7f86923ebcb340ca536e21e8c5ee7d938d263dba1
+# Note this is the index digest for the image, not the manifest digest.
+# The index digest is shared across archetectures (amd64, arm64 etc.)
+# while the manifest digest is unique per platform/arch.
+ARG SHA256=9b4929a72599b6c6389ece4ecbf415fd1355129f22bb92bb137eea098f05e975
 
-# Set to any non-empy value to enable shell debugging for troubleshooting
+# Set to any non-empty value to enable shell debugging for troubleshooting
 ARG VERBOSE=
 
 # application directory
@@ -34,10 +37,10 @@ ARG appdir=/usr/src/app
 # Python version as a.b Used as path component for 
 # installation directory and COPY from install dir
 # in second build stage.
-ARG pythonversion=3.12
+ARG pythonversion=3.13
 
 #FROM python:3-alpine via SHA256 sum
-FROM python@sha256:$SHA256 as build 
+FROM python@sha256:$SHA256 AS build 
 
 # Inherit global values https://github.com/moby/moby/issues/37345
 ARG appdir
@@ -45,12 +48,12 @@ ARG appdir
 WORKDIR $appdir
 
 # Update to get security and other improvements;
-RUN apk --no-cache upgrade
-
 # Add packages needed to compile mysql, pgsql and other python modules.
-# Can't use apk to add python packages as it installs 3.9 python version.
+# Can't use apk to add python packages as it installs for base image
+# in /usr.
 #        g++ installs cc1plus needed by pip install
-RUN apk --no-cache add \
+RUN apk --no-cache upgrade; \
+    apk --no-cache add \
     file \
     g++ \
     gcc \
@@ -81,22 +84,26 @@ COPY scripts/Docker/sphinxdeps.txt .
 # suppress warning when running pip as root
 ENV PIP_ROOT_USER_ACTION=ignore
 
+# force embedded script to fail on any error "-e"
+# including in a pipeline (-o pipefail) (note pipefail
+# is not documented, but setting it isn;t an error and
+# works in testing)
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 ARG VERBOSE
 ARG pythonversion
 
 RUN [ -z "${VERBOSE}" ] || set -xv; \
     CWD="$PWD" && \
-    upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
-	list --outdated | awk 'NR > 2 {print $1}'); \
+    upgrades="$(python3 -m pip --no-cache-dir --disable-pip-version-check \
+	list --outdated | awk 'NR > 2 {print $1}')"; \
     if [ -n "$upgrades" ]; then \
         echo "Pip updating $upgrades"; \
-        python -m pip --no-cache --disable-pip-version-check \
+        python -m pip --no-cache-dir --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
         echo "Nothing to pip update"; \
     fi; \
-    ls -l /usr/local/lib/python${pythonversion}/site-packages; \
+    ls -l "/usr/local/lib/python${pythonversion}/site-packages"; \
     VER=$(apk list -I 'xapian-core-dev' | \
           sed 's/^xapian-core-dev-\([0-9.]*\)-.*/\1/') && \
     cd /tmp && \
@@ -132,9 +139,16 @@ COPY share install/share/
 # dist/* might not exist, so include README.txt so we don't get an error
 #COPY README.txt dist/* install/dist/
 
-# verify source has one of two valid values then
-# install in python3 standard directories from local copy
-# or install in python3 standard directories from pypi using pip
+# verify source has one of four valid values then
+# install in python3 standard directories from:
+#  * local copy using setup.py
+#  * pypi using pip
+#  * local files using pip
+#  * pip using a pre-existing sdist built in original source tree: disabled
+#  *    copy from dist/* fails if dist directory is missing breaking the
+#       Distfile. COPY used to ignore missing files if at least one
+#       existing file was copied 8-(.
+
 # import from global/command line
 ARG source
 
@@ -163,7 +177,7 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
             printf "Building with distribution: %s\n" "$dist"; \
             pip install --no-cache-dir "install/dist/$dist";; \
         *) \
-            printf "\n\ninvalid value for source: $source\n"; \
+            printf "\n\ninvalid value for source: %s\n" "$source"; \
 	    printf "must be local, pypi, pip_local or pip_sdist\n\n"; \
             exit 1;; \
     esac
@@ -202,15 +216,16 @@ RUN apk --no-cache upgrade; \
      libstdc++ \
      libxapian \
      zstd-libs; \
-    upgrades=$(python3 -m pip --no-cache --disable-pip-version-check \
-	list --outdated | awk 'NR > 2 {print $1}'); \
+    upgrades="$(python3 -m pip --no-cache-dir --disable-pip-version-check \
+	list --outdated | awk 'NR > 2 {print $1}')"; \
     if [ -n "$upgrades" ]; then \
         echo "Pip updating $upgrades"; \
-        python -m pip --no-cache --disable-pip-version-check \
+        python -m pip --no-cache-dir --disable-pip-version-check \
            install -U $upgrades < /dev/null; \
     else \
         echo "Nothing to pip update"; \
-    fi
+    fi; \
+    test -s /usr/bin/dumb-init
 
 ARG source
 ARG pythonversion
@@ -218,7 +233,7 @@ ARG pip_mod
 LABEL "org.opencontainers.image.vendor"="Roundup Issue Tracker Team" \
       "org.opencontainers.image.title"="Roundup Issue Tracker" \
       "org.opencontainers.image.description"="Roundup Issue Tracker with multi-backend support installed via $source with python version $pythonversion" \
-      "org.opencontainers.image.version"="2.3.0" \
+      "org.opencontainers.image.version"="2.5.0" \
       "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net" \
       "org.opencontainers.image.licenses"="MIT AND ZPL-2.0 AND Python-2.0" \
       "org.opencontainers.image.documentation"="https://www.roundup-tracker.org/docs/installation.html" \

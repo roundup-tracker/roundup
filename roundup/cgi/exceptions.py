@@ -14,23 +14,56 @@ class RoundupCGIException(RoundupException):
     pass
 
 
+class Reauth(RoundupCGIException):
+    """Raised by auditor, to trigger password verification before commit.
+
+       Before committing changes to sensitive fields, triggers the
+       following workflow:
+
+         1. user is presented with a page to enter his/her password
+         2. page is submitted to reauth action
+         3. password is verified by LoginAction.verifyPassword
+         4. change is committed to database.
+
+         If 3 fails, restart at step 1.
+
+         Client.reauth() method is used to handle step 1. Should be
+         able to be overridden in interfaces.py. Step 2 is done by
+         _generic.reauth.html. Steps 3 and 4 (and cycle back to 1) is
+         done by cgi/actions.py:Reauth action.
+    """
+    pass
+
+
 class HTTPException(RoundupCGIException):
+    """Base exception for all HTTP error codes."""
     pass
 
 
 class Redirect(HTTPException):
-    pass
-
-
-class NotFound(HTTPException):
+    """HTTP 302 status code"""
     pass
 
 
 class NotModified(HTTPException):
+    """HTTP 304 status code"""
+    pass
+
+
+class NotFound(HTTPException):
+    """HTTP 404 status code unless self.response_code is set to
+       400 prior to raising exception.
+    """
     pass
 
 
 class PreconditionFailed(HTTPException):
+    """HTTP 412 status code"""
+    pass
+
+
+class RateLimitExceeded(HTTPException):
+    """HTTP 429 error code"""
     pass
 
 

@@ -22,17 +22,17 @@ __docformat__ = 'restructuredtext'
 
 import os
 
+from roundup.anypy import scandir_
 
 def files_in_dir(dir):
     if not os.path.exists(dir):
         return 0
     num_files = 0
-    for dir_entry in os.listdir(dir):
-        full_filename = os.path.join(dir, dir_entry)
-        if os.path.isfile(full_filename):
+    for dir_entry in os.scandir(dir):
+        if dir_entry.is_file():
             num_files = num_files + 1
-        elif os.path.isdir(full_filename):
-            num_files = num_files + files_in_dir(full_filename)
+        elif dir_entry.is_dir():
+            num_files = num_files + files_in_dir(dir_entry.path)
     return num_files
 
 

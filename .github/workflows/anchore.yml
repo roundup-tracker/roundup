@@ -17,8 +17,8 @@ on:
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ "master" ]
-  schedule:
-    - cron: '38 21 * * 6'
+  #schedule:
+    #- cron: '38 21 * * 6'
 
 permissions:
   contents: read
@@ -37,21 +37,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout the code
-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
     - name: Build the Docker image
       run: docker pull python:3-alpine; docker build . --file scripts/Docker/Dockerfile --tag localbuild/testimage:latest
     - name: List the Docker image
       run: docker image ls
     - name: Run the Anchore scan action itself with GitHub Advanced Security code scanning integration enabled
-      uses: anchore/scan-action@24fd7c9060f3c96848dd1929fac8d796fb5ae4b4 # v3.3.6
+      uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # 6.5.1
       id: scan
       with:
         image: "localbuild/testimage:latest"
         fail-build: true
     - name: Upload Anchore Scan Report
       if: always()
-      uses: github/codeql-action/upload-sarif@cdcdbb579706841c47f7063dda365e292e5cad7a
-  # v2.13.4
+      uses: github/codeql-action/upload-sarif@b1e4dc3db58c9601794e22a9f6d28d45461b9dbf # v2.22.0
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
     - name: Inspect action SARIF report

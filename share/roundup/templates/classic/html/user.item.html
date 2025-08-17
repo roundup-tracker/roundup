@@ -68,11 +68,11 @@ define="edit_ok context/is_edit_ok"
  <tal:if condition="edit_ok">
  <tr tal:define="name string:password; label string:Login Password">
   <th metal:use-macro="th_label">Login Password</th>
-  <td><input metal:use-macro="pw_input" type="password"></td>
+  <td><input metal:use-macro="pw_input" spellcheck="false" type="password"></td>
  </tr>
  <tr tal:define="name string:password; label string:Confirm Password">
   <th metal:use-macro="th_label">Confirm Password</th>
-  <td><input metal:use-macro="confirm_input" type="password"></td>
+  <td><input metal:use-macro="confirm_input" spellcheck="false" type="password"></td>
  </tr>
  </tal:if>
  <tal:if condition="python:request.user.hasPermission('Web Roles')">

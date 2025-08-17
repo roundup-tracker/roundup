@@ -86,8 +86,9 @@
     tal:condition="db/user/is_view_ok">
   <th i18n:translate="">Creator:</th>
   <td metal:use-macro="search_select">
-    <option metal:fill-slot="extra_options" i18n:translate=""
-            tal:attributes="value request/user/id">created by me</option>
+    <option metal:fill-slot="extra_options" value="@current_user"
+	    tal:attributes="selected python:value == '@current_user'"
+            i18n:translate="">created by me</option>
   </td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>
@@ -108,8 +109,9 @@
     tal:condition="db/user/is_view_ok">
   <th i18n:translate="">Actor:</th>
   <td metal:use-macro="search_select">
-    <option metal:fill-slot="extra_options" i18n:translate=""
-            tal:attributes="value request/user/id">done by me</option>
+    <option metal:fill-slot="extra_options" value="@current_user"
+	    tal:attributes="selected python:value == '@current_user'"
+            i18n:translate="">done by me</option>
   </td>
   <td metal:use-macro="column_input"></td>
   <td metal:use-macro="sort_input"></td>
@@ -153,7 +155,8 @@
   <th i18n:translate="">Assigned to:</th>
   <td metal:use-macro="search_select">
     <tal:block metal:fill-slot="extra_options">
-      <option tal:attributes="value request/user/id"
+      <option value="@current_user"
+       tal:attributes="selected python:value == '@current_user'"
        i18n:translate="">assigned to me</option>
       <option value="-1" tal:attributes="selected python:value == '-1'"
        i18n:translate="">unassigned</option>

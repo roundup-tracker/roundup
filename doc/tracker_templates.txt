@@ -5,7 +5,7 @@ Roundup Tracker Templates
 The templates distributed with Roundup are stored in the "share" directory
 nominated by Python. On Unix this is typically
 ``/usr/share/roundup/templates/`` (or ``/usr/local/share...``) and
-on Windows this is ``c:\python27\share\roundup\templates\``.
+on Windows this is ``c:\python38\share\roundup\templates\``.
 
 The template loading looks in four places to find the templates:
 
@@ -17,9 +17,9 @@ The template loading looks in four places to find the templates:
    `sys.base_prefix/local``. This finds templates (and locales)
    installed by pip. E.G. in a virtualenv located at (``sys.prefix``):
    ``/tools/roundup``, roundup would be at:
-   ``/tools/roundup/lib/python3.6/site-packages/roundup``. The
+   ``/tools/roundup/lib/python3.7/site-packages/roundup``. The
    templates would be at:
-   ``/tools/roundup/lib/python3.6/site-packages/tools/roundup/share/roundup/templates/``.
+   ``/tools/roundup/lib/python3.7/site-packages/tools/roundup/share/roundup/templates/``. (Replace 3.7 with the Python version you are running.)
 3. ``<roundup.admin.__file__>/../../share/roundup/templates/*``.
    This will be used if Roundup's run in the distro (aka. source)
    directory.
@@ -33,22 +33,32 @@ Templates contain:
 - modules ``schema.py`` and ``initial_data.py``
 - directories ``html``, ``detectors`` and ``extensions``
   (with appropriate contents)
+- optional directory ``lib`` which contains modules used by the other
+  tracker components
 - optional ``config_ini.ini`` file. It is structured like a tracker's
   ``config.ini`` but contains only headers (e.g. ``[main]``) and
-  *required* parameters that are different from defaults:
-  e.g. ``template_engine = jinja2`` and ``static_files =
-  static``. These settings override the default values saved to the
-  tracker's ``config.ini``.
+  *required* parameters that are different from defaults. For example::
+  
+    [main]
+    template_engine = jinja2
+
+    static_files = static
+
+  These settings override the default values in the tracker's
+  ``config.ini`` when using roundup-admin to install a template.
 - template "marker" file ``TEMPLATE-INFO.txt``, which contains
   the name of the template, a description of the template
   and its intended audience.
 
-An example TEMPLATE-INFO.txt::
+  An example TEMPLATE-INFO.txt:
 
- Name: classic
- Description: This is a generic issue tracker that may be used to track bugs,
-              feature requests, project issues or any number of other types
-              of issues. Most users of Roundup will find that this template
-              suits them, with perhaps a few customisations.
- Intended-For: All first-time Roundup users
+  .. code-block:: text
+
+     Name: classic
+     Description: This is a generic issue tracker that may be used to
+		  track bugs, feature requests, project issues or any
+		  number of other types of issues. Most users of
+		  Roundup will find that this template suits them,
+		  with perhaps a few customisations.
+     Intended-For: All first-time Roundup users
 

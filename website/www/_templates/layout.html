@@ -1,27 +1,20 @@
+{% set script_files = ['_static/jquery.js', '_static/doctools.js',
+                       '_static/language_data.js',
+                       '_static/searchtools.js',
+                       '_static/sphinx_highlight.js',
+                       '_static/tabs.js',
+] %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {%- if 'name="description"' not in metatags %}
-      <meta name="description"
-        content="Page {{ pagename }} in documentation on the Roundup issue tracker, version {{ release|e }}.">
-    {%- endif %}
-    {{ metatags }}
     {%- if builder != 'htmlhelp' %}
       {%- set titlesuffix = docstitle|e %}
       {%- set titlesuffix = " - " + titlesuffix %}
     {%- endif %}
     <title>{{ title|striptags }}{{ titlesuffix }}</title>
-    {%- if builder == 'web' %}
-    <link rel="stylesheet" href="{{ pathto('index') }}?do=stylesheet{%
-      if in_admin_panel %}&admin=yes{% endif %}" type="text/css" />
-    {%- for link, type, title in page_links %}
-    <link rel="alternate" type="{{ type|e(true) }}" title="{{ title|e(true) }}" href="{{ link|e(true) }}" />
-    {%- endfor %}
-    {%- else %}
-    <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
-    {%- endif %}
+
     {%- if builder != 'htmlhelp' %}
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -37,8 +30,31 @@
     {%- endfor %}
     <script type="text/javascript">$('#searchbox').show(0);</script>
     {%- endif %}
+
+    {%- if builder == 'web' %}
+    <link rel="stylesheet" href="{{ pathto('index') }}?do=stylesheet{%
+      if in_admin_panel %}&admin=yes{% endif %}" type="text/css" />
+    {%- for link, type, title in page_links %}
+    <link rel="alternate" type="{{ type|e(true) }}" title="{{ title|e(true) }}" href="{{ link|e(true) }}" />
+    {%- endfor %}
+    {%- else %}
+    <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
+    {%- endif %}
+    <!-- https://github.com/sphinx-doc/sphinx/issues/11699 means a
+         duplicate viewport tag -->
+    {{ metatags }}
+    {%- if 'name="description"' not in metatags %}
+      <meta name="description"
+        content="Page {{ pagename }} in documentation on the Roundup issue tracker, version {{ release|e }}.">
+    {%- endif %}
     {%- if pageurl %}
+      {%- if pageurl.endswith("org/index.html") %}
+      <!-- strip the index.html to make
+           https://www.roundup-tracker.org/ canonical -->
+    <link rel="canonical" href="{{ pageurl[:-10] }}" />
+      {%- else %}
     <link rel="canonical" href="{{ pageurl|e }}" />
+      {%- endif %}
     {%- endif %}
     {%- if use_opensearch %}
     <link rel="search" type="application/opensearchdescription+xml"
@@ -108,7 +124,7 @@
         <a title="{{ _('Index') }}" href="{{ pathto('genindex') }}">
 	  Index</a>
 	</nav>
-	<main id="main" tabindex="-1">
+	<main id="main" role="main" tabindex="-1">
        {% block body %} {% endblock %}
 	</main>
     </div>
@@ -133,6 +149,10 @@
     </footer>
 {%- endblock %}
     <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
+    {%- for cssfile in css_files %}
+    <!-- loading css_files -->
+    <link rel="stylesheet" href="{{ pathto(cssfile, 1) }}" type="text/css" />
+    {%- endfor %}
     <script>
       /* locally hosted goatcounter https://www.goatcounter.com/ */
       /* include site info in path url to allow multiple sites to be
@@ -144,6 +164,9 @@
     <script data-goatcounter="https://stats.rouilj.dynamic-dns.net/count"
 	    integrity="sha384-QGgNMMRFTi8ul5kHJ+vXysPe8gySvSA/Y3rpXZiRLzKPIw8CWY+a3ObKmQsyDr+a"
             async="" src="{{ pathto('_static/goatcounter_count.v3.js', 1) }}">
+    </script>
+    <script id="documentation_options" data-url_root="{{ url_root }}"
+	    src="{{ pathto('_static/documentation_options.js', 1) }}">
     </script>
     {%- if pagename != 'search' %}
     {%- for scriptfile in script_files %}

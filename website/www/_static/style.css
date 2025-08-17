@@ -51,6 +51,15 @@
 
 * + * { margin-block-start: 1.2em;}
 
+/* shrink spacing between first and following paragraph in a list item
+   when the first paragraph is bold/strong. Try to tie the first paragraph
+   pseudo header closer to the following paragraph. */
+li > p:has(strong):first-child
+ {
+    /* background: red; */
+    margin-block-end: -0.75em;
+}
+
 /* shrink spacing between list elements in tables of contents,
    badge displays */
 div.toctree-wrapper * + *, div.contents * + *, div.release_info * {
@@ -189,6 +198,8 @@ div[class^=highlight-], div[class^=highlight-] * { width:
     */
     text-decoration-color: darkgrey;
 }
+
+:is(h1,h2,h3,h4) > :link:hover { text-underline-offset: -0.1em; }
 
 a.toc-backref { color: #000000; }
 
@@ -444,9 +455,9 @@ div.highlight > pre {
        linear-gradient(to right, #f5f4d8, #f5f4d8),
        /* Shadow */
        radial-gradient(farthest-side at 0px 50%,
-		       rgba(0, 0, 20, 0.5), rgba(255, 255, 255, 0)),
+		       rgba(181, 181, 113, 0.75), rgba(255, 255, 255, 0)),
        radial-gradient(farthest-side at 100% 50%,
-		       rgba(0, 0, 20, 0.5), rgba(255, 255, 255, 0));
+		       rgba(181, 181, 113, 0.75), rgba(255, 255, 255, 0));
     /* square shadows */
     /*
     linear-gradient(to right, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0)),
@@ -472,11 +483,25 @@ ul.multicol {
 ul.multicol > * {
   margin-block-start: 0; /* remove spacing added by * + * here */
 }
+ul.multicol > li > p { /* remove spacing around paragraphs to tighten up list */
+    margin: 0;
+}
 
 div.file_insert { /* use to insert COPYING into license.txt */
     background: #f3f1cc;
     padding-inline: 0.5em;
 }
+
+table.valign-top tbody td { vertical-align: top; }
+
+.footnote-list {
+  border: lightgrey dotted 2px;
+  font-size: smaller;
+  margin-inline: 2em;
+  padding-inline: 1em;
+}
+
+aside.footnote > span + p { margin-block-start: unset; }
 
 /* consider highlighting header element that is a target */
 /*
@@ -486,6 +511,11 @@ div.file_insert { /* use to insert COPYING into license.txt */
   padding: 0.3em;
 }
 */
+
+/* move the target off the top of the viewport by a little */
+:target {
+  scroll-margin-block-start: 2em;
+}
 
 /* website only */
 /* assume desktop reader for local html files, also no contact
@@ -564,4 +594,3 @@ div#contact table td {
   white-space: nowrap;
   padding: 1pt 1em;
 }
-

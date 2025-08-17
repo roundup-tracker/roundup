@@ -1,9 +1,9 @@
 <tal:block metal:use-macro="templates/page/macros/frame">
 <title metal:fill-slot="head_title">
 <tal:block condition="context/id" i18n:translate=""
- >Bug <span tal:replace="context/id" i18n:name="id"
- />: <span tal:replace="context/title" i18n:name="title"
- /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+ >Bug <tal:x tal:content="context/id" i18n:name="id"
+ />: <tal:x tal:content="context/title" i18n:name="title"
+ /> - <tal:x tal:content="config/TRACKER_NAME" i18n:name="tracker"
 /></tal:block>
 <tal:block condition="not:context/id" i18n:translate=""
  >New Bug report - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
@@ -42,13 +42,13 @@
         <div class='container-fluid' tal:condition="not:context/is_edit_ok">
           <dl class='dl-horizontal'>
             <dt i18n:translate="">Title</dt>
-            <dd tal:content="structure context/title/plain"></dd>
+            <dd tal:content="context/title/plain"></dd>
             <dt i18n:translate="">Type</dt>
-            <dd tal:content="structure context/type/plain"></dd>
+            <dd tal:content="context/type/plain"></dd>
             <dt i18n:translate="">Components</dt>
-            <dd tal:content="structure context/components/plain"></dd>
+            <dd tal:content="context/components/plain"></dd>
             <dt i18n:translate="">Version</dt>
-            <dd tal:content="structure context/versions/plain"></dd>
+            <dd tal:content="context/versions/plain"></dd>
           </dl>
         </div>
         <div class='container-fluid' tal:condition="context/is_edit_ok">
@@ -126,23 +126,23 @@
           <div class='row-fluid'>
             <dl class='dl-horizontal span6'>
               <dt i18n:translate="">Status</dt>
-              <dd tal:content="structure context/status/plain"></dd>
+              <dd tal:content="context/status/plain"></dd>
               <dt i18n:translate="">Resolution</dt>
-              <dd tal:content="structure context/resolution/plain"></dd>
+              <dd tal:content="context/resolution/plain"></dd>
               <dt i18n:translate="">Dependencies</dt>
-              <dd tal:content="structure context/dependencies/plain"></dd>
+              <dd tal:content="context/dependencies/plain"></dd>
               <dt i18n:translate="">Superseder</dt>
-              <dd tal:content="structure context/superseder/plain"></dd>
+              <dd tal:content="context/superseder/plain"></dd>
             </dl>
             <dl class='dl-horizontal span6'>
               <dt i18n:translate="">Assigned to</dt>
-              <dd tal:content="structure context/assignee/plain"></dd>
+              <dd tal:content="context/assignee/plain"></dd>
               <dt i18n:translate="">Nosy list</dt>
-              <dd tal:content="structure context/nosy/plain"></dd>
+              <dd tal:content="context/nosy/plain"></dd>
               <dt i18n:translate="">Priority</dt>
-              <dd tal:content="structure context/priority/plain"></dd>
+              <dd tal:content="context/priority/plain"></dd>
               <dt i18n:translate="">Keywords</dt>
-              <dd tal:content="structure context/keywords/plain"></dd>
+              <dd tal:content="context/keywords/plain"></dd>
             </dl>
           </div>
         </div>

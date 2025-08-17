@@ -104,7 +104,7 @@ def pt_html(context=5, i18n=None):
 </table></li>
 ''') % {
     'info': info,
-    'line': context.position[0],
+    'line': context.position[0] or -1,
     'globals': niceDict('    ', context.global_vars),
     'locals': niceDict('    ', context.local_vars)
    })
@@ -127,10 +127,18 @@ def html(context=5, i18n=None):
     if type(etype) is type:
         etype = etype.__name__
     pyver = 'Python ' + sys.version.split()[0] + '<br>' + sys.executable
-    head = pydoc.html.heading(
-        _('<font size=+1><strong>%(exc_type)s</strong>: %(exc_value)s</font>')
-        % {'exc_type': etype, 'exc_value': evalue},
-        '#ffffff', '#777777', pyver)
+
+    if sys.version_info[0:2] >= (3,11):
+        head = pydoc.html.heading(
+            _('<font size=+1><strong>%(exc_type)s</strong>: '
+              '%(exc_value)s</font>')
+            % {'exc_type': etype, 'exc_value': evalue}, pyver)
+    else:
+        head = pydoc.html.heading(
+            _('<font size=+1><strong>%(exc_type)s</strong>: '
+              '%(exc_value)s</font>')
+            % {'exc_type': etype, 'exc_value': evalue},
+            '#ffffff', '#777777', pyver)
 
     head = head + (_('<p>A problem occurred while running a Python script. '
                      'Here is the sequence of function calls leading up to '

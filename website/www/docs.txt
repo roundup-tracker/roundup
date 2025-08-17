@@ -20,6 +20,7 @@ documentation.
 
 .. toctree::
    :maxdepth: 2
+   :includehidden:
 
    Features <docs/features>
    Installation <docs/installation>
@@ -33,6 +34,12 @@ documentation.
    Reference <docs/reference>
    Glossary <docs/glossary>
    docs/admin_guide
+   docs/man_pages
    docs/license
    docs/acknowledgements
    olderdocs
+
+.. toctree::
+   :hidden:
+
+   docs/pydoc

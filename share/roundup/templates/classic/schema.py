@@ -103,16 +103,19 @@ for cl in 'priority', 'status':
 
 # May users view other user information? Comment these lines out
 # if you don't want them to
-p = db.security.addPermission(name='View', klass='user', 
+p = db.security.addPermission(name='View', klass='user',
     properties=('id', 'organisation', 'phone', 'realname', 'timezone',
     'username'))
 db.security.addPermissionToRole('User', p)
+
 
 # Users should be able to edit their own details -- this permission is
 # limited to only the situation where the Viewed or Edited item is their own.
 def own_record(db, userid, itemid):
     '''Determine whether the userid matches the item being accessed.'''
     return userid == itemid
+
+
 p = db.security.addPermission(name='View', klass='user', check=own_record,
     description="User is allowed to view their own user details")
 db.security.addPermissionToRole('User', p)
@@ -122,6 +125,7 @@ p = db.security.addPermission(name='Edit', klass='user', check=own_record,
     description="User is allowed to edit their own user details")
 db.security.addPermissionToRole('User', p)
 
+
 # Users should be able to edit and view their own queries. They should also
 # be able to view any marked as not private. They should not be able to
 # edit others' queries, even if they're not private
@@ -129,8 +133,12 @@ def view_query(db, userid, itemid):
     private_for = db.query.get(itemid, 'private_for')
     if not private_for: return True
     return userid == private_for
+
+
 def edit_query(db, userid, itemid):
     return userid == db.query.get(itemid, 'creator')
+
+
 p = db.security.addPermission(name='View', klass='query', check=view_query,
     description="User is allowed to view their own and public queries")
 db.security.addPermissionToRole('User', p)
@@ -181,7 +189,7 @@ for cl in 'issue', 'file', 'msg', 'keyword', 'priority', 'status':
 # anonymous, you should remove this entry as it can be used to perform
 # a username guessing attack against a roundup install.
 p = db.security.addPermission(name='Search', klass='user')
-db.security.addPermissionToRole ('Anonymous', p)
+db.security.addPermissionToRole('Anonymous', p)
 
 # [OPTIONAL]
 # Allow anonymous users access to create or edit "issue" items (and the

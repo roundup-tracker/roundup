@@ -3,4 +3,4 @@ try:
     from ssl import SSLError
 except (ImportError, AttributeError):
     # Python 2.5-2.7
-    from socket import sslerror as SSLError    # noqa: F401
+    from socket import sslerror as SSLError  # noqa: F401

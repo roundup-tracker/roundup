@@ -1,3 +1,5 @@
+# setuptools required for installation - missing from newer base images
+setuptools
 # human timezones
 pytz
 # indexer

@@ -9,12 +9,17 @@ from roundup.anypy.strings import s2u
 
 
 class Loader(TALLoaderBase):
-    def __init__(self, dir):
-        self.dir = dir
-        self.loader = chameleon.PageTemplateLoader(dir)
+    def __init__(self, template_dir):
+        self.template_dir = template_dir
+        self.loader = chameleon.PageTemplateLoader(template_dir)
 
     def load(self, tplname):
-        src, filename = self._find(tplname)
+        try:
+            src, filename = self._find(tplname)
+        except TypeError as e:
+            raise ValueError("Unable to load template file basename: %s: %s" % (
+                tplname, e))
+
         return RoundupPageTemplate(self.loader.load(src))
 
 

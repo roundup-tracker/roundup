@@ -16,7 +16,9 @@ Example:
 """
 
 from __future__ import print_function
+
 import sys
+
 import roundup.instance
 
 
@@ -50,7 +52,7 @@ def copy_user(home1, home2, *userids):
     for userid in userids:
         try:
             userid = str(int(userid))
-        except ValueError as why:
+        except ValueError:
             print("Not a numeric user id: %s  Skipping ..." % (userid,))
             continue
         if userid not in userlist:
@@ -66,7 +68,7 @@ def copy_user(home1, home2, *userids):
             db2.user.lookup(user['username'])
             print("User %s: Username '%s' exists in target instance. Skipping ..." % (userid, user['username']))
             continue
-        except KeyError as why:
+        except KeyError:
             pass
         print("Copying user %s (%s) ..." % (userid, user['username']))
         db2.user.create(**user)

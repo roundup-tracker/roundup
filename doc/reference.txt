@@ -13,11 +13,11 @@ Roundup Reference
 
 .. admonition:: Welcome
 
-  This document used to be part of the `customisation document`_.  The
-  customisation document was getting large and unwieldy.  It was a
+  This document was part of the `customisation document`_.  The
+  customisation document was getting large and unwieldy. The
   combination of examples and internal information that made finding
-  information difficult. We often had questions on the mailing list that
-  were well answered in the customisation document, but finding the info
+  information difficult. Questions raised on the mailing list were
+  well answered in the customisation document, but finding the info
   was difficult.
 
   The documentation is slowly being reorganized using the `Diataxis
@@ -29,7 +29,7 @@ Roundup Reference
   .. _customisation document: customizing.html
   .. _diataxis framework: https://diataxis.fr/
 
-.. This document borrows from the ZopeBook section on ZPT. The original is at:
+.. This document borrows from the ZopeBook section on ZPT. The original was at:
    http://www.zope.org/Documentation/Books/ZopeBook/current/ZPT.stx
 
 .. contents::
@@ -49,24 +49,27 @@ Trackers have the following structure:
    single: tracker; structure html directory
    single: tracker; structure lib directory
 
-=================== ========================================================
-Tracker File        Description
-=================== ========================================================
-config.ini          Holds the basic `tracker configuration`_
-schema.py           Holds the `tracker schema`_
-initial_data.py     Holds any data to be entered into the database when the
-                    tracker is initialised (optional)
-interfaces.py       Allows `modifying the core of Roundup`_ (optional)
-db/                 Holds the tracker's database
-db/files/           Holds the tracker's upload files and messages
-db/backend_name     Names the database back-end for the tracker (obsolete).
-                    Use the ``backend`` setting in the ``[rdbms]``
-		    section of ``config.ini`` instead.
-detectors/          `Auditors and reactors`_ for this tracker
-extensions/         Additional `actions`_ and `templating utilities`_
-html/               Web interface templates, images and style sheets
-lib/                optional common imports for detectors and extensions
-=================== ======================================================== 
+.. table::
+  :class: valign-top
+
+  =================== ========================================================
+  Tracker File        Description
+  =================== ========================================================
+  config.ini          Holds the basic `tracker configuration`_
+  schema.py           Holds the `tracker schema`_
+  initial_data.py     Loads initial data into the tracker (status,
+                      priority ...) when initializing the tracker (optional)
+  interfaces.py       Allows `modifying the core of Roundup`_ (optional)
+  db/                 Holds the tracker's database
+  db/files/           Holds the tracker's uploaded files and message
+  db/backend_name     Names the database back-end for the tracker (obsolete).
+		      Use the ``backend`` setting in the ``[rdbms]``
+		      section of ``config.ini`` instead.
+  detectors/          `Auditors and reactors`_ for this tracker
+  extensions/         Additional `actions`_ and `templating utilities`_
+  html/               Web interface templates, images and style sheets
+  lib/                optional common imports for detectors and extensions
+  =================== ======================================================== 
 
 
 .. index:: config.ini
@@ -78,11 +81,11 @@ Tracker Configuration
 The ``config.ini`` located in your tracker home contains the basic
 configuration for the web and e-mail components of Roundup's interfaces.
 
-Changes to the data captured by your tracker is controlled by the `tracker
-schema`_.  Some configuration is also performed using permissions - see the 
-`security / access controls`_ section. For example, to allow users to
-automatically register through the email interface, you must grant the
-"Anonymous" Role the "Email Access" Permission.
+The `tracker schema`_ defines the data captured by your tracker. It
+also defines the permissions used when accessing the data: see the
+`security / access controls`_ section. For example, you must grant the
+"Anonymous" Role the "Email Access" Permission to allow users to
+automatically register through the email interface,.
 
 .. index::
    single: config.ini; sections
@@ -110,436 +113,45 @@ section "ConfigParser -- Configuration file parser":
  would resolve the "%(dir)s" to the value of "dir" ("frob" in this case)
  resulting in "foodir" being "frob/whatever".
 
+The reference above discusses using the ``[DEFAULT]`` section and
+interpolation. For example::
+
+   [DEFAULT]
+   local_admin_email = admin@example.com
+
+   [main]
+   admin_email = %(local_admin_email)s
+
+will set the admin_email setting. This works when running the
+tracker. When upgrading Roundup using ``updateconfig`` to create
+a new ``config.ini``, the ``DEFAULT`` section is not preserved
+and interpolation tokens (e.g. ``%(local_admin_email)s`` are
+replaced with their values (``admin@example.com``). This may be
+fixed in a future release of Roundup.
+
+Note that you can not reference settings in the ``DEFAULT``
+section from Roundup. They are only useful when interpolated into
+a defined setting.
+
 __ https://docs.python.org/2/library/configparser.html
 
-Example configuration settings are below. This is a partial
-list. Documentation on all the settings is included in the
-``config.ini`` file.
+A default ``config.ini`` file broken into sections is shown below.
  
-.. .comment out. file generation needs more work include:: tracker_config.txt
-
-.. index:: config.ini; sections main
-
-Section **main**
- database -- ``db``
-  Database directory path. The path may be either absolute or relative
-  to the directory containig this config file.
-
- templates -- ``html``
-  Path to the HTML templates directory. The path may be either absolute
-  or relative to the directory containing this config file.
-
- static_files -- default *blank*
-  A list of space separated directory paths (or a single directory).
-  These directories hold additional static files available via Web UI.
-  These directories may contain sitewide images, CSS stylesheets etc. If
-  a '-' is included, the list processing ends and the TEMPLATES
-  directory is not searched after the specified directories.  If this
-  option is not set, all static files are taken from the TEMPLATES
-  directory.
-
- admin_email -- ``roundup-admin``
-  Email address that roundup will complain to if it runs into trouble. If
-  the email address doesn't contain an ``@`` part, the MAIL_DOMAIN defined
-  below is used.
-
- dispatcher_email -- ``roundup-admin``
-  The 'dispatcher' is a role that can get notified when errors occur
-  while sending email to a user. It is used by the ERROR_MESSAGES_TO config
-  setting. If the email address doesn't contain an ``@`` part, the
-  MAIL_DOMAIN defined below is used.
-
- email_from_tag -- default *blank*
-  Additional text to include in the "name" part of the From: address used
-  in nosy messages. If the sending user is "Foo Bar", the From: line
-  is usually: ``"Foo Bar" <issue_tracker@tracker.example>``
-  the EMAIL_FROM_TAG goes inside the "Foo Bar" quotes like so:
-  ``"Foo Bar EMAIL_FROM_TAG" <issue_tracker@tracker.example>``
-
- new_web_user_roles -- ``User``
-  Roles that a user gets when they register with Web User Interface.
-  This is a comma-separated list of role names (e.g. ``Admin,User``).
-
- new_email_user_roles -- ``User``
-  Roles that a user gets when they register with Email Gateway.
-  This is a comma-separated string of role names (e.g. ``Admin,User``).
-
- error_messages_to -- ``user``
-  Send error message emails to the ``dispatcher``, ``user``, or ``both``?
-  The dispatcher is configured using the DISPATCHER_EMAIL setting.
-  Allowed values: ``dispatcher``, ``user``, or ``both``
-
- html_version -- ``html4``
-  This setting should be left at the default value of html4.
-  Support is ending for xhtml mode.
-  HTML version to generate. The templates are ``html4`` by default.
-  If you wish to make them xhtml, then you'll need to change this
-  var to ``xhtml`` too so all auto-generated HTML is compliant.
-  Allowed values: ``html4``, ``xhtml``
-
- timezone -- ``0``
-  Numeric timezone offset used when users do not choose their own
-  in their settings.
-
- instant_registration -- ``yes``
-  Register new users instantly, or require confirmation via
-  email?
-  Allowed values: ``yes``, ``no``
-
- email_registration_confirmation -- ``yes``
-  Offer registration confirmation by email or only through the web?
-  Allowed values: ``yes``, ``no``
-
- indexer_stopwords -- default *blank*
-  Additional stop-words for the full-text indexer specific to
-  your tracker. See the indexer source for the default list of
-  stop-words (e.g. ``A,AND,ARE,AS,AT,BE,BUT,BY, ...``).
-
- umask -- ``02``
-  Defines the file creation mode mask.
-
- csv_field_size -- ``131072``
-  Maximum size of a csv-field during import. Roundup's export
-  format is a csv (comma separated values) variant. The csv
-  reader has a limit on the size of individual fields
-  starting with python 2.5. Set this to a higher value if you
-  get the error 'Error: field larger than field limit' during
-  import.
-
-.. index:: config.ini; sections tracker
-
-Section **tracker**
- name -- ``Roundup issue tracker``
-  A descriptive name for your Roundup instance.
-
- web -- ``http://host.example/demo/``
-  The web address that the tracker is viewable at.
-  This will be included in information sent to users of the tracker.
-  The URL MUST include the cgi-bin part or anything else
-  that is required to get to the home page of the tracker.
-  You MUST include a trailing '/' in the URL.
-
- email -- ``issue_tracker``
-  Email address that mail to Roundup should go to.
-
- language -- default *blank*
-  Default locale name for this tracker. If this option is not set, the
-  language is determined by the environment variable LANGUAGE, LC_ALL,
-  LC_MESSAGES, or LANG, in that order of preference.
-
-.. index:: config.ini; sections web
-
-Section **web**
- allow_html_file -- ``no``
-  Setting this option enables Roundup to serve uploaded HTML
-  file content *as HTML*. This is a potential security risk
-  and is therefore disabled by default. Set to 'yes' if you
-  trust *all* users uploading content to your tracker.
-
- http_auth -- ``yes``
-  Whether to use HTTP Basic Authentication, if present.
-  Roundup will use either the REMOTE_USER or HTTP_AUTHORIZATION
-  variables supplied by your web server (in that order).
-  Set this option to 'no' if you do not wish to use HTTP Basic
-  Authentication in your web interface.
-
- use_browser_language -- ``yes``
-  Whether to use HTTP Accept-Language, if present.
-  Browsers send a language-region preference list.
-  It's usually set in the client's browser or in their
-  Operating System.
-  Set this option to 'no' if you want to ignore it.
-
- debug -- ``no``
-  Setting this option makes Roundup display error tracebacks
-  in the user's browser rather than emailing them to the
-  tracker admin."),
-
-.. index:: config.ini; sections rdbms
-   single: config.ini; database settings
-
-Section **rdbms**
- Settings in this section are used to set the backend and configure
- addition settings needed by RDBMs like SQLite, Postgresql and
- MySQL backends.
-
- .. index::
-    single: postgres; select backend in config.ini 
-    single: mysql; select backend in config.ini
-    single: sqlite; select backend in config.ini
-    single: anydbm; select backend in config.ini
-    see: database; postgres
-    see: database; mysql
-    see: database; sqlite
-    see: database; anydbm
-
- backend -- set to value by init
-  The database backend such as anydbm, sqlite, mysql or postgres.
-
- name -- ``roundup``
-  Name of the database to use.
-
- host -- ``localhost``
-  Database server host.
-
- port -- default *blank*
-  TCP port number of the database server. Postgresql usually resides on
-  port 5432 (if any), for MySQL default port number is 3306. Leave this
-  option empty to use backend default.
-
- user -- ``roundup``
-  Database user name that Roundup should use.
-
- password -- ``roundup``
-  Database user password.
-
- read_default_file -- ``~/.my.cnf``
-  Name of the MySQL defaults file. Only used in MySQL connections.
-
- read_default_group -- ``roundup``
-  Name of the group to use in the MySQL defaults file. Only used in
-  MySQL connections.
-
- .. index::
-    single: sqlite; lock timeout
-
- sqlite_timeout -- ``30``
-  Number of seconds to wait when the SQLite database is locked.
-  Used only for SQLite.
-
- cache_size -- `100`
-  Size of the node cache (in elements) used to keep most recently used
-  data in memory.
-
-.. index:: config.ini; sections logging
-   see: logging; config.ini, sections logging
-
-Section **logging**
- config -- default *blank*
-  Path to configuration file for standard Python logging module. If this
-  option is set, logging configuration is loaded from specified file;
-  options 'filename' and 'level' in this section are ignored. The path may
-  be either absolute or relative to the directory containig this config file.
-
- filename -- default *blank*
-  Log file name for minimal logging facility built into Roundup.  If no file
-  name specified, log messages are written on stderr. If above 'config'
-  option is set, this option has no effect. The path may be either absolute
-  or relative to the directory containig this config file.
-
- level -- ``ERROR``
-  Minimal severity level of messages written to log file. If above 'config'
-  option is set, this option has no effect.
-  Allowed values: ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR``
-
-.. index:: config.ini; sections mail
-
-Section **mail**
- Outgoing email options. Used for nosy messages, password reset and
- registration approval requests.
-
- domain -- ``localhost``
-  Domain name used for email addresses.
-
- host -- default *blank*
-  SMTP mail host that Roundup will use to send mail
-
- username -- default *blank*
-  SMTP login name. Set this if your mail host requires authenticated access.
-  If username is not empty, password (below) MUST be set!
-
- password -- default *blank*
-  SMTP login password.
-  Set this if your mail host requires authenticated access.
-
- port -- default *25*
-  SMTP port on mail host.
-  Set this if your mail host runs on a different port.
-
- local_hostname -- default *blank*
-  The fully qualified domain name (FQDN) to use during SMTP sessions. If left
-  blank, the underlying SMTP library will attempt to detect your FQDN. If your
-  mail host requires something specific, specify the FQDN to use.
-
- tls -- ``no``
-  If your SMTP mail host provides or requires TLS (Transport Layer Security)
-  then you may set this option to 'yes'.
-  Allowed values: ``yes``, ``no``
-
- tls_keyfile -- default *blank*
-  If TLS is used, you may set this option to the name of a PEM formatted
-  file that contains your private key. The path may be either absolute or
-  relative to the directory containig this config file.
-
- tls_certfile -- default *blank*
-  If TLS is used, you may set this option to the name of a PEM formatted
-  certificate chain file. The path may be either absolute or relative
-  to the directory containig this config file.
-
- charset -- utf-8
-  Character set to encode email headers with. We use utf-8 by default, as
-  it's the most flexible. Some mail readers (eg. Eudora) can't cope with
-  that, so you might need to specify a more limited character set
-  (eg. iso-8859-1).
-
- debug -- default *blank*
-  Setting this option makes Roundup to write all outgoing email messages
-  to this file *instead* of sending them. This option has the same effect
-  as environment variable SENDMAILDEBUG. Environment variable takes
-  precedence. The path may be either absolute or relative to the directory
-  containig this config file.
-
- add_authorinfo -- ``yes``
-  Add a line with author information at top of all messages send by
-  Roundup.
-
- add_authoremail -- ``yes``
-  Add the mail address of the author to the author information at the
-  top of all messages.  If this is false but add_authorinfo is true,
-  only the name of the actor is added which protects the mail address
-  of the actor from being exposed at mail archives, etc.
-
-.. index:: config.ini; sections mailgw
-   single: mailgw; config
-   see: mail gateway; mailgw
-
-Section **mailgw**
- Roundup Mail Gateway options
-
- keep_quoted_text -- ``yes``
-  Keep email citations when accepting messages. Setting this to ``no`` strips
-  out "quoted" text from the message. Signatures are also stripped.
-  Allowed values: ``yes``, ``no``
-
- leave_body_unchanged -- ``no``
-  Preserve the email body as is - that is, keep the citations *and*
-  signatures.
-  Allowed values: ``yes``, ``no``
-
- default_class -- ``issue``
-  Default class to use in the mailgw if one isn't supplied in email subjects.
-  To disable, leave the value blank.
-
- language -- default *blank*
-  Default locale name for the tracker mail gateway.  If this option is
-  not set, mail gateway will use the language of the tracker instance.
-
- subject_prefix_parsing -- ``strict``
-  Controls the parsing of the [prefix] on subject lines in incoming emails.
-  ``strict`` will return an error to the sender if the [prefix] is not
-  recognised. ``loose`` will attempt to parse the [prefix] but just
-  pass it through as part of the issue title if not recognised. ``none``
-  will always pass any [prefix] through as part of the issue title.
-
- subject_suffix_parsing -- ``strict``
-  Controls the parsing of the [suffix] on subject lines in incoming emails.
-  ``strict`` will return an error to the sender if the [suffix] is not
-  recognised. ``loose`` will attempt to parse the [suffix] but just
-  pass it through as part of the issue title if not recognised. ``none``
-  will always pass any [suffix] through as part of the issue title.
-
- subject_suffix_delimiters -- ``[]``
-  Defines the brackets used for delimiting the commands suffix in a subject
-  line.
-
- subject_content_match -- ``always``
-  Controls matching of the incoming email subject line against issue titles
-  in the case where there is no designator [prefix]. ``never`` turns off
-  matching. ``creation + interval`` or ``activity + interval`` will match
-  an issue for the interval after the issue's creation or last activity.
-  The interval is a standard Roundup interval.
-
- subject_updates_title -- ``yes``
-  Update issue title if incoming subject of email is different.
-  Setting this to ``no`` will ignore the title part of
-  the subject of incoming email messages.
-
- refwd_re -- ``(\s*\W?\s*(fw|fwd|re|aw|sv|ang)\W)+``
-  Regular expression matching a single reply or forward prefix
-  prepended by the mailer. This is explicitly stripped from the
-  subject during parsing.  Value is Python Regular Expression
-  (UTF8-encoded).
-
- origmsg_re -- `` ^[>|\s]*-----\s?Original Message\s?-----$``
-  Regular expression matching start of an original message if quoted
-  in the body.  Value is Python Regular Expression (UTF8-encoded).
-
- sign_re -- ``^[>|\s]*-- ?$``
-  Regular expression matching the start of a signature in the message
-  body.  Value is Python Regular Expression (UTF8-encoded).
-
- eol_re -- ``[\r\n]+``
-  Regular expression matching end of line.  Value is Python Regular
-  Expression (UTF8-encoded).
-
- blankline_re -- ``[\r\n]+\s*[\r\n]+``
-  Regular expression matching a blank line.  Value is Python Regular
-  Expression (UTF8-encoded).
-
- ignore_alternatives -- ``no``
-  When parsing incoming mails, Roundup uses the first
-  text/plain part it finds. If this part is inside a
-  multipart/alternative, and this option is set, all other
-  parts of the multipart/alternative are ignored. The default
-  is to keep all parts and attach them to the issue.
-
-.. index:: config.ini; sections pgp
-
-Section **pgp**
- OpenPGP mail processing options
-
- enable -- ``no``
-  Enable PGP processing. Requires gpg.
-
- roles -- default *blank*
-  If specified, a comma-separated list of roles to perform PGP
-  processing on. If not specified, it happens for all users.
-
- homedir -- default *blank*
-  Location of PGP directory. Defaults to $HOME/.gnupg if not
-  specified.
-
-
-.. index:: config.ini; sections nosy
-
-Section **nosy**
- Nosy messages sending
-
- messages_to_author -- ``no``
-  Send nosy messages to the author of the message.
-  If ``yes`` is used, then messages are sent to the author
-  even if not on the nosy list, same for ``new`` (but only for new messages).
-  When set to ``nosy``, the nosy list controls sending messages to the author.
-  Allowed values: ``yes``, ``no``, ``new``, ``nosy``
-
- signature_position -- ``bottom``
-  Where to place the email signature.
-  Allowed values: ``top``, ``bottom``, ``none``
-
- add_author -- ``new``
-  Does the author of a message get placed on the nosy list automatically?
-  If ``new`` is used, then the author will only be added when a message
-  creates a new issue. If ``yes``, then the author will be added on
-  followups too. If ``no``, they're never added to the nosy.
-  Allowed values: ``yes``, ``no``, ``new``
-  
- add_recipients -- ``new``
-  Do the recipients (``To:``, ``Cc:``) of a message get placed on the nosy
-  list?  If ``new`` is used, then the recipients will only be added when a
-  message creates a new issue. If ``yes``, then the recipients will be added
-  on followups too. If ``no``, they're never added to the nosy.
-  Allowed values: ``yes``, ``no``, ``new``
-
- email_sending -- ``single``
-  Controls the email sending from the nosy reactor. If ``multiple`` then
-  a separate email is sent to each recipient. If ``single`` then a single
-  email is sent with each recipient as a CC address.
-
- max_attachment_size -- ``2147483647``
-  Attachments larger than the given number of bytes won't be attached
-  to nosy mails. They will be replaced by a link to the tracker's
-  download page for the file.
-
+.. include:: tracker_config.txt
+
+Additional notes:
+
+The ``[rdbms]`` service defines the Connection Service for your
+PostgreSQL connection when using a system-wide pg_service.conf or
+~/.pg_service.conf as discussed in
+https://www.postgresql.org/docs/current/libpq-pgservice.html.
+
+Setting this to the name of the service allows different trackers to
+connect to different services when running multiple trackers under one
+Roundup server. If you are only running one tracker, you can set the
+PGSERVICE environment variable. Note that other settings specified in
+this file (rdbms: user, password, port, host, (db)name) will override
+the corresponding connection service setting.
 
 .. index:: single: roundup-admin; config.ini update
            single: roundup-admin; config.ini create
@@ -551,7 +163,7 @@ genconfig`` command. You can generate a new config file merging in
 existing settings using the ``roundup-admin updateconfig`` command.
 
 Configuration variables may be referred to in lower or upper case. In code,
-variables not in the "main" section are referred to using their section and
+refer to variables not in the "main" section using their section and
 name, so "domain" in the section "mail" becomes MAIL_DOMAIN.
 
 .. index:: pair: configuration; extensions
@@ -563,10 +175,16 @@ Extending the configuration file
 You can't add new variables to the config.ini file in the tracker home but
 you can add two new config.ini files:
 
-- a config.ini in the ``extensions`` directory will be loaded and attached
+- a config.ini in the ``extensions`` directory is loaded and attached
   to the config variable as "ext".
-- a config.ini in the ``detectors`` directory will be loaded and attached
+- a config.ini in the ``detectors`` directory is loaded and attached
   to the config variable as "detectors".
+
+These configuration files support the same operations as the main
+``config.ini`` file. This included a ``DEFAULT`` section and
+interpolation. Note that you can not reference settings in the
+``DEFAULT`` section from Roundup. They can only be used for
+interpolation.
 
 For example, the following in ``detectors/config.ini``::
 
@@ -591,13 +209,13 @@ is supposed to be an integer value (e.g. 4) could be the word
 "foo". If you are writing Python code that uses these settings, you
 should expect to handle invalid values.
 
-Also, incorrect values aren't discovered until the config setting is
-used. This can be long after the tracker is started and the error may
-not be seen in the logs.
+Also, incorrect values are discovered when the config setting is
+used not set. This can be long after the tracker is
+started and the error may not be seen in the logs.
 
-It is possible to validate these settings. Validation involves calling
+It's possible to validate these settings. Validation involves calling
 the ``update_options`` method on the configuration option. This can be
-done from the ``init()`` function in the Python files implementing
+done by the ``init()`` function in the Python files implementing
 extensions_ or detectors_.
 
 As an example, adding the following to an extension::
@@ -630,7 +248,7 @@ the settings for both config.ini`s. Otherwise detector options are not
 validated until the first request to the web interface (or email
 gateway).
 
-There are 4 arguments for ``update_option``:
+``update_option`` takes 4 arguments:
 
 1. config setting name - string (positional, mandatory)
 2. option type - Option derived class from configuration.py
@@ -642,13 +260,13 @@ The first argument is the config setting name as described at the
 beginning of this section.
 
 The second argument is a class in the roundup.configuration module.
-There are a number of these classes: BooleanOption,
+There are many of these classes: BooleanOption,
 IntegerNumberOption, RegExpOption.... Please see the configuration
 module for all Option validators and their descriptions. You can also
 define your own custom validator in `interfaces.py`_.
 
-The third and fourth arguments are strings and are optional. They are
-printed if there is an error and may help the user correct the problem.
+The third and fourth arguments are optional strings. They are printed
+when there is an error and may help the user correct the problem.
 
 .. index:: ! schema
 
@@ -700,7 +318,7 @@ You must never:
 .. [1] If you shut down the tracker, `export the database`_, modify the
        exported csv property data to be compatible with the new type,
        change the property type in the schema, and finally import the
-       changed exported data, you can change the property type. It is
+       changed exported data, you can change the property type. This is
        not trivial nor for the faint of heart. But it can be done.
 
 .. _export the database: admin_guide.html#using-roundup-admin
@@ -760,7 +378,7 @@ specifying (default) labelling and ordering of classes.)::
 Classes and Properties - creating a new information store
 ---------------------------------------------------------
 
-In the tracker above, we've defined 7 classes of information:
+The tracker above, defines 7 classes of information:
 
   priority
       Defines the possible levels of urgency for issues.
@@ -785,16 +403,16 @@ In the tracker above, we've defined 7 classes of information:
   issue
       Initially empty, this is where the issue information is stored.
 
-We define the "priority" and "status" classes to allow two things:
+It defines the "priority" and "status" classes to allow two things:
 
   1. reduction in the amount of information stored on the issue
   2. more powerful, accurate searching of issues by priority and status
 
-By only requiring a link on the issue (which is stored as a single
-number) we reduce the chance that someone mis-types a priority or
-status - or simply makes a new one up.
+By requiring a link on the issue (stored as a single
+number) the chance that someone mis-types a priority or
+status - or makes a new one up is reduced.
 
-Class names are used to access items of that class in the `REST api`_
+Class names access items of that class in the `REST api`_
 interface. The classic tracker was created before the REST interface
 was added. It uses the single form (i.e. issue and user not issues and
 users) for its classes. Most REST documentation suggests using plural
@@ -822,37 +440,36 @@ sometimes refer to this as the *itemid*.
 Properties
 ~~~~~~~~~~
 
-A Class is comprised of one or more properties of the following types:
+A Class consists of one or more properties of the following types:
 
-String
-     properties are for storing arbitrary-length strings.
-Password
-     properties are for storing encoded arbitrary-length strings.
-     The default encoding is defined on the ``roundup.password.Password``
-     class.
+Boolean
+     properties store on/off, yes/no, true/false values.
 Date
      properties store date-and-time stamps. Their values are Timestamp
      objects.
+Integer
+     properties store integer values. (Number can store real/float values.)
 Interval
      properties store time periods rather than absolute dates. For
      example 2 hours.
-Integer
-     properties store integer values. (Number can store real/float values.)
-Number
-     properties store numeric values. There is an option to use
-     double-precision floating point numbers.
-Boolean
-     properties store on/off, yes/no, true/false values.
 Link
-     properties refers to a single other item selected from a
+     properties refers to a single item selected from a
      specified class. The class is part of the property; the value is an
      integer, the id of the chosen item.
 Multilink
-     properties refer to possibly many items in a specified
+     properties refer to one or more items in a specified
      class. The value is a list of integers.
+Number
+     properties store numeric values. There is an option to use
+     double-precision floating point numbers.
+Password
+     properties store encoded arbitrary-length strings.
+     The default encoding is defined in the ``roundup.password.Password``
+     class.
+String
+     properties store arbitrary-length strings.
 
-Properties can have additional attributes to change the default
-behaviour:
+Properties have attributes to change the default behaviour:
 
 .. index:: triple: schema; property attributes; required
    triple: schema; property attributes; default_value
@@ -864,27 +481,26 @@ behaviour:
     the list returned by calling get_required_props for the class.
   - ``default_value``: see `design documentation`_ Sets the default
     value if the property is not set.
-  - ``quiet``: see `design documentation`_. Suppresses user visible
-    to changes to this property. The property change is not reported:
+  - ``quiet``: see `design documentation`_. Suppresses reporting user
+    visible changes to this property. The property change is not reported:
 
     - in the change feedback/confirmation message in the web
       interface
     - the property change section of the nosy email
     - the web history at the bottom of an item's page
 
-    This can be used to store state of the user interface (e.g. the
+    This is useful when storing the state of the user interface (e.g. the
     names of elements that are collapsed or hidden from the
-    user). Making properties that are updated as an indirect result of
+    user). Properties updates as an indirect result of
     a user's change (e.g. updating a blockers property, counting
-    number of times an issue was reopened or reassigned etc.) should
+    number of times an issue is reopened or reassigned etc.) should
     not be displayed to the user as they can be confusing.
 
 .. index:: triple: schema; property attributes; indexme
 
-* String properties can have an ``indexme`` attribute that defines if the
-  property should be part of the full text index. The default is 'no' but this
-  can be set to 'yes' to allow a property's contents to be in the full
-  text index.
+* String properties have an ``indexme`` attribute. The default is
+  'no'. Setting it to 'yes' includes the property in the full text
+  index.
 
 .. index:: triple: schema; property attributes; use_double
 
@@ -903,12 +519,12 @@ behaviour:
 
   .. index:: triple: schema; property attributes; try_id_parsing
 
-  - ``try_id_parsing`` is turned on by default. If entering a number
-    into a Link or Multilink field, Roundup interprets this number as an
-    ID of the item to link to. Sometimes items can have numeric names
-    (like, e.g., product codes). For these Roundup needs to match the
-    numeric name and should never match an ID. In this case you can set
-    ``try_id_parsing='no'``.
+  - ``try_id_parsing`` is turned on by default. If a number is entered
+    into a Link or Multilink field, Roundup interprets this number as
+    an ID of the item to link to. Sometimes items can have numeric
+    names (e.g., product codes). For these Roundup needs to
+    match the numeric name and should never match an ID. In this case
+    you can set ``try_id_parsing='no'``.
 
   .. index:: triple: schema; property attributes; rev_multilink
 
@@ -922,11 +538,11 @@ behaviour:
     template) or via the REST and XMLRPC APIs.
 
     As a example, suppose you want to group multiple issues into a
-    super issue. Each issue can be part of only one super issue. It is
-    inefficient to find all of the issues that are part of the
-    super issue by searching through all issues in the system looking
-    at the part_of link property. To make this more efficient, you
-    can declare an issue's part_of property as::
+    super issue. Each issue can be part of one super issue. It is
+    inefficient to find all of the issues linked to the super issue by
+    searching through all issues in the system looking at the part_of
+    link property. To make this more efficient, you can declare an
+    issue's part_of property as::
 
        issue = IssueClass(db, "issue",
                  ...
@@ -955,12 +571,12 @@ behaviour:
     regular multilink, but you can't explicitly assign to it.
     Another difference of reverse multilinks to normal multilinks
     is that when a linked node is retired, the node vanishes from the
-    multilink, e.g. in the example above, if an issue with ``part_of``
-    set to another issue is retired this issue vanishes from the
-    ``components`` multilink of the other issue.
+    multilink.  In the example above, when issue 1234 with ``part_of``
+    set to issue 5678 is retired, 1234 vanishes from the
+    ``components`` multilink of issue 5678.
 
-    You can also link between different classes. So you can modify
-    the issue definition to include::
+    You can also link between different classes. If the issue
+    definition includes::
 
        issue = IssueClass(db, "issue",
                  ...
@@ -996,7 +612,7 @@ behaviour:
         X-Roundup-issue-assigned_to: ...
 
     so that the mail recipients can filter emails where
-    ``X-Roundup-issue-assigned_to: name`` that contains their
+    ``X-Roundup-issue-assigned_to: name`` contains their
     username. The user class is defined as::
 
        user = Class(db, "user",
@@ -1011,8 +627,8 @@ behaviour:
                 roles=String(),     # comma-separated string of Role names
                 timezone=String())
 
-    Because there is no ``name`` parameter for the user class, there
-    will be no header. However setting::
+    Because the user class does not have a ``name`` parameter, no
+    header will be written. Setting::
 
        assigned_to=Link("user", msg_header_property="username")
 
@@ -1031,15 +647,15 @@ behaviour:
 
     for emails sent on issues where joe_user has been assigned to the issue.
 
-    If this property is set to the empty string "", it will prevent
-    the header from being generated on outgoing mail.
+    If this property is set to the empty string "", no header will be
+    generated on outgoing mail.
 
 .. index:: triple: schema; class property; creator
    triple: schema; class property; creation
    triple: schema; class property; actor
    triple: schema; class property; activity
 
-All Classes automatically have a number of properties by default:
+All Classes automatically have four properties by default:
 
 *creator*
   Link to the user that created the item.
@@ -1065,12 +681,12 @@ setkey(property)
 
 .. index:: roundup-admin; setting assignedto on an issue
 
-Select a String property of the class to be the key property. The key
-property must be unique, and allows references to the items in the class
-by the content of the key property. That is, we can refer to users by
-their username: for example, let's say that there's an issue in Roundup,
-issue 23. There's also a user, richard, who happens to be user 2. To
-assign an issue to him, we could do either of::
+Set the key property of a class to a string property. The key property
+must be unique. References to the items in the class can be done by
+the content of the key property. For example, you can refer to users by
+their username. Let's say that there's an issue in
+Roundup, issue 23. There's also a user, richard, who happens to be
+user 2. To assign an issue to him, we could do use::
 
      roundup-admin set issue23 assignedto=2
 
@@ -1086,7 +702,7 @@ setlabelprop(property)
 ::::::::::::::::::::::
 
 Select a property of the class to be the label property. The label
-property is used whereever an item should be uniquely identified, e.g.,
+property is used whenever an item should be uniquely identified, e.g.,
 when displaying a link to an item. If setlabelprop is not specified for
 a class, the following values are tried for the label: 
 
@@ -1095,13 +711,12 @@ a class, the following values are tried for the label:
 * the "title" property
 * the first property from the sorted property name list
 
-So in most cases you can get away without specifying setlabelprop
+In most cases you can get away without specifying setlabelprop
 explicitly.
 
-You should make sure that users have View access to this property or
-the id property for a class. If the property can not be viewed by a
-user, looping over items in the class (e.g. messages attached to an
-issue) will not work.
+Users should have View access to this property or the id property for
+a class. If the property can not be viewed by a user, looping over
+items in the class (e.g. messages attached to an issue) will not work.
 
 .. index:: triple: schema; class method; setorderprop
 
@@ -1111,14 +726,14 @@ setorderprop(property)
 Select a property of the class to be the order property. The order
 property is used whenever using a default sort order for the class,
 e.g., when grouping or sorting class A by a link to class B in the user
-interface, the order property of class B is used for sorting.  If
+interface, the order property of class B is used for sorting. If
 setorderprop is not specified for a class, the following values are tried
 for the order property:
 
 * the property named "order"
 * the label property (see `setlabelprop(property)`_ above)
 
-So in most cases you can get away without specifying setorderprop
+Usually you can get away without specifying setorderprop
 explicitly.
 
 .. index:: triple: schema; class method; create
@@ -1126,27 +741,34 @@ explicitly.
 create(information)
 :::::::::::::::::::
 
-Create an item in the database. This is generally used to create items
+Create an item in the database. This is used to create items
 in the :term:`definitional class` like "priority" and "status".
+
+.. index:: triple: schema; class property; messages
+   triple: schema; class property; files
+   triple: schema; class property; nosy
+   triple: schema; class property; superseder
 
 IssueClass
 ~~~~~~~~~~
 
-IssueClasses automatically include the "messages", "files", "nosy", and
+IssueClass automatically includes the "messages", "files", "nosy", and
 "superseder" properties.
 
 The messages and files properties list the links to the messages and
 files related to the issue. The nosy property is a list of links to
-users who wish to be informed of changes to the issue - they get "CC'ed"
+users to tell about changes to the issue. They get "CC'ed"
 e-mails when messages are sent to or generated by the issue. The nosy
 reactor (in the ``'detectors'`` directory) handles this action. The
 superseder link indicates an issue which has superseded this one.
+It is better described in the
+`original document <original_overview.html#roundupdb>`_.
 
-They also have the dynamically generated "creation", "activity" and
-"creator" properties.
+They also have the default "creation", "activity" and "creator"
+properties.
 
 The value of the "creation" property is the date when an item was
-created, and the value of the "activity" property is the date when any
+created. The value of the "activity" property is the date when any
 property on the item was last edited (equivalently, these are the dates
 on the first and last records in the item's journal). The "creator"
 property holds a link to the user that created the issue.
@@ -1159,20 +781,20 @@ FileClass
 
 FileClasses save their "content" attribute off in a separate file from
 the rest of the database. This reduces the number of large entries in
-the database, which generally makes databases more efficient, and also
-allows us to use command-line tools to operate on the files. They are
-stored in the files sub-directory of the ``'db'`` directory in your
-tracker. FileClasses also have a "type" attribute to store the MIME
-type of the file.
+the database, which makes databases more efficient. Also web servers,
+image processing applications, and command line tools can operate on
+the files. The content is stored in the ``files`` sub-directory of the
+``'db'`` directory in your tracker. FileClasses also have a "type"
+attribute to store the file's MIME type.
 
-Roundup by default considers the contents of the file immutable. This
-is to assist in maintaining an accurate record of correspondence.  The
-distributed tracker templates do not enforce this. So if you have
-access to the Roundup tracker directory, you can edit the files (make
-sure to preserve mode, owner and group) to remove information (e.g. if
-somebody includes a password or you need to redact proprietary
-information). Obviously the journal for the message/file will not
-report that the file has changed.
+Roundup, by default, considers the contents of the file
+immutable. This assists in maintaining an accurate record of
+correspondence. The distributed tracker templates do not enforce
+this. If you have access to the Roundup tracker directory, you can
+edit the files (make sure to preserve mode, owner and group) to remove
+information. You may need to do this if somebody includes a password
+or you need to redact proprietary information. The journal for the
+message/file won't report that the file has changed.
 
 Best practice is to remove offending material and leave a
 placeholder. E.G. replace a password with the text::
@@ -1230,48 +852,44 @@ where ``hello`` is a file on local disk.
 You can enforce immutability in your tracker by adding an auditor (see
 detectors_) for the file/msg class that rejects changes to the content
 property. The auditor could also add a journal entry so that a change
-via the Roundup mechanism is reported.  Using a mixin (see:
+via the Roundup mechanism is reported. Using a mixin (see:
 https://wiki.roundup-tracker.org/MixinClassFileClass) to augment the
-file class allows for other possibilities including signing the file, or
-recording a checksum in the database and validating the file contents
-at the time it gets read. This allows detection of changes done on the
-filesystem outside of the Roundup mechanism.
+file class allows for other possibilities including:
 
-.. index:: triple: schema; class property; messages
-   triple: schema; class property; files
-   triple: schema; class property; nosy
-   triple: schema; class property; superseder
+* signing the file,
+* recording a checksum in the database and validating the file
+  contents at the time it gets read. This allows detection of changes
+  done on the filesystem outside of the Roundup mechanism.
+* keeping multiple revisions of the file.
 
 .. index:: schema; item ordering
 
 A note about ordering
 ~~~~~~~~~~~~~~~~~~~~~
 
-When we sort items in the hyperdb, we use one of a number of methods,
-depending on the properties being sorted on:
+When we sort items in the hyperdb, we use one of three methods,
+depending on the property type:
 
-1. If it's a String, Integer, Number, Date or Interval property, we
-   just sort the scalar value of the property. Strings are sorted
-   case-sensitively.
-2. If it's a Link property, we sort by either the linked item's "order"
+1. String, Integer, Number, Date or Interval property, sort the scalar
+   value of the property. Strings sort case-sensitively.
+2. a Link property, sort by either the linked item's "order"
    property (if it has one) or the linked item's "id".
-3. Mulitlinks sort similar to #2, but we start with the first Multilink
-   list item, and if they're the same, we sort by the second item, and
+3. Mulitlinks sort similar to #2, starting with the first Multilink
+   list item, and if they are the same, sort by the second item, and
    so on.
 
-Note that if an "order" property is defined on a Class that is used for
-sorting, all items of that Class *must* have a value against the "order"
-property, or sorting will result in random ordering.
+Note that if an "order" property is defined for a class, all items of
+that Class *must* have a value for the "order" property, or
+sorting will result in random ordering.
 
 
 Examples of adding to your schema
 ---------------------------------
 
-Some examples are in the :ref:`CustomExamples` section.
+See :ref:`CustomExamples` for examples.
 
-Also you can start with `Roundup wiki CategorySchema`_ to see a list
-of additional examples of how schemas can be customised to add new
-functionality.
+The `Roundup wiki CategorySchema`_ provides a list of additional
+examples of how to customize schemas to add new functionality.
 
 .. _Roundup wiki CategorySchema:
    https://wiki.roundup-tracker.org/CategorySchema
@@ -1286,7 +904,7 @@ Schema Integrity
 
 There is a table in all SQL based schemas called ``schema``. It
 contains a representation of the current schema and the current
-Roundup schema version. Roundup will exit the version is not supported
+Roundup schema version. Roundup will exit if the version is not supported
 by the release. E.G. Roundup 2.1.0 will not work with a database
 created by 2.3.0 as db version 8 used by 2.3.0 is not supported by
 2.1.0.
@@ -1325,16 +943,41 @@ version.
 Detectors - adding behaviour to your tracker
 ============================================
 
-Detectors are initialised every time you open your tracker database, so
-you're free to add and remove them any time, even after the database is
-initialised via the ``roundup-admin initialise`` command.
+Detectors are Python modules that sit in your tracker's ``detectors``
+directory. You are free to add and remove them any time, even after
+the database is initialised via the ``roundup-admin initialise``
+command.
 
-The detectors in your tracker fire *before* (**auditors**) and *after*
-(**reactors**) changes to the contents of your database. They are Python
-modules that sit in your tracker's ``detectors`` directory. You will
-have some installed by default - have a look. You can write new
-detectors or modify the existing ones. The existing detectors installed
-for you are:
+There are two types of detectors:
+
+ 1. *auditors* are run before changes are made to the database
+ 2. *reactors* are run after the change has been committed to the database
+
+.. index:: auditors; rules for use
+   single: reactors; rules for use
+
+Auditor or Reactor?
+-------------------
+
+Generally speaking, you should observe the following rules:
+
+**Auditors**
+  Are used for `vetoing creation of or changes to items`_. They might
+  also make automatic changes to item properties. They can raise the
+  ``Reject`` or ``CheckId`` exceptions to control database changes.
+**Reactors**
+  Detect changes in the database and react accordingly. They should avoid
+  making changes to the database where possible, as this could create
+  detector loops.
+
+
+Detectors Installed by Default
+------------------------------
+
+You will have some detectors installed by default - have a look in the
+``detectors`` subdirectory of your tracker home. You can write new
+detectors or modify the existing ones. The existing detectors
+installed for you are:
 
 .. index:: detectors; installed
 
@@ -1344,6 +987,13 @@ for you are:
   to issues. The nosy auditor (``updatenosy``) fires when issues are
   changed, and figures out what changes need to be made to the nosy list
   (such as adding new authors, etc.)
+
+  If you are running a tracker started with ``roundup-demo`` or the
+  ``demo.py`` script, this detector will be missing.This is
+  intentional to prevent email from being sent from a demo
+  tracker. You can find the nosyreaction.py detector in the
+  :term:`template directory (meaning 3) <template>` and copy it into
+  your tracker if you want email to be sent.
 **statusauditor.py**
   This provides the ``chatty`` auditor which changes the issue status
   from ``unread`` or ``closed`` to ``chatting`` if new messages appear.
@@ -1357,16 +1007,64 @@ for you are:
   Verifies the content of some of the user fields (email addresses and
   roles lists).
 
-If you don't want this default behaviour, you're completely free to change
+If you don't want this default behaviour, you are completely free to change
 or remove these detectors.
 
-See the detectors section in the `design document`__ for details of the
-interface for detectors.
+The rest of this section includes much of the information from the
+`detectors section in the design document`_. But there are some
+details of the detector interface that are only in the design
+document. Also the design document `includes examples`_ of a project
+that requires three approvals before it can be processed and rejecting
+an email to create an issue if it doesn't have an attached patch.
 
-__ design.html
+.. _`detectors section in the design document`: design.html#detector-interface
 
+.. _`includes examples`:  design.html#detector-example
+
+Registering Detectors
+---------------------
+
+Detectors are registered using the ``audit`` or ``react`` methods of a
+database schema class. Each detector file must define an ``init(db)``
+function. This function is run to register the detectors. For example
+this registers two auditors for changes made to the user class in the
+database::
+
+  def init(db):
+      # fire before changes are made
+      db.user.audit('set', audit_user_fields)
+      db.user.audit('create', audit_user_fields)
+
+while this registers two auditors and two reactors for the issue
+class::
+
+  def init(db):
+      db.issue.react('create', nosyreaction)
+      db.issue.react('set', nosyreaction)
+      db.issue.audit('create', updatenosy)
+      db.issue.audit('set', updatenosy)
+
+The arguments for ``audit`` and ``react`` are the same:
+
+  * operation - one of ``create``, ``set``, ``retire``, or ``restore``
+  * function name - use the function name without ``()`` after
+    it. (You want the function name not the result of calling the
+    function.)
+  * priority - (optional default 100) the priority allows you to order
+    the application order of the detectors.
+
+    A detector with a priority of 110 will run after a detector with
+    the default priority of 100. A detector with a priority of 90 will
+    run before a detector with the default priority of 100.
+
+    Detectors with the same priority are run in an undefined
+    order. All the examples above use the default priority of 100.
+
+If no auditor raises an exception, the changes are committed to the
+database. Then all the reactors registered for the operation are run.
 
 .. index:: detectors; writing api
+.. _detector_api:
 
 Detector API
 ------------
@@ -1378,20 +1076,20 @@ Detector API
 
 Auditors are called with the arguments::
 
-    audit(db, cl, itemid, newdata)
+    an_auditor(db, cl, itemid, newdata)
 
 where ``db`` is the database, ``cl`` is an instance of Class or
 IssueClass within the database, and ``newdata`` is a dictionary mapping
 property names to values.
 
 For a ``create()`` operation, the ``itemid`` argument is None and
-newdata contains all of the initial property values with which the item
-is about to be created.
+``newdata`` contains all the initial property values that will be
+used to create the item
 
-For a ``set()`` operation, newdata contains only the names and values of
-properties that are about to be changed.
+For a ``set()`` operation, ``newdata`` contains only the names and
+values of properties that are about to be changed.
 
-For a ``retire()`` or ``restore()`` operation, newdata is None.
+For a ``retire()`` or ``restore()`` operation, ``newdata`` is None.
 
 .. index:: pair: detectors; reactor
    single: reactors; function signature
@@ -1400,20 +1098,41 @@ For a ``retire()`` or ``restore()`` operation, newdata is None.
 
 Reactors are called with the arguments::
 
-    react(db, cl, itemid, olddata)
+    a_reactor(db, cl, itemid, olddata)
 
 where ``db`` is the database, ``cl`` is an instance of Class or
 IssueClass within the database, and ``olddata`` is a dictionary mapping
 property names to values.
 
 For a ``create()`` operation, the ``itemid`` argument is the id of the
-newly-created item and ``olddata`` is None.
+newly created item and ``olddata`` is None.
 
 For a ``set()`` operation, ``olddata`` contains the names and previous
 values of properties that were changed.
 
 For a ``retire()`` or ``restore()`` operation, ``itemid`` is the id of
 the retired or restored item and ``olddata`` is None.
+
+Your auditor can raise one of two exceptions:
+
+``Reject('Reason for rejection')``
+  indicates that the change is rejected. The user should see the same
+  page they used to make the change with a the 'Reason for rejection'
+  message displayed in the error feedback section of the page. See
+  :ref:`vetoing creation of or changes to items` for an example.
+``Reauth('Reason for confirmation')``
+  indicates that the user needs to enter their password or other
+  identity confirming information (e.g. a one time key) before the
+  change will be committed. This can be used when a user's password or
+  email address are changed. This can prevent an attacker from changing
+  the information by providing confirmation of the person making the
+  change. This addition confirmation step is recommended in the `OWASP
+  Authentication Cheat Sheet`_. An example can be found at
+  :ref:`sensitive_changes`. See :ref:`Confirming the User` for details
+  and warnings.
+
+.. _`OWASP Authentication Cheat Sheet`:
+   https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#require-re-authentication-for-sensitive-features
 
 .. index:: detectors; additional
 
@@ -1427,7 +1146,7 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
 **irker.py**
   This detector sends notification on IRC through an irker daemon
   (http://www.catb.org/esr/irker/) when issues are created or messages
-  are added.  In order to use it you need to install irker, start the
+  are added.  To use it you need to install irker, start the
   irkerd daemon, and add an ``[irker]`` section in ``detectors/config.ini``
   that contains a comma-separated list of channels where the messages should
   be sent, e.g. ``channels = irc://chat.freenode.net/channelname``.
@@ -1437,12 +1156,13 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
   before you use it (look for the text 'team@team.host') or you'll get
   email errors!
 **creator_resolution.py**
-  Catch attempts to set the status to "resolved" - if the assignedto
-  user isn't the creator, then set the status to "confirm-done". Note that
-  "classic" Roundup doesn't have that status, so you'll have to add it. If
-  you don't want to though, it'll just use "in-progress" instead.
+  When the status is set to "resolved" this auditor checks the user
+  performing the action. If the user is not the creator, it sets the
+  status to "confirm-done". Note that "classic" Roundup doesn't have
+  that status, so you'll have to add it. If you don't want to though,
+  it'll just use "in-progress" instead.
 **email_auditor.py**
-  If a file added to an issue is of type message/rfc822, we tack on the
+  If a file added to an issue is of type message/rfc822, tack on the
   extension .eml.
   The reason for this is that Microsoft Internet Explorer will not open
   things with a .eml attachment, as they deem it 'unsafe'. Worse yet,
@@ -1450,28 +1170,13 @@ to use one, copy it to the ``'detectors'`` of your tracker instance:
   information, see the detector code - it has a lengthy explanation.
 
 
-.. index:: auditors; rules for use
-   single: reactors; rules for use
-
-Auditor or Reactor?
--------------------
-
-Generally speaking, the following rules should be observed:
-
-**Auditors**
-  Are used for `vetoing creation of or changes to items`_. They might
-  also make automatic changes to item properties.
-**Reactors**
-  Detect changes in the database and react accordingly. They should avoid
-  making changes to the database where possible, as this could create
-  detector loops.
-
+.. _`Vetoing creation of or changes to items`:
 
 Vetoing creation of or changes to items
 ---------------------------------------
 
 Auditors may raise the ``Reject`` exception to prevent the creation of
-or changes to items in the database.  The mail gateway, for example, will
+or changes to items in the database. The mail gateway, for example, will
 not attach files or messages to issues when the creation of those files or
 messages are prevented through the ``Reject`` exception. It'll also not create
 users if that creation is ``Reject``'ed too.
@@ -1480,16 +1185,151 @@ To use, simply add at the top of your auditor::
 
    from roundup.exceptions import Reject
 
-And then when your rejection criteria have been detected, simply::
+And then when your rejection criteria have been detected, use::
 
    raise Reject('Description of error')
 
-Error messages raised with ``Reject`` automatically have any HTML content
-escaped before being displayed to the user. To display an error message to the
-user without performing any HTML escaping the ``RejectRaw`` should be used. All
-security implications should be carefully considering before using
-``RejectRaw``.
+Error messages raised with ``Reject`` automatically have any HTML
+content escaped before being displayed to the user. To display an
+error message to the user without performing any HTML escaping
+the ``RejectRaw`` should be used. All security implications
+should be carefully considering before using ``RejectRaw``.
 
+.. _`Confirming the User`:
+
+Confirming the User
+-------------------
+
+Being able to add a user confirmation step in a workflow is useful.
+In an auditor adding::
+
+   from roundup.cgi.exceptions import Reauth
+
+at the top of the file and then adding::
+
+   if 'password' in newvalues and not hasattr(db, 'reauth_done'):
+      raise Reauth('Add an optional message to the user')
+
+will present the user with an authorization page. The optional message
+will be shown at the top of the page. The user will enter their
+password (or other verification token) and submit the page to commit
+the change. This section describes the mechanism used.
+
+The ``Reauth`` exception is handled by the core code in the
+``Client.reauth()`` method. It modifies the current request's context
+cleaning up some fields and saving the current action and template for
+later use. Then it sets the template to ``reauth`` which is used to
+render the next page.
+
+The page is rendered using the standard template mechanism.  You can
+create a ``user.reauth.html`` template that is displayed when
+requiring reauth for a user. However most users will probably just use
+the default ``_generic.reauth.html`` template provided with Roundup.
+
+Look at the generic template to understand what has to be in a new
+template. The basic idea is to get the password from the user into the
+``@reauth_password`` input field. Also the form that is generated
+embeds a bunch of hidden fields that record the information that
+triggered the reauth request.
+
+If you are not using reauth in a workflow that can upload files, you
+are all set. The embedding of the hidden fields just works.
+
+If you need to support reauth on a form that allows file uploads, the
+generic template supports handling file uploads. It requires
+JavaScript in the browser to support files. Since browsers don't allow
+a server to assign values to a file input, the template uses a
+workaround. The reauth template encodes the contents of each uploaded
+file as a base64 encoded string. It then embeds this string inside a
+hidden ``<pre>`` tag. This encoded string is about 1/3 larger than the
+size of the original file(s).
+
+When the page is loaded, a Javascript function runs and turns the
+tagged base64 strings back into file objects with their original
+content. It then creates a file input element and assigns these files
+to it. This allows the files to be submitted with the rest of the
+form. If JavaScript is not enabled, these files will not be submitted
+to the server.
+
+**Future ideas for handling disabled JavaScript** - The `server could
+detect disabled JavaScript on the browser
+<https://wiki.roundup-tracker.org/IsJavascriptAvailable>`_ and
+generate a warning. Alternatively, allowing the browser to submit all
+the file data by replacing the ``<pre>`` tag with a ``<textarea>`` tag
+and a name attribute like ``@filecontents-1``,
+``@filecontents-2``. Along with this, the current ``data-``
+attributes on the ``<pre>`` tag need to move to hidden inputs with
+names like: ``@filecontents-1.mimetype``,
+``@filecontents-1.filename``. Submitting the form will include all
+this data that Roundup could use to pretend the files were submitted
+as a proper file input.
+
+When the reauth page is submitted, it invokes the ``reauth`` action
+(using the ``@action`` parameter). Verification is done by the
+:ref:`ReauthAction <ReauthAction_pydoc>` class in
+``roundup.cgi.actions``. By default
+``ReauthAction.verifyPassword()`` calls::
+
+    roundup.cgi.actions:LoginAction::verifyPassword()
+
+to verify the user's password against the one stored in the database.
+
+You can change the verification command using `interfaces.py`_. Adding
+the following code to ``interfaces.py``::
+
+    from roundup.cgi.actions import ReauthAction
+
+    old_verify = ReauthAction.verifyPassword
+
+    def new_verify_password(self):
+	if self.form['@reauth_password'].value == 'LetMeIn':
+	    return True
+
+	return old_verify(self)
+
+    ReauthAction.verifyPassword = new_verify_password
+      
+will accept the passphrase ``LetMeIn`` as well as the user's
+password. This example (which you should not use as is) could be
+adapted to verify a `Time-based One-Time Password (TOTP)`_. An example
+of `implementing a TOTP for Roundup is available on the wiki`_.
+
+.. _`Time-based One-Time Password (TOTP)`:
+   https://en.wikipedia.org/wiki/Time-based_One-Time_Password
+
+.. _`implementing a TOTP for Roundup is available on the wiki`:
+   https://wiki.roundup-tracker.org/OneTimePasswords
+
+If the verification succeeds, the original action (e.g. edit) is
+invoked on the data sent with the reauth request. To prevent the
+auditor from triggering another Reauth, the attribute ``reauth_done``
+is added to the db object. As a result, the ``hasattr`` call shown
+above will return True and the Reauth exception is not raised. (Note
+that the value of the ``reauth_done`` attribute is True, so
+``getattr(db, "reauth_done", False)`` will return True when reauth is
+done and the defaul value of False if the attribute is missing. If the
+default is not set, `getattr` raises an ``AttributeError`` which might
+be useful for flow control.)
+
+There is only one reauth for a submitted change. You cannot Reauth
+multiple properties separately. If you need to reauth multiple
+properties separately, you need to reject the change and force the
+user to submit each sensitive property separately.  For example::
+
+   if 'password' in newvalues and 'realname' in newvalues:
+      raise Reject('Changing the username and the realname '
+		   'at the same time is not allowed. Please '
+		   'submit two changes.')
+
+   if 'password' in newvalues and not hasattr(db, 'reauth_done'):
+      raise Reauth()
+
+   if 'realname' in newvalues and not hasattr(db, 'reauth_done'):
+      raise Reauth()
+
+See also: client.py:Client:reauth(self, exception) which can be
+changed using interfaces.py in your tracker if you have some special
+handling that must be done.
 
 Generating email from Roundup
 -----------------------------
@@ -1497,11 +1337,11 @@ Generating email from Roundup
 The module ``roundup.mailer`` contains most of the nuts-n-bolts required
 to generate email messages from Roundup.
 
-In addition, the ``IssueClass`` methods ``nosymessage()`` and
-``send_message()`` are used to generate nosy messages, and may generate
-messages which only consist of a change note (ie. the message id parameter
-is not required - this is referred to as a "System Message" because it
-comes from "the system" and not a user).
+Also, the ``IssueClass`` methods ``nosymessage()`` and
+``send_message()`` generate nosy messages, and may generate
+messages which only consist of a change note (i.e. the message id
+parameter is not required - this is referred to as a "System
+Message" because it comes from "the system" and not a user).
 
 
 .. index:: extensions
@@ -1514,29 +1354,37 @@ Extensions - adding capabilities to your tracker
 
 While detectors_ add new behavior by reacting to changes in tracked
 objects, `extensions` add new actions and utilities to Roundup, which
-are mostly used to enhance web interface.
+are mostly used to enhance the web interface.
 
-You can create an extension by creating Python file in your tracker
-``extensions`` directory.  All files from this dir are loaded when
-tracker instance is created, at which point it calls ``init(instance)``
-from each file supplying itself as a first argument.
+You can create an extension by creating Python file in your
+tracker ``extensions`` directory. The tracker loads all the files
+from this directory, at which point it calls ``init(instance)`` from
+each file supplying itself as a first argument.
 
-Note that at this point web interface is not loaded, but extensions still
-can register actions for in tracker instance. This may be fixed in
-Roundup 1.6 by introducing ``init_web(client)`` callback or a more
-flexible extension point mechanism.
+Note that at this point web interface is not loaded, but
+extensions still can register actions for it in the tracker
+instance. This may be fixed in Roundup 1.6 by introducing
+``init_web(client)`` callback or a more flexible extension point
+mechanism.
 
 * ``instance.registerUtil`` is used for adding `templating utilities`_
   (see `adding a time log to your issues
   <customizing.html#adding-a-time-log-to-your-issues-4>`_ for an example)
 
-* ``instance.registerAction`` is used to add more actions to instance
-  and to web interface. See `Defining new web actions`_ for details.
-  Generic action can be added by inheriting from ``action.Action``
-  instead of ``cgi.action.Action``.
+* ``instance.registerUtilMethod`` is also used for adding `templating
+  utilities`_, and provides a TemplatingUtils instance by default to
+  the function. This makes more complex templating actions easier to
+  use. (see :ref:`dynamic_csp` for an example)
+
+* ``instance.registerAction`` is used to add more actions to the
+  instance and to web interface. See `Defining new web actions`_
+  for details.  Generic action can be added by inheriting from
+  ``action.Action`` instead of ``cgi.action.Action``.
 
 .. _interfaces.py:
 .. _modifying the core of Roundup:
+
+.. index:: single: interfaces.py; hooking into the roundup core
 
 interfaces.py - hooking into the core of Roundup
 ================================================
@@ -1552,20 +1400,20 @@ this you can:
 
 but with great power comes great responsibility.
 
-Interfaces.py has been around since the earliest releases of Roundup
-and used to be the main way to get a lot of customisation done. In
+Interfaces.py has existed since the earliest releases of Roundup
+and was the main way to get a lot of customisation done. In
 modern Roundup, the extensions_ mechanism is used to `add actions
-<#defining-new-web-actions>`_ and `templating utilities`_. But there are
-places where interfaces.py is still useful. Note that the tracker
-directories are not on the Python system path when interfaces.py is
-evaluated. You need to add library directories explictly by
-modifying sys.path.
+<#defining-new-web-actions>`_ and `templating utilities`_. But
+there are places where interfaces.py is still useful. Note that
+the tracker directories are not on the Python system path when
+interfaces.py is evaluated. You need to add library directories
+explicitly by modifying sys.path.
 
 Interfaces.py allows you to interact with any part of Roundup's
 internals. These internals are not as stable as defined interfaces
 (e.g. extensions. detectors, schema). So the code in interfaces.py is
 more likely to need modification when upgrading from version to
-version.  While the developers attempt to keep the examples working,
+version. While the developers attempt to keep the examples working,
 it may make more sense to change the internals to make the code
 clearer, add more features etc.
 
@@ -1584,7 +1432,7 @@ Database Content
    "working", you need to change the check.)
 
 Customisation of the special :term:`definitional classes <definitional
-class>` (eg. status,
+class>` (e.g. status,
 priority, resolution, ...) may be done either before or after the
 tracker is initialised. The actual method of doing so is completely
 different in each case though, so be careful to use the right one.
@@ -1632,11 +1480,11 @@ Email Access
   interface (see also the ``new_email_user_roles`` configuration option).
 
 Web Access
-  If defined, the user may use the web interface. This is usually
-  assigned to the Anonymous role as well to allow authorized users to
-  access the form based login. If some other authorization mode (basic
-  auth, SSO, etc.) is used Web Access can be removed from the
-  Anonymous user.
+  If defined, the user may use the web interface. This is
+  assigned to the Anonymous role to allow authorized users to
+  access the form based login. If your tracker uses some other
+  authorization mode (basic auth, Single Sign On (SSO), etc.) Web
+  Access can be removed from the Anonymous user.
 
 Web Roles
   Controls user access to editing the "roles" property of the "user" class.
@@ -1649,26 +1497,29 @@ Rest Access |br| Xmlrpc Access
   `xmlrpc interface documentation`_.
 
 Register
-  This is assigned to the anonymous user and allows automatic user
-  registration by email or web.
+  This enables automatic user registration by email or web. It is
+  assigned to the anonymous user.
 
-These are hooked into the default Roles:
+These are assigned into the default Roles:
 
 - Admin (Create, Edit, Retire, Restore, Search, View for everything; Web Roles)
 - User (Web Access; Email Access)
 - Anonymous (Web Access)
 
 Finally, the "admin" user gets the "Admin" Role, and the "anonymous"
-user gets the "Anonymous" Role assigned when the tracker is installed.
+user gets the "Anonymous" Role. The "Admin" and "Anonymous" roles
+are created when the tracker is initialized.
 
 For the "User" Role, the "classic" tracker defines:
 
 - Create, Edit and View issue, file, msg, query, keyword 
 - View priority, status
-- View user
+- View user (limited properties)
+- View their own user record
 - Edit their own user record
+- Search queries
 
-And the "Anonymous" Role is defined as:
+And the "Anonymous" Role has the following permissions:
 
 - Web interface access
 - Register user (for registration)
@@ -1799,24 +1650,24 @@ cause baffling permission issues.
 Automatic Permission Checks
 ---------------------------
 
-Permissions are automatically checked when information is rendered
+Permissions are automatically checked when rendering information
 through the web. This includes:
 
-1. View checks for properties when being rendered via the ``plain()`` or
-   similar methods. If the check fails, the text "[hidden]" will be
+1. View checks for properties when rendered via the ``plain()`` or
+   similar methods. If the check fails, the text "[hidden]" is
    displayed.
-2. Edit checks for properties when the edit field is being rendered via
+2. Edit checks for properties when the edit field is rendered via
    the ``field()`` or similar methods. If the check fails, the property
-   will be rendered via the ``plain()`` method (see point 1. for subsequent
+   is rendered via the ``plain()`` method (see point 1. for subsequent
    checking performed)
 3. View checks are performed in index pages for each item being displayed
    such that if the user does not have permission, the row is not rendered.
 4. View checks are performed at the top of item pages for the Item being
    displayed. If the user does not have permission, the text "You are not
-   allowed to view this page." will be displayed.
+   allowed to view this page." is displayed.
 5. View checks are performed at the top of index pages for the Class being
    displayed. If the user does not have permission, the text "You are not
-   allowed to view this page." will be displayed.
+   allowed to view this page." is displayed.
 
 
 New User Roles
@@ -1843,13 +1694,13 @@ You may use the ``roundup-admin`` "``security``" command to display the
 current Role and Permission configuration in your tracker.
 
 
-Adding a new Permission
+Adding a New Permission
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-When adding a new Permission, you will need to:
+When adding a new Permission, you need to:
 
-1. add it to your tracker's ``schema.py`` so it is created, using
-   ``security.addPermission``, for example::
+1. create it in your tracker's ``schema.py`` using
+   ``security.addPermission``. For example::
 
     db.security.addPermission(name="View", klass='frozzle',
         description="User is allowed to access frozzles")
@@ -1857,51 +1708,12 @@ When adding a new Permission, you will need to:
    will set up a new "View" permission on the Class "frozzle".
 2. enable it for the Roles that should have it (verify with
    "``roundup-admin security``")
-3. add it to the relevant HTML interface templates
-4. add it to the appropriate xxxPermission methods on in your tracker
-   interfaces module
+3. check it in the relevant HTML interface templates
+4. check it in the appropriate hasPermission methods in your tracker's
+   extensions/detectors/interfaces.py modules
 
-The ``addPermission`` method takes a few optional parameters:
+The ``addPermission`` method takes a four optional parameters:
 
-**properties**
-  A sequence of property names that are the only properties to apply the
-  new Permission to (eg. ``... klass='user', properties=('name',
-  'email') ...``)
-**props_only**
-  A boolean value (set to false by default) that is a new feature
-  in Roundup 1.6.
-  A permission defined using:
-
-     ``properties=('list', 'of', 'property', 'names')``
-
-  is used to determine access for things other than just those
-  properties. For example a check for View permission on the issue
-  class or an issue item can use any View permission for the issue
-  class even if that permission has a property list.  This can be
-  confusing and surprising as you would think that a permission
-  including properties would be used only for determining the
-  access permission for those properties.
-
-  ``roundup-admin security`` will report invalid properties for the
-  class. For example a permission with an invalid summary property is
-  presented as::
-
-     Allowed to see content of object regardless of spam status
-        (View for "file": ('content', 'summary') only)
-
-     **Invalid properties for file: ['summary']
-
-  Setting ``props_only=True`` will make the permission valid only for
-  those properties.
-
-  If you use a lot of permissions with property checks, it can be
-  difficult to change all of them. Calling the function:
-
-    db.security.set_props_only_default(True)
-
-  at the top of ``schema.py`` will make every permission creation
-  behave as though props_only was set to True. It is expected that the
-  default of True will become the default in a future Roundup release.
 **check**
   A function to be executed which returns boolean determining whether
   the Permission is allowed. If it returns True, the permission is
@@ -1927,10 +1739,158 @@ The ``addPermission`` method takes a few optional parameters:
 
      ctx['permission'] the name of the permission (e.g. View, Edit...).
 
-The second form is preferred as it makes it easier to implement more
-complex permission schemes. An `example in upgrading.html
-<upgrading.html#enhancement-to-check-command-for-permissions>`_
-shows the use of ``ctx``.
+  The second form is preferred as it makes it easier to implement more
+  complex permission schemes. An `example in upgrading.html
+  <upgrading.html#enhancement-to-check-command-for-permissions>`_
+  shows the use of ``ctx``.
+
+  Note that the check option is not supported for the Search
+  permission. When searching there is no item defined, so a check
+  function does not make any sense.
+
+**filter**
+  This optional function returns parameters for the ``filter`` method
+  when getting ``Class`` items (users, issues etc.) from the
+  database. It filters items at the database level (using SQL where
+  possible).  This pre-filters the number of items returned from the
+  database when displaying results in an ``index`` template.  This
+  filtering is usually faster than calling a ``check`` method (see
+  previous argument) on *each individual result*.
+
+  The ``filter`` method has the signature::
+  
+    filter(db, userid, klass)
+  
+  where ``db`` is the database handle, ``userid`` is the user attempting
+  access and ``klass`` is the ``Class`` in the schema.
+
+  The ``filter`` function must return a *list* of dictionaries of
+  parameters of the
+  `Class.filter <design.html#:~:text=search_matches>`_ call.
+  This includes filterspec, retired and exact_match_specs.
+  Note that sort and group parameters of the filter call should
+  not be set by filter method (they will be overwritten) and the
+  parameter search_matches must not be set.
+
+  The query executed by an index template is modified by the
+  parameters computed by the ``filter`` function. An
+  empty list of filter parameters (``[]``) indicates no access. When
+  using a filter, a check function is still needed to test each
+  individual item for visibility. When the filter function is defined
+  but a check function is not defined, a check function is
+  manufactured automatically from the ``filter`` function.
+
+  Note that the filter option is not supported for the Search
+  permission. Since the filter function is called *after* the search was
+  already performed a filter function does not make any sense.
+
+  An example ``filter`` function for the ``view_query`` check function
+  in the query checks above would look like::
+
+    def filter_query(db, userid, klass):
+        return [{'filterspec': {
+                     'private_for': ['-1', userid]
+               }}]
+
+  This would be called by the framework for all queries found when
+  displaying queries. It filters for all queries where the
+  ``private_for`` field is the userid or empty. This matches the
+  definition of the ``view_query`` function above where permission is
+  granted if the ``private_for`` field indicates the query is owned by
+  the user, or the ``private_for`` field is empty indicating that the
+  query is public. If we want to modify the check to also allow acess if
+  the user is the ``creator`` of a query we would change the filter
+  function to::
+
+    def filter_query(db, userid, klass):
+        f1 = {'filterspec': {'private_for': ['-1', userid]}}
+        f2 = {'filterspec': {'creator': userid}}
+        return [f1, f2]
+
+  This is an example where we need multiple filter calls to model an
+  "or"  condition, the user has access if either the ``private_for``
+  check passes *or* the user is the creator of the query.
+
+  Consider an example where we have a class structure where both the
+  ``issue`` class and the ``user`` class include a reference to an
+  ``organization`` class. Users are permitted to view only those
+  issues that are associated with their respective organizations. A
+  check function or this could look like::
+
+    def view_issue(db, userid, itemid):
+        user  = db.user.getnode(userid)
+        if not user.organisation:
+            return False
+        issue = db.issue.getnode(itemid)
+        if user.organisation == issue.organisation:
+            return True
+
+  The corresponding ``filter`` function::
+
+    def filter_issue(db, userid, klass):
+        user = db.user.getnode(userid)
+        if not user.organisation:
+            return []
+        return [{'filterspec': {
+                     'organisation': user.organisation
+               }}]
+
+  This filters for all issues where the organisation is the same as the
+  organisation of the user. Note how the filter fails early returning an
+  empty list (meaning "no access") if the user happens to not have an
+  organisation.
+
+**properties**
+  A sequence of property names that are the only properties to apply the
+  new Permission to (eg. ``... klass='user', properties=('name',
+  'email') ...``)
+**props_only**
+  A boolean value (set to false by default) that is a new feature
+  in Roundup 1.6.
+  A permission defined using:
+
+     ``properties=('list', 'of', 'property', 'names')``
+
+  determines access for things other than just those
+  properties. For example a check for View permission on the
+  issue class or an issue item can use any View permission for
+  the issue class even if that permission has a property
+  list. This makes sense if you understand that a user can't
+  access the properties of a class if they can't access the
+  class. The ability to access class properties implies class
+  access.
+
+  This eliminates the need to create a duplicate View permission
+  without properties to allow access to the View properties
+  permission. Even though it makes sense, it can be confusing and
+  surprising.
+
+  You would think that a permission including properties would be
+  used only for determining the access permission when checking
+  properties. But that is not the case.
+
+  Setting ``props_only=True`` will prevent the permission
+  from being used unless the check include properties.
+
+  If you use a lot of permissions with property checks, it can be
+  difficult to change all of them. Calling the function:
+
+    db.security.set_props_only_default(True)
+
+  at the top of ``schema.py`` will make every permission creation
+  behave as though props_only is True. Note that you may
+  need to add new View permissions without properties to allow
+  property only checks to take effect.
+
+  ``roundup-admin security`` will report invalid properties for the
+  class. For example a permission with an invalid summary property is
+  presented as::
+
+     Allowed to see content of object regardless of spam status
+        (View for "file": ('content', 'summary') only)
+
+     **Invalid properties for file: ['summary']
+
 
 Example Scenarios
 ~~~~~~~~~~~~~~~~~
@@ -1954,7 +1914,8 @@ examples of customisation.
  unidentified user will automatically be registered with the tracker
  (with no password, so they won't be able to log in through
  the web until an admin sets their password). By default new Roundup
- trackers don't allow this as it opens them up to spam. It may be enabled
+ trackers don't enable "Email Access" for "anonymous" as it opens
+ them up to spam. It may be enabled
  by uncommenting the appropriate addPermissionToRole in your tracker's
  ``schema.py`` file. The new user is given the Roles list defined in the
  "new_email_user_roles" config variable. 
@@ -1973,7 +1934,7 @@ examples of customisation.
  new Role "Manager" which has that Permission, and assign that to the
  appropriate users. In your web interface, only display the "resolved"
  issue state option when the user has the "Closer" Permissions. Enforce
- the Permission with an auditor. This is very similar to the previous
+ the Permission with an auditor. This is similar to the previous
  example, except that the web interface check would look like::
 
    <option tal:condition="python:request.user.hasPermission('Closer')"
@@ -2004,10 +1965,10 @@ Web Interface
 
 The web interface is provided by the ``roundup.cgi.client`` module and
 is used by ``roundup.cgi``, ``roundup-server`` and ``ZRoundup``
-(``ZRoundup``  is broken, until further notice). In all cases, we
-determine which tracker is being accessed (the first part of the URL
+(``ZRoundup``  is broken, until further notice). In all cases, Roundup
+determines which tracker is accessed (the first part of the URL
 path inside the scope of the CGI handler) and pass control on to the
-``roundup.cgi.client.Client`` class - which handles the rest of the
+:py:class:`roundup.cgi.client.Client` class - which handles the rest of the
 access through its ``main()`` method. This means that you can do pretty
 much anything you want as a web interface to your tracker.
 
@@ -2021,7 +1982,7 @@ the web interface knows about it:
 
 1. Index, item and search pages for the relevant classes may need to
    have properties added or removed,
-2. The "page" template may require links to be changed, as might the
+2. The "page" template may require changing links, as might the
    "home" page's content arguments.
 
 
@@ -2063,11 +2024,11 @@ lead to the main tracker page:
 2. ``/index``
 3. ``/home``
 
-The following prefix is used to access static resources:
+The following prefix accesses static resources:
 
 4. ``/@@file/``
 
-Two additional url's are used for the API's.
+Two url's are used for the API's.
 The `REST api`_ is accessed via:
  
 5. ``/rest/``
@@ -2086,14 +2047,14 @@ for specific items of that class. Example for class URL:
 
 7. ``/issue``
 
-This is usually used to show listings of class items. The URL for
+Shows a listings of class items, usually in a table. The URL for
 for specific object of issue class with id 1 will look like:
 
 8. ``/issue1``
 
 .. _strip_zeros:
 
-Note that a leading string of 0's will be stripped from the id part of
+Note that Roundup strips a leading string of 0's from the id part of
 the object :term:`designator` in the URL. E.G. ``/issue001`` is the
 same as ``/issue1``.  Similarly for ``/file01`` etc. However you
 should generate URL's without the extra zeros.
@@ -2101,41 +2062,45 @@ should generate URL's without the extra zeros.
 Determining web context
 -----------------------
 
-To determine the "context" of a request (what request is for), we look at
-the URL path after the tracker root and at ``@template`` request
-parameter. Typical URL paths look like:
+To determine the "context" of a request (what request is for),
+Roundup looks at the URL path after the tracker root and at
+``@template`` request parameter. Typical URL paths look like:
 
-1.  ``/tracker/issue``
-2.  ``/tracker/issue1``
-3.  ``/tracker/@@file/style.css``
-4.  ``/cgi-bin/roundup.cgi/tracker/file1``
-5.  ``/cgi-bin/roundup.cgi/tracker/file1/kitten.png``
+1.  ``/tracker/``
+2.  ``/tracker/issue``
+3.  ``/tracker/issue1``
+4.  ``/tracker/@@file/style.css``
+5.  ``/cgi-bin/roundup.cgi/tracker/file1``
+6.  ``/cgi-bin/roundup.cgi/tracker/file1/kitten.png``
 
 where tracker root is ``/tracker/`` or ``/cgi-bin/roundup.cgi/tracker/``
 We're looking at "issue", "issue1", "@@file/style.css", "file1" and
 "file1/kitten.png" in the cases above.
 
-1. with is no path we are in the "home" context. See `the "home"
+1. with no path Roundup is in the "home" context. See `the "home"
    context`_ below for details. "index" or "home" paths may also be used
    to switch into "home" context.
-2. for paths starting with "@@file" the additional path entry ("style.css"
-   in the example above) specifies the static file to be served
-   from the tracker TEMPLATES directory (or STATIC_FILES, if configured).
-   This is usually the tracker's "html" directory. Internally this works
-   by raising SendStaticFile exception.
-3. if there is something in the path (as in example 1, "issue"), it
+2. if there is something in the path (as in example 2, "issue"), it
    identifies the tracker class to display.
-4. if the path is an item designator (as in examples 2 and 4, "issue1"
+3. if the path is an item designator (as in examples 3 and 5, "issue1"
    and "file1"), then we're to display a specific item.
    :ref:`Note. <strip_zeros>`
-5. if the path starts with an item designator and is longer than one
+4. for paths starting with "@@file" the additional path entry ("style.css"
+   in the example above) specifies the static file to be served
+   from the tracker TEMPLATES directory (or STATIC_FILES, if configured).
+   The TEMPLATES directory is usually the tracker's "html"
+   directory. Internally this works by raising SendStaticFile exception.
+5. A file can have additional path components (as in example
+   6). Without the additional components, the metadata for the
+   file is displayed.
+6. if the path starts with an item designator and is longer than one
    entry (as in example 5, "file1/kitten.png"), then we're assumed to be
    handling an item of a ``FileClass``, and the extra path information
    gives the filename that the client is going to label the download
    with (i.e. "file1/kitten.png" is nicer to download than "file1").
    This raises a ``SendFile`` exception.
 
-Neither 2. or 5. use templates and stop before the template is
+Neither 4. or 6. use templates and stop before the template is
 determined. For other contexts the template used is specified by the
 ``@template`` variable, which defaults to:
 
@@ -2147,7 +2112,7 @@ The "home" Context
 ------------------
 
 The "home" context is special because it allows you to add templated
-pages to your tracker that don't rely on a class or item (ie. an issues
+pages to your tracker that don't rely on a class or item (e.g. an issues
 list or specific issue).
 
 Let's say you wish to add frames to control the layout of your tracker's
@@ -2201,14 +2166,14 @@ of:
 **edit**
  Perform an edit of an item in the database. There are some `special form
  variables`_ you may use. Also you can set the ``__redirect_to`` form
- variable to the URL that should be displayed after the edit is succesfully
+ variable to the URL to display after the edit is successfully
  completed. If you wanted to edit a sequence of issues, users etc. this
  could be used to display the next item in the sequence to the user. 
 
 **new**
  Add a new item to the database. You may use the same `special form
  variables`_ as in the "edit" action. Also you can set the
- ``__redirect_to`` form variable to the URL that should be displayed after
+ ``__redirect_to`` form variable to the URL to display after
  the new item is created. This is useful if you want to create another
  item rather than edit the newly created item.
 
@@ -2225,7 +2190,7 @@ of:
  Mangle some of the form variables:
 
  - Set the form ":filter" variable based on the values of the filter
-   variables - if they're set to anything other than "dontcare" then add
+   variables - if they are set to anything other than "dontcare" then add
    them to :filter.
 
  - Also handle the ":queryname" variable and save off the query to the
@@ -2266,7 +2231,7 @@ Protecting users from web application attacks
 
 There is a class of attacks known as Cross Site Request Forgeries
 (CSRF). Malicious code running in the browser can making a
-request to Roundup while you are logged into Roundup.  The
+request to Roundup while you are logged into Roundup. The
 malicious code piggy backs on your existing Roundup session to
 make changes without your knowledge. Roundup 1.6 has support for
 defending against this by analyzing the
@@ -2281,12 +2246,14 @@ in the [tracker] section of the tracker's ``config.ini``.
 
 Also a per form token (also called a nonce) can be enabled for
 the tracker using the ``csrf_enforce_token`` option in
-config.ini.  When enabled, Roundup will validate a hidden form
-field called ``@csrf``. If the validation fails (or the token
-is used more than once) the request is rejected.  The ``@csrf``
-input field is added automatically by calling the ``submit``
-function/path. It can also be added manually by calling
-anti_csrf_nonce() directly. For example::
+config.ini. When enabled, Roundup will check a hidden form field
+called ``@csrf``. If the field's value matches a token in the
+database, the validation passes and the token is deleted. If the
+validation fails because the token is not found (e.g. if the
+token is used more than once) the request is rejected. The
+``@csrf`` input field is added automatically when calling the
+``submit`` function/path. It can also be added manually by
+calling anti_csrf_nonce() directly. For example::
 
    <input name="@csrf" type="hidden"
       tal:attributes="value python:utils.anti_csrf_nonce(lifetime=10)">
@@ -2295,15 +2262,15 @@ By default a nonce lifetime is 2 weeks. However the lifetime (in
 minutes) can be set by passing a lifetime argument as shown
 above. The example above makes the nonce lifetime 10 minutes.
  
-Search for @csrf in this document for more examples. There are
-more examples and information in ``upgrading.txt``.
+Search for @csrf in this document for more examples. More
+examples and information is provided in ``upgrading.txt``.
 
 The token protects you because malicious code supplied by another
-site is unable to obtain the token. Thus many attempts they make
-to submit a request are rejected.
+site is unable to obtain the token. Thus any attempt they make
+to submit a request is rejected.
 
 The protection on the xmlrpc interface is untested, but is based
-on a valid header check against the Roundup url and the presence
+on a valid header check against the Roundup URL and the presence
 of the ``X-REQUESTED-WITH`` header. Work to improve this is a
 future project after the 1.6 release.
 
@@ -2335,23 +2302,30 @@ These operations will only take place if the form action (the
 In the following, <bracketed> values are variable, "@" may be
 either ":" or "@", and other text "required" is fixed.
 
+.. index::
+   single: i18n; set from web interface
+   single: internationalization; set from web interface
+   single: language; set from web interface
+
 Two special form variables are used to specify user language preferences:
 
 ``@language``
   value may be locale name or ``none``. If this variable is set to
   locale name, web interface language is changed to given value
-  (provided that appropriate translation is available), the value
-  is stored in the browser cookie and will be used for all following
-  requests.  If value is ``none`` the cookie is removed and the
+  (if the appropriate translation is available). The value
+  is stored in a browser cookie and is used for all following
+  requests. If value is ``none`` the cookie is removed and the
   language is changed to the tracker default, set up in the tracker
   configuration or OS environment.
 
 ``@charset``
   value may be character set name or ``none``.  Character set name
-  is stored in the browser cookie and sets output encoding for all
+  is stored in a browser cookie and sets output encoding for all
   HTML pages generated by Roundup.  If value is ``none`` the cookie
   is removed and HTML output is reset to Roundup internal encoding
-  (UTF-8).
+  (UTF-8). This is unlikely to be needed with modern web browsers
+  and is left over from the early days of the web. It will
+  be removed at some future date.
 
 Most properties are specified as form variables:
 
@@ -2373,7 +2347,7 @@ Designators name a specific item of a class.
     designator of this form always refers to the same new
     item.
 
-Once we have determined the "propname", we look at it to see
+Once we have determined the "propname", we check to see
 if it's special:
 
 ``@required``
@@ -2391,9 +2365,9 @@ if it's special:
 
 ``@remove@<propname>=id(s)`` or ``@add@<propname>=id(s)``
     The "@add@" and "@remove@" edit actions apply only to
-    Multilink properties.  The form value must be a
+    Multilink properties. The form value must be a
     comma-separate list of keys for the class specified by
-    the simple form variable.  The listed items are added
+    the simple form variable. The listed items are added
     to (respectively, removed from) the specified
     property.
 
@@ -2401,30 +2375,30 @@ if it's special:
     If the edit action is "@link@", the simple form
     variable must specify a Link or Multilink property.
     The form value is a comma-separated list of
-    designators.  The item corresponding to each
+    designators. The item corresponding to each
     designator is linked to the property given by simple
     form variable.
 
-None of the above (ie. just a simple form value)
+None of the above (i.e. just a simple form value)
     The value of the form variable is converted
     appropriately, depending on the type of the property.
 
     For a Link('klass') property, the form value is a
-    single key for 'klass', where the key field is
-    specified in schema.py.  
+    single key (or id number) for 'klass',
+    where the key field is specified in schema.py.
 
     For a Multilink('klass') property, the form value is a
-    comma-separated list of keys for 'klass', where the
+    comma-separated list of keys (or id nummber) for 'klass', where the
     key field is specified in schema.py.  
 
-    Note that for simple-form-variables specifiying Link
+    Note that for simple-form-variables specifying Link
     and Multilink properties, the linked-to class must
     have a key field.
 
     For a String() property specifying a filename, the
     file named by the form value is uploaded. This means we
     try to set additional properties "filename" and "type" (if
-    they are valid for the class).  Otherwise, the property
+    they are defined for the class).  Otherwise, the property
     is set to the form value.
 
     For Date(), Interval(), Boolean(), Integer() and Number()
@@ -2435,12 +2409,12 @@ Any of the form variables may be prefixed with a classname or
 designator.
 
 Setting the form variable: ``__redirect_to=`` to a url when
-@action=new redirects the user to the specified url after successfully
-creating the new item. This is useful if you want the user to create
-another item rather than edit the newly created item.  Note that the
-url assigned to ``__redirect_to`` must be url encoded/quoted and be
-under the tracker's base url. If the base_url uses http, you can set
-the url to https.
+``@action=new`` redirects the user to the specified url after
+successfully creating the new item. This is useful if you want
+the user to create another item rather than edit the newly
+created item. Note that the url assigned to ``__redirect_to``
+must be url encoded/quoted and be under the tracker's base
+url. If the base_url uses http, you can set the url to https.
 
 Two special form values are supported for backwards compatibility:
 
@@ -2499,29 +2473,59 @@ templates in the tracker ``'html'`` directory. There are several types
 of files in there. The *minimal* template includes:
 
 **page.html**
-  This template usually defines the overall look of your tracker. When
+  This template defines the overall look of your tracker. When
   you view an issue, it appears inside this template. When you view an
   index, it also appears inside this template. This template defines a
   macro called "icing" which is used by almost all other templates as a
   coating for their content, using its "content" slot. It also defines
   the "head_title" and "body_title" slots to allow setting of the page
   title.
+
+  This page also defines macros for use in search pages.
+
+    * th_label - defines a label for a search field
+    * search_input - defines a text input field
+    * search_date - defines a text input field with popup calendar link
+    * search_popup - defines a text input with popup classhelper link
+    * search_select - defines a select/dropdown element for selecting
+      a single item from a class
+    * search_select_keywords - defines a dropdown with a keyword
+      search expression builder link
+    * search_select_translated - like search_Select but it translates
+      the items in the dropdown
+    * search_multiselect - text input with multiselect classhelper
+      popup link
+    * search_checkboxes - display selection items as checkbox items
+    * column_input - a checkbox element used to select an element for
+      display in a search result (sets the @columns property)
+    * sort_input - a radiobutton element used to select sorting
+    * group_input - a radiobutton element used to select grouping
+
+  and the user.item.html page:
+
+    * user_src_input - takes a long name and splits it into parts (first/last)
+    * user_normal_input - takes a name without splitting it for reuse
+    * user_pw_input - a password input for the user
+    * user_confirm_input - a password input marked so the back end
+      confirms it against the password submitted through the user_pw_input
+
 **home.html**
-  the default page displayed when no other page is indicated by the user
+  the default page displayed when in `the "home" context`_ and no
+  other page is requested using the ``@template`` parameter
 **home.classlist.html**
   a special version of the default page that lists the classes in the
-  tracker
+  tracker. It is requested in the "home" context using ``@template=classlist``
 **classname.item.html**
-  displays an item of the *classname* class
+  displays an item of the *classname* class given a :term:`designator`
 **classname.index.html**
   displays a list of *classname* items
 **classname.search.html**
   displays a search page for *classname* items
 **_generic.index.html**
-  used to display a list of items where there is no
+  used to display a list of items when there is no
   ``*classname*.index`` available
 **_generic.help.html**
-  used to display a "class help" page where there is no
+  used to display a "class help" page when there is no
   ``*classname*.help``
 **user.register.html**
   a special page just for the user class, that renders the registration
@@ -2533,7 +2537,8 @@ The *classic* template has a number of additional templates.
 
 Remember that you can create any template extension you want to,
 so if you just want to play around with the templating for new issues,
-you can copy the current "issue.item" template to "issue.test", and then
+you can copy the current "issue.item.html" template to
+"issue.test" (or "issue.test.html"), and then
 access the test template using the "@template" URL argument::
 
    http://your.tracker.example/tracker/issue?@template=test
@@ -2557,39 +2562,43 @@ Many item templates allow you to edit the item. They contain
 code that renders edit boxes if the user has edit permissions.
 Otherwise the template will just display the item information.
 
-In some cases you want to do a modal edit. The user has to take some
-action (click a button or follow a link) to shift from display mode to
-edit mode. When the changes are submitted, ending the edit mode,
-the user is returned to display mode.
+However, you may want a modal edit. A modal edit requires the
+user to take some action (click a button or follow a link) to
+shift from display mode to edit mode. Submitting the changes
+ends edit mode and the user returns to display
+mode.
 
-Modal workflows usually slow things down and are not implemented by
-default templates. However for some workflows a modal edit is useful.
-For example a batch edit mode that allows the user to edit a number of
-issues all from one form could be implemented as a modal workflow of:
+To build a modal edit for an item, move the (editable)
+issue.item.html template to issue.item_edit.html. Then create a new
+issue.item.html template that only displays information. Add an
+edit link that calls the display url, but adds ``@template=item_edit``
+to the link.
 
-* search for issues to modify
-* switch to edit mode and change values
-* exit back to the results of the search
-
-To implement the modal edit, assume you have an issue.edit.html
-template that implements an edit form.  On the display page (a version
-of issue.item.html modified to only display information) add a link
-that calls the display url, but adds ``@template=edit`` to the link.
-
-This will now display the edit page. On the edit page you want to add
-a hidden text field to your form named ``@template`` with the value:
-``item|edit``.  When the form is submitted it is validated. If the
-form is correct the user will see the item rendered using the item
-template. If there is an error (validation failed) the item will be
-rendered using the edit template. The edit template that is rendered
-will display all the changes that the user made to the form before it
-was submitted. The user can correct the error and resubmit the changes
-until the form validates.
+This will now display the edit page. On the edit page you want to
+add a hidden text field to your form named ``@template`` with the
+value: ``item|item_edit``.  When the form is submitted, it is
+validated. If the form is correct the user will see the item
+rendered using the item template. If there is an error
+(validation failed) the item will be rendered using the
+``item_edit`` template. The rendered ``item_edit`` template will
+display all the changes that the user made to the form before it
+was submitted. The user can correct the error and resubmit the
+changes until the form validates.
 
 If the form failed to validate but the ``@template`` field had the
 value ``item`` the user would still see the error, but all of the data
 the user entered would be discarded. The user would have to redo all
 the edits again.
+
+In general, modal workflows are not implemented by the default
+templates because they slow down the edit cycle. For some
+specific workflows a modal edit is useful. For example, a batch
+edit mode allows the user to edit multiple issues in one
+form. It can result in a modal workflow of:
+
+* search for issues to modify
+* switch to edit mode and change values
+* exit back to the results of the search
 
 
 How the templates work
@@ -2605,24 +2614,24 @@ Since version 1.4.20 Roundup supports two templating engines:
 * the standalone Chameleon templating engine. Chameleon is intended
   as a replacement for the original TAL engine, and supports the
   same syntax, but they are not 100% compatible. The major (and most
-  likely the only) incompatibility is the default expression type being
+  likely the only) incompatibility is the default expression type of
   ``python:`` instead of ``path:``. See also "Incompatibilities and
   differences" section of `Chameleon documentation`__.
 
-Version 1.5.0 added experimental support for the `jinja2`_ templating
-language. You must install the `jinja2`_ module in order to use it. The
+Version 1.5.0 added support for the `jinja2`_ templating
+language. You must install the `jinja2`_ module to use it. The
 ``jinja2`` template supplied with Roundup has the templates rewritten
 to use ``jinja2`` rather than TAL. A number of trackers are running
-using ``jinja2`` templating so it is considered less experimental than
+using ``jinja2`` templating so it is less experimental than
 Chameleon templating.
 
-.. _jinja2: https://palletsprojects.com/p/jinja/
+.. _jinja2: https://palletsprojects.com/projects/jinja/
 
 
 **NOTE1**: For historical reasons, examples given below assumes path
 expression as default expression type. With Chameleon you have to manually
 resolve the path expressions. A Chameleon-based, z3c.pt, that is fully
-compatible with the old TAL implementation, is planned to be included in a
+compatible with the old TAL implementation, is planned for a
 future release.
 
 **NOTE2**: As of 1.4.20 Chameleon support is highly experimental and **not**
@@ -2646,31 +2655,31 @@ These attributes form the **Template Attribute Language**, or TAL.
 The basic TAL commands are:
 
 **tal:define="variable expression; variable expression; ..."**
-   Define a new variable that is local to this tag and its contents. For
+   Define a new local variable for this tag and its contents. For
    example::
 
       <html tal:define="title request/description">
        <head><title tal:content="title"></title></head>
       </html>
 
-   In this example, the variable "title" is defined as the result of the
-   expression "request/description". The "tal:content" command inside the
-   <html> tag may then use the "title" variable.
+   In this example, the variable "title" is defined by the
+   expression "request/description". The "tal:content" command
+   inside the <html> tag may then use the "title" variable.
 
 **tal:condition="expression"**
-   Only keep this tag and its contents if the expression is true. For
+   Keep this tag and its contents if the expression is true. For
    example::
 
      <p tal:condition="python:request.user.hasPermission('View', 'issue')">
       Display some issue information.
      </p>
 
-   In the example, the <p> tag and its contents are only displayed if
-   the user has the "View" permission for issues. We consider the number
-   zero, a blank string, an empty list, and the built-in variable
-   nothing to be false values. Nearly every other value is true,
-   including non-zero numbers, and strings with anything in them (even
-   spaces!).
+   In the example, the <p> tag and its contents are displayed
+   only if the user has the "View" permission for issues. We
+   consider the number zero, a blank string, an empty list, and
+   the built-in variable nothing to be false values. Nearly every
+   other value is true, including non-zero numbers, and strings
+   with anything in them (even spaces!).
 
 **tal:repeat="variable expression"**
    Repeat this tag and its contents for each element of the sequence
@@ -2692,22 +2701,59 @@ The basic TAL commands are:
 **tal:replace="expression"**
    Replace this tag with the result of the expression. For example::
 
-    <span tal:replace="request/user/realname" />
+    <span tal:replace="request/user/id" />
 
    The example would replace the <span> tag and its contents with the
-   user's realname. If the user's realname was "Bruce", then the
-   resultant output would be "Bruce".
+   user's id. If the user's id was "3" the resulting output would be
+   "3".
+
+   You need to be a little careful with ``tal:replace``. Unlike
+   ``tal:content``, it doesn't always escape the output. For example
+   if you used::
+
+      <tal:x tal:replace="request/user/realname" />
+
+   it would replace the contents with the value of the user's
+   realname. The realname is something the user can control. The user
+   could include something like::
+
+      Bruce<script>alert("hello there");</script>
+
+   This would result in an alert box popping up when the page was
+   loaded. Attackers could use this `XSS exploit`_ for malicious
+   purposes.
+
+   Generally you would use tal:replace when calling a utility function
+   using a :ref:`Python expression <python expression>` that generates
+   trusted HTML.
+
+   If you are inserting untrusted content, it is better to use
+   ``tal:content`` with tags that disappear as described below.
+
+   .. _`XSS exploit`: https://owasp.org/www-community/attacks/xss/
 
 **tal:content="expression"**
-   Replace the contents of this tag with the result of the expression.
-   For example::
+   Replace the contents of this tag (but not the tag itself) with the
+   result of the expression.  For example::
 
-    <span tal:content="request/user/realname">user's name appears here
-    </span>
+     <span tal:content="request/user/realname">user's name appears here
+     </span>
 
-   The example would replace the contents of the <span> tag with the
+   This example would replace the contents of the ``<span>`` tag with the
    user's realname. If the user's realname was "Bruce" then the
-   resultant output would be "<span>Bruce</span>".
+   output will be ``<span>Bruce</span>``.
+
+   ``tal:content`` replaces special HTML claracters like ``<`` with an
+   HTML entitity ``&lt;``. This makes it safer to use when inserting
+   untrusted data. To have ``tal:content`` insert unescaped HTML, you
+   need to use the `structure modifier`_.
+
+   If the tag is an unknown ``tal:`` tag, TAL removes the tag. So
+   evaulating:
+
+         <tal:x tal:replace="request/user/realname" />
+
+   results in ``Bruce``.
 
 **tal:attributes="attribute expression; attribute expression; ..."**
    Set attributes on this tag to the results of expressions. For
@@ -2715,9 +2761,9 @@ The basic TAL commands are:
 
      <a tal:attributes="href string:user${request/user/id}">My Details</a>
 
-   In the example, the "href" attribute of the <a> tag is set to the
-   value of the "string:user${request/user/id}" expression, which will
-   be something like "user123".
+   In the example, the "href" attribute of the ``<a>`` tag is set
+   to the value of the expression "string:user${request/user/id}",
+   which will look like "user123".
 
 **tal:omit-tag="expression"**
    Remove this tag (but not its contents) if the expression is true. For
@@ -2729,8 +2775,8 @@ The basic TAL commands are:
 
       Hello, world!
 
-Note that the commands on a given tag are evaulated in the order above,
-so *define* comes before *condition*, and so on.
+Note that TAL evaluates the commands on a given tag in the order above.
+*define* is evaluated before *condition*, and so on.
 
 Additionally, you may include tags such as <tal:block>, which are
 removed from output. Its content is kept, but the tag itself is not (so
@@ -2743,21 +2789,28 @@ illegal tag placement to effect the repeat).
 Templating Expressions
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Templating Expressions are covered by `Template Attribute Language
-Expression Syntax`_, or TALES. The expressions you may use in the
+Templating Expressions are covered by `Template Attribute
+Language Expression Syntax`_ (TALES). The expressions you use in
 attribute values may be one of the following forms:
 
-**Path Expressions** - eg. ``item/status/checklist``
+**Path Expressions** - e.g. ``item/status/checklist``
    These are object attribute / item accesses. Roughly speaking, the
    path ``item/status/checklist`` is broken into parts ``item``,
    ``status`` and ``checklist``. The ``item`` part is the root of the
-   expression. We then look for a ``status`` attribute on ``item``, or
+   expression. It then looks for a ``status`` attribute on ``item``, or
    failing that, a ``status`` item (as in ``item['status']``). If that
    fails, the path expression fails. When we get to the end, the object
    we're left with is evaluated to get a string - if it is a method, it
    is called; if it is an object, it is stringified. Path expressions
-   may have an optional ``path:`` prefix, but they are the default
-   expression type, so it's not necessary.
+   may have an optional ``path:`` prefix, but path is the default
+   expression type for TAL. In Chameleon you must include the
+   ``path:`` prefix.
+
+   If an element in the path may not exist, you can use the ``|``
+   operator in the expression to provide an alternative. The
+   expression ``request/form/foo/value | default`` would simply
+   leave the current HTML in place if the "foo" form variable
+   doesn't exist.
 
    If an expression evaluates to ``default``, then the expression is
    "cancelled" - whatever HTML already exists in the template will
@@ -2769,37 +2822,38 @@ attribute values may be one of the following forms:
    attributes in the case of ``tal:attributes`` and the tag itself in
    the case of ``tal:replace``).
 
-   If an element in the path may not exist, then you can use the ``|``
-   operator in the expression to provide an alternative. So, the
-   expression ``request/form/foo/value | default`` would simply leave
-   the current HTML in place if the "foo" form variable doesn't exist.
-
    You may use the python function ``path``, as in
    ``path("item/status")``, to embed path expressions in Python
    expressions.
 
-**String Expressions** - eg. ``string:hello ${user/name}`` 
-   These expressions are simple string interpolations - though they can
-   be just plain strings with no interpolation if you want. The
-   expression in the ``${ ... }`` is just a path expression as above.
+**String Expressions** - e.g. ``string:hello ${user/name}`` These
+   expressions are string interpolations - though they can be
+   just plain strings with no interpolation if you want. The
+   expression in the interpolation decorator ``${ ... }`` is a
+   path expression as above.
 
-**Python Expressions** - eg. ``python: 1+1`` 
+.. _`python expression`:
+
+**Python Expressions** - e.g. ``python: 1+1`` 
    These expressions give the full power of Python. All the "root level"
-   variables are available, so ``python:item.status.checklist()`` would
-   be equivalent to ``item/status/checklist``, assuming that
+   variables are available, so ``python:item.status.checklist()`` is
+   the same as ``item/status/checklist``, assuming that
    ``checklist`` is a method.
 
 Modifiers:
 
-**structure** - eg. ``structure python:msg.content.plain(hyperlink=1)``
-   The result of expressions are normally *escaped* to be safe for HTML
-   display (all "<", ">" and "&" are turned into special entities). The
-   ``structure`` expression modifier turns off this escaping - the
-   result of the expression is now assumed to be HTML, which is passed
-   to the web browser for rendering.
+.. _`structure modifier`:
+
+**structure** - e.g. ``structure python:msg.content.plain(hyperlink=1)``
+   The result of expressions are *escaped* to be safe for HTML
+   display (all "<", ">" and "&" are replaced with entities
+   (e.g. ``&lt;``). The ``structure`` expression modifier turns
+   off this escaping - the result of the expression is now
+   assumed to be HTML, which is passed to the web browser for
+   rendering.
 
 **not:** - eg. ``not:python:1=1``
-   This simply inverts the logical true/false value of another
+   This inverts the logical true/false value of another
    expression.
 
 .. _TALES:
@@ -2810,14 +2864,14 @@ Modifiers:
 Template Macros
 ~~~~~~~~~~~~~~~
 
-Macros are used in Roundup to save us from repeating the same common
-page stuctures over and over. The most common (and probably only) macro
+Roundup uses macros to save us from repeating the same common
+page structures over and over. The most common (and probably only) macro
 you'll use is the "icing" macro defined in the "page" template.
 
 Macros are generated and used inside your templates using special
 attributes similar to the `basic templating actions`_. In this case,
 though, the attributes belong to the `Macro Expansion Template
-Attribute Language`_, or METAL. The macro commands are:
+Attribute Language`_, (METAL). The macro commands are:
 
 **metal:define-macro="macro name"**
   Define that the tag and its contents are now a macro that may be
@@ -2829,43 +2883,46 @@ Attribute Language`_, or METAL. The macro commands are:
     </html>
 
   defines a macro called "page" using the ``<html>`` tag and its
-  contents. Once defined, macros are stored on the template they're
-  defined on in the ``macros`` attribute. You can access them later on
-  through the ``templates`` variable, eg. the most common
-  ``templates/page/macros/icing`` to access the "page" macro of the
-  "page" template.
+  contents. Once defined, macros are stored in the ``macros``
+  attribute of the template they are defined on. You can access
+  them later on through the ``templates`` variable. Use the path
+  expression ``templates/page/macros/icing`` to access the
+  "icing" macro defined in the "page.html" template.
 
 **metal:use-macro="path expression"**
-  Use a macro, which is identified by the path expression (see above).
-  This will replace the current tag with the identified macro contents.
-  For example::
+  Use a macro, identified by the path expression. This replaces
+  the current tag with the identified macro contents. For
+  example::
 
-   <tal:block metal:use-macro="templates/page/macros/icing">
-    ...
-   </tal:block>
+     <tal:block metal:use-macro="templates/page/macros/icing">
+      ...
+     </tal:block>
 
-   will replace the tag and its contents with the "page" macro of the
-   "page" template.
+  will replace the tag and its contents with the "icing" macro
+  from the "page" template.
 
 **metal:define-slot="slot name"** and **metal:fill-slot="slot name"**
-  To define *dynamic* parts of the macro, you define "slots" which may
-  be filled when the macro is used with a *use-macro* command. For
-  example, the ``templates/page/macros/icing`` macro defines a slot like
-  so::
+  To define *dynamic* parts of the macro, you define "slots"
+  which are filled when the macro is used with a *use-macro*
+  command. For example, the ``templates/page/macros/icing`` macro
+  defines a ``head_title`` slot like so::
 
     <title metal:define-slot="head_title">title goes here</title>
 
   In your *use-macro* command, you may now use a *fill-slot* command
   like this::
 
-    <title metal:fill-slot="head_title">My Title</title>
+    <tal:block metal:use-macro="templates/page/macros/icing">
+      <title class="big" metal:fill-slot="head_title">My Title</title>
+    </tal:block>
 
   where the tag that fills the slot completely replaces the one defined
   as the slot in the macro.
 
-Note that you may not mix `METAL`_ and `TAL`_ commands on the same tag, but
-TAL commands may be used freely inside METAL-using tags (so your
-*fill-slots* tags may have all manner of TAL inside them).
+Note that you may not mix `METAL`_ and `TAL`_ commands on the
+same tag. But TAL commands can be used freely inside METAL-using
+tags (so your *fill-slots* tags may have all manner of TAL inside
+them).
 
 .. _METAL:
 .. _Macro Expansion Template Attribute Language:
@@ -2874,7 +2931,10 @@ TAL commands may be used freely inside METAL-using tags (so your
 Information available to templates
 ----------------------------------
 
-This is implemented by ``roundup.cgi.templating.RoundupPageTemplate``
+This is implemented by
+``roundup.cgi.templating.RoundupPageTemplate``. Documentation in
+the installed file ``roundup/cgi/templating.py`` supplements this
+documentation.
 
 The following variables are available to templates.
 
@@ -2886,20 +2946,23 @@ The following variables are available to templates.
   Includes information about the current request, including:
 
   - the current index information (``filterspec``, ``filter``
-    args, ``properties``, etc) parsed out of the form. 
-  - methods for easy filterspec link generation
+    arguments, ``properties``, etc) parsed out of the form. 
+  - methods for filterspec link generation (indexargs_url)
   - "form"
     The current CGI form information as a mapping of form argument name
     to value (specifically a cgi.FieldStorage)
   - "env" the CGI environment variables
-  - "base" the base URL for this instance
+  - "base" the base URL of this instance
   - "user" a HTMLItem instance for the current user
-  - "language" as determined by the browser or config
+  - "language" as determined by the browser or configuration
   - "classname" the current classname (possibly None)
-  - "template" the current template (suffix, also possibly None)
+  - "template" the current template (e.g. for the ``issue.item.html``
+    template the template would be the ``item`` suffix on the
+    classname. It can also be the empty string (e.g. with the
+    ``home.html`` template).
 **config**
   This variable holds all the values defined in the tracker config.ini
-  file (eg. TRACKER_NAME, etc.)
+  file (e.g. TRACKER_NAME, etc.)
 **db**
   The current database, used to access arbitrary database items.
 **templates**
@@ -2908,18 +2971,17 @@ The following variables are available to templates.
 **utils**
   This variable makes available some utility functions like batching.
 **nothing**
-  This is a special variable - if an expression evaluates to this, then
-  the tag (in the case of a ``tal:replace``), its contents (in the case
-  of ``tal:content``) or some attributes (in the case of
-  ``tal:attributes``) will not appear in the the output. So, for
-  example::
+  This is a special variable - if an expression evaluates to
+  this, then the tag (when used with ``tal:replace``), its
+  contents (in the case of ``tal:content``) or some attributes
+  (when used with ``tal:attributes``) will not appear in the
+  output. For example::
 
     <span tal:attributes="class nothing">Hello, World!</span>
 
   would result in::
 
     <span>Hello, World!</span>
-
 **default**
   Also a special variable - if an expression evaluates to this, then the
   existing HTML in the template will not be replaced or removed, it will
@@ -2931,6 +2993,13 @@ The following variables are available to templates.
 
     <span>Hello, World!</span>
 
+  and::
+
+    <a href="foo" tal:attributes"href nope | default">H</a>
+
+  when ``nope`` is not defined results in::
+
+    <a href="foo">H</a>
 **true**, **false**
   Boolean constants that may be used in `templating expressions`_
   instead of ``python:1`` and ``python:0``.
@@ -2949,23 +3018,22 @@ The following variables are available to templates.
 The context variable
 ~~~~~~~~~~~~~~~~~~~~
 
-The *context* variable is one of three things based on the current
-context (see `determining web context`_ for how we figure this out):
+The *context* variable can contain one of three things based on the
+current context (see `determining web context`_ for how Roundup figures
+this out). If Roundup is:
 
-1. if we're looking at a "home" page, then it's None
-2. if we're looking at a specific hyperdb class, it's a
-   `hyperdb class wrapper`_.
-3. if we're looking at a specific hyperdb item, it's a
-   `hyperdb item wrapper`_.
+1. at a "home" page, then it's None
+2. at a specific hyperdb class, it's a `hyperdb class wrapper`_.
+3. at a specific hyperdb item, it's a  `hyperdb item wrapper`_.
 
-If the context is not None, we can access the properties of the class or
-item. The only real difference between cases 2 and 3 above are:
+If the context is not None, you can access the properties of the class or
+item. The only real difference between cases 2 and 3 are:
 
 1. the properties may have a real value behind them, and this will
    appear if the property is displayed through ``context/property`` or
    ``context/property/field``.
-2. the context's "id" property will be a false value in the second case,
-   but a real, or true value in the third. Thus we can determine whether
+2. the context's "id" property will be a false value in case 2,
+   but a real, or true value in case 3. Thus we can determine whether
    we're looking at a real item from the hyperdb by testing
    "context/id".
 
@@ -2976,7 +3044,7 @@ This is implemented by the ``roundup.cgi.templating.HTMLClass``
 class.
 
 This wrapper object provides access to a hyperdb class. It is used
-primarily in both index view and new item views, but it's also usable
+primarily in both index view and new item views, but it is usable
 anywhere else that you wish to access information about a class, or the
 items of a class, when you don't have a specific item of that class in
 mind.
@@ -2987,104 +3055,127 @@ from the CGI form.
 
 There are several methods available on these wrapper objects:
 
-=========== =============================================================
-Method      Description
-=========== =============================================================
-properties  return a `hyperdb property wrapper`_ for all of this class's
-            properties that are searchable by the user. You can use
-            the argument cansearch=False to get all properties.
-list        lists all of the active (not retired) items in the class.
-csv         return the items of this class as a chunk of CSV text.
-propnames   lists the names of the properties of this class.
-filter      lists of items from this class, filtered and sorted. Two
-            options are available for sorting:
+.. table::
+  :class: valign-top
 
-            1. by the current *request* filterspec/filter/sort/group args
-            2. by the "filterspec", "sort" and "group" keyword args.
-               "filterspec" is ``{propname: value(s)}``. "sort" and
-               "group" are an optionally empty list ``[(dir, prop)]``
-               where dir is '+', '-' or None
-               and prop is a prop name or None.
+  =========== =============================================================
+  Method      Description
+  =========== =============================================================
+  properties  return a `hyperdb property wrapper`_ for all of this class's
+	      properties that are searchable by the user. You can use
+	      the argument cansearch=False to get all properties.
+  list        lists all of the active (not retired) items in the class.
+  csv         return the items of this class as a chunk of CSV text.
+  propnames   lists the names of the properties of this class.
+  filter      lists of items from this class, filtered and sorted. Two
+	      options are available for sorting:
 
-               The propname in filterspec and prop in a sort/group spec
-               may be transitive, i.e., it may contain properties of
-               the form link.link.link.name.
+	      1. by the current *request* filterspec/filter/sort/group args
+	      2. by the "filterspec", "sort" and "group" keyword args.
+		 "filterspec" is ``{propname: value(s)}``. "sort" and
+		 "group" are an optionally empty list ``[(dir, prop)]``
+		 where dir is '+', '-' or None
+		 and prop is a prop name or None.
 
-            eg. All issues with a priority of "1" with messages added in
-            the last week, sorted by activity date:
-            ``issue.filter(filterspec={"priority": "1",
-            'messages.creation' : '.-1w;'}, sort=[('activity', '+')])``
+		 The propname in filterspec and prop in a sort/group spec
+		 may be transitive, i.e., it may contain properties of
+		 the form link.link.link.name.
 
-            Note that when searching for Link and Multilink values, the
-            special value '-1' searches for empty Link or Multilink
-            values. For both, Links and Multilinks, multiple values
-            given in a filter call are combined with 'OR' by default.
-            For Multilinks a postfix expression syntax using negative ID
-            numbers (as strings) as operators is supported. Each
-            non-negative number (or '-1') is pushed on an operand stack.
-            A negative number pops the required number of arguments from
-            the stack, applies the operator, and pushes the result. The
-            following operators are supported:
+	      e.g. All issues with a priority of "1" with messages added in
+	      the last week, sorted by activity date:
+	      ``issue.filter(filterspec={"priority": "1",
+	      'messages.creation' : '.-1w;'}, sort=[('activity', '+')])``
 
-	    - '-2' stands for 'NOT' and takes one argument
-	    - '-3' stands for 'AND' and takes two arguments
-	    - '-4' stands for 'OR' and takes two arguments
+	      Note that when searching for Link and Multilink values, the
+	      special value '-1' searches for empty Link or Multilink
+	      values. For both Links and Multilinks, multiple values
+	      given in a filter call are combined with 'OR' by default.
 
-	    Note that this special handling of ID arguments is applied only
-	    when a negative number smaller than -1 is encountered as an ID
-	    in the filter call. Otherwise the implicit OR default
-            applies.
-	    Examples of using Multilink expressions would be
+	      Both Link and Multilinks support a postfix
+	      expression syntax using negative ID numbers (as
+	      strings) as operators. Each
+	      non-negative number (or '-1') is pushed on an
+	      operand stack. A negative number pops the required
+	      number of arguments from the stack, applies the
+	      operator, and pushes the result. The following
+	      operators are supported:
 
-	    - '1', '2', '-4', '3', '4', '-4', '-3'
-	      would search for IDs (1 or 2) and (3 or 4)
-	    - '-1' '-2' would search for all non-empty Multilinks
+	      - '-2' stands for 'NOT' and takes one argument
+	      - '-3' stands for 'AND' and takes two arguments
+	      - '-4' stands for 'OR' and takes two arguments
 
-filter_sql  **Only in SQL backends**
+	      Note that this special handling of ID arguments is
+	      applied only when a negative number smaller than -1
+	      is encountered as an ID in the filter
+	      call. Otherwise the implicit OR default applies.
+	      Examples of using Multilink expressions would be
 
-            Lists the items that match the SQL provided. The SQL is a
-            complete "select" statement.
+	      - '1', '2', '-4', '3', '4', '-4', '-3'
+		would search for IDs (1 or 2) and (3 or 4)
+	      - '-1' '-2' would search for all non-empty Multilinks
+	      - The URL fragment
+		``filter=assignedto&assignedto=-1,-2``
+		would find all issues that are assigned (where
+		the assignedto field is not empty).
 
-            The SQL select must include the item id as the first column.
+	      Note that 'NOT', (``-2``) is the only useful
+	      operand for links. By default, a multi-value search
+	      uses 'OR', so '-4' is redundant. Since a link only
+	      has a single value, the 'AND' operand will return
+	      an empty result.
 
-            This function **does not** filter out retired items, add
-            on a where clause "__retired__ <> 1" if you don't want
-            retired nodes.
+  filter_sql  **Only in SQL backends**
 
-classhelp   display a link to a javascript popup containing this class'
-            "help" template.
+	      Lists the items that match the SQL provided. The SQL is a
+	      complete "select" statement.
 
-            This generates a link to a popup window which displays the
-            properties indicated by "properties" of the class named by
-            "classname". The "properties" should be a comma-separated list
-            (eg. 'id,name,description'). Properties defaults to all the
-            properties of a class (excluding id, creator, created and
-            activity).
+	      The SQL select must include the item id as the first column.
 
-            You may optionally override the "label" displayed, the "width",
-            the "height", the number of items per page ("pagesize") and
-            the field on which the list is sorted ("sort").
+	      This function **does not** filter out retired items, add
+	      on a where clause "__retired__ <> 1" if you don't want
+	      retired nodes.
 
-            With the "filter" arg it is possible to specify a filter for
-            which items are supposed to be displayed. It has to be of
-            the format "<field>=<values>;<field>=<values>;...".
+  classhelp   display a link to a JavaScript popup containing this class'
+	      "help" template.
 
-            The popup window will be resizable and scrollable.
+	      This generates a link to a popup window which displays the
+	      properties indicated by "properties" of the class named by
+	      "classname". The "properties" should be a comma-separated list
+	      (e.g. 'id,name,description'). Properties defaults to all the
+	      properties of a class (excluding id, creator, created and
+	      activity).
 
-            If the "property" arg is given, it's passed through to the
-            javascript help_window function. This allows updating of a
-            property in the calling HTML page.
+	      You may optionally override the "label" displayed, the "width",
+	      the "height", the number of items per page ("pagesize") and
+	      the field on which the list is sorted ("sort").
 
-            If the "form" arg is given, it's passed through to the
-            javascript help_window function - it's the name of the form
-            the "property" belongs to.
+	      With the "filter" arg it is possible to specify a filter for
+	      which items are supposed to be displayed. It has to be of
+	      the format "<field>=<values>;<field>=<values>;...".
 
-submit      generate a submit button (and action and @csrf hidden elements)
-renderWith  render this class with the given template.
-history     returns 'New node - no history' :)
-is_edit_ok  is the user allowed to Edit the current class?
-is_view_ok  is the user allowed to View the current class?
-=========== =============================================================
+	      The popup window is resizable and scrollable.
+
+	      If the "property" arg is given, it's passed through to
+	      the JavaScript help_window function. This allows
+	      updating of a property in the calling HTML
+	      page. "property" is optional. If not provided, the
+	      resulting window will be read only. This is useful for
+	      Link properties where selection can be done by drop-down,
+	      but descriptions of the values can be seen in the popup.
+	      Note that some tracker templates may generate an error
+	      if the property is missing. Version 2.4.0 of Roundup
+	      fixed these templates.
+
+	      If the "form" arg is given, it's passed through to the
+	      JavaScript help_window function - it's the name of the form
+	      the "property" belongs to.
+
+  submit      generate a submit button (and action and @csrf hidden elements)
+  renderWith  render this class with the given template.
+  history     returns 'New node - no history' :)
+  is_edit_ok  is the user allowed to Edit the current class?
+  is_view_ok  is the user allowed to View the current class?
+  =========== =============================================================
 
 Note that if you have a property of the same name as one of the above
 methods, you'll need to access it using a python "item access"
@@ -3109,46 +3200,49 @@ from the CGI form.
 
 There are several methods available on these wrapper objects:
 
-=============== ========================================================
-Method          Description
-=============== ========================================================
-submit          generate a submit button (and action and @csrf hidden elements)
-journal         return the journal of the current item (**not
-                implemented**)
-history         render the journal of the current item as
-                HTML. By default properties marked as "quiet" (see 
-		`design documentation`_) are not shown unless the
-		function is called with the showall=True parameter.
-		Properties that are not Viewable to the user are not
-		shown.
-renderQueryForm specific to the "query" class - render the search form
-                for the query
-hasPermission   specific to the "user" class - determine whether the
-                user has a Permission. The signature is::
+.. table::
+  :class: valign-top
 
-                    hasPermission(self, permission, [classname=],
-                        [property=], [itemid=])
+  =============== ========================================================
+  Method          Description
+  =============== ========================================================
+  submit          generate a submit button (and action and @csrf hidden elements)
+  journal         return the journal of the current item (**not
+		  implemented**)
+  history         render the journal of the current item as
+		  HTML. By default properties marked as "quiet" (see 
+		  `design documentation`_) are not shown unless the
+		  function is called with the ``showall=True`` parameter.
+		  Properties that are not Viewable to the user are not
+		  shown.
+  renderQueryForm specific to the "query" class - render the search form
+		  for the query
+  hasPermission   specific to the "user" class - determine whether the
+		  user has a Permission. The signature is::
 
-                where the classname defaults to the current context.
-hasRole         specific to the "user" class - determine whether the
-                user has a Role. The signature is::
+		      hasPermission(self, permission, [classname=],
+			  [property=], [itemid=])
 
-                    hasRole(self, rolename)
+		  where the classname defaults to the current context.
+  hasRole         specific to the "user" class - determine whether the
+		  user has a Role. The signature is::
 
-is_edit_ok      is the user allowed to Edit the current item?
-is_view_ok      is the user allowed to View the current item?
-is_retired      is the item retired?
-download_url    generate a url-quoted link for download of FileClass
-                item contents (ie. file<id>/<name>)
-copy_url        generate a url-quoted link for creating a copy
-                of this item.  By default, the copy will acquire
-                all properties of the current item except for
-                ``messages`` and ``files``.  This can be overridden
-                by passing ``exclude`` argument which contains a list
-                (or any iterable) of property names that shall not be
-                copied.  Database-driven properties like ``id`` or
-                ``activity`` cannot be copied.
-=============== ========================================================
+		      hasRole(self, rolename)
+
+  is_edit_ok      is the user allowed to Edit the current item?
+  is_view_ok      is the user allowed to View the current item?
+  is_retired      is the item retired?
+  download_url    generate a url-quoted link for download of FileClass
+		  item contents (ie. file<id>/<name>)
+  copy_url        generate a url-quoted link for creating a copy
+		  of this item.  By default, the copy will acquire
+		  all properties of the current item except for
+		  ``messages`` and ``files``.  This can be overridden
+		  by passing ``exclude`` argument which contains a list
+		  (or any iterable) of property names that shall not be
+		  copied.  Database-driven properties like ``id`` or
+		  ``activity`` cannot be copied.
+  =============== ========================================================
 
 Note that if you have a property of the same name as one of the above
 methods, you'll need to access it using a python "item access"
@@ -3169,189 +3263,280 @@ This is implemented by subclasses of the
 This wrapper object provides access to a single property of a class. Its
 value may be either:
 
-1. if accessed through a `hyperdb item wrapper`_, then it's a value from
+1. if accessed through a `hyperdb item wrapper`_, then it is a value from
    the hyperdb
-2. if access through a `hyperdb class wrapper`_, then it's a value from
+2. if access through a `hyperdb class wrapper`_, then it is a value from
    the CGI form
 
 
 The property wrapper has some useful attributes:
 
-=============== ========================================================
-Attribute       Description
-=============== ========================================================
-_name           the name of the property
-_value          the value of the property if any - this is the actual
-                value retrieved from the hyperdb for this property
-=============== ========================================================
+.. table::
+  :class: valign-top
+
+  =============== ========================================================
+  Attribute       Description
+  =============== ========================================================
+  _name           the name of the property
+  _value          the value of the property if any - this is the actual
+		  value retrieved from the hyperdb for this property
+  =============== ========================================================
 
 There are several methods available on these wrapper objects:
 
-=========== ================================================================
-Method      Description
-=========== ================================================================
-plain       render a "plain" representation of the property. This method
-            may take two arguments:
+.. table::
+  :class: valign-top
 
-            escape
-             If true, escape the text so it is HTML safe (default: no). The
-             reason this defaults to off is that text is usually escaped
-             at a later stage by the TAL commands, unless the "structure"
-             option is used in the template. The following ``tal:content``
-             expressions are all equivalent::
+  =========== ================================================================
+  Method      Description
+  =========== ================================================================
+  plain       render a "plain" representation of the property. This method
+	      may take two arguments:
+
+	      escape
+	       If true, escape the text so it is HTML safe (default: no). The
+	       reason this defaults to off is that text is usually escaped
+	       at a later stage by the TAL commands, unless the "structure"
+	       option is used in the template. The following ``tal:content``
+	       expressions are all equivalent::
+
+		"structure python:msg.content.plain(escape=1)"
+		"python:msg.content.plain()"
+		"msg/content/plain"
+		"msg/content"
+
+	       Usually you'll only want to use the escape option in a
+	       complex expression.
+
+	      hyperlink
+	       If true, turn URLs, email addresses and hyperdb item
+	       designators in the text into hyperlinks (default: no). Note
+	       that you'll need to use the "structure" TAL option if you
+	       want to use this ``tal:content`` expression::
+
+		"structure python:msg.content.plain(hyperlink=1)"
+
+	       The text is automatically HTML-escaped before the hyperlinking
+	       transformation done in the plain() method.
+
+  hyperlinked The same as msg.content.plain(hyperlink=1), but nicer::
+
+		"structure msg/content/hyperlinked"
+
+  wrapped     Wraps long lines on the nearest whitespace. Like
+              plain(), it takes ``escape`` and ``hyperlink``
+              arguments. However, the defaults are to enable both
+              escape and hyperlinks. It also takes a ``columns``
+	      argument set by default to 80.
  
-              "structure python:msg.content.plain(escape=1)"
-              "python:msg.content.plain()"
-              "msg/content/plain"
-              "msg/content"
+  field       render an appropriate form edit field for the property - for
+	      most types this is a text entry box, but for
+	      Booleans it is a
+	      tri-state yes/no/neither selection. This method may take some
+	      arguments:
 
-             Usually you'll only want to use the escape option in a
-             complex expression.
+              display_time (Date properties only)
+                By default this uses the display_time paramter of the
+                Date property (which by default is True) and displays
+                date and time for Date properties. You can set this to
+                False for displaying only the date.
 
-            hyperlink
-             If true, turn URLs, email addresses and hyperdb item
-             designators in the text into hyperlinks (default: no). Note
-             that you'll need to use the "structure" TAL option if you
-             want to use this ``tal:content`` expression::
-  
-              "structure python:msg.content.plain(hyperlink=1)"
+              form (Date properties only)
+                When using a popup calendar (see popcal below) and the
+                enclosing form name is different from "itemSynopsis",
+                the form name must be specified for the field.
 
-             The text is automatically HTML-escaped before the hyperlinking
-             transformation done in the plain() method.
+	      format (Date properties only)
+                Sets the format of the date in the field - uses the
+		same format string argument as supplied to the
+		``pretty`` method below. If you use this, it will
+		prevent the use of browser native date inputs. It is
+		useful if you want partial dates. For example using
+		``format="%Y-%m"`` with ``type="text"`` will display a
+		text edit box with the year and month part of your
+		date.
 
-hyperlinked The same as msg.content.plain(hyperlink=1), but nicer::
+	      labelfirst (Boolean properties only)
+	        place the labels before the radio buttons
 
-              "structure msg/content/hyperlinked"
+	      popcal (Date properties only)
+		Include a link to the JavaScript-based popup calendar
+		for date selection. Defaults to off/False when browser
+                native dates are in use and on/True otherwise because
+                browser native dates support a date popup on most
+                browsers.
 
-field       render an appropriate form edit field for the property - for
-            most types this is a text entry box, but for Booleans it's a
-            tri-state yes/no/neither selection. This method may take some
-            arguments:
+	      size (default 30)
+		Sets the width in characters of the edit field
 
-            size
-              Sets the width in characters of the edit field
+              type (depends on property type)
+                Sets the type property of the input. To change a date
+                property field from a native date input to a text
+                input you would use ``type="text"``. For Date properties
+                the type cannot be set by the user and is enforced via
+                the configuration (if browser native date input should
+                be used).
 
-            format (Date properties only)
-              Sets the format of the date in the field - uses the same
-              format string argument as supplied to the ``pretty`` method
-              below.
+	      y_label, n_label, u_label (Boolean properties only)
+	        Set the labels for the true/false/undefined
+		states. If u_label is defined, it produces a
+	        tri-state radio button selector. Otherwise, it
+		allows selection of true/yes or false/no only.
 
-            popcal (Date properties only)
-              Include the Javascript-based popup calendar for date
-              selection. Defaults to on.
+              Other arguments are added as properties directly on the
+              input tag. For example::
 
-stext       only on String properties - render the value of the property
-            as StructuredText (requires the StructureText module to be
-            installed separately)
-multiline   only on String properties - render a multiline form edit
-            field for the property
-email       only on String properties - render the value of the property
-            as an obscured email address
-url_quote   only on String properties. It quotes any characters in the
-            string so it is safe to use in a url. E.G. a space is
-            replaced with %20.
-confirm     only on Password properties - render a second form edit field
-            for the property, used for confirmation that the user typed
-            the password correctly. Generates a field with name
-            "name:confirm".
-now         only on Date properties - return the current date as a new
-            property
-reldate     only on Date properties - render the interval between the date
-            and now
-local       only on Date properties - return this date as a new property
-            with some timezone offset, for example::
-            
-                python:context.creation.local(10)
+                  field(size=30, id='myid', required=None)
 
-            will render the date with a +10 hour offset.
-pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
-            Mar 2004"). Takes an optional format argument, for example::
+              produces::
 
-                python:context.activity.pretty('%Y-%m-%d')
+                   <input id="myid" size="30" required>
 
-            Will format as "2004-03-19" instead.
+	      Note that using ``None`` as the value results in an
+	      attribute without a value. This is useful for boolean
+	      properties like ``required``.
 
-            Interval properties - render the interval in a pretty
-            format (eg. "yesterday"). The format arguments are those used
-            in the standard ``strftime`` call (see the `Python Library
-            Reference: time module`__)
+  rst         only on String properties - render the value of the property
+	      as ReStructuredText (requires the :ref:`Docutils
+	      module to be installed separately<install/docutils>`).
 
-            Number properties - takes a printf style format argument
-            (default: '%0.3f') and formats the number accordingly.
-            If the value can't be converted, '' is returned if the
-            value is ``None`` otherwise it is converted to a string.
-popcal      Generate a link to a popup calendar which may be used to
-            edit the date field, for example::
+  stext       only on String properties - render the value of the property
+	      as StructuredText (requires the StructureText module to be
+	      installed separately) (deprecated, to be removed
+	      use rst or markdown instead).
+  markdown    only on String properties - render the value of the property
+	      as Markdown (requires a :ref:`Markdown module to be
+	      installed separately<install/markdown>`).
 
-              <span tal:replace="structure context/due/popcal" />
+  multiline   only on String properties - render a multiline form edit
+	      field for the property
 
-            you still need to include the ``field`` for the property, so
-            typically you'd have::
+  email       only on String properties - render the value of the property
+	      as an obscured email address
 
-              <span tal:replace="structure context/due/field" />
-              <span tal:replace="structure context/due/popcal" />
+  url_quote   only on String properties. It quotes any characters in the
+	      string so it is safe to use in a url. E.G. a space is
+	      replaced with %20.
 
-menu        only on Link and Multilink properties - render a form select
-            list for this property. Takes a number of optional arguments
+  confirm     only on Password properties - render a second form edit field
+	      for the property, used for confirmation that the user typed
+	      the password correctly. Generates a field with name
+	      "name:confirm".
 
-            size
-               is used to limit the length of the list labels
-            height
-               is used to set the <select> tag's "size" attribute
-            showid
-               includes the item ids in the list labels
-            additional
-               lists properties which should be included in the label
-            sort_on
-                indicates the property to sort the list on as (direction,
-                (direction, property) where direction is '+' or '-'. A
-                single string with the direction prepended may be used.
-                For example: ('-', 'order'), '+name'.
-            value
-                gives a default value to preselect in the menu
+  now         only on Date properties - return the current date as a new
+	      property
 
-            The remaining keyword arguments are used as conditions for
-            filtering the items in the list - they're passed as the
-            "filterspec" argument to a Class.filter() call. For example::
+  reldate     only on Date properties - render the interval between the date
+	      and now
 
-             <span tal:replace="structure context/status/menu" />
+  local       only on Date properties - return this date as a new property
+	      with some timezone offset, for example::
 
-             <span tal:replace="python:context.status.menu(order='+name",
-                                   value='chatting', 
-                                   filterspec={'status': '1,2,3,4'}" />
+		  python:context.creation.local(10)
 
-sorted      only on Multilink properties - produce a list of the linked
-            items sorted by some property, for example::
-            
-                python:context.files.sorted('creation')
+	      will render the date with a +10 hour offset.
 
-            Will list the files by upload date. While::
+  pretty      Date properties - render the date as "dd Mon YYYY" (eg. "19
+	      Mar 2004"). Takes an optional format argument, for example::
 
-               python:context.files.sorted('creation', reverse=True)
+		  python:context.activity.pretty('%Y-%m-%d')
 
-            Will list the files by upload date in reverse order from
-            the prior example. If the property can be unset, you can
-            use the ``NoneFirst`` parameter to sort the None/Unset
-            values at the front or the end of the list. For example::
-            
-                python:context.files.sorted('creation', NoneFirst=True)
-            
-            will sort files by creation date with files missing a
-            creation date at the start of the list. The default for
-            ``NoneFirst`` is False so these files will sort at the end
-            by default. (Note creation date is never unset, but you
-            get the idea.) If you combine NoneFirst with
-            ``reverse=True`` the meaning of NoneFirst is inverted:
-	    True sorts None/unset at the end and False sorts at the
-	    beginning.
-reverse     only on Multilink properties - produce a list of the linked
-            items in reverse order
-isset       returns True if the property has been set to a value
-=========== ================================================================
+	      Will format as "2004-03-19" instead.
+
+	      Interval properties - render the interval in a
+	      pretty format (e.g. "yesterday"). The format
+	      arguments are those used in the standard
+	      ``strftime`` call (see the `Python Library
+	      Reference: time module`__)
+
+	      Number properties - takes a printf style format
+	      argument (default: '%0.3f') and formats the number
+	      accordingly.  If the value can't be converted, ''
+	      is returned if the value is ``None`` otherwise it
+	      is converted to a string.
+
+  popcal      This is deprecated with Roundup 2.5 which either uses the
+              native HTML5 date input or can generate a date popup with
+              the popcal option of the ``field`` method. The native date
+              input includes a calendar popup on modern broswers.
+
+              Generate a link to a popup calendar which may be used to
+	      edit the date field, for example::
+
+		<span tal:replace="structure context/due/popcal" />
+
+	      you still need to include the ``field`` for the property, so
+	      typically you'd have::
+
+		<span tal:replace="structure context/due/field" />
+		<span tal:replace="structure context/due/popcal" />
+              
+              Since the ``field`` by default already produces a popup
+              calendar this use is deprecated.
+
+  menu        only on Link and Multilink properties - render a form select
+	      list for this property. Takes a number of optional arguments
+
+	      size
+		 is used to limit the length of the list labels
+	      height
+		 is used to set the <select> tag's "size" attribute
+	      showid
+		 includes the item ids in the list labels
+	      additional
+		 lists properties which should be included in the label
+	      sort_on
+		  indicates the property to sort the list on as (direction,
+		  (direction, property) where direction is '+' or '-'. A
+		  single string with the direction prepended may be used.
+		  For example: ('-', 'order'), '+name'.
+	      value
+		  gives a default value to preselect in the menu
+
+	      The remaining keyword arguments are used as conditions for
+	      filtering the items in the list - they're passed as the
+	      "filterspec" argument to a Class.filter() call. For example::
+
+	       <span tal:replace="structure context/status/menu" />
+
+	       <span tal:replace="python:context.status.menu(order='+name",
+				     value='chatting', 
+				     filterspec={'status': '1,2,3,4'}" />
+
+  sorted      only on Multilink properties - produce a list of the linked
+	      items sorted by some property, for example::
+
+		  python:context.files.sorted('creation')
+
+	      Will list the files by upload date. While::
+
+		 python:context.files.sorted('creation', reverse=True)
+
+	      Will list the files by upload date in reverse order from
+	      the prior example. If the property can be unset, you can
+	      use the ``NoneFirst`` parameter to sort the None/Unset
+	      values at the front or the end of the list. For example::
+
+		  python:context.files.sorted('creation', NoneFirst=True)
+
+	      will sort files by creation date with files missing a
+	      creation date at the start of the list. The default for
+	      ``NoneFirst`` is False so these files will sort at the end
+	      by default. (Note creation date is never unset, but you
+	      get the idea.) If you combine NoneFirst with
+	      ``reverse=True`` the meaning of NoneFirst is inverted:
+	      True sorts None/unset at the end and False sorts at the
+	      beginning.
+
+  reverse     only on Multilink properties - produce a list of the linked
+	      items in reverse order
+
+  isset       returns True if the property has been set to a value
+  =========== ================================================================
 
 __ https://docs.python.org/2/library/time.html
 
-All of the above functions perform checks for permissions required to
+All the above functions perform checks for permissions required to
 display or edit the data they are manipulating. The simplest case is
 editing an issue title. Including the expression::
 
@@ -3375,49 +3560,69 @@ request.
 
 .. taken from ``roundup.cgi.templating.HTMLRequest`` docstring
 
-=========== ============================================================
-Variable    Holds
-=========== ============================================================
-form        the CGI form as a cgi.FieldStorage
-env         the CGI environment variables
-base        the base URL for this tracker
-user        a HTMLUser instance for this user
-classname   the current classname (possibly None)
-template    the current template (suffix, also possibly None)
-form        the current CGI form variables in a FieldStorage
-=========== ============================================================
+.. table::
+  :class: valign-top
+
+  =========== ============================================================
+  Variable    Holds
+  =========== ============================================================
+  base        the base URL for this tracker
+  classname   the current classname (possibly None)
+  env         the CGI environment variables
+  form        the current CGI form variables in a cgi.FieldStorage
+  template    the current template (suffix, also possibly None)
+  user        a HTMLUser instance for this user
+  =========== ============================================================
 
 **Index page specific variables (indexing arguments)**
 
-=========== ============================================================
-Variable    Holds
-=========== ============================================================
-columns     dictionary of the columns to display in an index page
-show        a convenience access to columns - request/show/colname will
-            be true if the columns should be displayed, false otherwise
-sort        index sort columns [(direction, column name)]
-group       index grouping properties [(direction, column name)]
-filter      properties to filter the index on
-filterspec  values to filter the index on (property=value, eg
-            ``priority=1`` or ``messages.author=42``
-search_text text to perform a full-text search on for an index
-=========== ============================================================
+.. table::
+  :class: valign-top
 
-There are several methods available on the request variable:
+  =========== ============================================================
+  Variable    Holds
+  =========== ============================================================
+  columns     dictionary of the columns to display in an index page
+  filter      properties to filter the index on
+  filterspec  values to filter the index on (property=value, eg
+	      ``priority=1`` or ``messages.author=42``
+  group       index grouping properties [(direction, column name)]
+  search_text text to perform a full-text search on for an index
+  show        a convenience access to columns - request/show/colname will
+	      be true if the columns should be displayed, false otherwise
+  sort        index sort columns [(direction, column name)]
+  =========== ============================================================
 
-=============== ========================================================
-Method          Description
-=============== ========================================================
-description     render a description of the request - handle for the
-                page title
-indexargs_form  render the current index args as form elements
-indexargs_url   render the current index args as a URL
-base_javascript render some javascript that is used by other components
-                of the templating
-batch           run the current index args through a filter and return a
-                list of items (see `hyperdb item wrapper`_, and
-                `batching`_)
-=============== ========================================================
+Several methods are available on the request variable:
+
+.. table::
+  :class: valign-top
+
+  =============== ========================================================
+  Method          Description
+  =============== ========================================================
+  base_javascript render some javascript used by other components
+		  of the templating
+  batch           run the current index args through a filter and return a
+		  list of items (see `hyperdb item wrapper`_, and
+		  `batching`_)
+  description     render a description of the request - handle for the
+		  page title
+  indexargs_form  render the current index args as form elements
+  indexargs_url   render the current index args as a URL::
+
+		    request.indexargs_url("url", {args})
+
+		  If the value of an arg (in args dict) is None,
+		  the argument is excluded from the url. If you want
+		  an empty value use an empty string '' as the value.
+		  Use this in templates to conditionally
+		  include an arg if it is set to a value. E.G.
+		  {..., '@queryname': request.dispname or None, ...}
+		  will include @queryname in the url if there is a
+		  dispname otherwise the parameter will be omitted
+		  from the url.
+  =============== ========================================================
 
 The form variable
 :::::::::::::::::
@@ -3434,11 +3639,12 @@ or the python expression::
    python:request.form['name'].value
 
 Note the "item" access used in the python case, and also note the
-explicit "value" attribute we have to access. That's because the form
-variables are stored as MiniFieldStorages. If there's more than one
-"name" value in the form, then the above will break since
-``request/form/name`` is actually a *list* of MiniFieldStorages. So it's
-best to know beforehand what you're dealing with.
+explicit "value" attribute we have to access. That's because the
+form variables are stored as MiniFieldStorages. If there's more
+than one "name" value in the form, then the above will break
+since ``request/form/name`` is actually a *list* of
+MiniFieldStorages. So it is best to know beforehand what you are
+dealing with.
 
 
 The db variable
@@ -3453,9 +3659,9 @@ you want access to the "user" class, for example, you would use::
   db/user
   python:db.user
 
-Also, the current id of the current user is available as
-``db.getuid()``. This isn't so useful in templates (where you have
-``request/user``), but it can be useful in detectors or interfaces.
+Also, the id of the current user is available as
+``db.getuid()``. This isn't as useful in templates (where you have
+``request/user``), but is useful in detectors or interfaces.
 
 The access results in a `hyperdb class wrapper`_.
 
@@ -3469,7 +3675,7 @@ template engine loader class.
 
 This variable is used to access other templates in expressions and
 template macros. It doesn't have any useful methods defined. The
-templates can be accessed using the following path expression::
+templates are accessed using the following path expression::
 
    templates/name
 
@@ -3490,30 +3696,68 @@ or the python expression::
 The repeat variable
 ~~~~~~~~~~~~~~~~~~~
 
-The repeat variable holds an entry for each active iteration. That is, if
-you have a ``tal:repeat="user db/users"`` command, then there will be a
-repeat variable entry called "user". This may be accessed as either::
+The repeat variable holds an entry for each active iteration. If
+you have a ``tal:repeat="myusers db/users"`` command, then there
+will be a repeat variable entry called "myusers". This is accessed
+as either::
 
-    repeat/user
-    python:repeat['user']
+    repeat/myusers
+    python:repeat['myusers']
 
-The "user" entry has a number of methods available for information:
+The "myusers" entry has nine methods available for information:
 
-=============== =========================================================
-Method          Description
-=============== =========================================================
-first           True if the current item is the first in the sequence.
-last            True if the current item is the last in the sequence.
-even            True if the current item is an even item in the sequence.
-odd             True if the current item is an odd item in the sequence.
-number          Current position in the sequence, starting from 1.
-letter          Current position in the sequence as a letter, a through
-                z, then aa through zz, and so on.
-Letter          Same as letter(), except uppercase.
-roman           Current position in the sequence as lowercase roman
-                numerals.
-Roman           Same as roman(), except uppercase.
-=============== =========================================================
+.. table::
+  :class: valign-top
+
+  =============== =========================================================
+  Method          Description
+  =============== =========================================================
+  first           True if the current item is the first in the sequence.
+  last            True if the current item is the last in the sequence.
+  even            True if the current item is an even item in the sequence.
+  odd             True if the current item is an odd item in the sequence.
+  number          Current position in the sequence, starting from 1.
+  letter          Current position in the sequence as a letter, a through
+		  z, then aa through zz, and so on.
+  Letter          Same as letter(), except uppercase.
+  roman           Current position in the sequence as lowercase roman
+		  numerals.
+  Roman           Same as roman(), except uppercase.
+  =============== =========================================================
+
+(Note: except for even, True above can be a truthy/falsy value not
+actually True/False. Also the first item in a sequence is 0,
+so it starts with even() = True when number() returns 1 as index
+is 0.)
+
+It also has the following properties:
+
+.. table::
+  :class: valign-top
+
+  =============== =========================================================
+  Properties      Description
+  =============== =========================================================
+  end             Truthy if the current item is the last in the sequence.
+  index           Current index in sequence starting at 0
+  start           Truthy if the current item is the first in the sequence.
+  =============== =========================================================
+
+For example, this will print a comma after each element except the
+last::
+
+   <span>
+     <tal:x tal:repeat="field
+          python:request.form['properties'].value.split(',')">
+       <tal:x tal:replace="field"></tal:x>
+       <tal:x tal:condition="python:not repeat['field'].last()"
+          tal:content="string:,"></tal:x>
+     </tal:x>
+   </span>
+
+The same can be done using a path expression::
+
+         <tal:x tal:condition="not: repeat/field/last" ...
 
 .. _templating utilities:
 
@@ -3521,21 +3765,65 @@ The utils variable
 ~~~~~~~~~~~~~~~~~~
 
 This is implemented by the
-``roundup.cgi.templating.TemplatingUtils`` class, which may be extended
-with additional methods by extensions_.
+``roundup.cgi.templating.TemplatingUtils`` class. New methods can
+be added to the variable by using extensions_.
 
-=============== ========================================================
-Method          Description
-=============== ========================================================
-Batch           return a batch object using the supplied list
-url_quote       quote some text as safe for a URL (ie. space, %, ...)
-html_quote      quote some text as safe in HTML (ie. <, >, ...)
-html_calendar   renders an HTML calendar used by the
-                ``_generic.calendar.html`` template (itself invoked by
-                the popupCalendar DateHTMLProperty method
-anti_csrf_nonce returns the random noncue generated for this session
-=============== ========================================================
+-----
 
+.. list-table:: TemplatingUtils Methods
+   :align: left
+   :header-rows: 1
+   :class: valign-top captionbelow booktabs
+
+   * - Method
+     - Description
+   * - Batch
+     - return a batch object using the supplied list
+   * - anti_csrf_nonce
+     - returns the random nonce generated for this session
+   * - :meth:`expandfile <roundup.cgi.templating.TemplatingUtils.expandfile>`
+     - load a file into a template and expand
+       '%(tokenname)s' in the file using
+       values from the supplied dictionary.
+   * - :meth:`html_calendar <roundup.cgi.templating.TemplatingUtils.html_calendar>`
+     - renders an HTML calendar used by the ``_generic.calendar.html``
+       template (itself invoked by the popupCalendar DateHTMLProperty
+       method
+   * - :meth:`html_quote <roundup.cgi.templating.TemplatingUtils.html_quote>`
+     - quote some text as safe in HTML (ie. <, >, ...)
+   * - :meth:`readfile <roundup.cgi.templating.TemplatingUtils.readfile>`
+     - read JavaScript or other content in an external file
+       into the template.
+   * - :meth:`set_http_response <roundup.cgi.templating.TemplatingUtils.set_http_response>`
+     - set_http_response sets the HTTP response code for the request.
+   * - :meth:`url_quote <roundup.cgi.templating.TemplatingUtils.url_quote>`
+     - quote some text as safe for a URL (ie. space, %, ...)
+   * - :meth:`embed_form_fields <roundup.cgi.templating.TemplatingUtils.embed_form_fields>`
+     - Creates a hidden input for each of the client's form fields. It
+       also embeds base64 encoded file contents into pre tags and
+       processes that informtion back into a file input control.
+
+
+-----
+
+Additional info can be obtained by starting ``python`` with the
+``roundup`` subdirectory on your PYTHONPATH and using the Python help
+function like::
+
+   >>> from roundup.cgi.templating import TemplatingUtils
+   >>> help(TemplatingUtils.readfile)
+   Help on function readfile in module roundup.cgi.templating:
+
+   readfile(self, name, optional=False)
+       Read an file in the template directory.
+
+       Used to inline file content into a template.  If file
+       is not found in template directory, reports an error
+       to the user unless optional=True. Then it returns an
+       empty string. Useful inlining JavaScript kept in an
+       external file where you can use linters/minifiers and
+
+(Note: ``>>>`` is the Python REPL prompt. Don't type the ``>>>``.)
 
 Batching
 ::::::::
@@ -3552,42 +3840,51 @@ or, to get the current index batch::
 
 The parameters are:
 
-========= ==============================================================
-Parameter  Usage
-========= ==============================================================
-sequence  a list of HTMLItems
-size      how big to make the sequence.
-start     where to start (0-indexed) in the sequence.
-end       where to end (0-indexed) in the sequence.
-orphan    if the next batch would contain less items than this value,
-          then it is combined with this batch
-overlap   the number of items shared between adjacent batches
-========= ==============================================================
+.. table::
+  :class: valign-top
+
+  ========= ==============================================================
+  Parameter  Usage
+  ========= ==============================================================
+  end       where to end (0-indexed) in the sequence.
+  orphan    if the next batch would contain less items than this value,
+	    then it is combined with this batch
+  overlap   the number of items shared between adjacent batches
+  sequence  a list of HTMLItems
+  size      how big to make the sequence.
+  start     where to start (0-indexed) in the sequence.
+  ========= ==============================================================
 
 All of the parameters are assigned as attributes on the batch object. In
 addition, it has several more attributes:
 
-=============== ========================================================
-Attribute       Description
-=============== ========================================================
-start           indicates the start index of the batch. *Unlike
-                the argument, is a 1-based index (I know, lame)*
-first           indicates the start index of the batch *as a 0-based
-                index*
-length          the actual number of elements in the batch
-sequence_length the length of the original, unbatched, sequence.
-=============== ========================================================
+.. table::
+  :class: valign-top
+
+  =============== ========================================================
+  Attribute       Description
+  =============== ========================================================
+  first           indicates the start index of the batch *as a 0-based
+		  index*
+  length          the actual number of elements in the batch
+  start           indicates the start index of the batch. *Unlike
+		  the argument, is a 1-based index (I know, lame)*
+  sequence_length the length of the original, unbatched, sequence.
+  =============== ========================================================
 
 And several methods:
 
-=============== ========================================================
-Method          Description
-=============== ========================================================
-previous        returns a new Batch with the previous batch settings
-next            returns a new Batch with the next batch settings
-propchanged     detect if the named property changed on the current item
-                when compared to the last item
-=============== ========================================================
+.. table::
+  :class: valign-top
+
+  =============== ========================================================
+  Method          Description
+  =============== ========================================================
+  previous        returns a new Batch with the previous batch settings
+  next            returns a new Batch with the next batch settings
+  propchanged     detect if the named property changed on the current item
+		  when compared to the last item
+  =============== ========================================================
 
 An example of batching::
 
@@ -3601,7 +3898,7 @@ An example of batching::
   </tr>
  </table>
 
-... which will produce a table with four columns containing the items of
+will produce a table with four columns containing the items of
 the "keyword" class (well, their "name" anyway).
 
 
@@ -3614,6 +3911,30 @@ create you'll need to add new locale files in the tracker home under a
 developer's guide <developers.html#extracting-translatable-messages>`_ to
 create the locale files.
 
+Setting the Type of the Returned Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Roundup processes a template and uses the name of the template to
+determine the Content-Type MIME header that is returned. For
+``issue.index.html` it would return ``text/html``. Similarly a file
+named ``issue.atom.xml`` (an rss feed) would have a type
+of``application/xml``. A file named 'issue.json' would have type
+``application/json``.
+
+However as of Roundup 2.4.0 you can set the type of the file by
+calling::
+
+  request.client.setHeader('Content-Type', 'application/atom+xml')
+
+from your template. For TAL based templates, something like this::
+
+   <tal:x tal:replace="python:request.client.setHeader(
+    'Content-Type', 'application/atom+xml'
+    )"/>
+
+will set the ``Content-Type`` header. The header name is case sensitive,
+so use capital letters as shown. If you don't you end up with multiple
+Content-Type definitions returned to the browser.
 
 Displaying Properties
 ---------------------
@@ -3621,7 +3942,7 @@ Displaying Properties
 Properties appear in the user interface in three contexts: in indices,
 in editors, and as search arguments. For each type of property, there
 are several display possibilities. For example, in an index view, a
-string property may just be printed as a plain string, but in an editor
+string property may just be printed as a plain string. In an editor
 view, that property may be displayed in an editable field.
 
 
@@ -3647,20 +3968,21 @@ been added for clarity)::
 
 The index view is determined by two parts of the specifier: the layout
 part and the filter part. The layout part consists of the query
-parameters that begin with colons, and it determines the way that the
-properties of selected items are displayed. The filter part consists of
-all the other query parameters, and it determines the criteria by which
-items are selected for display. The filter part is interactively
-manipulated with the form widgets displayed in the filter section. The
-layout part is interactively manipulated by clicking on the column
-headings in the table.
+parameters that begin with the '@' character, and it determines
+the way that the properties of selected items are displayed. The
+filter part consists of all the other query parameters, and it
+determines the criteria by which items are selected for
+display. The filter part is interactively manipulated with the
+form widgets displayed in the filter section. The layout part is
+interactively manipulated by clicking on the column headings in
+the table. 
 
 The filter part selects the union of the sets of items with values
 matching any specified Link properties and the intersection of the sets
-of items with values matching any specified Multilink properties.
+of items with values matching any specified MultiLink properties.
 
 The example specifies an index of "issue" items. Only items with a
-"status" of either "unread" or "in-progress" or "resolved" are
+"status" of either "unread", "in-progress" or "resolved" are
 displayed, and only items with "keyword" values including both "security"
 and "ui" are displayed. The items are grouped by priority arranged in
 ascending order and in descending order by status; and within
@@ -3669,32 +3991,35 @@ section shows filters for the "status" and "keyword" properties, and the
 table includes columns for the "title", "status", and "fixer"
 properties.
 
-============ =============================================================
-Argument     Description
-============ =============================================================
-@sort        sort by prop name, optionally preceeded with '-' to give
-             descending or nothing for ascending sorting. Several
-             properties can be specified delimited with comma.
-             Internally a search-page using several sort properties may
-             use @sort0, @sort1 etc. with option @sortdir0, @sortdir1
-             etc. for the direction of sorting (a non-empty value of
-             sortdir0 specifies reverse order).
-@group       group by prop name, optionally preceeded with '-' or to sort
-             in descending or nothing for ascending order. Several
-             properties can be specified delimited with comma.
-             Internally a search-page using several grouping properties may
-             use @group0, @group1 etc. with option @groupdir0, @groupdir1
-             etc. for the direction of grouping (a non-empty value of
-             groupdir0 specifies reverse order).
-@columns     selects the columns that should be displayed. Default is
-             all.                     
-@filter      indicates which properties are being used in filtering.
-             Default is none.
-propname     selects the values the item properties given by propname must
-             have (very basic search/filter).
-@search_text if supplied, performs a full-text search (message bodies,
-             issue titles, etc)
-============ =============================================================
+.. table::
+  :class: valign-top
+
+  ============ =============================================================
+  Argument     Description
+  ============ =============================================================
+  @sort        sort by prop name, optionally preceeded with '-' to give
+	       descending or nothing for ascending sorting. Several
+	       properties can be specified delimited with comma.
+	       Internally a search-page using several sort properties may
+	       use @sort0, @sort1 etc. with option @sortdir0, @sortdir1
+	       etc. for the direction of sorting (a non-empty value of
+	       sortdir0 specifies reverse order).
+  @group       group by prop name, optionally preceeded with '-' or to sort
+	       in descending or nothing for ascending order. Several
+	       properties can be specified delimited with comma.
+	       Internally a search-page using several grouping properties may
+	       use @group0, @group1 etc. with option @groupdir0, @groupdir1
+	       etc. for the direction of grouping (a non-empty value of
+	       groupdir0 specifies reverse order).
+  @columns     selects the columns that should be displayed. Default is
+	       all.                     
+  @filter      indicates which properties are being used in filtering.
+	       Default is none.
+  propname     selects the values the item properties given by propname must
+	       have (very basic search/filter).
+  @search_text if supplied, performs a full-text search (message bodies,
+	       issue titles, etc)
+  ============ =============================================================
 
 
 Searching Views
@@ -3712,7 +4037,7 @@ This is one of the class context views. The template used is typically
 - sets up additional filtering, as well as performing indexed text
   searching
 - sets the ``@filter`` variable correctly
-- saves the query off if ``@query_name`` is set.
+- saves the query to the user's query list if ``@query_name`` is set.
 
 The search page should lay out any fields that you wish to allow the
 user to search on. If your schema contains a large number of properties,
@@ -3725,15 +4050,18 @@ more useful for the end user.
 If the search view does specify the "search" ``@action``, then it may also
 provide an additional argument:
 
-============ =============================================================
-Argument     Description
-============ =============================================================
-@query_name  if supplied, the index parameters (including @search_text)
-             will be saved off as a the query item and registered against
-             the user's queries property. Note that the *classic* template
-             schema has this ability, but the *minimal* template schema
-             does not.
-============ =============================================================
+.. table::
+  :class: valign-top
+
+  ============ =============================================================
+  Argument     Description
+  ============ =============================================================
+  @query_name  if supplied, the index parameters (including @search_text)
+	       will be saved as a the query item and registered against
+	       the user's queries property. Note that the *classic* template
+	       schema has this ability, but the *minimal* template schema
+	       does not.
+  ============ =============================================================
 
 
 Item Views
@@ -3795,13 +4123,13 @@ template)::
  <tr>
   <th>Change Note</th>
   <td colspan="3">
-   <textarea name=":note" wrap="hard" rows="5" cols="60"></textarea>
+   <textarea name="@note" wrap="hard" rows="5" cols="60"></textarea>
   </td>
  </tr>
  
  <tr>
   <th>File</th>
-  <td colspan="3"><input type="file" name=":file" size="40"></td>
+  <td colspan="3"><input type="file" name="@file" size="40"></td>
  </tr>
  
  <tr>
@@ -3815,7 +4143,7 @@ template)::
 
 When a change is submitted, the system automatically generates a message
 describing the changed properties. As shown in the example, the editor
-template can use the ":note" and ":file" fields, which are added to the
+template can use the "@note" and "@file" fields, which are added to the
 standard changenote message generated by Roundup.
 
 
@@ -3826,9 +4154,9 @@ We have a number of ways to pull properties out of the form in order to
 meet the various needs of:
 
 1. editing the current item (perhaps an issue item)
-2. editing information related to the current item (eg. messages or
+2. editing information related to the current item (e.g. messages or
    attached files)
-3. creating new information to be linked to the current item (eg. time
+3. creating new information to be linked to the current item (e.g. time
    spent on an issue)
 
 In the following, ``<bracketed>`` values are variable, ":" may be one of
@@ -3846,7 +4174,7 @@ Properties are specified as form variables:
   property on the Nth new item of classname (generally for creating new
   items to attach to the current item)
 
-Once we have determined the "propname", we check to see if it is one of
+Once we have determined the "propname", check to see if it is one of
 the special form values:
 
 ``@required``
@@ -3920,15 +4248,15 @@ templating through the "journal" method of the item*::
 Defining new web actions
 ------------------------
 
-You may define new actions to be triggered by the ``@action`` form variable.
-These are added to the tracker ``extensions`` directory and registered
+You may define new actions triggered by the ``@action`` form variable.
+These defined in the tracker's ``extensions`` directory and registered
 using ``instance.registerAction``.
 
-All the existing Actions are defined in ``roundup.cgi.actions``.
+All the pre-existing Actions are defined in ``roundup.cgi.actions``.
 
 Adding action classes takes three steps; first you `define the new
 action class`_, then you `register the action class`_ with the cgi
-interface so it may be triggered by the ``@action`` form variable.
+interface so it can be triggered by the ``@action`` form variable.
 Finally you `use the new action`_ in your HTML form.
 
 See `setting up a "wizard" (or "druid") for controlled adding of
@@ -3950,7 +4278,8 @@ example ``myaction.py``::
          '''
 
 The *self.client* attribute is an instance of ``roundup.cgi.client.Client``.
-See the docstring of that class for details of what it can do.
+See the :class:`docstring of that class <roundup.cgi.client.Client>`
+for details of what it can do.
 
 The method will typically check the ``self.form`` variable's contents.
 It may then:
@@ -3999,15 +4328,28 @@ override the content type indicated to the user by calling ``setHeader``::
    self.client.setHeader('Content-Type', 'text/csv')
 
 This example indicates that the value sent back to the user is actually
-comma-separated value content (eg. something to be loaded into a
+comma-separated value content (i.e. something to load into a
 spreadsheet or database).
+
+CSS for the web interface
+-------------------------
+
+The web interface can be completely redesigned by the admin, However
+some parts of Roundup use classes or set attributes that can be
+selected by css to change the look of the element.
+
+The ``datecopy.js`` module used to allow editing a date value with a
+text input assigns the ``mode_textdate`` class to the input when it is
+in text mode. The class is removed when it is not in text mode.
 
 
 8-bit character set support in Web interface
 --------------------------------------------
 
-The web interface uses UTF-8 default. It may be overridden in both forms
-and a browser cookie.
+The web interface uses UTF-8 default. It may be overridden in
+both forms and a browser cookie. In general, the UTF-8 standard
+should work with all modern browsers. You shouldn't have to
+make any modifications from this section.
 
 - In forms, use the ``@charset`` variable.
 - To use the cookie override, have the ``roundup_charset`` cookie set.
@@ -4018,8 +4360,8 @@ In both cases, the value is a valid charset name (eg. ``utf-8`` or
 Inside Roundup, all strings are stored and processed in utf-8.
 Unfortunately, some older browsers do not work properly with
 utf-8-encoded pages (e.g. Netscape Navigator 4 displays wrong
-characters in form fields).  This version allows one to change
-the character set for http transfers.  To do so, you may add
+characters in form fields).  Roundup allows one to change
+the character set for http transfers. To do so, you may add
 the following code to your ``page.html`` template::
 
  <tal:block define="uri string:${request/base}${request/env/PATH_INFO}">
@@ -4040,9 +4382,6 @@ should be changed to include actual character set name::
  />
 
 The charset is also sent in the http header.
-
-
-
 
 
 Debugging Trackers

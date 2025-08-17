@@ -1,0 +1,676 @@
+<!-- Creator     : groff version 1.22.4 -->
+<!-- CreationDate: Sat Jul 12 02:21:20 2025 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<link rel="canonical" href="https://www.roundup-tracker.org/docs/man_pages/roundup-admin.1.html">
+<style type="text/css">
+       p       { max-width: 65ch; margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title>ROUNDUP-ADMIN</title>
+
+</head>
+<body>
+
+<h1 align="center">ROUNDUP-ADMIN</h1>
+
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#OPTIONS">OPTIONS</a><br>
+<a href="#COMMANDS">COMMANDS</a><br>
+<a href="#READLINE SUPPORT">READLINE SUPPORT</a><br>
+<a href="#SECURITY NOTES">SECURITY NOTES</a><br>
+<a href="#ENVIRONMENT VARIABLES">ENVIRONMENT VARIABLES</a><br>
+<a href="#FURTHER HELP">FURTHER HELP</a><br>
+<a href="#SEE ALSO">SEE ALSO</a><br>
+<a href="#AUTHOR">AUTHOR</a><br>
+
+<hr>
+
+
+<h2>NAME
+<a name="NAME"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">roundup-admin -
+administrate roundup trackers</p>
+
+<h2>SYNOPSIS
+<a name="SYNOPSIS"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>roundup-admin</b>
+[<i>options</i>] <i>&lt;command&gt;
+&lt;arguments&gt;</i></p>
+
+<h2>OPTIONS
+<a name="OPTIONS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em"><i><b>-i</b>
+instance home</i></p>
+
+<p style="margin-left:22%;">Specify the issue tracker
+&quot;home directory&quot; to administer</p>
+
+<p style="margin-left:11%;"><b>-u</b>
+<i>user</i>[<b>:</b><i>password</i>]</p>
+
+<p style="margin-left:22%;">The user and password to use
+for commands (partial implemention, see Security Notes
+below).</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+
+<p><b>-h</b></p></td>
+<td width="8%"></td>
+<td width="78%">
+
+
+<p>Print help text.</p></td></tr>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+
+<p><b>-d</b></p></td>
+<td width="8%"></td>
+<td width="78%">
+
+
+<p>Print full designators (e.g. issue1) not just id numbers
+(1).</p> </td></tr>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+
+<p><b>-c</b></p></td>
+<td width="8%"></td>
+<td width="78%">
+
+
+<p>When outputting lists of data, comma-separate them. Same
+as <b>-S &quot;,&quot;</b>.</p></td></tr>
+</table>
+
+<p style="margin-left:11%;"><b>-S</b> <i>string</i></p>
+
+<p style="margin-left:22%;">When outputting lists of data,
+separate items with given string.</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+
+<p><b>-s</b></p></td>
+<td width="8%"></td>
+<td width="78%">
+
+
+<p>When outputting lists of data, space-separate them. Same
+as <b>-S &quot; &quot;</b>.</p></td></tr>
+</table>
+
+<p style="margin-left:11%;"><b>-P pragma=value</b></p>
+
+<p style="margin-left:22%;">Set a pragma on the command
+line. Multiple <b>-P</b> options can be specified to set
+multiple pragmas.</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+
+<p><b>-V</b></p></td>
+<td width="8%"></td>
+<td width="67%">
+
+
+<p>Be verbose when importing data.</p></td>
+<td width="11%">
+</td></tr>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+
+<p><b>-v</b></p></td>
+<td width="8%"></td>
+<td width="67%">
+
+
+<p>Report Roundup and Python versions and quit.</p></td>
+<td width="11%">
+</td></tr>
+</table>
+
+<p style="margin-left:11%; margin-top: 1em">Only one of
+<b>-s</b>, <b>-c</b> or <b>-S</b> can be specified.</p>
+
+<h2>COMMANDS
+<a name="COMMANDS"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">If no command
+is provided on the command line, roundup-admin will enter an
+interactive mode. More details about these commands are
+available using the help command.</p>
+
+<p style="margin-left:11%; margin-top: 1em">A designator is
+a classname and a nodeid concatenated, eg. bug1, user10,
+....</p>
+
+<p style="margin-left:11%; margin-top: 1em">Roundup-admin
+takes a number of commands:</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="6%">
+
+
+<p style="margin-top: 1em"><b>help</b></p></td>
+<td width="5%"></td>
+<td width="36%">
+
+
+<p style="margin-top: 1em">prints help (same as
+<b>-h</b>)</p> </td>
+<td width="42%">
+</td></tr>
+</table>
+
+<p style="margin-left:11%;"><b>help</b>
+<i>&lt;subcommand&gt;</i></p>
+
+<p style="margin-left:22%;">Print command-specific help</p>
+
+<p style="margin-left:11%;"><b>help all</b></p>
+
+<p style="margin-left:22%;">Print available help for all
+commands.</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="9%">
+
+
+<p><b>commit</b></p></td>
+<td width="2%"></td>
+<td width="78%">
+
+
+<p>Commit changes made to the database during an
+interactive session.</p></td></tr>
+</table>
+
+<p style="margin-left:22%; margin-top: 1em">The changes
+made during an interactive session are not automatically
+written to the database - they must be committed using this
+command.</p>
+
+<p style="margin-left:22%; margin-top: 1em">One-off
+commands on the command-line are automatically committed if
+they are successful. See also rollback.</p>
+
+<p style="margin-left:11%;"><b>create</b> <i>classname
+property=value ...</i></p>
+
+<p style="margin-left:22%;">This creates a new entry of the
+given class using the property name=value arguments provided
+on the command line after the &quot;create&quot;
+command.</p>
+
+<p style="margin-left:11%;"><b>display</b>
+<i>designator[,designator]*</i></p>
+
+<p style="margin-left:22%;">This lists the properties and
+their associated values for the given node. The pragma
+<b>display_header</b> can be used to add a header between
+designators that includes the active/retired status of the
+item.</p>
+
+<p style="margin-left:11%;"><b>export</b>
+<i>[[-]class[,class]] export_dir</i></p>
+
+<p style="margin-left:22%;">Export the database to
+colon-separated-value files. To exclude the files (e.g. for
+the msg or file class), use the exporttables command.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Optionally
+limit the export to just the named classes or exclude the
+named classes, if the 1st argument starts with
+&rsquo;-&rsquo;.</p>
+
+<p style="margin-left:22%; margin-top: 1em">This action
+exports the current data from the database into
+colon-separated-value files that are placed in the nominated
+destination directory.</p>
+
+<p style="margin-left:11%;"><b>exporttables</b>
+<i>[[-]class[,class]] export_dir</i></p>
+
+<p style="margin-left:22%;">Export the database to
+colon-separated-value files, excluding the files below
+$TRACKER_HOME/db/files/ (which can be archived separately).
+To include the files, use the export command.</p>
+
+<p style="margin-left:11%;"><b>filter</b> <i>classname
+propname=value ...</i></p>
+
+<p style="margin-left:22%;">Find the nodes of the given
+class with a given property value. Multiple values can be
+specified by separating them with commas. If property is a
+string, all values must match. I.E. it&rsquo;s an matches.
+I.E. an &rsquo;or&rsquo; operation.</p>
+
+<p style="margin-left:11%;"><b>find</b> <i>classname
+propname=value ...</i></p>
+
+<p style="margin-left:22%;">Find the nodes of the given
+class with a given link property value.</p>
+
+<p style="margin-left:11%;"><b>genconfig</b>
+<i>&lt;filename&gt;</i></p>
+
+<p style="margin-left:22%;">Generate a new tracker config
+file (ini style) with default values in
+<i>&lt;filename&gt;</i>. Note that this does not preserve
+any settings from the current tracker. Use updateconfig for
+that.</p>
+
+<p style="margin-left:11%;"><b>get</b> <i>property
+designator[,designator]*</i></p>
+
+<p style="margin-left:22%;">Get the given property of one
+or more designator(s).</p>
+
+<p style="margin-left:22%; margin-top: 1em">Retrieves the
+property value of the nodes specified by the
+designators.</p>
+
+<p style="margin-left:11%;"><b>history</b> <i>designator
+[skipquiet] [raw]</i></p>
+
+<p style="margin-left:22%;">Lists the journal entries
+viewable by the user for the node identified by the
+designator. If skipquiet is added, journal entries for quiet
+properties are not shown. Without the raw option a more
+human readable output format is used.</p>
+
+<p style="margin-left:11%;"><b>import</b>
+<i>import_dir</i></p>
+
+<p style="margin-left:22%;">Import a database from the
+directory containing CSV files, two per class to import.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The imported
+nodes will have the same nodeid as defined in the import
+file, thus replacing any existing content.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The new nodes
+are added to the existing database - if you want to create a
+new database using the imported data, then create a new
+database (or, tediously, retire all the old data). See also
+export.</p>
+
+<p style="margin-left:11%;"><b>importtables</b>
+<i>import_dir</i></p>
+
+<p style="margin-left:22%;">Import a database from the
+directory containing CSV files, two per class to import.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The imported
+nodes will have the same nodeid as defined in the import
+file, thus replacing any existing content.</p>
+
+<p style="margin-left:22%; margin-top: 1em">This only
+imports database tables. It does not import files/message
+content. It is used to import data exported by exporttables.
+See also exporttables.</p>
+
+<p style="margin-left:11%;"><b>initialise</b>
+<i>[adminpw]</i></p>
+
+<p style="margin-left:22%;">Initialise a new Roundup
+tracker.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The
+administrator details will be set at this step.</p>
+
+<p style="margin-left:11%;"><b>install</b> <i>[template
+[backend [key=val[,key=val]]]]</i></p>
+
+<p style="margin-left:22%;">Install a new roundup
+tracker.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The command
+will prompt for the tracker home directory (if not supplied
+through TRACKER_HOME or the -i option). The template and
+backend may be specified on the command-line as arguments,
+in that order.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Command line
+arguments following the backend allows you to pass initial
+values for config options. For example, passing
+&quot;web_http_auth=no,rdbms_user=dinsdale&quot; will
+override defaults for options http_auth in section [web] and
+user in section [rdbms]. Please be careful to not use spaces
+in this argument! (Enclose whole argument in quotes if you
+need spaces in option value).</p>
+
+<p style="margin-left:22%; margin-top: 1em">The initialise
+command must be called after this command in order to
+initialise the tracker&rsquo;s database. You may edit the
+tracker&rsquo;s initial database contents before running
+that command by editing the tracker&rsquo;s dbinit.py module
+init() function.</p>
+
+<p style="margin-left:22%; margin-top: 1em">See also
+initopts help.</p>
+
+<p style="margin-left:11%;"><b>list</b> <i>classname
+[property]</i></p>
+
+<p style="margin-left:22%;">Lists all instances of the
+given class. If the property is not specified, the
+&quot;label&quot; property is used. The label property is
+tried in order: the key, &quot;name&quot;, &quot;title&quot;
+and then the first property, alphabetically.</p>
+
+<p style="margin-left:22%; margin-top: 1em">With <b>-c</b>,
+<b>-S</b> or <b>-s</b> print a list of item id&rsquo;s if no
+property specified. If property specified, print list of
+that property for every class instance.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The pragma
+<b>show_retired</b> can be used to print only retired items
+or to print retired and active items. The default is to
+print only active items.</p>
+
+<p style="margin-left:11%;"><b>migrate</b></p>
+
+<p style="margin-left:22%;">Update a tracker&rsquo;s
+database to be compatible with the Roundup codebase.</p>
+
+<p style="margin-left:22%; margin-top: 1em">You should run
+the &quot;migrate&quot; command for your tracker once
+you&rsquo;ve installed the latest codebase.</p>
+
+<p style="margin-left:22%; margin-top: 1em">Do this before
+you use the web, command-line or mail interface and before
+any users access the tracker.</p>
+
+<p style="margin-left:22%; margin-top: 1em">This command
+will respond with either &quot;Tracker updated&quot; (if
+you&rsquo;ve not previously run it on an RDBMS backend) or
+&quot;No migration action required&quot; (if you have run
+it, or have used another interface to the tracker, or
+possibly because you are using anydbm).</p>
+
+<p style="margin-left:22%; margin-top: 1em">It&rsquo;s safe
+to run this even if it&rsquo;s not required, so just get
+into the habit.</p>
+
+<p style="margin-left:11%;"><b>pack</b> <i>period |
+date</i></p>
+
+<p style="margin-left:22%;">Remove journal entries older
+than a period of time specified or before a certain
+date.</p>
+
+<p style="margin-left:11%;"><b>perftest</b> <i>[mode]
+[arguments]*</i></p>
+
+<p style="margin-left:22%;">Run performance test. For
+example test the effect of changing password hashing
+parameters.</p>
+
+<p style="margin-left:11%;"><b>pragma</b>
+<i>setting=value</i>|<b>list</b></p>
+
+<p style="margin-left:22%;">Set internal settings to a
+value. E.G.</p>
+
+<p style="margin-left:22%; margin-top: 1em">pragma
+verbose=True <br>
+pragma verbose=yes <br>
+pragma verbose=on <br>
+pragma verbose=1</p>
+
+<p style="margin-left:22%; margin-top: 1em">will turn on
+verbose mode for roundup-admin.</p>
+
+<p style="margin-left:22%; margin-top: 1em">pragma list</p>
+
+<p style="margin-left:22%; margin-top: 1em">will show all
+settings and their current values. If verbose is enabled
+hidden settings and descriptions will be shown.</p>
+
+<p style="margin-left:11%;"><b>reindex</b>
+<i>[classname|classname:#-#|designator]*</i> This will</p>
+
+<p style="margin-left:22%;">re-generate the search indexes
+for a tracker. You can specify a specific item (or items)
+(e.g. issue23), range(s) of items (e.g. issue:1-1000),
+class(es) (e.g. issue) or reindex all items in the database
+if no arguments are supplied.</p>
+
+<p style="margin-left:11%;"><b>restore</b>
+<i>designator[,designator]*</i></p>
+
+<p style="margin-left:22%;">Restore the retired node
+specified by designator.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The given nodes
+will become available for users again.</p>
+
+<p style="margin-left:11%;"><b>retire</b>
+<i>designator[,designator]*</i></p>
+
+<p style="margin-left:22%;">This action indicates that a
+particular node is not to be retrieved by the list or find
+commands, and its key value may be re-used. See also
+restore.</p>
+
+<p style="margin-left:11%;"><b>rollback</b></p>
+
+<p style="margin-left:22%;">Undo all changes that are
+pending commit to the database.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The changes
+made during an interactive session are not automatically
+written to the database - they must be committed manually.
+This command undoes all those changes, so a commit
+immediately after would make no changes to the database.</p>
+
+<p style="margin-left:11%;"><b>security</b> <i>[Role
+name]</i></p>
+
+<p style="margin-left:22%;">Display the Permissions
+available to one or all Roles.</p>
+
+<p style="margin-left:11%;"><b>set</b> <i>items
+property=value property=value ...</i></p>
+
+<p style="margin-left:22%;">Set the given properties of one
+or more items(s).</p>
+
+<p style="margin-left:22%; margin-top: 1em">The items are
+specified as a class or as a comma-separated list of item
+designators (ie
+&quot;designator[,designator,...]&quot;).</p>
+
+<p style="margin-left:22%; margin-top: 1em">This command
+sets the properties to the values for all designators given.
+If the value is missing (ie. &quot;property=&quot;) then the
+property is un-set. If the property is a multilink, you
+specify the linked ids for the multilink as comma-separated
+numbers (ie &quot;1,2,3&quot;).</p>
+
+<p style="margin-left:11%;"><b>specification</b>
+<i>classname</i></p>
+
+<p style="margin-left:22%;">Show the properties for a
+classname.</p>
+
+<p style="margin-left:11%;"><b>templates</b>
+<i>[trace_search]]</i></p>
+
+<p style="margin-left:22%;">Lists the names, location and
+description of all known templates.</p>
+
+<p style="margin-left:11%;"><b>table</b> <i>classname
+[property[,property]*]</i></p>
+
+<p style="margin-left:22%;">Lists all instances of the
+given class. If the properties are not specified, all
+properties are displayed. By default, the column widths are
+the width of the largest value.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The pragma
+<b>show_retired</b> can be used to print only retired items
+or to print retired and active items. The default is to
+print only active items.</p>
+
+<p style="margin-left:11%;"><b>updateconfig</b>
+<i>&lt;filename&gt;</i></p>
+
+<p style="margin-left:22%;">This is used when updating
+software. It merges the <b>config.ini</b> from the tracker
+with new settings from the new software. The merged/updated
+config file is written to <i>&lt;filename&gt;</i>.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Commands may be
+abbreviated as long as the abbreviation matches only one
+command, e.g. l == li == lis == list.</p>
+
+<h2>READLINE SUPPORT
+<a name="READLINE SUPPORT"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">You can edit
+the command line and interact with history in
+roundup-admin&rsquo;s interactive mode. On Linux like
+systems, GNU Readline is required. On Mac&rsquo;s libedit
+can be used as well. On Windows pyreadline3 is required.
+See: https://docs.python.org/3/library/readline.html for
+details on readline.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Roundup-admin
+will save the history between roundup-admin sessions. The
+commands are saved to the <b>.roundup_admin_history</b> file
+in the user&rsquo;s home directory. You can set the pragma
+<b>history_length</b> on the roundup-admin command line to
+change the amount of available and stored history for the
+session.</p>
+
+<p style="margin-left:11%; margin-top: 1em">If you are
+using GNU readline, you can persistently change the history
+size by adding: <b>set history-size 100</b> to the init file
+<b>.roundup_admin_rlrc</b> located in the user&rsquo;s home
+directory.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Mac users using
+libedit should be able to persistently save history and set
+the history size by adding <b>history size 100</b>.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Users of
+pyreadline3 can use: <b>history_length(100)</b>.</p>
+
+<h2>SECURITY NOTES
+<a name="SECURITY NOTES"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">The <b>-u
+user</b> setting does not currently operate like a user
+logging in via the web. The user running roundup-admin must
+have read access to the tracker home directory. As a result
+the user has access to the files and the database info
+contained in config.ini.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Using <b>-u
+user</b> sets the actor/user parameter in the journal.
+Changes that are made are attributed to that user. The
+password is ignored if provided. Any existing username has
+full access to the data just like the admin user. This is an
+area for further development so that roundup-admin could be
+used with sudo to provide secure command line access to a
+tracker.</p>
+
+<h2>ENVIRONMENT VARIABLES
+<a name="ENVIRONMENT VARIABLES"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>ROUNDUP_LOGIN</b></p>
+
+<p style="margin-left:22%;">Provides an alternate way to
+set the user.</p>
+
+<h2>FURTHER HELP
+<a name="FURTHER HELP"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">roundup-admin
+-h <br>
+roundup-admin help -- this help <br>
+roundup-admin help &lt;command&gt; -- command-specific help
+<br>
+roundup-admin help all -- all available help</p>
+
+<h2>SEE ALSO
+<a name="SEE ALSO"></a>
+</h2>
+
+
+
+<p style="margin-left:11%; margin-top: 1em">roundup-demo(1),
+roundup-mailgw(1), roundup-server(1)</p>
+
+<h2>AUTHOR
+<a name="AUTHOR"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">This manpage
+was written by Bastian Kleineidam &lt;calvin@debian.org&gt;
+for the Debian distribution of roundup.</p>
+
+<p style="margin-left:11%; margin-top: 1em">The main author
+of roundup is Richard Jones
+&lt;richard@users.sourceforge.net&gt;.</p>
+<hr>
+</body>
+</html>

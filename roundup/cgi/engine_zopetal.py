@@ -7,6 +7,7 @@ import errno
 import mimetypes
 import os
 import os.path
+import stat
 
 from roundup.cgi.templating import StringIO, context, TALLoaderBase
 from roundup.cgi.PageTemplates import PageTemplate
@@ -17,16 +18,20 @@ from roundup.cgi.TAL import TALInterpreter
 class Loader(TALLoaderBase):
     templates = {}
 
-    def __init__(self, dir):
-        self.dir = dir
+    def __init__(self, template_dir):
+        self.template_dir = template_dir
 
     def load(self, tplname):
         # find the source
-        src, filename = self._find(tplname)
+        try:
+            src, filename = self._find(tplname)
+        except TypeError as e:
+            raise ValueError("Unable to load template file basename: %s: %s" % (
+                tplname, e))
 
         # has it changed?
         try:
-            stime = os.stat(src)[os.path.stat.ST_MTIME]
+            stime = os.stat(src)[stat.ST_MTIME]
         except os.error as error:
             if error.errno != errno.ENOENT:
                 raise

@@ -1,8 +1,8 @@
 .. meta::
     :description:
-	Critical documentation for upgrading the Roundup Issue
-	Tracker. Actions that must be taken when upgrading from
-	one version to another are documented here.
+        Critical documentation for upgrading the Roundup Issue
+        Tracker. Actions that must be taken when upgrading from
+        one version to another are documented here.
 
 .. index:: Upgrading
 
@@ -33,33 +33,40 @@ General steps:
       versions starting at 1.5 and ending at 2.3. E.G.
       1.5.0 -> 1.5.1, 1.5.1 -> 1.6.0, ..., 2.1.0 -> 2.2.0,
       2.2.0 -> 2.3.0.
-   6. Run ``roundup-admin -i <tracker_home> migrate`` using the newer
-      version of Roundup for **all** the trackers you have
-      upgraded. This will update the database if it is required.
+   6. Run ``roundup-admin -i <tracker_home> migrate`` using
+      the newer version of Roundup for the instance you are
+      upgrading. This will update the database if it is
+      required.
    7. Bring your Roundup instance back online
    8. Test
+
+Repeat for each tracker instance.
 
 .. note::
    The v1.5.x releases of Roundup were the last to support
    Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
    Python version 2.7 that is newer than 2.7.2 is required to run
    Roundup.  Starting with Roundup version 2.0.0 we also support Python 3
-   versions newer than 3.6.
+   versions newer than 3.6. Roundup version 2.5 supports Python
+   3.7 and newer.
 
 Recent release notes have the following labels:
 
-* required - Roundup will not work properly if these steps are not done
-* recommended - Roundup will still work, but these steps can cause
+* **required** - Roundup will not work properly if these steps are not done
+* **recommended** - Roundup will still work, but these steps can cause
   security or stability issues if not done.
-* optional - new features or changes to existing features you might
+* **optional** - new features or changes to existing features you might
   want to use
-* info - important possibly visible changes in how things operate
+* **info** - important possibly visible changes in how things operate
 
-If you use virtual environments for your installation, you can run
-trackers with different versions of Roundup. So you can have one tracker
-using version 2.2.0 and another tracker using version 1.6.1. This
-allows you to upgrade trackers one at a time rather than having to
-upgrade all your trackers at once.
+If you use virtual environments for your installation, you
+can run trackers with different versions of Roundup. So you
+can have one tracker using version 2.2.0 and another tracker
+using version 1.6.1. This allows you to upgrade trackers one
+at a time rather than having to upgrade all your trackers at
+once. Note that downgrading may require restoring your
+database to an earlier version, so make sure you backed up
+your database.
 
 .. note::
 
@@ -71,10 +78,9 @@ upgrade all your trackers at once.
 .. admonition:: Python 2 Support
 
   If you are running Roundup under Python 2, you should make plans to
-  switch to Python 3. The continuous Integration (CI) and other services
-  used for developing Roundup are dropping support for Python 2. Also
-  optional packages are dropping Python 2 support. As a result Python 2
-  may not be supported for many more release cycles.
+  switch to Python 3. Release 2.4.0 (Jul 2024) is the last release to
+  officially support Python 2. The next non-patch release scheduled
+  for 2025 will mark 5 years since Roundup supported Python 3.
 
 .. admonition:: XHTML Support Deprecation Notice
 
@@ -82,15 +88,657 @@ upgrade all your trackers at once.
   ``config.ini`` is ``xhtml``, you should plan to change your
   templates to use html (HTML5). If you are affected by this, please
   send email to the roundup-users mailing list (roundup-users at
-  lists.sourceforge.net). Version 2.3.0 is expected to be the last
-  version to support XHTML.
+  lists.sourceforge.net). Version 2.3.0 is the last version to support
+  XHTML.
 
-Contents:
+.. raw:: html
+
+  <details>
+  <summary>Contents:</summary>
 
 .. contents::
    :local:
 
-.. index:: Upgrading; 2.2.0 to 2.3.0
+.. raw:: html
+
+  </details>
+
+.. index:: Upgrading; 2.5.0 to 2.6.0
+
+Migrating from 2.5.0 to 2.6.0
+=============================
+
+Support authorized changes in your tracker (optional)
+-----------------------------------------------------
+
+An auditor can require change verification with user's password.
+
+When changing sensitive information (e.g. passwords) it is
+useful to ask for a validated authorization. This makes sure
+that the user is present by typing their password.
+
+You can add this to your auditors using the example
+:ref:`sensitive_changes`.
+
+To use this, you must copy ``_generic.reauth.html`` into your
+tracker's html subdirectory. See the classic template directory for a
+copy. If you are using jinja2, see the jinja2 template directory.
+Then you can raise a Reauth exception and have the proper page
+displayed.
+
+Also javascript *MUST* be turned on if this is used with a file
+input. If JavaScript is not turned on, attached files are lost during
+the reauth step. Information from other types of inputs (password,
+date, text etc.) do not need JavaScript to work.
+
+See :ref:`Confirming the User` in the reference manual for details.
+
+.. index:: Upgrading; 2.4.0 to 2.5.0
+
+Migrating from 2.4.0 to 2.5.0
+=============================
+
+.. _CVE-2025-53865:
+
+XSS security issue with devel and responsive templates (recommended)
+--------------------------------------------------------------------
+
+There are actually two different issues under this heading.
+
+  1. incorrect use of the ``structure`` keyword with
+     ``tal:content``
+  2. use of ``tal:replace`` on unsafe input
+
+See the `security page for a link to CVE-2025-53865
+<security.html#cve-announcements>`_.
+
+In the discussion below, the :term:`html directory` means one or
+more directories listed in the ``templates`` key of your
+tracker's ``config.ini`` file.
+
+These directions can be used to solve the XSS security issue with
+any version of Roundup. Even if you used a classic or minimal
+template, you should check your trackers for these issues. The
+classic template fixed most of these many years ago, but the
+updates were not made to the devel and responsive templates. No
+report of similar issues with the jinja template has been seen.
+
+Incorrect use of structure in templates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The devel and responsive templates prior to Roundup 2.5 used this
+construct::
+
+  tal:content="structure context/MUMBLE/plain"
+
+Where ``MUMBLE`` is a property of your issues (e.g. title).
+
+This construct allows a URL with a carefully crafted query
+parameter to execute arbitrary JavaScript.
+
+You should check all your trackers.  The classic template has not
+used this construct since at least 2009, but your tracker's
+templates may use the offending construct anyway.
+
+This fix will apply if your tracker is based on the responsive or
+devel template. Check the TEMPLATE-INFO.txt file in your tracker
+home. The template name is the first component of the ``Name``
+field. For example a Name like::
+
+   Name: responsive-bugtracker
+
+   Name: devel-bugtracker
+
+shows that tracker is based on the responsive or devel templates.
+
+.. _cve-2025-53865-fixed:
+
+To fix this, remove the ``structure`` declaration when it is used
+with a plain representation. So fixing the code by replacing the
+example above with::
+
+  tal:content="context/MUMBLE/plain"
+
+prevents the attack.
+
+To check for this issue, search for ``structure`` followed by
+``/plain`` in all your html templates. If you are on a Linux/Unix
+system you can search the html subdirectory of your tracker with
+the following::
+
+   grep 'structure.*/plain' *.html
+
+which should return any lines with issues.
+
+.. warning::
+
+   Backup the files in the ``html`` subdirectory of your tracker
+   in case an edit goes wrong.
+
+As an example, you could fix this issue using the GNU sed
+command::
+
+  sed -i.bak -e '/structure.*\/plain/s/structure.//' *.html
+
+to edit the files in place and remove the structure keyword. It
+will create a ``.bak`` file with the original contents of the
+file. If your templates were changed, this might still miss some
+entries. If you are on windows, some text editors support search
+and replace using a regular expression.
+
+If the construct is split across lines::
+
+     tal:content="structure
+              context/MUMBLE/plain"
+
+the commands above will miss the construct. So you should also
+search the html files using ``grep /plain *.html`` and verify
+that all of the ``context/MUMBLE/plain`` include ``tal:content``
+as in the `fixed example above <#cve-2025-53865-fixed>`_. Any
+lines that have ``context/MUMBLE/plain`` without ``tal:content=``
+before it need to be manually verified/fixed.
+
+The distributed devel and responsive templates do not split the
+construct across lines, but if you changed the files it may be
+split.
+
+tal:replace used with unsafe input
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The problem was caused by the following markup::
+
+  <span tal:replace="context/MUMBLE" />
+
+in the head of the ``bug.item.html``, ``task.item.html`` and
+other files in the devel and responsive templates.
+
+This was fixed many years ago in the classic template's
+``index.item.html``. The classic template replaces the above
+construct with::
+
+  <tal:x tal:content="context/MUMBLE" />
+
+``tal:content`` explicitly escapes the result unless the
+``structure`` directive is used. ``tal:replace`` expects the
+result to be safe and usable in an HTML context.
+
+TAL drops any tags that it doesn't know about from the output.
+``<tal:x tal:content="..." />`` results in the value of the
+content expression without a surrounding html tag. (Effectively
+replacing the construct.)
+
+The following diff for ``bug.item.html`` in the devel template
+shows the change to make things safe (remove lines starting with
+``-`` and add lines staring with ``+``)::
+
+     <tal:block metal:use-macro="templates/page/macros/frame">
+     <title metal:fill-slot="head_title">
+     <tal:block condition="context/id" i18n:translate=""
+    - >Bug <span tal:replace="context/id" i18n:name="id"
+    - />: <span tal:replace="context/title" i18n:name="title"
+    - /> - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+    + >Bug <tal:x tal:content="context/id" i18n:name="id"
+    + />: <tal:x tal:content="context/title" i18n:name="title"
+    + /> - <tal:x tal:content="config/TRACKER_NAME" i18n:name="tracker"
+     /></tal:block>
+     <tal:block condition="not:context/id" i18n:translate=""
+      >New Bug report - <span tal:replace="config/TRACKER_NAME" i18n:name="tracker"
+
+A similar change was applied in the following html files in the
+devel or responsive templates:
+
+.. rst-class:: multicol
+
+* _generic.collision.html
+* bug.item.html
+* keyword.item.html
+* milestone.item.html
+* msg.item.html
+* task.item.html
+* user.item.html
+
+Also ``page.html`` should be changed from::
+
+   <p class="label"><b tal:replace="request/user/username">username</b></p>
+
+to::
+
+   <p class="label"><b tal:replace="python:request.user.username.plain(escape=1)">username</b></p>
+
+The code audit found the ``tal:replace`` construct is used with
+``context/id`` and ``context/designator`` paths. The references
+to these paths have been changed to use ``tal:x`` in the classic
+template's ``msg.item.html`` file and the classic and minimal
+template's ``_generic.collision.html`` file.
+
+These paths are critical to navigation in Roundup and are set
+from the path part of the URL. Roundup's URL path validation
+makes it unlikely that an attacker could exploit them. If you
+wish you can change your templates or copy the corresponding
+files from the template if you haven't made local changes.
+
+Also you may have used copies of these insecure templates
+elsewhere in your tracker (e.g. to create a feature class).  To
+find other possible issues you can use the command::
+
+  grep -r "tal:replace=" *.html
+
+in your tracker's :term:`html directory`. Check each occurrence
+and if needed, change it to the safer form. You should consider
+any reference to ``context`` to be under the user's (attacker's)
+control. Also ``db`` (excluding ``db/config``) and ``request``
+references that use user supplied content
+(e.g. ``request/user/username`` above) should be changed to
+``tal:x`` form
+
+.. comment:
+   As part of the analysis, the following command was used to find
+   potentially vulnerable stuff in the templates. Each grep -v was
+   removed to display items in that category and they were checked::
+
+     grep -r 'tal:replace' . | grep -v 'replace="batch' | \
+        grep -v 'replace="config' | grep -v 'replace="db/config' | \
+        grep -v 'replace="structure' | grep -v 'replace="python:' | \
+        grep -v 'replace="request/'
+
+
+   context/id, context/designator:
+     assume safe if used in an class.item.html page as the page
+     wouldn't be shown if they weren't valid numbers/designators.
+
+     Might not be ok referenced in a _generic fallback page though.
+
+   config, db/config, batch, nothing:
+     should be safe as they are not under user control
+
+   request/classname (python:request._classname), request/template:
+     should be safe as they are needed to navigate to a display page,
+     so if they are invalid nothing will be displayed.
+
+   utils, python:
+     assume it's written correctly and is safe (could use some new
+     tests for the shipped utility functions). The intent of these
+     can be to deliver blocks of <script> or other html markup.
+
+   db, request:
+     might be dangerous when accessing user supplied values.
+
+   request/user/username:
+     Escape these. If the username is an XSS issue, an attacker could
+     use it to compromise a user.
+
+   request/dispname:
+     should be quoted and is by the existing python: code.
+
+   Open question: why does there have to be an error generated by the
+   url @sort=1. Without invalid sort param, the exploit url doesn't
+   work and the context appears to use the database's title not the one
+   in the url. Also its not positional @sort=1 can appear anywhere in
+   the url.
+
+Deprecation Notices (required)
+------------------------------
+
+  * Support for SQLite version 2 has been removed in 2.5.0.
+  * Support for the `PySQLite <https://github.com/ghaering/pysqlite>`_
+    library has been removed in 2.5.0. Only the Python supplied
+    sqlite3 library is supported.
+  * Roundup 2.5.0 supports Python 3.7 or newer. (It is not tested
+    on Python 3.6. It may work but we don't support it.)
+
+Update responsive template _generic.404.html and query.item.html (recommended)
+------------------------------------------------------------------------------
+
+This only applies if your tracker is based on the responsive
+template. Check the TEMPLATE-INFO.txt file in your tracker
+home. The template name is the first component of the ``Name``
+field. For example a Name like::
+
+   Name: responsive-bugtracker
+
+is based on the responsive template. If the Name doesn't start with
+``responsive`` no changes are needed.
+
+The ``_generic.404.html`` and ``query.item.html`` templates will crash
+when displayed because a missing macro is called. Change::
+
+  <tal:block metal:use-macro="templates/page/macros/icing">
+
+to::
+
+  <tal:block metal:use-macro="templates/page/macros/frame">
+
+at the top of both files. The icing macro used in other tracker
+templates was renamed to frame in this tracker template.
+
+Update userauditor.py detector (recommended)
+--------------------------------------------
+
+When using the REST interface, setting the address property of the
+user to the same value it currently has resulted in an error.
+
+If you have not changed your userauditor, you can copy one from any of
+the supplied templates in the ``detectors/userauditor.py`` file. Use
+``roundup-admin templates`` to find a list of template directories.
+
+If you have changed your userauditor from the stock version, apply the
+following diff::
+
+               raise ValueError('Email address syntax is invalid
+               "%s"'%address)
+  
+           check_main = db.user.stringFind(address=address)
+  +        # allow user to set same address via rest
+  +        if check_main:
+  +            check_main = nodeid not in check_main
+  +
+         # make sure none of the alts are owned by anyone other than us (x!=nodeid)
+
+add the lines marked with ``+`` in the file in the location after
+check_main is assigned.
+
+Modify config.ini password_pbkdf2_default_rounds setting (recommended)
+----------------------------------------------------------------------
+
+The method for hashing and storing passwords has been updated to use
+PBKDF2 with SHA512 hash. This change was first introduced in Roundup
+2.3 and is now the standard. If you previously added code in
+interfaces.py for a `PBKDF2 upgrade`_ to enable PBKDF2S5, you can
+remove that code now.
+
+SHA512 is a more secure hash, it requires fewer rounds to ensure
+safety. The older PBKDF2-SHA1 needed around 2 million rounds.
+
+You should update the ``password_pbkdf2_default_rounds`` setting in
+``config.ini`` to 250000. This value is higher than the OWASP
+recommendation of 210000 from three years ago. If you don’t make this
+change, logins will be slow, especially for REST or XMLRPC calls.
+
+See `PBKDF2 upgrade`_ for details on how to test the algorithm's
+speed. We do not recommend reverting to the older SHA1 PBKDF2. If you
+have to do so due to a slow CPU, you can add the following to your
+tracker's ``interfaces.py``::
+
+  from roundup.password import Password
+  ## Use PBDKF2 (PBKDF2-SHA1) as default hash for passwords.
+  # That scheme is at the start of the deprecated_schemes list and ha
+  # to be removed.
+  Password.default_scheme = Password.deprecated_schemes.pop(0)
+  # Add PBKDF2S5 (PBKDF2-SHA512) as a valid scheme. Passwords
+  # using it will be rehashed to use PBDKF2.
+  Password.experimental_schemes.insert(0, "PBKDF2S5")
+
+If you proceed with this, you should set
+``password_pbkdf2_default_rounds`` to 2 million or more rounds to keep
+your hashed password database secure in case it gets stolen.
+
+Defusedxml support improves XMLRPC security (optional)
+------------------------------------------------------
+
+This release adds support for the defusedxml_ module. If it is
+installed it will be automatically used. The default xmlrpc module in
+the standard library has known issues when parsing crafted XML. It can
+take a lot of CPU time and consume large amounts of memory with small
+payloads.
+
+When the XMLRPC endpoint is used without defusedxml, it will log a
+warning to the log file. The log entry can be disabled by adding::
+
+
+    from roundup.cgi import client
+    client.WARN_FOR_MISSING_DEFUSEDXML = False
+
+to the ``interfaces.py`` file in the tracker home. (Create the file if
+it is missing.)
+
+XMLRPC access is enabled by default in the classic and other trackers.
+Upgrading to defusedxml is considered optional because the XMLRPC
+endpoint can be disabled in the tracker's ``config.ini``. Also
+``Xmlrpc Access`` can be removed from the ``Users`` role by commenting
+out a line in ``schema.py``.
+
+If you have enabled the xmlrpc endpoint, you should install
+defusedxml.
+
+.. _defusedxml: https://pypi.org/project/defusedxml/
+
+Enable use of native date inputs (optional)
+-------------------------------------------
+
+Roundup now can use native ``date`` or ``datetime-local`` inputs for
+``Date()`` properties. These inputs take the place of the text input and
+calendar popup from earlier Roundup versions. Modern browsers come with
+a built-in calendar for date selection, so the ``(cal)`` calendar link
+is no longer needed. These native inputs show the date based on the
+browser's locale and translate terms into the local language.
+
+Note that the date format is tied to the language setting in most
+browsers, with some browsers you need special configurations to make the
+browser use the operating system date format.
+
+By default the old input mechanism (using type=text inputs) is used.
+To enable native date input you need to set the config variable ::
+
+  use_browser_date_input = yes
+
+in section ``[web]`` in the ``config.ini`` file.
+ 
+If native date input is used, simple uses of the ``field()`` method will
+generate ``datetime-local`` inputs to allow selection of a date and time.
+Input fields for ``Date()`` properties will not have the ``(cal)`` link
+anymore. If fields should only use a date (without time) you can specify
+the parameter ``display_time=no`` in ``schema.py`` for a ``Date()``
+property (the default is ``yes``). This will use ``date`` inputs in the
+generated html to select a date only. If you need this only for a single
+date, the ``field()`` method now has a boolean parameter
+``display_time`` (which by default is set to the ``display_time``
+parameter of ``Date()``)
+
+Complex uses using a ``format`` specification in ``field()`` will not be
+upgraded and will operate like earlier Roundup versions. In addition the
+``format`` can now also be specified in the ``Date()`` constructor.
+
+To upgrade all date properties, there are five changes to make:
+
+  1. Configure ``use_browser_date_input = yes`` in section ``[web]`` in
+     ``config.ini``
+
+  2. Optionally add ``display_time = no`` in the schema for Date()
+     properties that should have no time displayed
+
+  3. Remove the format argument from field() calls on Date()
+     properties.
+
+  4. Remove popcal() calls.
+
+  5. Include datecopy.js in page.html.
+
+The ``display_time`` option
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both the ``Date()`` constructor and the ``field`` call take a
+``display_time`` option which by default is ``yes`` in the ``Date()``
+constructor and ``True`` in ``field``. The ``display_time`` setting of
+``Date()`` is inherited by the html property, so it doesn't need to be
+specified in each ``field()`` call for this property.
+
+When ``display_time`` is off, the date field does not include hours,
+minutes or seconds.
+
+Remove format argument
+~~~~~~~~~~~~~~~~~~~~~~
+
+Speaking of arguments, avoid setting the date ``format`` if you want to
+use native date inputs. If you include the `format` argument in the
+`field` method, it should be removed.
+
+By default using a format argument will show the
+popup calendar link. You can disable the link by setting
+``popcal=False`` in the field() call. If you have::
+
+  tal:content="structure python:context.duedate.field(
+               placeholder='YYYY-MM, format='%Y-%m')"
+
+changing it to::
+
+  tal:content="structure python:context.duedate.field(
+               placeholder='YYYY-MM, format='%Y-%m',
+               popcal=False)"
+
+will generate the input as in Roundup 2.4 or earlier without a
+popcal link.
+
+Remove popcal
+~~~~~~~~~~~~~
+
+if you have enabled date input types in the configuration and you
+use the ``popcal()`` method directly in your templates, you
+should remove them. The browser's native date selection calendar should
+be used instead.
+
+Add copy/paste/edit on double-click using datecopy.js
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When using date input types,
+there is no way to copy/paste using a native ``datetime-local`` or
+``date`` input. With the ``datecopy.js`` file installed, double-clicking
+on the input turns it into a normal text input with the ability
+to copy, paste, or manually edit the date.
+
+To set this up, take either ``datecopy.js`` or the smaller
+version, ``datecopy.min.js``, from the ``html`` folder of the
+classic tracker template. Put the file in the ``html`` folder of
+your tracker home.
+
+After you install the datecopy file, you can add the script
+directly to a page using::
+
+  <script tal:attributes="nonce request/client/client_nonce"
+          tal:content="structure python:utils.readfile('datecopy.min.js')">
+  </script>
+
+or get the file in a separate download using a regular script
+tag::
+
+    <script type="text/javascript" src="@@file/datecopy.js">
+    </script>
+
+You can place these at the end of ``page.html`` just before the
+close body ``</body>`` tag. This is the method used in the
+classic template. This forces the file to be run for every page
+even those that don't have any date inputs. However, it is cached
+after the first download.
+
+Alternatively you can inline or link to it using a script tag
+only on pages that will have a date input. For example
+``issue.item.html``.
+
+There is no support for activating text mode using the
+keyboard. Tablet/touch support is mixed. Chrome supports
+double-tap to activate text mode input. Firefox does not.
+
+Enable native number inputs for Number() and Integer() (optional)
+-----------------------------------------------------------------
+
+Roundup's ``field()`` method for properties of type ``Number()`` or
+``Integer()`` can use a native browser number input by default.
+
+This is configurable for *all* ``Number()`` and ``Integer()`` properties
+with the config option ``use_browser_number_input`` in section ``[web]``.
+
+You can use the old style text inputs for individual fields
+by calling the field method with ``type="text"``.
+
+Note that the ``Integer()`` type also uses ``step="1"`` by default to
+add a stepper control and try to constrain the input to
+integers. This can be overridden by passing a new step
+(e.g. ``step="50"``) to the ``field()`` method.
+
+This is an experiment and maybe changed based on feedback.
+
+Change in REST response for invalid CORS requests (info)
+--------------------------------------------------------
+
+CORS_ preflight requests that are missing required headers can
+now result in either a 403 or 400 error code. If you permit
+anonymous users to access the REST interface, a 400 error may
+still occur. Previously, only a 400 error was given. This change
+is not expected to create issues since the client will recognize
+both codes it as an error response, and the CORS request will
+still fail.
+
+More secure session cookie handling (info)
+------------------------------------------
+
+This affects you if you are accessing a tracker via https.  The name
+for the cookie that you get when logging into the web interface has a
+new name. When upgrading to Roundup 2.5 all users will have to to log
+in again. The cookie now has a ``__Secure-`` prefix to prevent it
+from being exposed/used over http.
+
+If your tracker is using the unencrypted http protocol, nothing has
+changed.
+
+See
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#cookie_prefixes
+for details on this security measure.
+
+Invalid accept header now prevents operation (info)
+---------------------------------------------------
+
+In earlier versions, the rest interface checked for an incorrect
+"Accept" header, "@apiver", or the ".json" mime type only after
+processing the request. This would lead to a 406 error, but the
+requested change would still be completed.
+
+In this release, the validation of the output format and version
+occurs before any database changes are made. Now, all errors related
+to the data format (mime type, API version) will return 406 errors,
+where some previously resulted in 400 errors.
+
+New method for registering templating utils (info)
+--------------------------------------------------
+
+If you are building a template utility function that needs access
+to:
+
+  * the database
+  * the client instance
+  * the form the user submitted
+
+you had to pass these objects from the template using the ``db``,
+``request.client`` or ``request.form``  arguments.
+
+A new method for registering a template utility has been added. If you
+use the ``instance`` object's ``registerUtilMethod()`` to register a
+utility function, you do not need to pass these arguments. The
+function is called as a method and the first argument is a
+TemplatingUtils (tu) instance from which the client object
+(tu.client), the database (tu.client.db), form (tu.client.form),
+request (tu.client.request), the translator for the current language
+(tu._) and any functions (tu.X) you registered using
+``registerUtil()`` are available.
+
+You can find an example in :ref:`dynamic_csp`.
+
+Directions for installing gpg (optional)
+----------------------------------------
+
+In this release a new version of the gpg module was needed for Ubuntu
+24.04 and python 3.13. Paul Schwabauer produced a new version of the
+gpg module. However it is only on the test instance of pypi. If you
+run into issues installing gpg with pip, you can use::
+
+    pip install --index-url https://test.pypi.org/simple/ \
+                --extra-index-url https://pypi.org/simple gpg;
+
+to installed version 2.0 of gpg from test.pypi.org obtaining it's
+requirements from pypi.org.
+
+When `issue2551368 <https://issues.roundup-tracker.org/issue2551368>`_
+is closed, you should be able to use ``pip install gpg`` again.   
+
+.. index:: Upgrading; 2.3.0 to 2.4.0
 
 Migrating from 2.3.0 to 2.4.0
 =============================
@@ -111,6 +759,525 @@ You can then merge any local comments from the tracker's
 values or if a value must be changed manually.
 
 This will insert the bad API login rate limiting settings.
+
+Also if you have ``html_version`` set to ``xhtml``, you will get
+an error.
+
+.. _CVE-2024-39124:
+
+Fix for CVE-2024-39124 in help/calendar popups (recommended)
+------------------------------------------------------------
+
+Classhelper components accessed via URL using ``@template=help``,
+``@template=calendar`` or other template frame in the classhelper
+can run JavaScript embedded in the URL. If user clicks on a
+malicious URL that:
+
+  * arrives in an email,
+  * is embedded in a note left on a ticket [#markdown-note]_,
+  * left on some other web page
+
+the JavaScript code will be executed. This vulnerability seems to
+be limited to manually crafted URL's. It has not been generated
+by using Roundup's mechanism for generating classhelper URLs.
+
+The files that need to be changed to fix this depend on the
+template used to create the tracker.  Check the
+TEMPLATE-INFO.txt file in your tracker home. The template
+name is the first component of the ``Name`` field. For
+example trackers with Names like::
+
+   Name: classic-bugtracker
+
+   Name: devel-mytracker
+
+were derived from the ``classic`` and ``devel`` templates
+respectively. If your tracker is derived from the jinja2
+template, you may not be affected as it doesn't provide
+classhelpers by default. If you aren't sure which tracker
+template was used to create your tracker home, check the
+``html/help.html`` file for the word ``Javascript``. If your
+help.html is missing the word ``Javascript``, follow the
+directions for the classic template.
+
+If you have not modified the original tracker html
+templates, you can copy replacement files from the new
+templates supplied with release 2.4.0.  If you install 2.4.0
+in a `new virtual environment
+<installation.html#standard-installation>`_, you can use the
+command ``roundup-admin templates`` to find the installation
+path of the default templates.
+
+If your template was based on the classic template, replace the 
+following files in your tracker:
+
+  * html/_generic.calendar.html
+  * html/_generic.help-list.html
+  * html/_generic.help-submit.html
+  * html/_generic.help.html
+  * html/user.help-search.html
+  * html/user.help.html
+
+If your template was based on the minimal template, replace the 
+following files in your tracker:
+
+  * html/_generic.calendar.html
+  * html/_generic.help.html
+
+If your template was based on the responsive or devel templates,
+replace the following files in your tracker:
+
+  * html/_generic.calendar.html
+  * html/_generic.help-submit.html
+  * html/help.html
+  * html/user.help-search.html
+  * html/user.help.html
+
+As an example, assume Roundup's virtual environment is
+``/tools/roundup``. The classic tracker's default template will
+be in ``/tools/roundup/share/roundup/templates/classic``.
+Copy
+``/tools/roundup/share/roundup/templates/classic/html/_generic.calendar.html``
+to ``html/_generic.calendar.html`` in your tracker's home
+directory. Repeat for every one of the files that needs to
+be replaced.
+
+If you have made local changes to your popup/classhelper
+files or have created new help templates based on the
+existing ones, don't copy the default files. Instead, follow
+the directions below to modify each file as needed for your
+template.
+
+In the examples below, your script tag may differ. For
+example it could include::
+
+  tal:attributes="nonce request/client/client_nonce"
+
+If it does, keep the differences. You want to make changes
+to remove the structure option but keep the rest of the
+valid attributes.
+
+Most files have a small script that sets a few variables
+from the settings in the URL. You should change::
+
+       <script language="Javascript" type="text/javascript"
+           tal:content="structure string:
+           // this is the name of the field in the original form that we're working on
+           form  = window.opener.document.${request/form/form/value};
+           field  = '${request/form/property/value}';">
+
+to::
+
+       <script language="Javascript" type="text/javascript"
+           tal:content="string:
+           // this is the name of the field in the original form that we're working on
+           form  = window.opener.document.${request/form/form/value};
+           field  = '${request/form/property/value}';">
+
+by removing the ``structure`` keyword from the tal:content
+block. This will html escape the settings in the URL. This
+neutralizes an attempt to execute JavaScript by manipulating
+the URL. Most of the files use code similar to this.
+
+A few files have more extensive JavaScript embedded in the same
+script tag. To handle this you should split it into two scripts
+and encode the replaced strings. For example, change::
+
+      <script language="Javascript" type="text/javascript"
+          tal:content="structure string:<!--
+  // this is the name of the field in the original form that we're working on
+  form  = parent.opener.document.${request/form/form/value};
+  callingform=form
+  field  = '${request/form/property/value}';
+  var listform = null
+  function listPresent() {
+    return document.frm_help.cb_listpresent.checked
+  [more code skipped]
+
+to::
+
+      <script language="Javascript" type="text/javascript"
+          tal:content="string:
+  // this is the name of the field in the original form that we're working on
+  form  = parent.opener.document.${request/form/form/value};
+  callingform=form
+  field  = '${request/form/property/value}';">
+    </script>
+    <script language="Javascript" type="text/javascript"
+	    tal:content="string:
+  var listform = null
+  function listPresent() {
+    return document.frm_help.cb_listpresent.checked
+  [...]
+
+modifying the original by:
+
+ 1. removing the ``structure`` keyword and the HTML comment
+    marker ``<!--``. This encodes the replaced strings.
+ 2. adding ``">`` at the end of the line that sets ``field`` closes
+    the script tag.
+ 3. adding::
+
+      </script>
+            <script language="Javascript" type="text/javascript"
+	    tal:content="string:
+
+    after the line used in step 2, to ends the first script and
+    starts a new script.
+
+Just removing the ``structure`` directive is enough to fix the
+bug. Splitting the large script into two parts:
+
+ 1. one that has replaced strings with values taken from the URL
+ 2. one that has no replaced strings
+
+allows use of ``structure`` on the script with no replaced
+strings should it be required for your tracker.
+
+.. [#markdown-note] If you are using markdown formatting for your tracker's notes,
+   the user will see the markdown label rather than the long
+   (suspicious) URL. You may want to add something like::
+
+     a[href*=\@template]::after {
+         content: ' [' attr(href) ']';
+     }
+
+   to your css. This displays the URL inside square brackets if
+   the href has ``@template`` in it. It is placed after the link
+   label.
+
+Fix CVE in earlier versions of Roundup (recommended)
+----------------------------------------------------
+
+If you are upgrading to version 2.4.0, you can skip this
+section. These fixes are already present in 2.4.0.
+
+This section is for people who can not upgrade yet, and want
+to fix the issues.
+
+.. _CVE-2024-39125:
+
+Referer value not escaped CVE-2024-39125
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Malicious JavaScript inserted into a page can change the value of
+the Referer header to include a script. If a link on that page
+points to a Roundup tracker, that script will be executed. The
+technique to change the header will result in a change of the URL
+in the browser's address bar, but this is easily missed.
+
+Fix this by editing ``cgi/client.py``, and change::
+
+  except (UsageError, Unauthorised) as msg:
+     csrf_ok = False
+     self.form_wins = True
+     self._error_message = msg.args
+
+to::
+
+  except (UsageError, Unauthorised) as msg:
+      csrf_ok = False
+      self.form_wins = True
+      self.add_error_message(' '.join(msg.args))
+
+This escapes the Referer value and prevents it from being
+executed.
+
+.. _CVE-2024-39126:
+
+Stop JavaScript execution from attached files CVE-2024-39126
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If an SVG, XML or PDF file that includes malicious JavaScript is
+attached to an issue, downloading the file will cause the
+JavaScript to run.
+
+In ``cgi/client.py`` add the Content-Security-Policy line
+after the existing ``nosniff`` line so it looks like::
+
+  # exception handlers.
+  self.determine_language()
+  self.db.i18n = self.translator
+  self.setHeader("X-Content-Type-Options", "nosniff")
+  self.setHeader("Content-Security-Policy", "script-src 'none'")
+  self.serve_file(designator)
+
+(the example is reindented for display).
+
+This should prevent SVG and XML files with embedded scripts
+from running.
+
+If your version of Roundup is old enough that the ``nosniff``
+line is missing, search for ``serve_file(designator)`` and add
+both setHeader lines.
+
+.. warning::
+
+  If your users use older browsers that don't support Content
+  Security Policies (e.g. Internet Explorer), you must
+  remove ``text/xml`` and ``image/svg`` from
+  ``mime_type_allowlist`` as explained below for
+  ``application/pdf``.
+
+PDF files can also embed JavaScript. Many browsers include
+PDF viewers that may not support disabling scripting.  The
+safest way to handle this is to force a download of the PDF
+file and use a PDF viewer with scripting disabled. To force
+downloading, look in ``cgi/client.py`` for
+``mime_type_allowlist`` and remove the line for
+``application/pdf``.
+
+Version 2.4.0 allows you to `modify the mime_type_allowlist
+using interfaces.py
+<admin_guide.html#controlling-browser-handling-of-attached-files>`_.
+This will allow you to enable in-browser reading of PDF
+files when you upgrade to 2.4.0 if you wish.
+
+Note that a `Content Security Policy as documented in the admin
+guide
+<admin_guide.html#adding-a-web-content-security-policy-csp>`_ is
+not applied it to a direct download. This requires adding an
+explicit CSP header as above.
+
+.. comment: end of CVE include marker
+
+XHTML no longer supported (required)
+------------------------------------
+
+If your ``config.ini`` sets ``html_version`` to ``xhtml``,
+you need to change it to ``html``. Then you need to change
+your tracker's templates to html from xhtml.
+
+Note that the default Roundup templates use html4 so it is
+unlikely that your templates are xhtml based. See
+`issue2551323
+<https://issues.roundup-tracker.org/issue2551323>`_ for
+details on the deprecation of xhtml.
+
+Update MySQL character set/collations (required)
+------------------------------------------------
+
+issue2551282_ and issue2551115_ discuss issues with MySQL's utf8
+support. MySQL has variations on utf8 character support. This
+version of Roundup expects to use utf8mb4 which is a version of
+utf8 that covers all characters, not just the ones in the basic
+multilingual plane. Previous versions of Roundup used latin1 or
+utf8mb3 (also known as just utf8). Newer versions of MySQL are
+supposed to make utf8mb4 and not utf8mb3 the default.
+
+To convert your database, you need to have MySQL 8.0.11 or newer
+(April 2018) and a mysql client.
+
+.. warning::
+
+   This conversion can damage your database. Back up your
+   database using mysqldump or other tools. Preferably on a quiet
+   database.  Verify that your database can be restored (or at
+   least look up directions for restoring it). This is very
+   important.
+
+We suggest shutting down Roundup's interfaces:
+
+  * web
+  * email
+  * cron jobs that use Python or roundup-admin
+
+then make your backup.
+
+Then connect to your mysql instance using ``mysql`` with the
+information in ``config.ini``. If your tracker's ``config.ini``
+includes::
+
+  name = roundupdb
+  host = localhost
+  user = roundupuser
+  password = rounduppw
+
+you would run some version of::
+
+  mysql -u roundupuser --host localhost -p roundupdb
+
+and supply ``rounduppw`` when prompted.
+
+With the Roundup database quiet, convert the character set for the
+database and then for all the tables. To convert the tables you
+need a list of them. To get this run::
+
+    mysql -sN -u roundupuser --host localhost -p \
+       -e 'show tables;' roundupdb > /tmp/tracker.tables
+
+The ``-sN`` removes line drawing characters and column headers
+from the output. For each table ``<t>`` in the file, run::
+
+ ALTER TABLE `<t>` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+You can automate this conversion using sed::
+
+    sed -e 's/^/ALTER TABLE `/' \
+     -e 's/$/` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;/'\
+     /tmp/tracker.tables> /tmp/tracker.tables.sql
+
+The backticks "`" are required as some of the table names became
+MySQL reserved words during Roundup's lifetime.
+
+Inspect ``tracker.tables.sql`` to see if all the lines look
+correct. If so then we can start the conversion.
+
+First convert the character set for the database by running::
+
+  mysql -u roundupuser --host localhost -p roundupdb
+
+Then at the ``mysql>`` prompt run::
+
+  ALTER DATABASE roundupdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+you should see: ``Query OK, 1 row affected (0.01 sec)``.
+
+Now to modify all the tables run:
+
+  \. /tmp/tracker.tables.sql
+
+You will see output similar to::
+
+  Query OK, 5 rows affected (0.01 sec)
+  Records: 5  Duplicates: 0  Warnings: 0
+
+for each table. The rows/records will depend on the number of
+entries in the table. This can take a while.
+
+Once you have successfully completed this, copy your tracker's
+config.ini to a backup file. Edit ``config.ini`` to use the defaults:
+
+ * mysql_charset = utf8mb4
+ * mysql_collation = utf8mb4_unicode_ci
+ * mysql_binary_collation = utf8mb4_0900_bin
+
+Also look for a ``~/.my.cnf`` for the roundup user and make sure
+that the settings for character set (charset) are utf8mb4 compatible.
+
+To test, run ``roundup-admin -i tracker_home`` and display an
+issue designator: e.g. ``display issue10``. Check that the text
+fields are properly displayed (e.g. title). Start the web
+interface and browse some issues. Again, check that the text
+fields display correctly, that the history at the bottom of the
+issues displays correctly and if you are using the default full
+text search, make sure that that works.
+
+If this works, bring email cron jobs etc. back online.
+
+If this fails, take down the web interface, restore the database
+from backup, restore the old config.ini. Then test again and
+reach out to the mailing list for help.
+
+We can use assistance in getting these directions corrected or
+enhanced. The core Roundup developers don't use MySQL for their
+production workloads so we count on users to help us with this.
+
+References:
+
+  * https://mathiasbynens.be/notes/mysql-utf8mb4#utf8-to-utf8mb4
+  * https://adamhooper.medium.com/in-mysql-never-use-utf8-use-utf8mb4-11761243e434
+
+.. _issue2551282: https://issues.roundup-tracker.org/issue2551282
+.. _issue2551115: https://issues.roundup-tracker.org/issue2551115
+
+Disable spellcheck on all password fields (recommended)
+-------------------------------------------------------
+
+All tracker templates have been updated to disable spell checking on
+password input fields. This can help prevent exposing the password to
+an external server that provides spell checking for a browser. Since
+passwords should not be real words in any language, spell checking
+serves no purpose.
+
+If you have modified your template with a "show password" option you
+should disable spell check.
+
+To implement this in your deployed trackers, add::
+
+   spellcheck="false"
+
+to make your password inputs look like::
+
+   <input type="password" spellcheck="false" name=....>
+
+The changed files in the classic/devel/responsive templates are:
+
+.. code-block:: text
+
+   html/page.html
+   html/user.item.html
+
+and in the jinja2 template the following files were changed:
+
+.. code-block:: text
+
+   html/user.item.html
+   html/user.register.html
+   html/layout/navigation.html
+
+Add new classhelper to your templates (optional)
+------------------------------------------------
+
+The classic classhelper invoked by the ``(list)`` link in your
+issue.item.html template can be greatly improved by wrapping the
+links with the new web-component based ``roundup-classhelper``.
+
+The new classhelper:
+
+  * allows you to select items from multiple pages
+  * is usable with a content security policy
+  * is more easily styled
+  
+To deploy it, install the required files and wrap classhelp calls
+in the new ``<roundup-classhelper>`` component. For example,
+wrap::
+
+  <span tal:condition="context/is_edit_ok" tal:replace="structure
+     python:db.user.classhelp('username,realname,address',
+     property='nosy', width='600'" />
+
+so it looks like::
+
+    <roundup-classhelper
+      data-search-with="username,phone,roles[]">
+
+      <span tal:condition="context/is_edit_ok" tal:replace="structure
+         python:db.user.classhelp('username,realname,address',
+         property='nosy', width='600')" />
+
+    </roundup-classhelper>
+
+to allow the user to search by: username, phone number and use a
+select/dropdown to search by role. Full details about the
+attributes and installation instructions can be found in the
+`classhelper documentation`_ in the admin guide.
+
+
+Disable performance improvement for wsgi mode (optional)
+--------------------------------------------------------
+
+In Roundup version 2.2.0, an experimental feature was introduced to
+enhance performance while operating in wsgi mode. Initially, this
+feature was disabled. Over the past two years, it has been used at a
+few sites without any reported problems.
+
+As a result, the default setting now enables this performance
+improvement, encouraging a wider adoption of the feature. In the
+event that an undiscovered bug arises, it can still be disabled
+if you experience problems. To disable it, modify your wsgi
+startup script and add the feature_flags to the RequestDispatcher
+as below::
+
+   feature_flags = { "cache_tracker": False }
+   app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+
+Then restart your wsgi instance. If you have to disable this
+feature, send email to the roundup-users mailing list
+(roundup-users at lists.sourceforge.net) so we can help you
+diagnose the cause and fix it for everybody.
+
+In the future, support for disabling this improvement will be removed.
 
 Fix duplicate id for confirm password in user.item.html (optional)
 ------------------------------------------------------------------
@@ -134,6 +1301,184 @@ to::
  tal:attributes="id string:confirm_$name; name string:@confirm@$name; readonly not:edit_ok" value="">
 
 This will change the id to ``confirm_password``.
+
+Merge changes from devel template task.index.html (optional)
+------------------------------------------------------------
+
+The devel template's ``task.index.html`` has some fields that are not
+defined in the schema. It looks like it was originally copied from the
+``bug.index.html``. If the task index is requested without specifying
+the columns/fields, the template will crash trying to display
+``severity`` and other fields that don't exist in the task schema.
+
+In normal use, the left hand menu for tasks always specifies valid
+columns so you may not see this issue. However if you remove the
+``@columns`` query parameter, you can see the error.
+
+The removed columns are: severity, versions, keywords, dependencies.
+
+It is also missing the ``solves`` field which is added to match the
+schema.
+
+`You can see the diff in the Sourceforge web interface <https://sourceforge.net/p/roundup/code/ci/54eb12cd3be143b079809795dcb2f813f75a691c/tree/share/roundup/templates/devel/html/task.index.html?diff=c95870b2bbab822def6066498a4ef8634e76e0b3>`_.
+
+Make group headers span all columns (optional)
+----------------------------------------------
+
+In a number of index pages a version of the following TAL command
+appears::
+
+  <th tal:attributes="colspan python:len(request.columns)" class="group">
+
+If the ``@columns`` parameter (aka request.columns) is not set,
+all columns are shown. However the group header only spans the
+first column. Changing this to read::
+
+  <th tal:attributes="colspan python:len(request.columns) or 100" class="group">
+
+makes the group header span all the columns (if you have fewer
+than 100 columns). All of the supplied templates hae been
+upgraded with this change. `See issue 2551341 for details
+<https://issues.roundup-tracker.org/issue2551341>`_.
+
+Note the jinja2 template has the same issue, but the development
+team hasn't devised a solution.
+
+Use @current_user in Searches (optional)
+----------------------------------------
+
+You can create queries like: "My issues" by searching the ``creator``
+property of issues for your id number. Similarly you can search for
+"Issues assigned to me" by searching on the ``assignedto`` property.
+
+Queries in Roundup can be shared between users. However queries like
+these can be shared. However for any user but they will only find
+issues created by/assigned to the user who created the query.
+
+This release allows you to search Links to the User class by
+specifying ``@current_user``. This token searches for the currently
+log in user. It makes searches like the above usable when shared.
+
+This only works for properties that are a Link to the user
+class. E.G. creator, actor, assignedto. It does not yet work for
+MultiLink properties (like nosy).
+
+As an example this can be deployed to the classic tracker's issue
+search template (issue.search.html), by replacing::
+
+    <option metal:fill-slot="extra_options" i18n:translate=""
+            tal:attributes="value request/user/id">created by
+            me</option>
+
+with::
+
+    <option metal:fill-slot="extra_options" value="@current_user"
+            tal:attributes="selected python:value == '@current_user'"
+            i18n:translate="">created by me</option>
+
+There are three places where ``value request/user/id`` is used in the
+classic template. Your template may have more.
+
+If you have a user with the exact username of `@current_user` they
+should change it. `Details can be found in issue1525113
+<https://issues.roundup-tracker.org/issue1525113>`_.
+
+New PostgreSQL Settings (optional)
+----------------------------------
+
+With this release, you can specify a Postgresql database schema
+to use. By default Roundup creates a database when using
+``roundup-admin init``. Setting the rdbms ``name`` keyword to
+``roundup_database.roundup_schema`` will create and use the
+``roundup_schema`` in the pre-created ``roundup_database``. See
+the `Roundup PostgreSQL documentation`_ for details on how to set
+up the roles.
+
+Also there is a new configuration keyword in the rdbms
+section of ``config.ini``. The ``service`` keyword allows
+you to define the service name for Postgres that will be
+looked up in the `Connection Service File`_. Any of the
+methods of specifying the file including by using the
+``PGSERVICEFILE`` environment variable are supported.
+
+This is similar to the existing support for MySQL
+option/config files and groups.
+
+If you use services, any settings for the same properties
+(user, name, password ...) that are in the tracker's
+``config.ini`` will override the service settings. So you
+want to leave the ``config.ini`` settings blank. E.G.::
+
+  [rdbms]
+  name =
+  host =
+  port =
+  user =
+  password =
+  service = roundup_roundup
+
+Setting ``service`` to ``roundup_roundup`` with
+the following in the service file::
+
+   [roundup_roundup]
+   host=127.0.0.1
+   port=5432
+   user=roundup
+   password=roundup
+   dbname=roundup
+
+would use the roundup database with the specified
+credentials. It is possible to define a service that
+connects to a specific schema using::
+
+  options=-c search_path=roundup_service_dev
+
+Note that the first schema specified after ``search_path=``
+is created and populated. The schema name
+(``roundup_service_dev``) must be terminated by: a comma,
+whitespace or end of line.
+
+You can use the command ``psql "service=db_service_name"``
+to verify the settings in the connection file. Inside of
+``psql`` you can verify the ``search_path`` using ``show
+search_path;``.
+
+.. _`Connection Service File`: https://www.postgresql.org/docs/current/libpq-pgservice.html
+
+Update for user.help-search.html (optional)
+-------------------------------------------
+
+There is a bug in the template used as a search helper for the user
+fields (e.g. the nosy list). The ``properties`` url query argument was
+ignored. You can not select the displayed fields using the
+``properties`` argument. This is fixed in 2.4.0. You can probably just
+copy the ``user.help-search.html`` from the classic tracker template.
+
+If you have modified that template, you can follow the analysis in
+`issue2551320 <https://issues.roundup-tracker.org/issue2551320>`_
+to fix your template.
+
+Update for _generic.help.html (optional)
+----------------------------------------
+
+Using the ``_generic.help.html`` template with ``classhelper()`` to
+provide information on a property without selecting a property caused
+an error when processing the template. Using the help template with
+Link properties can provide description or other information that the
+user can use to determine the right setting.
+
+If your tracker is based on the minimal or classic tracker and you have
+not changed the _generic.help.html file, you can copy it into place
+from the template directory.
+
+
+Fix static_files use of '-' directory (info)
+--------------------------------------------
+
+Use of the '-' directory in ``static_files`` config.ini setting now
+works. So it will prevent access to the html directory when using
+``@@file/`` based url's.
+
 
 Bad Login Rate Limiting and Locking (info)
 ------------------------------------------
@@ -160,7 +1505,7 @@ and its storage objects available by importing from::
    from roundup.anypy.cgi_ import cgi
    from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
 
-It is unlikey that you will care unless you have done some expert
+It is unlikely that you will care unless you have done some expert
 level Roundup customization. If you have, use one of the imports above
 if you plan on running on Python 3.13 (expected in 2024) or newer.
 
@@ -177,6 +1522,88 @@ before changing your PostgreSQL configuration, try changing the pragma
 ``savepoint_limit`` to a lower value. By default it is set to
 ``10000``. In some cases this may be too high. See the `administration
 guide`_ for further details.
+
+roundup-admin's History Command Produces Readable Output (info)
+---------------------------------------------------------------
+
+The history command of roundup-admin used to print the raw journal
+data. In this release the default is to produce more human readable
+data. The original output (not pretty printed as below) was::
+
+  [('1', <Date 2013-02-18.20:30:34.125>, '1', 'create', {}),
+  ('1',
+   <Date 2013-02-19.21:24:20.391>,
+   '1',
+   'set',
+   {'messages': (('+', ['3']),)}),
+  ('1', <Date 2013-02-19.21:24:24.797>, '1', 'set', {'priority': '1'}),
+  ('1',
+   <Date 2013-02-20.03:16:52.000>,
+   '1',
+   'link',
+   ('issue', '2', 'dependson')),
+  ('1', <Date 2013-02-21.20:51:40.750>, '1', 'link', ('issue', '2',
+  'seealso')),
+  ('1',
+   <Date 2013-02-22.05:33:08.875>,
+   '1',
+   'set',
+   {'dependson': (('+', ['3']),), 'private': None, 'queue': None}),
+  ('1',
+   <Date 2013-02-22.05:33:19.406>,
+   '1',
+   'set',
+   {'dependson': (('+', ['2']),)}),
+  ('1',
+   <Date 2013-02-27.03:24:42.844>,
+   '1',
+   'unlink',
+   ('issue', '2', 'seealso')),
+   ...
+
+Now it produces (Each entry is on one line, lines wrapped
+and indented for display)::
+
+  admin(2013-02-18.20:30:34) create issue
+  admin(2013-02-19.21:24:20) set modified messages: added: msg3
+  admin(2013-02-19.21:24:24) set priority was critical(1)
+  admin(2013-02-20.03:16:52) link added issue2 to dependson
+  admin(2013-02-21.20:51:40) link added issue2 to seealso
+  admin(2013-02-22.05:33:08) set modified dependson: added: issue3;
+       private was None; queue was None
+  admin(2013-02-22.05:33:19) set modified dependson: added: issue2
+  admin(2013-02-27.03:24:42) unlink removed issue2 from seealso
+  ...
+
+
+A few things to note: set operations can either assign a property or
+report a modification of a multilink property. If an assignment
+occurs, the value reported is the **old value** that was there before
+the assignment. It is **not** the value that is assigned. In the
+example above I don't know what the current value of priority is. All
+I know it was set to critical when the issue was created.
+
+Modifications to multilink properties work differently. I know that
+``msg3`` was present in the messages property after 2013-02-19 at
+21:24:20 UTC.
+
+The history command gets a new optional argument ``raw`` that produces
+the old style output. The old style is (marginally) more useful for
+script automation.
+
+Deprecation Notices (info)
+--------------------------
+
+Support for SQLite version 1 has been removed in 2.4.0.
+
+Support for SQLite version 2 will be removed in 2.5.0.
+
+Support for StructuredText has been removed in 2.4.0. Support for
+reStructuredText remains.
+
+Support for the `PySQLite <https://github.com/ghaering/pysqlite>`_
+library will be removed in 2.5.0. Only the Python supplied sqlite3
+library will be supported.
 
 .. index:: Upgrading; 2.2.0 to 2.3.0
 
@@ -258,7 +1685,7 @@ truncates/rounds expiration timestamps. This results in
 entries being purged early or late (depending on whether
 it rounds up or down). The discrepancy is a couple of
 days for Mysql or a couple of minutes for PostgreSQL.
-  
+
 Session keys stay for a week or more and CSRF keys are
 two weeks by default. As a result, this isn't usually a
 visible issue. This migration updates the numeric types
@@ -315,7 +1742,7 @@ Update ``config.ini``'s ``password_pbkdf2_default_rounds`` (required)
 ---------------------------------------------------------------------
 
 Roundup hashes passwords using PBKDF2 with SHA1. In this release, you
-can `upgrade to PBKDF2-SHA512 from current PBKDF2-SHA1`.  If you
+can `upgrade to PBKDF2-SHA512 from current PBKDF2-SHA1 (recommended)`_.  If you
 upgrade, you want to set the default rounds according to the
 PBKDF2-SHA512 upgrading directions. Note that this algorithm is
 expected to be the default in a future version of Roundup.
@@ -385,6 +1812,8 @@ install an OS vendor package or some other library.
 
 .. _recommended setting of 1,300,000: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
 
+.. _PBKDF2 upgrade:
+
 Upgrade to PBKDF2-SHA512 from current PBKDF2-SHA1 (recommended)
 ---------------------------------------------------------------
 
@@ -416,6 +1845,7 @@ command line (``roundup-admin`` for example).
 Change the default hashing scheme by adding the following lines to
 |the interfaces.py file|_ in your tracker home::
 
+  from roundup.password import Password
   ## Use PBDKF2S5 (PBKDF2-SHA512) for passwords. Re-hash old PBDFK2
   # Force password with scheme PBKDF2 (SHA1) to get re-hashed
   Password.deprecated_schemes.insert(0, Password.known_schemes[0])
@@ -431,7 +1861,7 @@ You can verify that PBKDF2S5 is used by default by running::
 
   roundup-admin -i <tracker_home> perftest password rounds=250,000
 
-and verify that the scheme is PBKDF2S5. 
+and verify that the scheme is PBKDF2S5.
 
 .. _the interfaces.py file:
    reference.html#interfaces-py-hooking-into-the-core-of-roundup
@@ -492,7 +1922,7 @@ If you want to convert your existing SQLite db to WAL mode:
    2. If it returns ``delete``, change it to WAL mode using::
 
         sqlite3 <tracker_home>/db/db "pragma journal_mode=WAL;"
- 
+
    3. verify by running the command in step 1 again and you
       should get ``wal``.
 
@@ -515,7 +1945,7 @@ Change in processing allowed_api_origins setting (info)
 -------------------------------------------------------
 
 In this release you can use both ``*`` (as the first origin) and
-explicit origins in the `allowed_api_origins`` setting in
+explicit origins in the ``allowed_api_origins`` setting in
 ``config.ini``. (Before it was only one or the other.)
 
 You do not need to use ``*``. If you do, it allows any client
@@ -629,6 +2059,14 @@ to login without a password, set the ``login_empty_passwords`` setting
 in the ``web`` section of ``config.ini`` to ``yes``. In
 general this should be left at its default value of ``no``.
 
+Verify that SQLite supports FTS5 (required)
+-------------------------------------------
+
+If you use SQLite as your backend, it *must* support FTS5.  See the
+`FTS5 testing steps`_ for how to verify this.
+
+.. _FTS5 testing steps: installation.html#fts5-testing
+
 Check allowed_api_origins setting (optional)
 --------------------------------------------
 
@@ -679,7 +2117,7 @@ can be used. The default is websearch. Prefixing the search with
 ``ts:`` enables tsquery mode.
 
 A list of words behaves almost the same as the default text search
-(`native`). So the search string `fts search` will find all issues
+(``native``). So the search string ``fts search`` will find all issues
 that have both of those words (an AND search) in a text-field (like
 title) or in a message (or file) attached to the issue.
 
@@ -970,11 +2408,11 @@ file by applying the following patch manually::
     +    from cgi import escape
 
      try:
-	 import pytz
+         import pytz
     @@ -25,7 +28,7 @@
-		 s = ' '
-		 if zone == value:
-		     s = 'selected=selected '
+                 s = ' '
+                 if zone == value:
+                     s = 'selected=selected '
     -            z = cgi.escape(zone)
     +            z = escape(zone)
 
@@ -1057,8 +2495,8 @@ will take longer but may be worth trying if the ``exporttables`` and
 
 Another way that should be faster, but is untested is to use mysql
 dump to dump the database.
-https://makandracards.com/makandra/595-dumping-and-importing-from-to-mysql-in-an-utf-8-safe-way
-recommends::
+https://makandracards.com/makandra/595-dumping-importing-mysql-utf-8-safe-way
+recommends:
 
    Note that when your MySQL server is not set to UTF-8 you need to do
    mysqldump --default-character-set=latin1 (!) to get a correctly
@@ -1070,7 +2508,7 @@ Then import the dump. Removing ``SET NAMES`` should allow the import
 to use UTF-8.
 
 Please report success or issues with this conversion to the
-roundup-users AT lists.sourceforge.net mailing list.
+roundup-users at lists.sourceforge.net mailing list.
 
 As people report successful or unsuccessful conversions, we will update
 the errata page at: https://wiki.roundup-tracker.org/ReleaseErrata.
@@ -1136,6 +2574,8 @@ processed.
 If you do not modify the ``user.register.html`` template in your
 tracker's html directory, you *must* set this to 0. Otherwise you will
 see the error:
+
+.. code-block:: text
 
   Form is corrupted, missing: opaqueregister.
 
@@ -1413,7 +2853,7 @@ this section.
 Make sure that user can view labelprop on classes (required)
 ------------------------------------------------------------
 
-If you have View permissions that use ```properties=...```, make sure
+If you have View permissions that use ``properties=...``, make sure
 that the `labelprop <reference.html#setlabelprop-property>`_ for the
 class is listed in the properties list.
 
@@ -1528,6 +2968,8 @@ these forms as it is not needed.
 Errors and Troubleshooting - AttributeError list object no attribute value
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If you get an error:
+
+.. code-block:: text
 
   AttributeError: 'list' object has no attribute 'value'
 
@@ -1698,8 +3140,8 @@ the email entry in the tracker section::
   # If set to some other value, the value is used as the reply-to
   # address. It must be a valid RFC2822 address or people will not be
   # able to reply.
-  # Default: 
-  replyto_address = 
+  # Default:
+  replyto_address =
 
 Login from a search or after logout works better (required)
 -----------------------------------------------------------
@@ -1709,7 +3151,7 @@ changes. Now when a user logs in they stay on the same page where they
 started the login. To make this work, you must change the tal that is
 used to set the ``__came_from`` form variable. Note that the url
 assigned to __came_from must be url encoded/quoted and be under the
-tracker's base url. If the base_url uses http, you can set the url to 
+tracker's base url. If the base_url uses http, you can set the url to
 https.
 
 Replace the existing code in the tracker's html/page.html page that
@@ -1871,7 +3313,7 @@ the + from the line):
       <tal:block tal:repeat="qs request/user/queries">
   -    <a href="#" tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name}"
   +    <a href="#" tal:attributes="href string:${qs/klass}?${qs/url}&@dispname=${qs/name/url_quote}"
-	  tal:content="qs/name">link</a><br>
+          tal:content="qs/name">link</a><br>
       </tal:block>
 
 Find the tal:repeat line that loops over all queries. Then
@@ -1995,12 +3437,13 @@ If you haven't modified you query.item.html template, simply copy the
 query.item.html template from one of the above default templates to
 your tracker's html directory.
 
-Enhancement to check command for Permissions
---------------------------------------------
-
+Enhancement to check command for Permissions (optional)
+-------------------------------------------------------
 A new form of check function is permitted in permission definitions.
-The three argument form is still supported and will work the same
-as it always has (although it may be depricated in the future).
+An example check function is ``own_record(db, userid, itemid)`` in the
+file schema.py. The three argument form is still supported and will
+work the same as it always has (although it may be depricated in the
+future).
 
 If the check function is defined as::
 
@@ -2021,24 +3464,24 @@ This should make defining complex permissions much easier. Consider::
 
     def issue_private_access(db, userid, itemid, **ctx):
         if not db.issue.get(itemid, 'private'):
-           # allow access to everything if not private	
-	   return True
+           # allow access to everything if not private
+           return True
 
-	# It is a private issue hide nosy list
-	# Note that the nosy property *must* be listed
-	# in permissions argument to the addPermission
-	# definition otherwise this check command
-	# is not run.
-	if ctx['property'] == 'nosy':
-	   return False # deny access to this property
+        # It is a private issue hide nosy list
+        # Note that the nosy property *must* be listed
+        # in permissions argument to the addPermission
+        # definition otherwise this check command
+        # is not run.
+        if ctx['property'] == 'nosy':
+           return False # deny access to this property
 
-	# allow access for editing, viewing etc. of the class
-	return True
+        # allow access for editing, viewing etc. of the class
+        return True
 
 
     e = db.security.addPermission(name='Edit', klass='issue',
                                   check=issue_private_access,
-				  properties=['nosy'],
+                                  properties=['nosy'],
                                   description="Edit issue checks")
 
 It is suggested that you change your checks to use the ``**ctx``
@@ -2046,10 +3489,13 @@ parameter. This is expected to be the preferred form in the future.
 You do not need to use the ``ctx`` parameter in the function if you do
 not need it.
 
+If the new four argument form is required in the future, there will be
+required (not optional) directions on upgrading your schema.
+
 Changes to property permissions
 -------------------------------
 
-If you create a permission:
+If you create a permission::
 
     db.security.addPermission(name='View', klass='user',
        properties=['theme'], check=own_record,
@@ -2076,7 +3522,7 @@ user expects to see the results of the query. But now that
 the code properly checks for duplicate search names, the user should
 stay on the search page if there is an error. To add this to your
 existing issue.search.html page, add the following line after the
-hidden field @old-queryname:
+hidden field ``@old-queryname``::
 
   <input type="hidden" name="@template" value="index|search"/>
 
@@ -2187,12 +3633,14 @@ Migrating from older versions
 See the `historical migration <upgrading-history.html>`_ document.
 
 .. _`security documentation`: security-history.html
+.. _`Roundup postgresql documentation`: postgresql.html
 .. _`administration guide`: admin_guide.html
 .. _`xmlrpc guide`: xmlrpc.html
 .. _FTS5 full-text search engine: https://www.sqlite.org/fts5.html
 .. _PostgreSQL's full text search: https://www.postgresql.org/docs/current/textsearch.html
 .. _`administration guide notes on native-fts`: admin_guide.html#configuring-native-fts-full-text-search
 .. _Configuring Compression: admin_guide.html#configuring-compression
+.. _classhelper documentation: admin_guide.html#classhelper-web-component
 .. _Software Upgrade: admin_guide.html#software-upgrade
 .. _new search permissions for query in 1.4.17:
    upgrading-history.html#new-search-permissions-for-query-in-1-4-17

@@ -8,128 +8,118 @@
 Roundup Features
 ================
 
-Roundup is a simple-to-use and -install issue-tracking system with
-web, e-mail and command-line interfaces. It is based on the winning design
-from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design competition.
+Roundup is an easy-to-use and -install issue-tracking system with
+web, e-mail and command-line interfaces. Based on the winning design
+from Ka-Ping Yee in the :index:`Software Carpentry` "Track" design
+competition. 
 
-*simple to install*
- - installation (including web interface) takes about 30 minutes
- - instant-gratification ``python demo.py`` takes less than 5 minutes :)
- - five templates included in the distribution for you to base your tracker on
- - play with the demo, customise it and then use *it* as the template for
-   your production tracker
- - requires *no* additional support software - python (2.7 or 3.6+) is
-   enough to get you going
- - supports higher-performance storage backends like sqlite_,
-   mysql_ and postgresql_
+**Installation and Setup**
 
-*simple to use*
- - accessible through the web (html, REST or XMLRPC), email,
-   command-line or Python programs
- - may be used to track bugs, features, user feedback, sales opportunities,
-   milestones, ...
- - automatically keeps a full history of changes to issues with
-   configurable verbosity and easy access to information about who created
-   or last modified *any* item in the database
- - issues have their own mini mailing list (nosy list)
- - users may sign themselves up, there may be automatic signup for
-   incoming email and users may handle their own password reset requests
+- Start using the software in `instant-gratification (demo) mode`_ with
+  ``python demo.py`` or `a Docker container`_ in under 5 minutes. 
+- Choose from `five included templates`_ for your tracker.
+- `Customize`_ and use the demo as a template for your production tracker.
+- No need for additional support software, just Python (3.7+)
+  to get started.
+- Basic installation (including a web interface) takes about 30 minutes.
+- Supports embedded databases like `SQLite`_ and dbm. Upgradable
+  to databases like `MySQL`_ or `PostgreSQL`_ if needed.
+- Can be run in a container like Docker or kubernetes.
+- Deploy in your network as a standalone web server or `through
+  various methods`_ like WSGI, FastCGI, plain CGI, etc.
+- Essential tracking features depend on the Python standard
+  library. Supplementary packages from PyPI are optional and can be
+  tailored to fit your unique threat model and security needs.
 
-*highly configurable*
- - web interface HTML is fully editable
- - database schema is also fully editable (only the "user" class is required)
-   with a full set of data types (including dates and many-to-many relations)
-   across all storages available
- - authorization is fine grained and can be based on the properties of
-   a user and resource (`ABAC, PBAC (Attribute or Policy/Purpose Based Access
-   Control <https://en.wikipedia.org/wiki/Attribute-based_access_control>`_))
- - customised automatic auditors and reactors may be written that perform
-   actions before and after changes are made to entries in the database,
-   or may veto the creation or modification of items in the database
- - samples are provided for all manner of configuration changes and
-   customisations
+**Issue Tracking and Management**
 
-*fast, scalable*
- - with the sqlite, mysql and postgresql backends, roundup is
-   also fast and scalable, easily handling thousands of issues and users
-   with decent response times
- - database indexes are automatically added for those backends that
-   support them (sqlite, mysql and postgresql)
- - indexed full text search (FTS) gives fast responses to searches across all
-   messages and indexed string properties
- - support for the Xapian, Whoosh, sqlite or postgres full-text
-   indexing engines for large trackers
+- Manage your issues your way. Handle bugs, features, milestones, 
+  user feedback, fleet maintenance, office issues etc.
+- Issues become a mini mailing list to keep everyone informed.
+- Searches on specific properties (e.g. open issues with a high
+  priority) can be saved and reused or shared with other users.
+- Full Text Search for quick searches across messages.
+- Keeps a detailed history of issue changes.
+- Email is a first class method for interacting with issues.
 
-*documented*
- - documentation exists for installation, upgrading, maintenance, users and
-   customisation
+**Scalability and Performance**
 
-*web interface*
- - fully editable interfaces for listing and display of items
- - extendable to include wizards, parent/meta bug displays, ...
- - differentiates between anonymous, known and admin users
- - may be set up to require login, and may also only allow admin users
-   to register new users
- - authentication of user registration and user-driven password resetting
-   using email and one time keys
- - may be run using WSGI or through CGI as a normal cgi script, as a
-   stand-alone web server, under mod_wsgi (mod_python is deprecated)
-   or through Zope
- - searching may be performed using many constraints, including a full-text
-   search of messages attached to issues
- - file attachments (added through the web or email) are served up with the
-   correct content-type and filename
- - email change messages generated by roundup appear to be sent by the
-   person who made the change, but responses will go back through the nosy
-   list by default
- - flexible access control built around Permissions and Roles with assigned
-   Permissions
- - generates valid HTML4 or XHTML
- - detects concurrent user changes
- - saving and editing of user-defined queries which may optionally be
-   shared with other users
+- Default trackers use simple HTML with low resource requirements.
+- Fast and scalable with sqlite, mysql, and postgresql backends.
+- Indexes are automatically configured.
+- Supports full-text indexing engines (xapian, whoosh, SQLite,
+  PostgreSQL) for large trackers.
 
-*e-mail interface*
- - may be set up using sendmail-like delivery alias, POP polling or mailbox
-   polling
- - may auto-register users who send in mail and aren't known to roundup
- - nosy list configuration controls how people are added and when messages
-   are sent to the list
- - auto-filing of "unformatted" messages into a particular class
- - e-mail attachments are handled sanely, being attached to the issue they're
-   intended for, and forwarded on to the nosy list
- - sane handling of content-type and content-encoding of messages (text/plain
-   preferred in all situations)
- - email packages that display threading will show issue messages correctly
-   threaded
- - users may send in messages from multiple addresses and be associated
-   with the same roundup username
- - built-in security features like TLS and APOP
+**Customization**
 
-*command-line*
- - may be used to interactively manage roundup databases
- - may be scripted using standard shell scripting
- - roundup's API may also be used by other Python programs - a sample is
-   provided that runs once a day and emails people their assigned issues
- - a variety of sample shell scripts are provided (weekly reports, issue
-   generation, ...)
+- The database schema can be updated to `track additional data`_.
+- The web interface can be redesigned to fit your workflow.
+- Extensible web interface with various features like `wizards`_,
+  bug displays, etc.
+- Add business rules using `auditors and reactors`_ for actions before
+  and after database changes.
+- Comprehensive documentation for customization, installation,
+  maintenance, and user guidance.
 
-*xmlrpc interface*
- - simple remote tracker interface with basic HTTP authentication
-   available at the /xmlrpc endpoint.
- - provides same access to tracker as roundup-admin, but based on
-   XMLRPC calls
- - see the `xmlrpc guide`_ for more details basic and advanced clients etc.
+**Data Security, Privacy and Authorization**
 
-*RESTful interface*
- - accessible using basic HTTP authentication at /rest starting point
- - able to be extended with new endpoints
- - authentication can be done using JSON Web Tokens (JWT)
- - CORS support for use by third party web pages.
- - see the `rest guide`_ for details.
+- Your data remains on your servers.
+- You can choose if AI can access the data.
+- Can use HTTPS for security over the web.
+- Fine-grained authorization (`ABAC`_, `ReBAC`_, `RBAC`_) based on
+  user, resource, and external properties.
 
-.. _sqlite: https://www.sqlite.org/index.html
+.. _`ABAC`: https://en.wikipedia.org/wiki/Attribute-based_access_control 
+.. _`ReBAC`: https://en.wikipedia.org/wiki/Relationship-based_access_control
+.. _`RBAC`: https://en.wikipedia.org/wiki/Role-based_access_control
+
+**Documentation and User Management**
+
+- Users can sign up through the web interface or new user creation
+  can be limited to admin users.
+- Can use an `external user database`_ (LDAP, password file)
+- Self-serve password reset for users via email.
+
+**Email Integration and Automation**
+
+- Update issues via email with new messages and the ability to
+  change properties of issues (e.g. close an issue).
+- Secure email handling with features like TLS, APOP, IMAPS/OAUTH.
+- Optional auto-registration for email users.
+- Configurable nosy list for each issue controls email notifications.
+- Proper handling of email attachments and content types.
+
+**Command-Line and API Access**
+
+- Manage database interactively from the command line.
+- Automate modifications using standard shell scripting.
+- Python programs can use the Roundup Python API to manage/automate issues.
+- Sample scripts provided for various tasks.
+
+**Remote Access Interfaces**
+
+- `RESTful API`_ accessible with basic HTTP authentication or optional JWT.
+- `XMLRPC interface`_ for remote tracker access with basic
+  HTTP authentication.
+- Configurable CORS support for third-party web pages.
+- Ability to `generate and authenticate JSON Web Tokens (JWT)
+  <rest.html#changing-access-roles-with-json-web-tokens>`_.
+
+.. _`auditors and reactors`: reference.html#auditor-or-reactor
+.. _`customize`: customizing.html
+.. _`external user database`: customizing.html#using-external-user-databases
+.. _`five included templates`: installation.html#choosing-your-template
+.. _`instant-gratification (demo) mode`:
+     installation.html#for-the-really-impatient
+.. _`a Docker container`: installation.html#running-in-demo-mode-with-docker
 .. _mysql: https://pypi.org/project/MySQL-python/
 .. _postgresql: https://www.psycopg.org/
-.. _`xmlrpc guide`: xmlrpc.html
-.. _`rest guide`: rest.html
+.. _`restful api`: rest.html
+.. _`run in a container`: installation.html#docker-support
+.. _sqlite: https://www.sqlite.org/index.html
+.. _`track additional data`:
+    customizing.html#adding-a-new-field-to-the-classic-schema
+.. _`through various methods`: installation.html#configure-a-web-interface
+.. _wizards:
+   customizing.html#setting-up-a-wizard-or-druid-for-controlled-adding-of-issues
+.. _`xmlrpc interface`: xmlrpc.html

@@ -11,6 +11,6 @@
   There has been a collision. Another user updated this node
   while you were editing. Please <a href='${context}'>reload</a>
   the node and review your edits.
-"><span tal:replace="context/designator" i18n:name="context" />
+"><tal:x tal:content="context/designator" i18n:name="context" />
 </td>
 </tal:block>

@@ -1,6 +1,6 @@
 <tal:block metal:use-macro="templates/page/macros/frame">
   <tal:block metal:fill-slot="body_title">
-    <p class="header">Milestone<span tal:replace="context/id" /> Editing</p>
+    <p class="header">Milestone<tal:x tal:content="context/id" /> Editing</p>
   </tal:block>
 
   <tal:block metal:fill-slot="content">
@@ -24,7 +24,7 @@
       </td>
       <td colspan="5"
           tal:condition="python: not request.user.hasPermission('Edit')"
-          tal:content="structure context/title/plain">
+          tal:content="context/title/plain">
         title
       </td>
     </tr>
@@ -50,7 +50,7 @@
       </td>
       <td colspan="5"
           tal:condition="python: not request.user.hasPermission('Edit')"
-          tal:content="structure context/status/plain">
+          tal:content="context/status/plain">
         status
       </td>
     </tr>

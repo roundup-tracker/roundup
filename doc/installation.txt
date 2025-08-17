@@ -74,6 +74,10 @@ program you can run ``python demo.py`` instead.)
 .. _install the source:
 
 1. ``python3 -m pip download roundup``
+
+   * (If you are really impatient, you probably don't want to
+     `verify the downloaded file <security.html#verify-source-tarball>`_.)
+
 2. ``tar -xzvf roundup-2.2.0.tar.gz``
 
    * if you don't have a tar command, ``python3 -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.2.0.tar.gz`` can be used.
@@ -174,7 +178,7 @@ can remove the tracker using ``rm -f`` on the ``demo`` directory.
 Prerequisites
 =============
 
-Roundup requires Python 2.7 [3]_ or 3.6 or newer with a functioning anydbm
+Roundup requires Python 3.7 or newer with a functioning anydbm
 or sqlite module. The version installed by most vendors should work if
 it meets the version requirements. If necessary, you can download the
 latest version from https://www.python.org/. It is highly recommended
@@ -244,21 +248,35 @@ gpg
   If gpg_ is installed you can configure the mail gateway to perform
   verification or decryption of incoming OpenPGP MIME messages. When
   configured, you can require email to be cryptographically signed
-  before roundup will allow it to make modifications to issues.
+  before roundup will allow it to make modifications to issues. (Note
+  with python 3.13 or newer on some platforms, you may need to install
+  version 2.0 of gpg from test.pypi.org. See the `gpg install
+  directions in the upgrading document`_.
+
 
 jinja2
   To use the jinja2 template (may still be experimental, check out
   its TEMPLATE-INFO.txt file) you need
   to have the jinja2_ template engine installed.
 
+defusedxml
+  If you are going to enable and use the XMLRPC endpoint, you should
+  install the defusedxml_ module. It will still work with the default
+  xmlrpc standard library, but it will log a warning when used.
+
+.. _install/docutils:
+
 docutils
   To use ReStructuredText rendering you need to have the `docutils`_
   package installed.
 
+.. _install/markdown:
+
 markdown, markdown2 or mistune
-  To use markdown rendering you need to have the markdown_,
-  markdown2_ (2.4.9 known to be broken, 2.3.3 known to work),
-  or mistune_ (v0.8.4 tested; python3 only) package installed.
+  To use markdown rendering (as supplied by the jinja2 template)
+  you need to have the markdown_,
+  markdown2_ (2.4.9 known to be broken, 2.3.3, 2.4.10+ known to
+  work), or mistune_ (v0.8.4 tested; python3 only) package installed.
 
 zstd, brotli
   To have roundup compress the returned data using one of these
@@ -276,9 +294,18 @@ redis
   guide`_ for details.
 
 pyjwt
-  To use JWT (JSON web tokens) for login (experimental), install `pyjwt`_
-  (v1.7.1, v2.0.1 tested). If you don't have it installed, JWT's
-  are not supported.
+  To use JWT (JSON web tokens) for login (experimental), install
+  `pyjwt`_ (v1.7.1, v2.0.1 tested). If you don't have it
+  installed, JWT's are not supported.
+
+polib
+  Roundup includes translations in various languages. To extract
+  strings designated for translation from your tracker's HTML
+  templates, you can utilize `roundup-gettext`. However, if you
+  wish to extract translatable strings from the Python code in
+  tracker's detectors or extensions directories using
+  roundup-gettext, you must install polib_. See the `developer's
+  guide`_ for details on translating your tracker.
 
 pywin32 - Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
@@ -295,11 +322,8 @@ requests
 .. _Using Redis for Session Databases:
    admin_guide.html#using-redis-for-session-databases
 
-.. [3] Do not use Python 2 for new installs. The continuous
-       integration and other services used for developing Roundup
-       are dropping support for Python 2. Also optional packages
-       are dropping Python 2 support. As a result Python 2 may
-       not be supported for many more release cycles.
+.. _gpg install directions in the upgrading document:
+   upgrading.html#directions-for-installing-gpg
 
 Installing Roundup
 ==================
@@ -478,9 +502,10 @@ in the following steps.
           Admin Password:
                  Confirm:
 
-      Note: running this command will *destroy any existing data in the
-      database*. In the case of MySQL and PostgreSQL, any existing database
-      will be dropped and re-created.
+      Note: running this command will *destroy any existing data in
+      the database*. In the case of MySQL and PostgreSQL, any existing
+      database (or optionally database schema for PostgreSQL) will be
+      dropped and re-created.
 
       Once this is done, the tracker has been created. See the note in
       the `administration guide`_ on how to :ref:`initialise a
@@ -607,11 +632,37 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   simultaneous users, but requires much less installation and maintenance
   effort than more scalable postgresql and mysql backends.
 
-  SQLite is supported via PySQLite versions 1.1.7, 2.1.0 and sqlite3 (the last
+  SQLite is supported via PySQLite version 2.1.0 and sqlite3 (the last
   being bundled with Python 2.5+)
 
-  Installed SQLite should be the latest version available (3.3.8 is known
-  to work, 3.1.3 is known to have problems).
+  Installed SQLite should be the latest version available (3.9.0 or newer).
+
+  .. _fts5-testing:
+
+  Installation of Roundup 2.2.0 or newer requires that the installed
+  SQLite supports FTS5. This is required even if you are not going to
+  use FTS5 for full text searching. FTS5 was included in SQLite
+  release 3.9.0 in October 2015. However some vendors choose not to
+  include it.  RedHat 7's native sqlite3 is known to not work.
+
+  You can check your SQLite by using the command line::
+
+     echo 'pragma compile_options' | sqlite3 | grep FTS5
+
+  it should output ``ENABLE_FTS5`` if FTS5 is supported.
+
+  You can check using the same version of Python you use for running
+  Roundup with::
+
+     import sqlite3
+
+     con = sqlite3.connect(':memory:')
+     cur = con.cursor()
+     cur.execute('pragma compile_options;')
+     available_pragmas = cur.fetchall()
+     con.close()
+
+  The output should include ``('ENABLE_FTS5',)`` in the output.
 
   Roundup supports using `SQLite's full text search capability
   <admin_guide.html#sqlite-details>`_. This
@@ -704,11 +755,11 @@ or ``c:\winnt\system32\inetsrv\adminsamples\`` or
 
 See:
 
-   https://learn.microsoft.com/en-us/iis/web-dev-reference/server-variables
+   https://github.com/MicrosoftDocs/iis-docs/blob/main/iis/web-dev-reference/server-variables.md
 
-More information about ISS setup may be found at:
+More information about IIS setup may be found at:
 
-   https://docs.microsoft.com/en-us/iis/
+   https://learn.microsoft.com/en-us/iis/
 
 Copy the ``share/roundup/cgi-bin/roundup-cgi``
 (``frontends/roundup.cgi`` in source tree) file to your web
@@ -841,7 +892,7 @@ These notes were developed on a Microsoft Azure VM running Ubuntu
 -  the tracker ``mytracker`` is installed in the ``trackers`` folder of
    home directory of a user called ``admin``. Thus, the absolute path to
    the tracker home directory is ``/home/admin/trackers/mytracker``.
--  the server has a static public IP address of 11.11.11.101
+-  the server has a static public IP address of 198.51.100.25
 
 Install mod-wsgi
 ~~~~~~~~~~~~~~~~
@@ -889,7 +940,7 @@ method.
    up content on localhost port 8000. You can then direct a browser on
    the server itself to ``http://localhost:8000/`` or on another machine at
    the server's domain name or ip address followed by colon then 8000
-   (e.g. ``http://11.11.11.101:8000/``). If successful, you should see a
+   (e.g. ``http://198.51.100.25:8000/``). If successful, you should see a
    Malt Whiskey image.
 
 Package manager install of mod_wsgi
@@ -926,7 +977,7 @@ To run the tracker on Port 8000 as a foreground process
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 1. Change the ``tracker.web`` url in ``config.ini`` to port 8000 at the
-   server domain name or ip address (e.g. ``http://11.11.11.101:8000/``).
+   server domain name or ip address (e.g. ``http://198.51.100.25:8000/``).
 2. Open port 8000 for TCP on the server if you didn't already do so.
 3. ``cd`` to your tracker home directory, then run
    ``mod_wsgi-express start-server wsgi.py``.
@@ -957,7 +1008,7 @@ To run mod_wsgi on PORT 80
 ''''''''''''''''''''''''''
 
 1. Change the ``tracker.web`` url in ``config.ini`` to the server url
-   with no port designator. E.g. ``http://11.11.11.101``.
+   with no port designator. E.g. ``http://198.51.100.25``.
 2. Open port 80 on the server for TCP traffic if it isn't open already.
 3. Stop the system instance of Apache to make sure it isn't holding on
    to port 80 run: ``sudo service apache2 stop``.
@@ -1236,12 +1287,13 @@ wsgi server like uWSGI, Gnuicorn etc.
 
 To run Roundup using FastCGI, the flup_ package can be used under
 Python 2 and Python 3. We don't have a detailed config for this, but
-the basic idea can be found at:
-https://flask.palletsprojects.com/en/2.0.x/deploying/fastcgi/
+the basic idea `can be found in the wayback machine archive`_.
 
 If you have deployed Roundup using FastCGI and flup we welcome example
 configuration files and instructions.
 
+.. _can be found in the wayback machine archive:
+     https://web.archive.org/web/20241010170738/https://flask.palletsprojects.com/en/2.0.x/deploying/fastcgi/
 .. _flup: https://pypi.org/project/flup/
 
 WSGI Variations
@@ -1389,6 +1441,63 @@ nginx configuration below.
 
 If you are customizing a docker continer to use gunicorn, see
 https://pythonspeed.com/articles/gunicorn-in-docker/.
+
+.. index:: pair: web interface; Waitress
+   single: wsgi; Waitress
+
+Waitress Installation
+~~~~~~~~~~~~~~~~~~~~~
+
+Waitress is a pure Python WSGI server. It runs on Windows and you
+could use IIS or other web server to reverse proxy HTTP to it.
+
+You can use Waitress to serve Roundup without a proxy. It's not
+recommended, but it can be used on a local network where roundup can't
+be accessed from the internet.
+
+Assuming you have installed Roundup in a virtual environment (venv),
+install ``waitress`` and ``paste`` into the same venv using
+pip. ``paste`` is optional, but it provides logging middleware that
+produces standard combined format HTTP connection logs. You need to
+modify the file wsgi.py (obtained from ``frontends/wsgi.py``) to
+invoke waitress. It will look like::
+
+    # If you installed roundup to the system locations
+    # using pip you don't need to change this
+    # section. If you installed roundup in a custom
+    # location, uncomment these lines and change the
+    # path in the append() method to your custom path.
+    #import sys
+    #sys.path.append('/custom/location/where/roundup/is/installed')
+
+    # Obtain the WSGI request dispatcher
+    from roundup.cgi.wsgi_handler import RequestDispatcher
+
+    # Set the path to tracker home.
+    tracker_home = 'demo'
+
+    # Definition signature for app: app(environ, start_response):
+    # If using apache mod_wsgi change app to application.
+    app =  RequestDispatcher(tracker_home)
+
+    from waitress import serve
+    # Optional replaced TransLogger(app) with app if not installed
+    from paste.translogger import TransLogger
+    serve(TransLogger(app),
+	  host='0.0.0.0',
+	  port=8917,
+	  url_prefix=f"/{tracker_home}/")
+
+This will make Roundup available to any host on your local network at
+port 8917 under the ``/demo/`` path. Run it with ``python wsgi.py``.
+If you want to run just on the local loopback interface, replace
+``0.0.0.0`` with ``127.0.0.1``
+
+`See the Waitress docs`_ for more info on configuring waitress
+including putting it behind a proxy, IPV6 support etc.
+
+.. _`See the Waitress docs`:
+   https://docs.pylonsproject.org/projects/waitress/en/stable/
 
 .. index:: pair: web interface; uWSGI
    single: wsgi; uWSGI
@@ -1808,7 +1917,7 @@ Configuring Roundup in the Container
   Docker modifies iptables firewall rules. This allows access to the
   container from your local network. `See the official documentation
   for details
-  <https://docs.docker.com/engine/reference/commandline/run/#publish>`_.
+  <https://docs.docker.com/reference/cli/docker/container/run/#publish>`_.
   UFW rules are known to be be ignored (see:
   https://github.com/moby/moby/issues/4737).  Use ``-p
   127.0.0.1:ext_port:container_port`` in your docker run commands or
@@ -1909,6 +2018,15 @@ Arguments for roundup-server
 Once you have initialized your tracker, any arguments placed at the
 end of the ``docker run`` command are passed to the ``roundup-server``.
 These arguments **replace** the default arguments of ``issues=tracker``.
+
+Brief Help
+~~~~~~~~~~
+
+You can get help running the docker image::
+
+    docker run -it \
+        -v $PWD/tracker:/usr/src/app/tracker \
+        roundup-app:latest help
 
 Invoking a Shell
 ~~~~~~~~~~~~~~~~
@@ -2084,10 +2202,28 @@ addresses, databases to back up, etc.
 Platform-Specific Notes
 =======================
 
+
+Windows
+-------
+
+.. index:: windows; choose non-default session/otk database
+
+Configure session database
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default the session and one time key (OTK) databases default to
+using anydbm as the session store. Because GNU dbm and Ndbm are
+available on Linux, this is a reasonable default. However Windows
+doesn't have compiled libraries for these databases. So it defaults to
+"dumb" dbm which is written in Python and is slow. So we recommend
+using `some other backend for your session database`_. SQLite or Redis
+can be used if you don't want to run a separate supported RDBMS
+database server.
+
 .. index:: windows; add Roundup to path
 
 Windows command-line tools
---------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To make the command-line tools accessible in Windows, you need to update
 the "Path" environment variable in the Registry via a dialog box.
@@ -2111,7 +2247,7 @@ Panel" is directly accessible from "Start".
 I do not believe this is possible to do in previous versions of Windows.
 
 Use pip to install pyreadline3 for roundup-admin line editing
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 If you install pyreadline3_ using pip, roundup-admin will support
 command line editing and history.
@@ -2123,7 +2259,7 @@ This will remove the dreaded::
 warning when starting roundup-admin.
 
 Windows Server
---------------
+~~~~~~~~~~~~~~
 
 To have the Roundup web server start up when your machine boots up, there
 are two different methods, the scheduler and installing the service.
@@ -2133,7 +2269,7 @@ are two different methods, the scheduler and installing the service.
 .. _Using the Windows scheduler:
 
 1. Using the Windows scheduler
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+''''''''''''''''''''''''''''''
 
 Set up the following in Scheduled Tasks (note, the following is for a
 cygwin setup):
@@ -2165,7 +2301,7 @@ Schedule
 .. index:: windows; setup Roundup a service
 
 2. Installing the roundup server as a Windows service
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 This is more Windows oriented and will make the Roundup server run as
 soon as the PC starts up without any need for a login or such. It will
@@ -2206,8 +2342,13 @@ If you are using Apache as the webserver you might want to use it with
 mod_python instead to serve out Roundup. In that case see the mod_python
 instructions above for details.
 
+Linux
+-----
+
+Make sure you read the instructions under `UNIX environment steps`_.
+
 Sendmail smrsh
---------------
+~~~~~~~~~~~~~~
 
 If you use Sendmail's ``smrsh`` mechanism, you will need to tell
 smrsh that roundup-mailgw is a valid/trusted mail handler
@@ -2221,11 +2362,6 @@ This is usually done via the following 2 steps:
 
 2. change your alias to ``"|roundup-mailgw <tracker_home>"``
 
-
-Linux
------
-
-Make sure you read the instructions under `UNIX environment steps`_.
 
 
 Solaris
@@ -2281,6 +2417,8 @@ the test.
 .. _`preventing spam`: customizing.html#preventing-spam
 .. _`Adding a new field to the classic schema`:
    customizing.html#adding-a-new-field-to-the-classic-schema
+.. _`some other backend for your session database`:
+   admin_guide.html#configuring-session-databases
 .. _`Tracking different types of issues`:
    customizing.html#tracking-different-types-of-issues
 .. _`customising roundup`: customizing.html
@@ -2299,10 +2437,12 @@ the test.
     https://dev.mysql.com/doc/refman/8.0/en/creating-accounts.html
 .. _apache: https://httpd.apache.org/
 .. _brotli: https://pypi.org/project/Brotli/
+.. _`developer's guide`: developers.html
+.. _defusedxml: https://pypi.org/project/defusedxml/
 .. _docutils: https://pypi.org/project/docutils/
 .. _flup: https://pypi.org/project/flup/
 .. _gpg: https://www.gnupg.org/software/gpgme/index.html
-.. _jinja2: https://palletsprojects.com/p/jinja/
+.. _jinja2: https://palletsprojects.com/projects/jinja/
 .. _markdown: https://python-markdown.github.io/
 .. _markdown2: https://github.com/trentm/python-markdown2
 .. _mistune: https://pypi.org/project/mistune/
@@ -2310,6 +2450,7 @@ the test.
 .. _mod_wsgi: https://pypi.org/project/mod-wsgi/
 .. _MySQLdb: https://pypi.org/project/mysqlclient/
 .. _Olson tz database: https://www.iana.org/time-zones
+.. _polib: https://polib.readthedocs.io
 .. _Psycopg2: https://www.psycopg.org/
 .. _pyjwt: https://pypi.org/project/PyJWT/
 .. _pyopenssl: https://pypi.org/project/pyOpenSSL/

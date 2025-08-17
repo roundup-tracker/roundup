@@ -51,6 +51,10 @@ finally:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 #extensions = ['toctree']
+extensions = ['sphinx_tabs.tabs', 'sphinx.ext.autodoc']
+
+sphinx_tabs_valid_builders = ['linkcheck']
+sphinx_tabs_disable_tab_closing = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -68,7 +72,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Roundup'
-copyright = u'2009-2021, Richard Jones, Roundup-Team'
+copyright = u'2009-2025, Richard Jones, Roundup-Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -95,9 +99,9 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # see https://issues.roundup-tracker.org/issue2550907:
-exclude_patterns = ['_build',
+exclude_patterns = ['_build', 'tracker_config.txt',
                     'announcement.txt', 'whatsnew-0.7.txt',
-                    'whatsnew-0.8.txt']
+                    'whatsnew-0.8.txt', 'CVE.txt']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

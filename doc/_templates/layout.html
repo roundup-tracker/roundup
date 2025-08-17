@@ -1,3 +1,9 @@
+{% set script_files = ['_static/jquery.js', '_static/doctools.js',
+                       '_static/language_data.js',
+                       '_static/searchtools.js',
+                       '_static/sphinx_highlight.js',
+                       '_static/tabs.js',
+] %}
 {#
     _templates/layout.html
     ~~~~~~~~~~~~~~~~~~~~~~
@@ -101,24 +107,10 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {%- if 'name="description"' not in metatags %}
-      <meta name="description"
-        content="Page {{ pagename }} in documentation on the Roundup issue tracker, version {{ release|e }}.">
-    {%- endif %}
-    {{ metatags }}
     {%- if builder != 'htmlhelp' %}
       {%- set titlesuffix = " &mdash; "|safe + docstitle|e %}
     {%- endif %}
     <title>{{ title|striptags }}{{ titlesuffix }}</title>
-    {%- if builder == 'web' %}
-    <link rel="stylesheet" href="{{ pathto('index') }}?do=stylesheet{%
-      if in_admin_panel %}&admin=yes{% endif %}" type="text/css" />
-    {%- for link, type, title in page_links %}
-    <link rel="alternate" type="{{ type|e(true) }}" title="{{ title|e(true) }}" href="{{ link|e(true) }}" />
-    {%- endfor %}
-    {%- else %}
-    {{ css() }}
-    {%- endif %}
     {%- if builder != 'htmlhelp' %}
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -131,6 +123,22 @@
     {%- for scriptfile in script_files %}
     <script type="text/javascript" src="{{ pathto(scriptfile, 1) }}"></script>
     {%- endfor %}
+    {%- if builder == 'web' %}
+    <link rel="stylesheet" href="{{ pathto('index') }}?do=stylesheet{%
+      if in_admin_panel %}&admin=yes{% endif %}" type="text/css" />
+    {%- for link, type, title in page_links %}
+    <link rel="alternate" type="{{ type|e(true) }}" title="{{ title|e(true) }}" href="{{ link|e(true) }}" />
+    {%- endfor %}
+    {%- else %}
+    {{ css() }}
+    {%- endif %}
+    <!-- https://github.com/sphinx-doc/sphinx/issues/11699 means a
+         duplicate viewport tag -->
+    {{ metatags }}
+    {%- if 'name="description"' not in metatags %}
+      <meta name="description"
+        content="Page {{ pagename }} in documentation on the Roundup issue tracker, version {{ release|e }}.">
+    {%- endif %}
     {%- if use_opensearch %}
     <link rel="search" type="application/opensearchdescription+xml"
           title="{% trans docstitle=docstitle|e %}Search within {{ docstitle }}{% endtrans %}"
@@ -165,6 +173,10 @@
   <body>
     <div class="header"><div class="label">Roundup</div>
       {%- if pagename != "search" %}
+        <script id="documentation_options" data-url_root="{{ url_root }}"
+	      src="{{ pathto('_static/documentation_options.js', 1) }}">
+        </script>
+
         <div id="searchbox" style="display: none">
           <form class="search" action="{{ pathto('search') }}" method="get">
             <input type="text" name="q" size="18" />
@@ -182,11 +194,11 @@
       </div>
     </div>
 {%- block content %}
-    <div class="content">
+    <main id="main" role="main" class="content">
        {{ relbar('related-top') }}
        {% block body %} {% endblock %}
        {{ relbar('related-bottom') }}
-    </div>
+    </main>
   {%- endblock %}
 {%- block footer %}
     <div class="footer">

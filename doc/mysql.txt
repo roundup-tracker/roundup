@@ -13,13 +13,36 @@ Prerequisites
 To use MySQL as the backend for storing roundup data, you also need 
 to install:
 
-1. MySQL RDBMS 4.0.18 or higher - https://www.mysql.com/. Your MySQL
-   installation MUST support InnoDB tables (or Berkeley DB (BDB) tables
-   if you have no other choice). If you're running < 4.0.18 (but not <4.0)
-   then you'll need to use BDB to pass all unit tests. Edit the
-   ``roundup/backends/back_mysql.py`` file to enable DBD instead of InnoDB.
+1. MySQL RDBMS 8.0.11 or higher - https://www.mysql.com/. Your MySQL
+   installation MUST support InnoDB tables.
 2. Python MySQL interface - https://pypi.org/project/mysqlclient/
 
+
+Preparing the Database
+======================
+
+The Roundup user expects to be able to create and drop its database
+when using ``roundup_admin init``.
+
+In the examples below, replace ``roundupuser``, ``rounduppw`` and
+``roundupdb`` with suitable values.
+
+This assumes you are running MySQL on the same host as you are
+running Roundup. If this is not the case, setting up remote
+credentials, SSL/TLS etc. is beyond the scope of this documentation.
+However examples are welcome on the wiki or mailing list.
+
+These references may be helpful:
+https://dev.mysql.com/doc/refman/8.0/en/create-user.html and
+https://dev.mysql.com/doc/refman/8.0/en/grant.html.
+
+Creating a Role/User
+--------------------
+
+The following command will create a ``roundupuser`` with the ability
+to create the database::
+
+  mysql -u root -e 'CREATE USER "roundupuser"@"localhost" IDENTIFIED WITH mysql_native_password BY "rounduppw"; GRANT ALL on roundupuser.* TO "roundupuser"@"localhost";'
 
 Other Configuration
 ===================

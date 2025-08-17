@@ -32,11 +32,11 @@ Exceptions:
 """
 
 import array
-from ast import literal_eval
 import codecs
-from email.parser import HeaderParser
 import struct
 import sys
+from ast import literal_eval
+from email.parser import HeaderParser
 
 PY3 = sys.version_info[0] == 3
 if PY3:
@@ -55,7 +55,7 @@ else:
     from cStringIO import StringIO as BytesIO
     # file is a type defined only under python 2.
     # Flake8 when run in py3 flags this.
-    FILE_TYPE = file  # noqa: 821  
+    FILE_TYPE = file  # noqa: F821
 
 
 class PoSyntaxError(Exception):
@@ -102,13 +102,13 @@ class Msgfmt:
             return [first] + output.readlines()
         return output
 
-    def add(self, context, id, string, fuzzy):
+    def add(self, context, label, string, fuzzy):
         "Add a non-empty and non-fuzzy translation to the dictionary."
         if string and not fuzzy:
             # The context is put before the id and separated by a EOT char.
             if context:
-                id = context + u'\x04' + id
-            if not id:
+                label = context + u'\x04' + label
+            if not label:
                 # See whether there is an encoding declaration
                 charset = header_charset(string)
                 if charset:
@@ -118,29 +118,29 @@ class Msgfmt:
                         # undo damage done by literal_eval in Python 2.x
                         string = string.encode(self.encoding).decode(charset)
                     self.encoding = charset
-            self.messages[id] = string
+            self.messages[label] = string
 
     def generate(self):
         "Return the generated output."
         # the keys are sorted in the .mo file
         keys = sorted(self.messages.keys())
         offsets = []
-        ids = strs = b''
-        for id in keys:
-            msg = self.messages[id].encode(self.encoding)
-            id = id.encode(self.encoding)
+        labels = strs = b''
+        for label in keys:
+            msg = self.messages[label].encode(self.encoding)
+            label = label.encode(self.encoding)
             # For each string, we need size and file offset. Each string is
             # NUL terminated; the NUL does not count into the size.
-            offsets.append((len(ids), len(id), len(strs),
+            offsets.append((len(labels), len(label), len(strs),
                             len(msg)))
-            ids += id + b'\0'
+            labels += label + b'\0'
             strs += msg + b'\0'
         output = b''
         # The header is 7 32-bit unsigned integers. We don't use hash tables,
         # so the keys start right after the index tables.
         keystart = 7 * 4 + 16 * len(keys)
         # and the values start after the keys
-        valuestart = keystart + len(ids)
+        valuestart = keystart + len(labels)
         koffsets = []
         voffsets = []
         # The string table first has the list of keys, then the list of values.
@@ -163,7 +163,7 @@ class Msgfmt:
             output += array.array("i", offsets).tobytes()
         else:
             output += array.array("i", offsets).tostring()
-        output += ids
+        output += labels
         output += strs
         return output
 
@@ -184,6 +184,7 @@ class Msgfmt:
         msgid = msgstr = msgctxt = u''
 
         # Parse the catalog
+        # ruff: noqa: E741 PLW2901 - 'l' var name ok; overwrite 'l' ok
         lno = 0
         for l in self.readPoData():
             l = l.decode(self.encoding)
@@ -281,3 +282,24 @@ class Msgfmt:
 
     def getAsFile(self):
         return BytesIO(self.get())
+
+
+if __name__ == '__main__':
+    # a really dumb attempt to make this into a command
+    # Usage: python msgfmy.py <input_file>.po <output_file>.mo
+    import sys
+    input_filename = ""
+    output_filename = ""
+
+    if sys.argv[1] == "-o":
+        output_filename = sys.argv[2]
+        input_filename = sys.argv[3]
+    else:
+        input_filename = sys.argv[1]
+        output_filename = sys.argv[2]
+
+    mo = Msgfmt(input_filename).get()
+    with open(output_filename, 'wb') as mofile:
+        mofile.write(mo)
+        mofile.close()
+

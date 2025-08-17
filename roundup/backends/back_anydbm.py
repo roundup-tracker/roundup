@@ -31,10 +31,10 @@ import shutil
 import time
 
 from roundup.anypy.dbm_ import anydbm, whichdb
-from roundup.anypy.strings import b2s, bs2b, repr_export, eval_import, is_us
+from roundup.anypy.strings import b2s, repr_export, eval_import, is_us
 
 from roundup import hyperdb, date, password, roundupdb, security, support
-from roundup.mlink_expr import Expression
+from roundup.mlink_expr import Expression, ExpressionError
 from roundup.backends import locking
 from roundup.i18n import _
 
@@ -48,12 +48,10 @@ except ImportError:
 
 from roundup.backends.indexer_common import get_indexer
 
-from hashlib import md5
-
 
 def db_exists(config):
     # check for the user db
-    for db in 'nodes.user nodes.user.db'.split():
+    for db in 'nodes.user nodes.user.db nodes.user.dat'.split():
         if os.path.exists(os.path.join(config.DATABASE, db)):
             return 1
     return 0
@@ -212,7 +210,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def addclass(self, cl):
         cn = cl.classname
         if cn in self.classes:
-            raise ValueError(_('Class "%s" already defined.' % cn))
+            raise ValueError(_('Class "%s" already defined.') % cn)
         self.classes[cn] = cl
 
         # add default Edit and View permissions
@@ -298,7 +296,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if not db_type or hasattr(anydbm, 'whichdb'):
             if __debug__:
                 logging.getLogger('roundup.hyperdb.backend').debug(
-                    "opendb anydbm.open(%r, 'c')" % path)
+                    "opendb anydbm.open(%(path)r, 'c')",
+                    {"path": path,})
             return anydbm.open(path, 'c')
 
         # in Python <3 it anydbm was a little dumb so manually open the
@@ -383,11 +382,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 'save %s%s %r' % (classname, nodeid, node))
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
-    def getnode(self, classname, nodeid, db=None, cache=1):
+    def getnode(self, classname, nodeid, db=None, cache=1, allow_abort=True):
         """ get a node from the database
 
             Note the "cache" parameter is not used, and exists purely for
             backward compatibility!
+
+            'allow_abort' is used only in sql backends.
         """
         # try the cache
         cache_dict = self.cache.setdefault(classname, {})
@@ -408,11 +409,13 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if db is None:
             db = self.getclassdb(classname)
         if nodeid not in db:
+            db.close()
             raise IndexError("no such %s %s" % (classname, nodeid))
 
         # check the uncommitted, destroyed nodes
         if (classname in self.destroyednodes and
                 nodeid in self.destroyednodes[classname]):
+            db.close()
             raise IndexError("no such %s %s" % (classname, nodeid))
 
         # decode
@@ -1026,7 +1029,7 @@ class Class(hyperdb.Class):
 
         return newid
 
-    def get(self, nodeid, propname, default=_marker, cache=1):
+    def get(self, nodeid, propname, default=_marker, cache=1, allow_abort=True):
         """Get the value of a property on an existing node of this class.
 
         'nodeid' must be the id of an existing node of this class or an
@@ -1034,6 +1037,8 @@ class Class(hyperdb.Class):
         of this class or a KeyError is raised.
 
         'cache' exists for backward compatibility, and is not used.
+
+        'allow_abort' is used only in sql backends.
 
         Attempts to get the "creation" or "activity" properties should
         do the right thing.
@@ -1462,8 +1467,9 @@ class Class(hyperdb.Class):
 
         self.fireReactors('restore', nodeid, None)
 
-    def is_retired(self, nodeid, cldb=None):
+    def is_retired(self, nodeid, cldb=None, allow_abort=True):
         """Return true if the node is retired.
+           'allow_abort' is used only in sql backends.
         """
         node = self.db.getnode(self.classname, nodeid, cldb)
         if self.db.RETIRED_FLAG in node:
@@ -1525,6 +1531,11 @@ class Class(hyperdb.Class):
         if not self.key:
             raise TypeError('No key property set for '
                             'class %s' % self.classname)
+
+        # special notation for looking up the current database user
+        if keyvalue == '@current_user' and self.classname == 'user':
+            keyvalue = self.db.user.get(self.db.getuid(), self.key)
+
         cldb = self.db.getclassdb(self.classname)
         try:
             for nodeid in self.getnodeids(cldb):
@@ -1766,6 +1777,9 @@ class Class(hyperdb.Class):
                 if isinstance(propclass, hyperdb.Link):
                     if not isinstance(v, list):
                         v = [v]
+                    if propclass.classname == 'user' and '@current_user' in v:
+                        cu = self.db.getuid()
+                        v = [x if x != "@current_user" else cu for x in v]
                     l.append((LINK, k, v))
                 elif isinstance(propclass, hyperdb.Multilink):
                     # If it's a reverse multilink, we've already
@@ -1873,7 +1887,12 @@ class Class(hyperdb.Class):
                     if t == LINK:
                         # link - if this node's property doesn't appear in the
                         # filterspec's nodeid list, skip it
-                        expr = Expression(v, is_link=True)
+                        try:
+                            expr = Expression(v, is_link=True)
+                        except ExpressionError as e:
+                            e.context['class'] = cn
+                            e.context['attr'] = k
+                            raise
                         if expr.evaluate(nv):
                             match = 1
                     elif t == MULTILINK:
@@ -1888,7 +1907,12 @@ class Class(hyperdb.Class):
                         else:
                             # otherwise, make sure this node has each of the
                             # required values
-                            expr = Expression(v)
+                            try:
+                                expr = Expression(v)
+                            except ExpressionError as e:
+                                e.context['class'] = cn
+                                e.context['attr'] = k
+                                raise
                             if expr.evaluate(nv):
                                 match = 1
                     elif t == STRING:
@@ -2204,168 +2228,19 @@ class Class(hyperdb.Class):
 
 
 class FileClass(hyperdb.FileClass, Class):
-    """This class defines a large chunk of data. To support this, it has a
-       mandatory String property "content" which is typically saved off
-       externally to the hyperdb.
-
-       The default MIME type of this data is defined by the
-       "default_mime_type" class attribute, which may be overridden by each
-       node if the class defines a "type" String property.
-    """
+    # Use for explicit upcalls in generic code, for py2 compat we cannot
+    # use super() without making everything a new-style class.
+    subclass = Class
     def __init__(self, db, classname, **properties):
-        """The newly-created class automatically includes the "content"
-        and "type" properties.
-        """
-        if 'content' not in properties:
-            properties['content'] = hyperdb.String(indexme='yes')
-        if 'type' not in properties:
-            properties['type'] = hyperdb.String()
+        self._update_properties(properties)
         Class.__init__(self, db, classname, **properties)
 
-    def create(self, **propvalues):
-        """ Snarf the "content" propvalue and store in a file
-        """
-        # we need to fire the auditors now, or the content property won't
-        # be in propvalues for the auditors to play with
-        self.fireAuditors('create', None, propvalues)
-
-        # now remove the content property so it's not stored in the db
-        content = propvalues['content']
-        del propvalues['content']
-
-        # make sure we have a MIME type
-        mime_type = propvalues.get('type', self.default_mime_type)
-
-        # do the database create
-        newid = self.create_inner(**propvalues)
-
-        # store off the content as a file
-        self.db.storefile(self.classname, newid, None, bs2b(content))
-
-        # fire reactors
-        self.fireReactors('create', newid, None)
-
-        return newid
-
-    def get(self, nodeid, propname, default=_marker, cache=1):
-        """ Trap the content propname and get it from the file
-
-        'cache' exists for backwards compatibility, and is not used.
-        """
-        poss_msg = 'Possibly an access right configuration problem.'
-        if propname == 'content':
-            try:
-                return b2s(self.db.getfile(self.classname, nodeid, None))
-            except IOError as strerror:
-                # XXX by catching this we don't see an error in the log.
-                return 'ERROR reading file: %s%s\n%s\n%s' % (
-                        self.classname, nodeid, poss_msg, strerror)
-            except UnicodeDecodeError as e:
-                # if content is not text (e.g. jpeg file) we get
-                # unicode error trying to convert to string in python 3.
-                # trap it and supply an error message. Include md5sum
-                # of content as this string is included in the etag
-                # calculation of the object.
-                return ('%s%s is not text, retrieve using '
-                        'binary_content property. mdsum: %s') % (
-                            self.classname, nodeid,
-                            md5(self.db.getfile(
-                                self.classname, nodeid, None)).hexdigest())  # nosec - bandit md5 use ok
-        elif propname == 'binary_content':
-            return self.db.getfile(self.classname, nodeid, None)
-
-        if default is not _marker:
-            return Class.get(self, nodeid, propname, default)
-        else:
-            return Class.get(self, nodeid, propname)
-
-    def set(self, itemid, **propvalues):
-        """ Snarf the "content" propvalue and update it in a file
-        """
-        self.fireAuditors('set', itemid, propvalues)
-
-        # create the oldvalues dict - fill in any missing values
-        oldvalues = copy.deepcopy(self.db.getnode(self.classname, itemid))
-        for name, prop in self.getprops(protected=0).items():
-            if name in oldvalues:
-                continue
-            if isinstance(prop, hyperdb.Multilink):
-                oldvalues[name] = []
-            else:
-                oldvalues[name] = None
-
-        # now remove the content property so it's not stored in the db
-        content = None
-        if 'content' in propvalues:
-            content = propvalues['content']
-            del propvalues['content']
-
-        # do the database update
-        propvalues = self.set_inner(itemid, **propvalues)
-
-        # do content?
-        if content:
-            # store and possibly index
-            self.db.storefile(self.classname, itemid, None, bs2b(content))
-            if self.properties['content'].indexme:
-                index_content = content
-                if bytes != str and isinstance(content, bytes):
-                    index_content = content.decode('utf-8', errors='ignore')
-                mime_type = self.get(itemid, 'type', self.default_mime_type)
-                self.db.indexer.add_text((self.classname, itemid, 'content'),
-                                         index_content, mime_type)
-            propvalues['content'] = content
-
-        # fire reactors
-        self.fireReactors('set', itemid, oldvalues)
-        return propvalues
-
-    def index(self, nodeid):
-        """ Add (or refresh) the node to search indexes.
-
-        Use the content-type property for the content property.
-        """
-        # find all the String properties that have indexme
-        for prop, propclass in self.getprops().items():
-            if prop == 'content' and propclass.indexme:
-                mime_type = self.get(nodeid, 'type', self.default_mime_type)
-                index_content = self.get(nodeid, 'binary_content')
-                if bytes != str and isinstance(index_content, bytes):
-                    index_content = index_content.decode('utf-8',
-                                                         errors='ignore')
-                self.db.indexer.add_text((self.classname, nodeid, 'content'),
-                                         index_content, mime_type)
-            elif isinstance(propclass, hyperdb.String) and propclass.indexme:
-                # index them under (classname, nodeid, property)
-                try:
-                    value = str(self.get(nodeid, prop))
-                except IndexError:
-                    # node has been destroyed
-                    continue
-                self.db.indexer.add_text((self.classname, nodeid, prop), value)
-
-
-# deviation from spec - was called ItemClass
 class IssueClass(Class, roundupdb.IssueClass):
-    # Overridden methods:
+    # Use for explicit upcalls in generic code, for py2 compat we cannot
+    # use super() without making everything a new-style class.
+    subclass = Class
     def __init__(self, db, classname, **properties):
-        """The newly-created class automatically includes the "messages",
-        "files", "nosy", and "superseder" properties.  If the 'properties'
-        dictionary attempts to specify any of these properties or a
-        "creation" or "activity" property, a ValueError is raised.
-        """
-        if 'title' not in properties:
-            properties['title'] = hyperdb.String(indexme='yes')
-        if 'messages' not in properties:
-            properties['messages'] = hyperdb.Multilink("msg")
-        if 'files' not in properties:
-            properties['files'] = hyperdb.Multilink("file")
-        if 'nosy' not in properties:
-            # note: journalling is turned off as it really just wastes
-            # space. this behaviour may be overridden in an instance
-            properties['nosy'] = hyperdb.Multilink("user", do_journal="no")
-        if 'superseder' not in properties:
-            properties['superseder'] = hyperdb.Multilink(classname)
+        self._update_properties(classname, properties)
         Class.__init__(self, db, classname, **properties)
 
 # vim: set et sts=4 sw=4 :

@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
+
 import shutil, errno, pytest, json, gzip, mimetypes, os, re
 
 from roundup import date as rdate
 from roundup import i18n
 from roundup import password
-from roundup.anypy.strings import b2s
+from roundup.anypy.strings import b2s, s2b
 from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
+from textwrap import dedent
 from time import sleep
 from .test_postgresql import skip_postgresql
 
@@ -19,6 +22,37 @@ except ImportError:
     from .pytest_patcher import mark_class
     skip_requests = mark_class(pytest.mark.skip(
         reason='Skipping liveserver tests: requests library not available'))
+
+try:
+    import hypothesis
+    skip_hypothesis = lambda func, *args, **kwargs: func
+
+    # ruff: noqa: E402
+    from hypothesis import example, given, reproduce_failure, settings
+    from hypothesis.strategies import binary, characters, emails, none, one_of, sampled_from, text
+
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_hypothesis = mark_class(pytest.mark.skip(
+        reason='Skipping hypothesis liveserver tests: hypothesis library not available'))
+
+    # define a dummy decorator that can take args
+    def noop_decorators_with_args(*args, **kwargs): 
+        def noop_decorators(func):
+            def internal():
+                pass
+            return internal
+        return noop_decorators
+
+    # define a dummy strategy
+    def noop_strategy(*args, **kwargs):
+        pass
+
+    # define the decorator functions
+    example = given = reproduce_failure = settings = noop_decorators_with_args
+    # and stratgies using in decorators
+    binary = characters = emails = none = one_of = sampled_from = text = noop_strategy
+
 
 try:
     import brotli
@@ -46,8 +80,19 @@ class WsgiSetup(LiveServerTestCase):
     # have chicken and egg issue here. Need to encode the base_url
     # in the config file but we don't know it until after
     # the server is started and has read the config.ini.
-    # so only allow one port number
-    port_range = (9001, 9001)  # default is (8080, 8090)
+    # Probe for an unused port and set the port range to
+    # include only that port.
+    tracker_port = LiveServerTestCase.probe_ports(8080, 8100)
+    if tracker_port is None:
+        pytest.skip("Unable to find available port for server: 8080-8100",
+                    allow_module_level=True)
+    port_range = (tracker_port, tracker_port)
+
+    # set a couple of properties to use for URL generation in
+    # expected output or use to set TRACKER_WEB in config.ini.
+    tracker_web = "http://localhost:%d/" % tracker_port
+       # tracker_web_base should be the same as self.base_url()
+    tracker_web_base = "http://localhost:%d" % tracker_port
 
     dirname = '_test_instance'
     backend = 'anydbm'
@@ -65,6 +110,20 @@ class WsgiSetup(LiveServerTestCase):
         # set up and open a tracker
         cls.instance = db_test_base.setupTracker(cls.dirname, cls.backend)
 
+        # add an auditor that triggers a Reauth
+        with open("%s/detectors/reauth.py" % cls.dirname, "w") as f:
+            auditor = dedent("""
+              from roundup.cgi.exceptions import Reauth
+
+              def trigger_reauth(db, cl, nodeid, newvalues):
+                  if 'realname' in newvalues and not hasattr(db, 'reauth_done'):
+                      raise Reauth('Add an optional message to the user')
+
+              def init(db):
+                  db.user.audit('set', trigger_reauth, priority=110)
+             """)
+            f.write(auditor)
+
         # open the database
         cls.db = cls.instance.open('admin')
 
@@ -72,12 +131,21 @@ class WsgiSetup(LiveServerTestCase):
         cls.db.user.create(username="fred", roles='User',
             password=password.Password('sekrit'), address='fred@example.com')
 
+        # add a user for reauth tests
+        cls.db.user.create(username="reauth",
+                           realname="reauth test user",
+                           password=password.Password("reauth"),
+                           address="reauth@example.com", roles="User")
+
         # set the url the test instance will run at.
-        cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
+        cls.db.config['TRACKER_WEB'] = cls.tracker_web
         # set up mailhost so errors get reported to debuging capture file
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
         cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
+
+        # also report it in the web.
+        cls.db.config.WEB_DEBUG = "yes"
 
         # added to enable csrf forgeries/CORS to be tested
         cls.db.config.WEB_CSRF_ENFORCE_HEADER_ORIGIN = "required"
@@ -102,6 +170,17 @@ class WsgiSetup(LiveServerTestCase):
                                    content = "a message foo bar RESULT",
                                    date=rdate.Date(),
                                    messageid="test-msg-id")
+
+        # add a query using @current_user
+        result = cls.db.query.create(
+            klass="issue",
+            name="I created",
+            private_for=None,
+            url=("@columns=title,id,activity,status,assignedto&"
+                 "@sort=activity&@group=priority&@filter=creator&"
+                 "@pagesize=50&@startwith=0&creator=%40current_user")
+            )
+
         cls.db.commit()
         cls.db.close()
         
@@ -127,7 +206,9 @@ class WsgiSetup(LiveServerTestCase):
         i18n.DOMAIN = cls.backup_domain
 
     def create_app(self):
-        '''The wsgi app to start - no feature_flags set.'''
+        '''The wsgi app to start - no feature_flags set.
+           Post 2.3.0 this enables the cache_tracker feature.
+        '''
 
         if _py3:
             return validator(RequestDispatcher(self.dirname))
@@ -136,11 +217,414 @@ class WsgiSetup(LiveServerTestCase):
             # doesn't support the max bytes to read argument.
             return RequestDispatcher(self.dirname)
 
+class ClientSetup():
+    """ Utility programs for the client querying a server.
+        Just a login session at the moment but more to come I am sure.
+    """
 
-class BaseTestCases(WsgiSetup):
+    def create_login_session(self, username="admin", password="sekrit",
+                             return_response=True, expect_login_ok=True):
+        # Set up session to manage cookies <insert blue monster here>
+
+        session = requests.Session()
+        session.headers.update({'Origin': self.tracker_web_base})
+
+        # login using form to get cookie
+        login = {"__login_name": username, '__login_password': password,
+                 "@action": "login"}
+        response = session.post(self.url_base()+'/', data=login)
+
+        if expect_login_ok:
+            # verify we have a cookie
+            self.assertIn('roundup_session_Roundupissuetracker',
+                          session.cookies)
+
+        if not return_response:
+            return session
+        return session, response
+
+
+@skip_hypothesis
+class FuzzGetUrls(WsgiSetup, ClientSetup):
+
+    _max_examples = 100
+
+    # Timeout for each fuzz test in ms. Use env variable in local
+    # pytest.ini if your dev environment can't complete in the default
+    # 10 seconds.
+    fuzz_deadline = int(os.environ.get('pytest_fuzz_timeout', 0)) or 10000
+
+    @given(sampled_from(['@verbose', '@page_size', '@page_index']),
+           text(min_size=1))
+    @example("@verbose", "1#")
+    @example("@verbose", "#1stuff")
+    @example("@verbose", "0 #stuff")
+    @settings(max_examples=_max_examples,
+              deadline=fuzz_deadline) # in ms
+    def test_class_url_param_accepting_integer_values(self, param, value):
+        """Tests all integer args for rest url. @page_* is the
+           same code for all *.
+        """
+        session, _response = self.create_login_session()
+        url = '%s/rest/data/status' % (self.url_base())
+        query = '%s=%s'  % (param, value)
+        f = session.get(url, params=query)
+        try:
+            # test case '0 #', '0#', '12345#stuff' '12345&stuff'
+            match = re.match(r'(^[0-9]*\s*)[#&]', value)
+            if match is not None:
+                value = match[1]
+            elif int(value) >= 0:
+                self.assertEqual(f.status_code, 200)
+        except ValueError:
+            # test case '#' '#0', '&', '&anything here really'
+            if value[0] in ('#', '&'):
+                self.assertEqual(f.status_code, 200)
+            else:
+                # invalid value for param
+                self.assertEqual(f.status_code, 400)
+
+    @given(sampled_from(['@verbose']), text(min_size=1))
+    @example("@verbose", "10#")
+    @example("@verbose", u'Ø\U000dd990')
+    @settings(max_examples=_max_examples,
+              deadline=fuzz_deadline) # in ms
+    def test_element_url_param_accepting_integer_values(self, param, value):
+        """Tests args accepting int for rest url.
+        """
+        session, _response = self.create_login_session()
+        url = '%s/rest/data/status/1' % (self.url_base())
+        query = '%s=%s'  % (param, value)
+        f = session.get(url, params=query)
+        try:
+            # test case '0#' '12345#stuff' '12345&stuff'
+            match = re.match('(^[0-9]*)[#&]', value)
+            if match is not None:
+                value = match[1]
+            elif int(value) >= 0:
+                self.assertEqual(f.status_code, 200)
+        except ValueError:
+            # test case '#' '#0', '&', '&anything here really'
+            if value[0] in ('#', '&'):
+                self.assertEqual(f.status_code, 200)
+            else:
+                # invalid value for param
+                self.assertEqual(f.status_code, 400)
+
+@skip_hypothesis
+class FuzzTestSettingData(WsgiSetup, ClientSetup):
+
+    _max_examples = 100
+
+    # Timeout for each fuzz test in ms. Use env variable in local
+    # pytest.ini if your dev environment can't complete in the default
+    # 10 seconds.
+    fuzz_deadline = int(os.environ.get('pytest_fuzz_timeout', 0)) or 10000
+
+    @given(emails())
+    @settings(max_examples=_max_examples,
+              deadline=fuzz_deadline) # in ms
+    def test_setting_email_param(self,email):
+        session, _response = self.create_login_session()
+        url = '%s/rest/data/user/1/address' % (self.url_base())
+        headers = {"Accept": "application/json",
+                   "Content-Type": "application/json",
+                   "x-requested-with": "rest",
+                   "Origin": self.url_base(),
+                   "Referer": self.url_base()
+                   }
+
+                   #--header 'If-Match: "e2e6cc43c3475a4a3d9e5343617c11c3"' \
+        
+        f = session.get(url)
+        stored_email = f.json()['data']['data']
+        headers['If-Match'] = f.headers['etag']
+
+        payload = {'data': email}
+        f = session.put(url, json=payload, headers=headers)
+
+        self.assertEqual(f.status_code, 200)
+
+        if stored_email == email:
+            # if the email we are setting is the same as present, we
+            # don't make a change so the attribute dict is empty aka false.
+            self.assertEqual(f.json()['data']['attribute'], {})
+        else:
+            self.assertEqual(f.json()['data']['attribute']['address'],
+                         email)
+
+
+@skip_requests
+class BaseTestCases(WsgiSetup, ClientSetup):
     """Class with all tests to run against wsgi server. Is reused when
        wsgi server is started with various feature flags
     """
+
+    def test_reauth_workflow(self):
+        """as admin user:
+             change reauth user realname include all fields on the form
+                 also add a dummy file to the submitted request.
+             get back a reauth page/template (look for id="reauth_form")
+             verify hidden input for realname
+             verify hidden input for roles
+             verify the base 64 file content are on the page.
+        
+             submit form with bad password
+             verify error reported
+             verify hidden input for realname
+             (note the file contents will be gone because
+               preserving that requires javascript)
+        
+             enter good password
+             verify on user page (look for
+                              "(the default is" hint for timezone)
+             verify new name present
+             verify success banner
+        """
+        from html.parser import HTMLParser
+        class HTMLExtractForm(HTMLParser):
+            """Custom parser to extract input fields from a form.
+
+               Set the form_label to extract inputs only inside a form
+               with a name or id matching form_label. Default is
+               "reauth_form".
+
+               Set names to a tuple/list/set with the names of the
+               inputs you are interested in. Defalt is None which
+               extracts all inputs on the page with a name property.
+            """
+            def __init__(self, names=None, form_label="reauth_form"):
+                super().__init__()
+                self.fields = {}
+                self.names = names
+                self.form_label = form_label
+                self._inside_form = False
+                
+            def handle_starttag(self, tag, attrs):
+                if tag == 'form':
+                    for attr, value in attrs:
+                        if attr in ('id', 'name') and value == self.form_label:
+                            self._inside_form = True
+                            return
+
+                if not self._inside_form: return
+                
+                if tag == 'input':
+                    field_name = None
+                    field_value = None
+                    for attr, value in attrs:
+                        if attr == 'name':
+                            field_name = value
+                        if attr == 'value':
+                            field_value = value
+
+                    # skip input type="submit" without name
+                    if not field_name: return
+                    
+                    if self.names is None:
+                        self.fields[field_name] = field_value
+                    elif field_name in self.names:
+                        self.fields[field_name] = field_value
+
+            def handle_endtag(self, tag):
+                if tag == "form":
+                    self._inside_form = False
+                    
+            def get_fields(self):
+                return self.fields
+
+
+        # for some reason the lookup works with anydbm but
+        # returns a cursor closed error under postgresql.
+        # adding setup/teardown to TestPostgresWsgiServer
+        # with self.db = self.instance.open('admin') looks like
+        # it caused the wsgi server to hang. So hardcode the id.
+        #  self.db.user.lookup('reauth')
+        reauth_id = '4'
+
+        user_url = "%s/user%s" % (self.url_base(),
+                                  reauth_id)
+
+        session, _response = self.create_login_session()
+        
+        user_page = session.get(user_url)
+        
+        self.assertEqual(user_page.status_code, 200)
+        self.assertTrue(b'reauth' in user_page.content)
+
+        parser = HTMLExtractForm(('@lastactivity', '@csrf'), 'itemSynopsis')
+        parser.feed(user_page.text)
+                                 
+        change = {"realname": "reauth1",
+                  "username": "reauth",
+                  "password": "",
+                  "@confirm@password": "",
+                  "phone": "",
+                  "organisation": "",
+                  "roles": "User",
+                  "timezone": "",
+                  "address": "reauth@example.com",
+                  "alternate_addresses": "",
+                  "@template": "item",
+                  "@required": "username,address",
+                  "@submit_button": "Submit Changes",
+                  "@action": "edit",
+                  **parser.get_fields()
+                  }
+        lastactivity = parser.get_fields()['@lastactivity']
+
+        # make the simple name/value dict into a name/tuple dict
+        # setting tuple[0] to None to indicate pulre string
+        # value. Then we use change2 with file to trigger
+        # multipart/form-data form encoding which preserves fields
+        # with empty values. application/x-www-form-urlencoded forms
+        # have fields with empty values dropped by cgi by default.
+        userpage_change = {key: (None, value) for key, value in change.items()}
+        userpage_change.update({"@file": ("filename.txt", "this is some text")})
+        
+        on_reauth = session.post(user_url, files=userpage_change)
+
+        self.assertIn(b'id="reauth_form"', on_reauth.content)
+        self.assertIn(b'Please enter your password to continue with',
+                      on_reauth.content)
+        # make sure the base64 encoded content for @file is present on
+        # the page. Because we are not running a javascript capable
+        # browser, it is not converted into an actual file input.
+        # But this check shows that a file generated by reauth is trying
+        # to maintain the file input.
+        self.assertIn(b'dGhpcyBpcyBzb21lIHRleHQ=', on_reauth.content)
+
+        parser = HTMLExtractForm()
+        parser.feed(on_reauth.text)
+        fields = parser.get_fields()
+        self.assertEqual(fields["@lastactivity"], lastactivity)
+        self.assertEqual(fields["@next_action"], "edit")
+        self.assertEqual(fields["@action"], "reauth")
+        self.assertEqual(fields["address"], "reauth@example.com")
+        self.assertEqual(fields["phone"], "")
+        self.assertEqual(fields["roles"], "User")
+        self.assertEqual(fields["realname"], "reauth1")
+
+        reauth_fields = {
+            "@reauth_password": (None, "sekret not right"),
+            "submit": (None, " Authorize Change "),
+            }
+        reauth_submit = {key: (None, value) for key, value in fields.items()}
+        reauth_submit.update(reauth_fields)
+
+        fail_reauth = session.post(user_url,
+                                   files=reauth_submit)
+        self.assertIn(b'id="reauth_form"', fail_reauth.content)
+        self.assertIn(b'Please enter your password to continue with',
+                      fail_reauth.content)
+        self.assertIn(b'Password incorrect', fail_reauth.content)
+
+        parser = HTMLExtractForm(('@csrf',))
+        parser.feed(fail_reauth.text)
+        # remeber we are logged in as admin - use admin pw.
+        reauth_submit.update({"@reauth_password": (None, "sekrit"),
+                              "@csrf":
+                                (None, parser.get_fields()['@csrf'])})
+        pass_reauth = session.post(user_url,
+                                   files=reauth_submit)
+        self.assertNotIn(b'id="reauth_form"', pass_reauth.content)
+        self.assertNotIn(b'Please enter your password to continue with',
+                      pass_reauth.content)
+        self.assertIn(b'user %s realname edited ok' % s2b(reauth_id),
+                      pass_reauth.content)
+        self.assertIn(b'(the default is', pass_reauth.content)
+        
+    def test_cookie_attributes(self):
+        session, _response = self.create_login_session()
+
+        cookie_box = session.cookies._cookies['localhost.local']['/']
+        cookie = cookie_box['roundup_session_Roundupissuetracker']
+
+        # check cookie attributes. This is an http session, so
+        # we can't check secure or see cookie with __Secure- prefix 8-(.
+        self.assertEqual(cookie.name, 'roundup_session_Roundupissuetracker')
+        self.assertEqual(cookie.expires, None)  # session cookie
+        self.assertEqual(cookie._rest['HttpOnly'], None)  # flag is present
+        self.assertEqual(cookie._rest['SameSite'], 'Lax')
+
+    def test_bad_post_data(self):
+        """issue2551387 - bad post data causes TypeError: not indexable
+        """
+        session, _response = self.create_login_session()
+
+        h = {"Content-Type": "text/plain"}
+        response = session.post(self.url_base()+'/', headers=h, data="test")
+        print(response.status_code)
+        print(response.headers)
+        print(response.text)
+        self.assertEqual(response.status_code, 200)
+
+    def test_query(self):
+        current_user_query = (
+            "@columns=title,id,activity,status,assignedto&"
+            "@sort=activity&@group=priority&@filter=creator&"
+            "@pagesize=50&@startwith=0&creator=%40current_user&"
+            "@dispname=Test1")
+
+        session, _response = self.create_login_session()
+        f = session.get(self.url_base()+'/issue?' + current_user_query)
+
+        # verify the query has run by looking for the query name
+        self.assertIn('List of issues\n   - Test1', f.text)
+        # find title of issue 1
+        self.assertIn('foo bar RESULT', f.text)
+        # match footer "1..1 out of 1" if issue is found
+        self.assertIn('out of', f.text)
+        # logout
+        f = session.get(self.url_base()+'/?@action=logout')
+
+
+        # set up for another user
+        session, _response = self.create_login_session(username="fred")
+        f = session.get(self.url_base()+'/issue?' + current_user_query)
+
+        # verify the query has run
+        self.assertIn('List of issues\n   - Test1', f.text)
+        # We should have no rows, so verify the static part
+        # of the footer is missing.
+        self.assertNotIn('out of', f.text)
+
+    def test_broken_query(self):
+        # query link item
+        current_user_query = (
+            "@columns=title,id,activity,status,assignedto&"
+            "@sort=activity&@group=priority&@filter=creator&"
+            "@pagesize=50&@startwith=0&creator=-2&"
+            "@dispname=Test1")
+
+        session, _response = self.create_login_session()
+        f = session.get(self.url_base()+'/issue?' + current_user_query)
+
+        # verify the query has run by looking for the query name
+        # print(f.text)
+        self.assertIn('There was an error searching issue by creator using: '
+                      '[-2]. The operator -2 (not) at position 1 has '
+                      'too few arguments.',
+                      f.text)
+        self.assertEqual(f.status_code, 200)
+
+    def test_broken_multiink_query(self):
+        # query multilink item
+        current_user_query = (
+            "@columns=title,id,activity,status,assignedto"
+            "&keyword=-3&@sort=activity&@group=priority"
+            "&@pagesize=50&@startwith=0&@template=index|search"
+            "&@action=search")
+        session, _response = self.create_login_session()
+        f = session.get(self.url_base()+'/issue?' + current_user_query)
+
+        # verify the query has run by looking for the query name
+        print(f.text)
+        self.assertIn('There was an error searching issue by keyword using: '
+                      '[-3]. The operator -3 (and) at position 1 has '
+                      'too few arguments.',
+                      f.text)
+        self.assertEqual(f.status_code, 200)
 
     def test_start_page(self):
         """ simple test that verifies that the server can serve a start page.
@@ -198,6 +682,24 @@ class BaseTestCases(WsgiSetup):
         self.assertTrue(b'Aufgabenliste' in f.content)
         self.assertTrue(b'dauerhaft anmelden?' in f.content)
 
+    def test_classhelper_reflection(self):
+        """ simple test that verifies that the generic classhelper
+            is escaping the url params correctly.
+        """
+        f = requests.get(self.url_base() + "/keyword?@startwith=0&@template=help&properties=name&property=keyword&form=itemSynopsis</script><script>%3balert(1)%2f%2f&type=checkbox&@sort=name&@pagesize=50")
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn(b"<script>;alert(1)//;\n", f.content)
+        self.assertIn(
+            b"itemSynopsis&lt;/script&gt;&lt;script&gt;;alert(1)//;\n",
+            f.content)
+
+        f = requests.get(self.url_base() + "/keyword?@startwith=0&@template=help&properties=name&property=keyword</script><script>%3balert(1)%2f%2f&form=itemSynopsis&type=checkbox&@sort=name&@pagesize=50")
+        self.assertEqual(f.status_code, 200)
+        self.assertNotIn(b"<script>;alert(1)//;\n", f.content)
+        self.assertIn(
+            b"keyword&lt;/script&gt;&lt;script&gt;;alert(1)//';</script>\n",
+            f.content)
+
     def test_byte_Ranges(self):
         """ Roundup only handles one simple two number range, or
             a single number to start from:
@@ -240,7 +742,7 @@ class BaseTestCases(WsgiSetup):
         self.assertEqual(f.headers['content-range'],
                          "bytes 10-20/%s"%expected_length)
 
-        # get all bytest starting from 11
+        # get all bytes starting from 11
         hdrs = {"Range": "bytes=11-"}
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
@@ -269,10 +771,11 @@ class BaseTestCases(WsgiSetup):
 
         # range is too large, but etag is bad also, return whole file 200 code
         hdrs['Range'] = "0-99999" # too large
-        hdrs['If-Range'] = etag[2:]  # bad tag
+        hdrs['If-Range'] = '"' + etag[2:]  # start bad tag with "
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 200)
-        # not checking content length since it could be compressed
+        # note f.content has content-encoding (compression) undone.
+        self.assertEqual(len(f.content), int(expected_length))
         self.assertNotIn('content-range', f.headers, 'content-range should not be present')
 
         # range is too large, but etag is specified so return whole file
@@ -434,10 +937,9 @@ class BaseTestCases(WsgiSetup):
                                  "x-requested-with",
                              'Access-Control-Request-Method': "PUT",})
 
-        self.assertEqual(f.status_code, 400)
+        self.assertEqual(f.status_code, 403)
 
-        expected = ('{ "error": { "status": 400, "msg": "Required'
-                    ' Header Missing" } }')
+        expected = ('{ "error": { "status": 403, "msg": "Forbidden." } }')
         self.assertEqual(b2s(f.content), expected)
 
 
@@ -482,13 +984,13 @@ class BaseTestCases(WsgiSetup):
         f = requests.options(self.url_base() + '/rest',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
                      'Access-Control-Allow-Credentials': 'true',
@@ -505,13 +1007,13 @@ class BaseTestCases(WsgiSetup):
         f = requests.options(self.url_base() + '/rest/data',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET',
                      'Access-Control-Allow-Methods': 'OPTIONS, GET',
@@ -527,13 +1029,13 @@ class BaseTestCases(WsgiSetup):
         f = requests.options(self.url_base() + '/rest/data/user',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, POST',
                      'Access-Control-Allow-Methods': 'OPTIONS, GET, POST',
@@ -550,13 +1052,13 @@ class BaseTestCases(WsgiSetup):
         f = requests.options(self.url_base() + '/rest/data/user/1',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
                      'Access-Control-Allow-Methods': 'OPTIONS, GET, PUT, DELETE, PATCH',
@@ -572,13 +1074,13 @@ class BaseTestCases(WsgiSetup):
         f = requests.options(self.url_base() + '/rest/data/user/1/username',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 204)
-        expected = { 'Access-Control-Allow-Origin': 'http://localhost:9001',
+        expected = { 'Access-Control-Allow-Origin': self.tracker_web_base,
                      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-HTTP-Method-Override',
                      'Allow': 'OPTIONS, GET, PUT, DELETE, PATCH',
                      'Access-Control-Allow-Methods': 'OPTIONS, GET, PUT, DELETE, PATCH',
@@ -594,7 +1096,7 @@ class BaseTestCases(WsgiSetup):
         f = requests.options(self.url_base() + '/rest/data/user/1/creator',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",
+                                        'Origin': self.tracker_web_base,
                              })
         print(f.status_code)
         print(f.headers)
@@ -612,14 +1114,130 @@ class BaseTestCases(WsgiSetup):
         f = requests.options(self.url_base() + '/rest/data/user/1/zot',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",})
+                                        'Origin': self.tracker_web_base,})
         print(f.status_code)
         print(f.headers)
 
         self.assertEqual(f.status_code, 404)
 
+    def test_rest_endpoint_user_roles(self):
+        # use basic auth for rest endpoint
+        f = requests.get(self.url_base() + '/rest/data/user/roles',
+                         auth=('admin', 'sekrit'),
+                         headers = {'content-type': "",
+                                    'Origin': self.tracker_web_base,
+                         })
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Access-Control-Expose-Headers': 'X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Limit-Period, Retry-After, Sunset, Allow',
+                     'Access-Control-Allow-Credentials': 'true',
+                     'Allow': 'GET',
+        }
+        # use dict comprehension to remove fields like date,
+        # content-length etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        content = json.loads(f.content)
+
+        self.assertEqual(3, len(json.loads(f.content)['data']['collection']))
+
+    def test_inm(self):
+        '''retrieve the user_utils.js file without an if-none-match etag
+            header, a bad if-none-match header and valid single and
+            multiple values.
+        '''
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': self.js_mime_type,
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # use dict comprehension to remove fields like date,
+        # etag etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in
+                               f.headers.items() if key in expected },
+                             expected)
+
+        # use etag in previous response
+        etag = f.headers['etag']
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'If-None-Match': etag,
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 304)
+        expected = { 'Vary': 'Accept-Encoding',
+                     'Content-Length': '0',
+                     'ETag': etag,
+                     'Vary': 'Accept-Encoding'
+        }
+
+        # use dict comprehension to remove fields like date, server,
+        # etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+        # test again with etag supplied w/o content-encoding
+        # and multiple etags
+        self.assertTrue(etag.endswith('-gzip"'))
+
+        # keep etag intact. Used below.
+        base_etag = etag[:-6] + '"'
+
+        all_etags = (
+            '"a41932-8b5-664ce93d", %s", "a41932-8b5-664ce93d-br"' %
+            base_etag
+        )
+
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'If-None-Match': base_etag,
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 304)
+        expected = { 'Vary': 'Accept-Encoding',
+                     'Content-Length': '0',
+                     'ETag': base_etag,
+                     'Vary': 'Accept-Encoding'
+        }
+
+        # use dict comprehension to remove fields like date, server,
+        # etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
+
+        # test with bad etag
+        f = requests.get(self.url_base() + '/@@file/user_utils.js',
+                         headers = { 'Accept-Encoding': 'gzip, foo',
+                                     'If-None-Match': '"a41932-8b5-664ce93d"',
+                                     'Accept': '*/*'})
+        print(f.status_code)
+        print(f.headers)
+
+        self.assertEqual(f.status_code, 200)
+        expected = { 'Content-Type': self.js_mime_type,
+                     'ETag': etag,
+                     'Content-Encoding': 'gzip',
+                     'Vary': 'Accept-Encoding',
+        }
+
+        # use dict comprehension to remove fields like date, server,
+        # etc. from f.headers.
+        self.assertDictEqual({ key: value for (key, value) in f.headers.items() if key in expected }, expected)
+
     def test_ims(self):
-        ''' retreive the user_utils.js file with old and new
+        ''' retrieve the user_utils.js file with old and new
             if-modified-since timestamps.
         '''
         from datetime import datetime
@@ -809,10 +1427,10 @@ class BaseTestCases(WsgiSetup):
 
         content_str = '''{ "data": {
                         "id": "1",
-                        "link": "http://localhost:9001/rest/data/user/1/username",
+                        "link": "%s/rest/data/user/1/username",
                         "data": "admin"
                     }
-        }'''
+        }''' % self.tracker_web_base
         content = json.loads(content_str)
 
 
@@ -867,10 +1485,10 @@ class BaseTestCases(WsgiSetup):
 
         content_str = '''{ "data": {
                         "id": "1",
-                        "link": "http://localhost:9001/rest/data/user/1/username",
+                        "link": "%s/rest/data/user/1/username",
                         "data": "admin"
                     }
-        }'''
+        }''' % self.tracker_web_base
         content = json.loads(content_str)
 
         print(f.content)
@@ -1035,14 +1653,9 @@ class BaseTestCases(WsgiSetup):
         '''Test case where we have an outdated session cookie. Make
            sure cookie is removed.
         '''
-        session = requests.Session()
-        session.headers.update({'Origin': 'http://localhost:9001'})
 
-        # login using form to get cookie
-        login = {"__login_name": 'admin', '__login_password': 'sekrit',
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
-        
+        session, f = self.create_login_session()
+
         # verify cookie is present and we are logged in
         self.assertIn('<b>Hello, admin</b>', f.text)
         self.assertIn('roundup_session_Roundupissuetracker',
@@ -1062,68 +1675,47 @@ class BaseTestCases(WsgiSetup):
         self.assertNotIn('roundup_session_Roundupissuetracker', session.cookies)
 
     def test_login_fail_then_succeed(self):
-        # Set up session to manage cookies <insert blue monster here>
-        session = requests.Session()
-        session.headers.update({'Origin': 'http://localhost:9001'})
 
-        # login using form
-        login = {"__login_name": 'admin', '__login_password': 'bad_sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
+        session, f = self.create_login_session(password="bad_sekrit",
+                                               expect_login_ok=False)
+
         # verify error message and no hello message in sidebar.
         self.assertIn('class="error-message">Invalid login <br/ >', f.text)
         self.assertNotIn('<b>Hello, admin</b>', f.text)
 
-        # login using form
-        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
-        # look for change in text in sidebar post login
+        session, f = self.create_login_session(return_response=True)
         self.assertIn('<b>Hello, admin</b>', f.text)
 
     def test__generic_item_template_editok(self, user="admin"):
-        """Load /status1 object. Admin has edit rights so should see
+        """Load /status7 object. Admin has edit rights so should see
            a submit button. fred doesn't have edit rights
            so should not have a submit button.
         """
-        # Set up session to manage cookies <insert blue monster here>
-        session = requests.Session()
-        session.headers.update({'Origin': self.url_base()})
+        session, f = self.create_login_session(username=user)
 
-        # login using form
-        login = {"__login_name": user, '__login_password': 'sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
         # look for change in text in sidebar post login
         self.assertIn('Hello, %s'%user, f.text)
-        f = session.post(self.url_base()+'/status7', data=login)
+        f = session.get(self.url_base()+'/status7')
         print(f.content)
 
-        # status1's name is unread
+        # status7's name is done-cbb
         self.assertIn(b'done-cbb', f.content)
 
         if user == 'admin':
-            self.assertIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
+            self.assertIn(b'<input id="submit_button" name="submit_button" type="submit" value="Submit Changes">', f.content)
         else:
-            self.assertNotIn(b'<input name="submit_button" type="submit" value="Submit Changes">', f.content)
+            self.assertNotIn(b'<input id="submit_button" name="submit_button" type="submit" value="Submit Changes">', f.content)
 
         # logout
         f = session.get(self.url_base()+'/?@action=logout')
         self.assertIn(b"Remember me?", f.content)
 
-    @pytest.mark.xfail
     def test__generic_item_template_editbad(self, user="fred"):
         self.test__generic_item_template_editok(user=user)
 
     def test_new_issue_with_file_upload(self):
-        # Set up session to manage cookies <insert blue monster here>
-        session = requests.Session()
-        session.headers.update({'Origin': 'http://localhost:9001'})
+        session, f = self.create_login_session()
 
-        # login using form
-        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login)
         # look for change in text in sidebar post login
         self.assertIn('Hello, admin', f.text)
 
@@ -1141,7 +1733,7 @@ class BaseTestCases(WsgiSetup):
         # Escape % signs in string by doubling them. This verifies the
         # search is working correctly.
         # use groupdict for python2.
-        self.assertEqual('http://localhost:9001/issue%(issue)s?@ok_message=file%%20%(file)s%%20created%%0Aissue%%20%(issue)s%%20created&@template=item'%m.groupdict(), f.url)
+        self.assertEqual( self.tracker_web_base + '/issue%(issue)s?@ok_message=file%%20%(file)s%%20created%%0Aissue%%20%(issue)s%%20created&@template=item'%m.groupdict(), f.url)
 
         # we have an issue display, verify filename is listed there
         # seach for unique filename given to it.
@@ -1151,6 +1743,7 @@ class BaseTestCases(WsgiSetup):
         f = session.get(self.url_base()+'/file%(file)s/text1.txt'%m.groupdict())
         self.assertEqual(f.text, file_content)
         self.assertEqual(f.headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(f.headers["Content-Security-Policy"], "script-src 'none'")
         print(f.text)
 
     def test_new_file_via_rest(self):
@@ -1164,13 +1757,13 @@ class BaseTestCases(WsgiSetup):
         c = dict (content = r'xyzzy')
         r = session.post(url + 'file', files = c, data = d,
                           headers = {'x-requested-with': "rest",
-                                     'Origin': "http://localhost:9001"}
+                                     'Origin': self.tracker_web_base}
         )
 
         # was a 500 before fix for issue2551178
         self.assertEqual(r.status_code, 201)
         # just compare the path leave off the number
-        self.assertIn('http://localhost:9001/rest/data/file/',
+        self.assertIn(self.tracker_web_base + '/rest/data/file/',
                       r.headers["location"])
         json_dict = json.loads(r.text)
         self.assertEqual(json_dict["data"]["link"], r.headers["location"])
@@ -1178,7 +1771,7 @@ class BaseTestCases(WsgiSetup):
         # download file and verify content
         r = session.get(r.headers["location"] +'/content',
                           headers = {'x-requested-with': "rest",
-                                     'Origin': "http://localhost:9001"}
+                                     'Origin': self.tracker_web_base}
 )
         json_dict = json.loads(r.text)
         self.assertEqual(json_dict['data']['data'], c["content"])
@@ -1188,24 +1781,19 @@ class BaseTestCases(WsgiSetup):
         session.auth = None
         r = session.post(url + 'file', files = c, data = d,
                           headers = {'x-requested-with': "rest",
-                                     'Origin': "http://localhost:9001"}
+                                     'Origin': self.tracker_web_base}
         )
         self.assertEqual(r.status_code, 403)
 
         # get session variable from web form login
         #   and use it to upload file
-        # login using form
-        login = {"__login_name": 'admin', '__login_password': 'sekrit', 
-                 "@action": "login"}
-        f = session.post(self.url_base()+'/', data=login,
-                          headers = {'Origin': "http://localhost:9001"}
-)
+        session, f = self.create_login_session()
         # look for change in text in sidebar post login
         self.assertIn('Hello, admin', f.text)
 
         r = session.post(url + 'file', files = c, data = d,
                           headers = {'x-requested-with': "rest",
-                                     'Origin': "http://localhost:9001"}
+                                     'Origin': self.tracker_web_base}
         )
         self.assertEqual(r.status_code, 201)
         print(r.status_code)
@@ -1214,13 +1802,14 @@ class BaseTestCases(WsgiSetup):
         f = requests.get(self.url_base() + "?@search_text=RESULT")
         self.assertIn("foo bar", f.text)
 
-class TestFeatureFlagCacheTrackerOn(BaseTestCases, WsgiSetup):
+@skip_requests
+class TestFeatureFlagCacheTrackerOff(BaseTestCases, WsgiSetup):
     """Class to run all test in BaseTestCases with the cache_tracker
-       feature flag enabled when starting the wsgi server
+       feature flag disabled when starting the wsgi server
     """
     def create_app(self):
-        '''The wsgi app to start with feature flag enabled'''
-        ff = { "cache_tracker": "" }
+        '''The wsgi app to start with feature flag disabled'''
+        ff = { "cache_tracker": False }
         if _py3:
             return validator(RequestDispatcher(self.dirname, feature_flags=ff))
         else:
@@ -1229,9 +1818,10 @@ class TestFeatureFlagCacheTrackerOn(BaseTestCases, WsgiSetup):
             return RequestDispatcher(self.dirname, feature_flags=ff)
 
 @skip_postgresql
+@skip_requests
 class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
     """Class to run all test in BaseTestCases with the cache_tracker
-       feature flag enabled when starting the wsgi server
+       feature enabled when starting the wsgi server
     """
 
     backend = 'postgresql'
@@ -1250,6 +1840,20 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         # set up and open a tracker
         cls.instance = db_test_base.setupTracker(cls.dirname, cls.backend)
 
+        # add an auditor that triggers a Reauth
+        with open("%s/detectors/reauth.py" % cls.dirname, "w") as f:
+            auditor = dedent("""
+              from roundup.cgi.exceptions import Reauth
+
+              def trigger_reauth(db, cl, nodeid, newvalues):
+                  if 'realname' in newvalues and not hasattr(db, 'reauth_done'):
+                      raise Reauth('Add an optional message to the user')
+
+              def init(db):
+                  db.user.audit('set', trigger_reauth, priority=110)
+             """)
+            f.write(auditor)
+
         # open the database
         cls.db = cls.instance.open('admin')
 
@@ -1257,18 +1861,28 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         cls.db.user.create(username="fred", roles='User',
             password=password.Password('sekrit'), address='fred@example.com')
 
+        # add a user for reauth tests
+        cls.db.user.create(username="reauth",
+                           realname="reauth test user",
+                           password=password.Password("reauth"),
+                           address="reauth@example.com", roles="User")
+
         # set the url the test instance will run at.
-        cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
+        cls.db.config['TRACKER_WEB'] = cls.tracker_web
         # set up mailhost so errors get reported to debuging capture file
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
         cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
+
+        # also report it in the web.
+        cls.db.config.WEB_DEBUG = "yes"
 
         # added to enable csrf forgeries/CORS to be tested
         cls.db.config.WEB_CSRF_ENFORCE_HEADER_ORIGIN = "required"
         cls.db.config.WEB_ALLOWED_API_ORIGINS = "https://client.com"
         cls.db.config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH'] = "required"
 
+        # use native indexer
         cls.db.config.INDEXER = "native-fts"
 
         # disable web login rate limiting. The fast rate of tests
@@ -1286,6 +1900,8 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         # re-open the database to get the updated INDEXER
         cls.db = cls.instance.open('admin')
 
+        # add an issue to allow testing retrieval.
+        # also used for text searching.
         result = cls.db.issue.create(title="foo bar RESULT")
 
         # add a message to allow retrieval
@@ -1293,6 +1909,16 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
                                    content = "a message foo bar RESULT",
                                    date=rdate.Date(),
                                    messageid="test-msg-id")
+
+        # add a query using @current_user
+        result = cls.db.query.create(
+            klass="issue",
+            name="I created",
+            private_for=None,
+            url=("@columns=title,id,activity,status,assignedto&"
+                 "@sort=activity&@group=priority&@filter=creator&"
+                 "@pagesize=50&@startwith=0&creator=%40current_user")
+            )
 
         cls.db.commit()
         cls.db.close()
@@ -1316,9 +1942,9 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         f = requests.get(self.url_base() + "?@search_text=ts:RESULT")
         self.assertIn("foo bar RESULT", f.text)
 
+@skip_requests
 class TestApiRateLogin(WsgiSetup):
-    """Class to run test in BaseTestCases with the cache_tracker
-       feature flag enabled when starting the wsgi server
+    """Test api rate limiting on login use sqlite db.
     """
 
     backend = 'sqlite'
@@ -1345,7 +1971,7 @@ class TestApiRateLogin(WsgiSetup):
             password=password.Password('sekrit'), address='fred@example.com')
 
         # set the url the test instance will run at.
-        cls.db.config['TRACKER_WEB'] = "http://localhost:9001/"
+        cls.db.config['TRACKER_WEB'] = cls.tracker_web
         # set up mailhost so errors get reported to debuging capture file
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
@@ -1394,14 +2020,21 @@ class TestApiRateLogin(WsgiSetup):
             logins count though. So log in 10 times in a row
             to verify that valid username/passwords aren't limited.
         """
+        # On windows, using localhost in the URL with requests
+        # tries an IPv6 address first. This causes a request to
+        # take 2 seconds which is too slow to ever trip the rate
+        # limit. So replace localhost with 127.0.0.1 that does an
+        # IPv4 request only.
+        url_base_numeric = self.url_base()
+        url_base_numeric =  url_base_numeric.replace('localhost','127.0.0.1')
 
         # verify that valid logins are not counted against the limit.
         for i in range(10):
             # use basic auth for rest endpoint
         
             request_headers = {'content-type': "",
-                               'Origin': "http://localhost:9001",}
-            f = requests.options(self.url_base() + '/rest/data',
+                               'Origin': self.tracker_web_base,}
+            f = requests.options(url_base_numeric + '/rest/data',
                                  auth=('admin', 'sekrit'),
                                  headers=request_headers
             )
@@ -1434,10 +2067,10 @@ class TestApiRateLogin(WsgiSetup):
         for i in range(10):
             # use basic auth for rest endpoint
         
-            f = requests.options(self.url_base() + '/rest/data',
+            f = requests.options(url_base_numeric + '/rest/data',
                                  auth=('admin', 'ekrit'),
                                  headers = {'content-type': "",
-                                            'Origin': "http://localhost:9001",}
+                                            'Origin': self.tracker_web_base,}
             )
 
             if (i < 4): # assuming limit is 4.
@@ -1471,10 +2104,10 @@ class TestApiRateLogin(WsgiSetup):
 
         # test lockout this is a valid login but should be rejected
         # with 429.
-        f = requests.options(self.url_base() + '/rest/data',
+        f = requests.options(url_base_numeric + '/rest/data',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",}
+                                        'Origin': self.tracker_web_base,}
         )
         self.assertEqual(f.status_code, 429)
 
@@ -1486,10 +2119,10 @@ class TestApiRateLogin(WsgiSetup):
         sleep(4)
         # slept long enough to get a login slot. Should work with
         # 200 return code.
-        f = requests.get(self.url_base() + '/rest/data',
+        f = requests.get(url_base_numeric + '/rest/data',
                              auth=('admin', 'sekrit'),
                              headers = {'content-type': "",
-                                        'Origin': "http://localhost:9001",}
+                                        'Origin': self.tracker_web_base,}
         )
         self.assertEqual(f.status_code, 200)
         print(i, f.status_code)
@@ -1507,7 +2140,7 @@ class TestApiRateLogin(WsgiSetup):
               'Retry-After, '
               'Sunset, '
               'Allow'),
-            'Access-Control-Allow-Origin': 'http://localhost:9001',
+            'Access-Control-Allow-Origin': self.tracker_web_base,
             'Access-Control-Allow-Credentials': 'true',
             'Allow': 'OPTIONS, GET, POST, PUT, DELETE, PATCH'
         }
@@ -1518,28 +2151,28 @@ class TestApiRateLogin(WsgiSetup):
 
         expected_data = {
             "status": {
-                "link": "http://localhost:9001/rest/data/status"
+                "link": self.tracker_web_base + "/rest/data/status"
             },
             "keyword": {
-                "link": "http://localhost:9001/rest/data/keyword"
+                "link": self.tracker_web_base + "/rest/data/keyword"
             },
             "priority": {
-                "link": "http://localhost:9001/rest/data/priority"
+                "link": self.tracker_web_base + "/rest/data/priority"
             },
             "user": {
-                "link": "http://localhost:9001/rest/data/user"
+                "link": self.tracker_web_base + "/rest/data/user"
             },
             "file": {
-                "link": "http://localhost:9001/rest/data/file"
+                "link": self.tracker_web_base + "/rest/data/file"
             },
             "msg": {
-                "link": "http://localhost:9001/rest/data/msg"
+                "link": self.tracker_web_base + "/rest/data/msg"
             },
             "query": {
-                "link": "http://localhost:9001/rest/data/query"
+                "link": self.tracker_web_base + "/rest/data/query"
             },
             "issue": {
-                "link": "http://localhost:9001/rest/data/issue"
+                "link": self.tracker_web_base + "/rest/data/issue"
             }
         }
 

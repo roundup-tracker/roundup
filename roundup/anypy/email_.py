@@ -1,10 +1,10 @@
-import re
 import binascii
 import email
-from email import quoprimime, base64mime
+import re
+from email import base64mime, quoprimime
 from email import charset as _charset
 
-if str == bytes:
+if str is bytes:
     message_from_bytes = email.message_from_string
     message_from_binary_file = email.message_from_file
 else:
@@ -74,8 +74,8 @@ def decode_header(header):
     # between two encoded strings.
     droplist = []
     for n, w in enumerate(words):
-        if n > 1 and w[1] and words[n-2][1] and words[n-1][0].isspace():
-            droplist.append(n-1)
+        if n > 1 and w[1] and words[n - 2][1] and words[n - 1][0].isspace():
+            droplist.append(n - 1)
     for d in reversed(droplist):
         del words[d]
 
@@ -94,7 +94,7 @@ def decode_header(header):
             # Postel's law: add missing padding
             paderr = len(encoded_string) % 4
             if paderr:
-                encoded_string += '==='[:4 - paderr]
+                encoded_string += '==='[:4 - paderr]  # noqa: PLW2901
             try:
                 word = base64mime.decode(encoded_string)
             except binascii.Error:
@@ -108,8 +108,9 @@ def decode_header(header):
     collapsed = []
     last_word = last_charset = None
     for word, charset in decoded_words:
-        if isinstance(word, str) and bytes != str:
-            word = bytes(word, 'raw-unicode-escape')
+        # ruff: noqa: PLW2901 - loop var word is overwritten
+        if isinstance(word, str) and bytes is not str:
+            word = bytes(word, 'raw-unicode-escape')  # PLW2901
         if last_word is None:
             last_word = word
             last_charset = charset

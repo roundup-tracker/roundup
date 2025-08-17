@@ -4,6 +4,8 @@ import time
 
 from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
 from roundup.cgi.templating import *
+from roundup.cgi.ZTUtils.Iterator import Iterator
+from roundup.test import memorydb
 from .test_actions import MockNull, true
 from .html_norm import NormalizingHtmlParser
 
@@ -21,12 +23,6 @@ if ReStructuredText:
 else:
     skip_rst = mark_class(pytest.mark.skip(
         reason='ReStructuredText not available'))
-
-if StructuredText:
-    skip_stext = lambda func, *args, **kwargs: func
-else:
-    skip_stext = mark_class(pytest.mark.skip(
-        reason='StructuredText not available'))
 
 import roundup.cgi.templating
 if roundup.cgi.templating._import_mistune():
@@ -50,6 +46,13 @@ else:
 from roundup.anypy.strings import u2s, s2u
 
 from roundup.backends.sessions_common import SessionCommon
+
+class MockConfig(dict):
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError as err:
+            raise AttributeError(err)
 
 class MockDatabase(MockNull, SessionCommon):
     def getclass(self, name):
@@ -99,7 +102,9 @@ class TemplatingTestCase(unittest.TestCase):
         # add client props for testing anti_csrf_nonce
         self.client.session_api = MockNull(_sid="1234567890")
         self.client.db.getuid = lambda : 10
-        self.client.db.config = {'WEB_CSRF_TOKEN_LIFETIME': 10, 'MARKDOWN_BREAK_ON_NEWLINE': False }
+        self.client.db.config = MockConfig (
+            {'WEB_CSRF_TOKEN_LIFETIME': 10,
+             'MARKDOWN_BREAK_ON_NEWLINE': False })
 
 class HTMLDatabaseTestCase(TemplatingTestCase):
     def test_HTMLDatabase___getitem__(self):
@@ -138,7 +143,9 @@ class HTMLDatabaseTestCase(TemplatingTestCase):
         db = MockNull(issue = HTMLDatabase(self.client).issue)
         db.issue._klass.list = lambda : ['23', 'a', 'b']
         # Make db.getclass return something that has a sensible 'get' method
-        mock = MockNull(get = lambda x, y : None)
+        def get(x, y, allow_abort=True):
+            return None
+        mock = MockNull(get = get)
         db.issue._db.getclass = lambda x : mock
         l = db.issue.list()
 
@@ -150,6 +157,8 @@ class FunctionsTestCase(TemplatingTestCase):
                 return '1'
             if key == 'fail':
                 raise KeyError('fail')
+            if key == '@current_user':
+                raise KeyError('@current_user')
             return key
         db._db.classes = {'issue': MockNull(lookup=lookup)}
         prop = MockNull(classname='issue')
@@ -158,10 +167,12 @@ class FunctionsTestCase(TemplatingTestCase):
         self.assertEqual(lookupIds(db._db, prop, ['ok', 'fail'], 1),
             ['1', 'fail'])
         self.assertEqual(lookupIds(db._db, prop, ['ok', 'fail']), ['1'])
+        self.assertEqual(lookupIds(db._db, prop, ['ok', '@current_user']),
+                        ['1'])
 
     def test_lookupKeys(self):
         db = HTMLDatabase(self.client)
-        def get(entry, key):
+        def get(entry, key, allow_abort=True):
             return {'1': 'green', '2': 'eggs'}.get(entry, entry)
         shrubbery = MockNull(get=get)
         db._db.classes = {'shrubbery': shrubbery}
@@ -350,15 +361,21 @@ class HTMLClassTestCase(TemplatingTestCase) :
         # test with number
         p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
                                2345678.2345678)
+        self.client.db.config['WEB_USE_BROWSER_NUMBER_INPUT'] = False
         self.assertEqual(p.field(),
-                         ('<input name="testnum1@test" size="30" type="text" '
-                         'value="%s">')%expected_val)
+                         ('<input id="testnum1@test" name="testnum1@test" '
+                         'size="30" type="text" value="%s">')%expected_val)
+        self.client.db.config['WEB_USE_BROWSER_NUMBER_INPUT'] = True
+        self.assertEqual(p.field(),
+                         ('<input id="testnum1@test" name="testnum1@test" '
+                         'size="30" type="number" value="%s">')%expected_val)
         self.assertEqual(p.field(size=10),
-                         ('<input name="testnum1@test" size="10" type="text" '
-                         'value="%s">')%expected_val)
+                         ('<input id="testnum1@test" name="testnum1@test" '
+                         'size="10" type="number" value="%s">')%expected_val)
         self.assertEqual(p.field(size=10, dataprop="foo", dataprop2=5),
                          ('<input dataprop="foo" dataprop2="5" '
-                          'name="testnum1@test" size="10" type="text" '
+                          'id="testnum1@test" name="testnum1@test" '
+                          'size="10" type="number" '
                           'value="%s">'%expected_val))
 
         self.assertEqual(p.field(size=10, klass="class1", 
@@ -366,8 +383,9 @@ class HTMLClassTestCase(TemplatingTestCase) :
                                      "data-prop": "foo",
                                      "data-prop2": 5}),
                          ('<input class="class2 class3" data-prop="foo" '
-                          'data-prop2="5" klass="class1" '
-                          'name="testnum1@test" size="10" type="text" '
+                          'data-prop2="5" id="testnum1@test" '
+                          'klass="class1" '
+                          'name="testnum1@test" size="10" type="number" '
                           'value="%s">')%expected_val)
 
         # get plain representation if user can't edit
@@ -376,10 +394,10 @@ class HTMLClassTestCase(TemplatingTestCase) :
 
         # test with string which is wrong type
         p = NumberHTMLProperty(self.client, 'testnum', '1', None, 'test',
-                               "2345678.2345678")
+                               "234567e.2345678")
         self.assertEqual(p.field(),
-                         ('<input name="testnum1@test" size="30" type="text" '
-                          'value="2345678.2345678">'))
+                         ('<input id="testnum1@test" name="testnum1@test" '
+                          'size="30" type="number" value="234567e.2345678">'))
 
         # test with None value, pretend property.__default_value = Null which
         #    is the default. It would be returned by get_default_value
@@ -388,8 +406,8 @@ class HTMLClassTestCase(TemplatingTestCase) :
         p = NumberHTMLProperty(self.client, 'testnum', '1', property, 
                                'test', None)
         self.assertEqual(p.field(),
-                         ('<input name="testnum1@test" size="30" type="text" '
-                          'value="">'))
+                         ('<input id="testnum1@test" name="testnum1@test" '
+                         'size="30" type="number" value="">'))
 
     def test_number_plain(self):
         import sys
@@ -450,7 +468,9 @@ class HTMLClassTestCase(TemplatingTestCase) :
                        ' Put in <html> to be escaped. Put in a'
                        ' https://example.com/link as well. Let us see if'
                        ' it will wrap properly.' )
-        test_result = ('A long string that needs to be wrapped to 80'
+
+        test_result_wrap = {}
+        test_result_wrap[80] = ('A long string that needs to be wrapped to 80'
                        ' characters and no more. Put in a\n'
                        'link <a href="issue1">issue1</a>. Put in'
                        ' &lt;html&gt; to be escaped. Put in a <a'
@@ -458,10 +478,30 @@ class HTMLClassTestCase(TemplatingTestCase) :
                        ' rel="nofollow noopener">'
                        'https://example.com/link</a> as\n'
                        'well. Let us see if it will wrap properly.')
+        test_result_wrap[20] = (
+            'A long string that\n'
+            'needs to be wrapped\n'
+            'to 80 characters and\n'
+            'no more. Put in a\nlink <a href="issue1">issue1</a>. Put in\n'
+            '&lt;html&gt; to be\n'
+            'escaped. Put in a\n'
+            '<a href="https://example.com/link" rel="nofollow '
+            'noopener">https://example.com/link</a>\n'
+            'as well. Let us see\n'
+            'if it will wrap\n'
+            'properly.')
+        test_result_wrap[100] = (
+            'A long string that needs to be wrapped to 80 characters and no more. Put in a link <a href="issue1">issue1</a>. Put in\n'
+            '&lt;html&gt; to be escaped. Put in a <a href="https://example.com/link" rel="nofollow noopener">https://example.com/link</a> as well. Let us see if it will wrap\n'
+            'properly.')
 
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test',
                                test_string)
-        self.assertEqual(p.wrapped(), test_result)
+
+        for i in [80, 20, 100]:
+            wrapped = p.wrapped(columns=i)
+            print(wrapped)
+            self.assertEqual(wrapped, test_result_wrap[i])
 
     def test_string_plain_or_hyperlinked(self):
         ''' test that email obscures the email '''
@@ -547,14 +587,9 @@ class HTMLClassTestCase(TemplatingTestCase) :
         self.assertEqual(t.rst(), u2s(t_result))
         self.assertEqual(u.rst(), u2s(u_result))
 
-    @skip_stext
-    def test_string_stext(self):
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
-        self.assertEqual(p.stext(), u2s(u'<p>A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> <em>embedded</em> \u00df</p>\n'))
-
     def test_string_field(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
-        self.assertEqual(p.field(), '<input name="test1@test" size="30" type="text" value="A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;">')
+        self.assertEqual(p.field(), '<input id="test1@test" name="test1@test" size="30" type="text" value="A string &lt;b&gt; with rouilj@example.com embedded &amp;lt; html&lt;/b&gt;">')
 
     def test_string_multiline(self):
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', 'A string <b> with rouilj@example.com embedded &lt; html</b>')
@@ -675,30 +710,16 @@ class HTMLClassTestCase(TemplatingTestCase) :
         input=input_html4(**attrs)
         self.assertEqual(input, '<input class="required" disabled="disabled" size="30" type="text">')
 
-    def test_input_xhtml(self):
-        # boolean attributes are attribute name="attribute name"
-        # indicate with attr=None or attr="attr"
-        #    e.g. disabled="disabled"
-        input=input_xhtml(required=None, size=30)
-        self.assertEqual(input, '<input required="required" size="30" type="text"/>')
-
-        input=input_xhtml(required="required", size=30)
-        self.assertEqual(input, '<input required="required" size="30" type="text"/>')
-
-        attrs={"required": None, "class": "required", "size": 30}
-        input=input_xhtml(**attrs)
-        self.assertEqual(input, '<input class="required" required="required" size="30" type="text"/>')
-
-        attrs={"disabled": "disabled", "class": "required", "size": 30}
-        input=input_xhtml(**attrs)
-        self.assertEqual(input, '<input class="required" disabled="disabled" size="30" type="text"/>')
-
 
 class HTMLPropertyTestClass(unittest.TestCase):
     def setUp(self):
         self.form = FieldStorage()
         self.client = MockNull()
-        self.client.db = db = MockDatabase()
+        self.client.db = db = memorydb.create('admin')
+        db.tx_Source = "web"
+
+        db.issue.addprop(tx_Source=hyperdb.String())
+
         db.security.hasPermission = lambda *args, **kw: True
         self.client.form = self.form
 
@@ -707,7 +728,210 @@ class HTMLPropertyTestClass(unittest.TestCase):
         self.client.session_api = MockNull(_sid="1234567890")
         self.client.db.getuid = lambda : 10
 
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
+class BooleanHTMLPropertyTestCase(HTMLPropertyTestClass):
+
+    def setUp(self):
+        super(BooleanHTMLPropertyTestCase, self).setUp()
+
+        db = self.client.db
+        db.issue.addprop(boolvalt=hyperdb.Boolean())
+        db.issue.addprop(boolvalf=hyperdb.Boolean())
+        db.issue.addprop(boolvalunset=hyperdb.Boolean())
+
+        self.client.db.issue.create(title="title",
+                                    boolvalt = True,
+                                    boolvalf = False)
+
+    def tearDown(self):
+        self.client.db.close()
+        memorydb.db_nuke('')
+
+    testdata = [
+        ("boolvalt", "Yes", True, False),
+        ("boolvalf", "No", False, True),
+        ("boolvalunset", "", False, True),
+    ]
+
+    def test_BoolHTMLRadioButtons(self):
+        #propname = "boolvalt"
+
+        #plainval = "Yes"
+
+        self.maxDiff = None
+        for test_inputs in self.testdata:
+            params = {
+                "check1": 'checked="checked" ' if test_inputs[2] else "",
+                "check2": 'checked="checked" ' if test_inputs[3] else "",
+                "propname": test_inputs[0],
+                "plainval": test_inputs[1],
+
+            }
+
+
+            test_hyperdbBoolean = self.client.db.issue.getprops("1")[
+                params['propname']]
+            test_boolean = self.client.db.issue.get("1", params['propname'])
+
+            # client, classname, nodeid, prop, name, value,
+            #    anonymous=0, offset=None
+            d = BooleanHTMLProperty(self.client, 'issue', '1',
+                                    test_hyperdbBoolean,
+                                    params['propname'], test_boolean)
+
+            self.assertIsInstance(d._value, (type(None), bool))
+
+            self.assertEqual(d.plain(), params['plainval'])
+
+            input_expected = (
+                '<input %(check1)sid="issue1@%(propname)s_yes" '
+                'name="issue1@%(propname)s" type="radio" value="yes">'
+                '<label class="rblabel" for="issue1@%(propname)s_yes">'
+                'Yes</label>'
+                '<input %(check2)sid="issue1@%(propname)s_no" name="issue1@%(propname)s" '
+                'type="radio" value="no"><label class="rblabel" '
+                'for="issue1@%(propname)s_no">No</label>') % params
+
+            self.assertEqual(d.field(), input_expected)
+
+            y_label = ( '<label class="rblabel" for="issue1@%(propname)s_yes">'
+                        'True</label>') % params
+            n_label = ('<label class="rblabel" '
+                       'for="issue1@%(propname)s_no">False</label>') % params
+            u_label = ('<label class="rblabel" '
+                       'for="issue1@%(propname)s_unk">Ignore</label>') % params
+
+            input_expected = (
+                '<input %(check1)sid="issue1@%(propname)s_yes" '
+                'name="issue1@%(propname)s" type="radio" value="yes">'
+                + y_label +
+                '<input %(check2)sid="issue1@%(propname)s_no" name="issue1@%(propname)s" '
+                'type="radio" value="no">' + n_label ) % params
+
+            self.assertEqual(d.field(y_label=y_label, n_label=n_label), input_expected)
+
+
+            input_expected = (
+                '<label class="rblabel" for="issue1@%(propname)s_yes">'
+                'Yes</label>'
+                '<input %(check1)sid="issue1@%(propname)s_yes" '
+                'name="issue1@%(propname)s" type="radio" value="yes">'
+                '<label class="rblabel" '
+                'for="issue1@%(propname)s_no">No</label>'
+                '<input %(check2)sid="issue1@%(propname)s_no" '
+                    'name="issue1@%(propname)s" '
+                'type="radio" value="no">') % params
+
+            print(d.field(labelfirst=True))
+            self.assertEqual(d.field(labelfirst=True), input_expected)
+
+            input_expected = (
+                '<label class="rblabel" for="issue1@%(propname)s_unk">'
+                'Ignore</label>'
+                '<input id="issue1@%(propname)s_unk" '
+                'name="issue1@%(propname)s" type="radio" value="">'
+                '<input %(check1)sid="issue1@%(propname)s_yes" '
+                'name="issue1@%(propname)s" type="radio" value="yes">'
+                '<label class="rblabel" for="issue1@%(propname)s_yes">'
+                'Yes</label>'
+                '<input %(check2)sid="issue1@%(propname)s_no" name="issue1@%(propname)s" '
+                'type="radio" value="no"><label class="rblabel" '
+                'for="issue1@%(propname)s_no">No</label>') % params
+
+            self.assertEqual(d.field(u_label=u_label), input_expected)
+
+
+        # one test with the last d is enough.
+        # check permissions return
+        is_view_ok_orig = d.is_view_ok
+        is_edit_ok_orig = d.is_edit_ok
+        no_access = lambda : False
+
+        d.is_view_ok = no_access
+        self.assertEqual(d.plain(), "[hidden]")
+
+        d.is_edit_ok = no_access
+        self.assertEqual(d.field(), "[hidden]")
+
+        d.is_view_ok = is_view_ok_orig
+        self.assertEqual(d.field(), params['plainval'])
+        d.is_edit_ok = is_edit_ok_orig
+
 class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
+
+    def setUp(self):
+        super(DateHTMLPropertyTestCase, self).setUp()
+
+        db = self.client.db
+        db.issue.addprop(deadline=hyperdb.Date())
+
+        self.test_datestring = "2021-01-01.11:22:10"
+
+        self.client.db.issue.create(title="title",
+                                    deadline=date.Date(self.test_datestring))
+        self.client.db.getUserTimezone = lambda: "2"
+
+    def tearDown(self):
+        self.client.db.close()
+        memorydb.db_nuke('')
+
+    def exp_classhelp(self, cls='issue', prop='deadline', dlm='.'):
+        value = dlm.join (('2021-01-01', '11:22:10'))
+        return ('<a class="classhelp" data-calurl="%(cls)s?'
+        '@template=calendar&amp;property=%(prop)s&amp;'
+        'form=itemSynopsis&amp;date=%(value)s" '
+        'data-height="200" data-width="300" href="javascript:help_window'
+        '(\'%(cls)s?@template=calendar&amp;property=%(prop)s&amp;'
+        'form=itemSynopsis&date=%(value)s\', 300, 200)">(cal)</a>'
+        ) % {'cls': cls, 'prop': prop, 'value': value}
+
+    def test_DateHTMLWithDate(self):
+        """Test methods when DateHTMLProperty._value is a hyperdb.Date()
+        """
+        self.client.db.config['WEB_USE_BROWSER_DATE_INPUT'] = True
+        test_datestring = self.test_datestring
+        test_Date = self.client.db.issue.get("1", 'deadline')
+        test_hyperdbDate = self.client.db.issue.getprops("1")['deadline']
+
+        self.client.classname = "issue"
+        self.client.template = "item"
+
+        # client, classname, nodeid, prop, name, value,
+        #    anonymous=0, offset=None
+        d = DateHTMLProperty(self.client, 'issue', '1', test_hyperdbDate,
+                             'deadline', test_Date)
+        self.assertIsInstance(d._value, date.Date)
+        self.assertEqual(d.pretty(), " 1 January 2021")
+        self.assertEqual(d.pretty("%2d %B %Y"), "01 January 2021")
+        self.assertEqual(d.pretty(format="%Y-%m"), "2021-01")
+        self.assertEqual(d.plain(), "2021-01-01.13:22:10")
+        self.assertEqual(d.local("-4").plain(), "2021-01-01.07:22:10")
+        input_expected = """<input id="issue1@deadline" name="issue1@deadline" size="30" type="date" value="2021-01-01">"""
+        self.assertEqual(d.field(display_time=False), input_expected)
+
+        input_expected = '<input id="issue1@deadline" name="issue1@deadline" '\
+            'size="30" type="datetime-local" value="2021-01-01T13:22:10">'
+        self.assertEqual(d.field(), input_expected)
+
+        input_expected = '<input id="issue1@deadline" name="issue1@deadline" '\
+            'size="30" type="text" value="2021-01-01.13:22:10">'
+        field = d.field(format='%Y-%m-%d.%H:%M:%S', popcal=False)
+        self.assertEqual(field, input_expected)
+
+        # test with format
+        input_expected = '<input id="issue1@deadline" name="issue1@deadline" '\
+            'size="30" type="text" value="2021-01">' + self.exp_classhelp()
+
+        self.assertEqual(d.field(format="%Y-%m"), input_expected)
+
+        input_expected = '<input id="issue1@deadline" name="issue1@deadline" '\
+            'size="30" type="text" value="2021-01">'
+
+        input = d.field(format="%Y-%m", popcal=False)
+        self.assertEqual(input, input_expected)
 
     def test_DateHTMLWithText(self):
         """Test methods when DateHTMLProperty._value is a string
@@ -718,10 +942,14 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
 
         self.form.list.append(MiniFieldStorage("test1@test", test_datestring))
         self.client._props=test_date
+        self.client.db.config['WEB_USE_BROWSER_DATE_INPUT'] = False
 
         self.client.db.classes = dict \
             ( test = MockNull(getprops = lambda : test_date)
             )
+
+        self.client.classname = "test"
+        self.client.template = "item"
 
         # client, classname, nodeid, prop, name, value,
         #    anonymous=0, offset=None
@@ -730,8 +958,41 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
         self.assertIs(type(d._value), str)
         self.assertEqual(d.pretty(), "2021-01-01 11:22:10")
         self.assertEqual(d.plain(), "2021-01-01 11:22:10")
-        input = """<input name="test1@test" size="30" type="text" value="2021-01-01 11:22:10"><a class="classhelp" data-calurl="test?@template=calendar&amp;amp;property=test&amp;amp;form=itemSynopsis&amp;date=2021-01-01 11:22:10" data-height="200" data-width="300" href="javascript:help_window('test?@template=calendar&amp;property=test&amp;form=itemSynopsis&date=2021-01-01 11:22:10', 300, 200)">(cal)</a>"""
-        self.assertEqual(d.field(), input)
+        input_expected = '<input id="test1@test" name="test1@test" size="30" '\
+            'type="text" value="2021-01-01 11:22:10">'
+        self.assertEqual(d.field(popcal=False), input_expected)
+        self.client.db.config['WEB_USE_BROWSER_DATE_INPUT'] = True
+        input_expected = '<input id="test1@test" name="test1@test" size="30" '\
+            'type="datetime-local" value="2021-01-01 11:22:10">'
+        self.assertEqual(d.field(), input_expected)
+        self.client.db.config['WEB_USE_BROWSER_DATE_INPUT'] = False
+
+        input_expected = '<input id="test1@test" name="test1@test" size="40" '\
+            'type="text" value="2021-01-01 11:22:10">'
+        self.assertEqual(d.field(size=40, popcal=False), input_expected)
+
+        input_expected = ('<input id="test1@test" name="test1@test" size="30" '
+            'type="text" value="2021-01-01 11:22:10">'
+            + self.exp_classhelp(cls='test', prop='test', dlm=' '))
+        self.maxDiff=None
+        self.assertEqual(d.field(format="%Y-%m"), input_expected)
+
+        # format always uses type="text" even when date input is set
+        self.client.db.config['WEB_USE_BROWSER_DATE_INPUT'] = True
+        result = d.field(format="%Y-%m-%d", popcal=False)
+        input_expected = '<input id="test1@test" name="test1@test" size="30" '\
+            'type="text" value="2021-01-01 11:22:10">'
+        self.assertEqual(result, input_expected)
+
+        input_expected = ('<input id="test1@test" name="test1@test" size="30" '
+            'type="text" value="2021-01-01 11:22:10">'
+            + self.exp_classhelp(cls='test', prop='test', dlm=' '))
+        self.assertEqual(d.field(format="%Y-%m"), input_expected)
+
+        result = d.field(format="%Y-%m-%dT%H:%M:%S", popcal=False)
+        input_expected = '<input id="test1@test" name="test1@test" size="30" '\
+            'type="text" value="2021-01-01 11:22:10">'
+        self.assertEqual(result, input_expected)
 
 # common markdown test cases
 class MarkdownTests:
@@ -1080,22 +1341,250 @@ class NoRstTestCase(TemplatingTestCase) :
         p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
         self.assertEqual(p.rst(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
 
-class NoStextTestCase(TemplatingTestCase) :
-    def setUp(self):
-        TemplatingTestCase.setUp(self)
+class NumberIntegerHTMLPropertyTestCase(HTMLPropertyTestClass):
 
-        from roundup.cgi import templating
-        self.__StructuredText = templating.StructuredText
-        templating.StructuredText = None
+    def setUp(self):
+        super(NumberIntegerHTMLPropertyTestCase, self).setUp()
+
+        db = self.client.db
+        db.issue.addprop(numberval=hyperdb.Number())
+        db.issue.addprop(intval=hyperdb.Integer())
+
+        self.client.db.issue.create(title="title",
+                                    numberval = "3.14",
+                                    intval="314")
 
     def tearDown(self):
-        from roundup.cgi import templating
-        templating.StructuredText = self.__StructuredText
+        self.client.db.close()
+        memorydb.db_nuke('')
 
-    def test_string_stext(self):
-        p = StringHTMLProperty(self.client, 'test', '1', None, 'test', u2s(u'A string with cmeerw@example.com *embedded* \u00df'))
-        self.assertEqual(p.stext(), u2s(u'A string with <a href="mailto:cmeerw@example.com">cmeerw@example.com</a> *embedded* \u00df'))
+    def test_IntegerHTML(self):
+        test_hyperdbInteger = self.client.db.issue.getprops("1")['intval']
+        test_Integer = test_hyperdbInteger.from_raw(
+            self.client.db.issue.get("1", 'intval')
+        )
 
+        # client, classname, nodeid, prop, name, value,
+        #    anonymous=0, offset=None
+        d = IntegerHTMLProperty(self.client, 'issue', '1',
+                                test_hyperdbInteger,
+                                'intval', test_Integer)
+
+        self.assertIsInstance(d._value, int)
+
+        self.assertEqual(d.plain(), "314")
+
+        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" type="text" value="314">"""
+        self.assertEqual(d.field(), input_expected)
+
+        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" step="50" type="text" value="314">"""
+        self.assertEqual(d.field(step="50"), input_expected)
+
+        input_expected = """<input id="issue1@intval" name="issue1@intval" size="30" type="text" value="314">"""
+        self.assertEqual(d.field(type="text"), input_expected)
+
+
+        # check permissions return
+        is_view_ok_orig = d.is_view_ok
+        is_edit_ok_orig = d.is_edit_ok
+        no_access = lambda : False
+
+        d.is_view_ok = no_access
+        self.assertEqual(d.plain(), "[hidden]")
+
+        d.is_edit_ok = no_access
+        self.assertEqual(d.field(), "[hidden]")
+
+        d.is_view_ok = is_view_ok_orig
+        self.assertEqual(d.field(), "314")
+        d.is_edit_ok = is_edit_ok_orig
+
+    def test_NumberHTML(self):
+        test_hyperdbNumber = self.client.db.issue.getprops("1")['numberval']
+        test_Number = test_hyperdbNumber.from_raw(
+            self.client.db.issue.get("1", 'numberval')
+        )
+
+        # client, classname, nodeid, prop, name, value,
+        #    anonymous=0, offset=None
+        d = NumberHTMLProperty(self.client, 'issue', '1',
+                                test_hyperdbNumber,
+                                'numberval', test_Number)
+
+        # string needed for memorydb/anydbm backend. Float?? when
+        # running against sql backends.
+        self.assertIsInstance(d._value, float)
+
+        self.assertEqual(d._value, 3.14)
+
+        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" type="text" value="3.14">"""
+        self.assertEqual(d.field(), input_expected)
+
+        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" step="50" type="text" value="3.14">"""
+        self.assertEqual(d.field(step="50"), input_expected)
+
+        input_expected = """<input id="issue1@numberval" name="issue1@numberval" size="30" type="text" value="3.14">"""
+        self.assertEqual(d.field(type="text"), input_expected)
+
+        self.assertEqual(d.pretty("%0.3f"), "3.140")
+        self.assertEqual(d.pretty("%0.3d"), "003")
+        self.assertEqual(d.pretty("%2d"), " 3")
+
+        # see what happens if for other values
+        value = d._value
+        d._value = "1" # integer
+        self.assertEqual(d.pretty("%2d"), "1")
+        d._value = "I'mNotAFloat" # not a number
+        self.assertEqual(d.pretty("%2d"), "I'mNotAFloat")
+        d._value = value
+
+        # check permissions return
+        is_view_ok_orig = d.is_view_ok
+        is_edit_ok_orig = d.is_edit_ok
+        no_access = lambda : False
+
+        d.is_view_ok = no_access
+        self.assertEqual(d.plain(), "[hidden]")
+
+        d.is_edit_ok = no_access
+        self.assertEqual(d.field(), "[hidden]")
+
+        d.is_view_ok = is_view_ok_orig
+        self.assertEqual(d.field(), "3.14")
+        d.is_edit_ok = is_edit_ok_orig
+
+class ZUtilsTestcase(TemplatingTestCase):
+
+    def test_Iterator(self):
+        """Test all the iterator functions and properties.
+        """
+        sequence = ['one', 'two', '3', 4]
+        i = Iterator(sequence)
+        for j in [ # element, item, 1st, last, even, odd, number,
+                   # letter, Letter, roman, Roman
+                (1, "one", 1, 0, True,  0, 1, 'a', 'A', 'i',   'I'),
+                (1, "two", 0, 0, False, 1, 2, 'b', 'B', 'ii',  'II'),
+                (1, "3",   0, 0, True,  0, 3, 'c', 'C', 'iii', 'III'),
+                (1,   4,   0, 1, False, 1, 4, 'd', 'D', 'iv',  'IV'),
+                # next() fails with 0 when past end of sequence
+                # everything else is left at end of sequence
+                (0,   4,   0, 1, False, 1, 4, 'd', 'D', 'iv',  'IV'),
+
+
+        ]:
+            element = i.next()  # returns 1 if next item else 0
+            print(i.item)
+            self.assertEqual(element, j[0])
+            self.assertEqual(i.item, j[1])
+            self.assertEqual(i.first(), j[2])
+            self.assertEqual(i.start, j[2])
+            self.assertEqual(i.last(), j[3])
+            self.assertEqual(i.end, j[3])
+            self.assertIs(i.even(), j[4])
+            self.assertEqual(i.odd(), j[5])
+            self.assertEqual(i.number(), j[6])
+            self.assertEqual(i.index, j[6] - 1)
+            self.assertEqual(i.nextIndex, j[6])
+            self.assertEqual(i.letter(), j[7])
+            self.assertEqual(i.Letter(), j[8])
+            self.assertEqual(i.roman(), j[9])
+            self.assertEqual(i.Roman(), j[10])
+
+        class I:
+            def __init__(self, name, data):
+                self.name = name
+                self.data = data
+
+        sequence = [I('Al',   'd'),
+                    I('Bob',  'e'),
+                    I('Bob',  'd'),
+                    I('Chip', 'd')
+        ]
+
+        iterator = iter(sequence)
+
+        # Iterator is supposed take both sequence and Python iterator.
+        for source in [sequence, iterator]:
+            i = Iterator(source)
+
+            element = i.next()  # returns 1 if next item else 0
+            item1 = i.item
+
+            # note these can trigger calls by first/last to same_part().
+            # It can return true for first/last even when there are more
+            # items in the sequence. I am just testing the current
+            # implementation. Woe to the person who tries to change
+            # Iterator.py.
+
+            self.assertEqual(element, 1)
+            # i.start == 1, so it bypasses name check
+            self.assertEqual(i.first(name='namea'), 1)
+            self.assertEqual(i.first(name='name'), 1)
+            # i.end == 0 so it uses name check in object
+            self.assertEqual(i.last(name='namea'), 0)
+            self.assertEqual(i.last(name='name'), 0)
+
+            element = i.next()  # returns 1 if next item else 0
+            item2 = i.item
+            self.assertEqual(element, 1)
+            # i.start == 0 so it uses name check
+            # between item1 and item2
+            self.assertEqual(i.first(name='namea'), 0)
+            self.assertEqual(i.first(name='name'), 0)
+            # i.end == 0 so it uses name check in object
+            # between item2 and the next item item3
+            self.assertEqual(i.last(name='namea'), 0)
+            self.assertEqual(i.last(name='name'), True)
+
+            element = i.next()  # returns 1 if next item else 0
+            item3 = i.item
+            self.assertEqual(element, 1)
+            # i.start == 0 so it uses name check
+            self.assertEqual(i.first(name='namea'), 0)
+            self.assertEqual(i.first(name='name'), 1)
+            # i.end == 0 so it uses name check in object
+            # between item3 and the next item item4
+            self.assertEqual(i.last(name='namea'), 0)
+            self.assertEqual(i.last(name='name'), 0)
+
+            element = i.next()  # returns 1 if next item else 0
+            item4 = i.item
+            self.assertEqual(element, 1)
+            # i.start == 0 so it uses name check
+            self.assertEqual(i.first(name='namea'), 0)
+            self.assertEqual(i.first(name='name'), 0)
+            # i.end == 0 so it uses name check in object
+            # last two object have same name (1)
+            self.assertEqual(i.last(name='namea'), 1)
+            self.assertEqual(i.last(name='name'), 1)
+
+            element = i.next()  # returns 1 if next item else 0
+            self.assertEqual(element, 0)
+
+            # this is the underlying call for first/last
+            # when i.start/i.end are 0
+            # use non-existing attribute name, same item
+            self.assertIs(i.same_part('namea', item2, item2), False)
+            # use correct attribute name
+            self.assertIs(i.same_part('name', item2, item2), True)
+            # use no attribute name
+            self.assertIs(i.same_part(None, item2, item2), True)
+
+            # use non-existing attribute name, different item
+            # non-matching names
+            self.assertIs(i.same_part('namea', item1, item2), False)
+            # use correct attribute name
+            self.assertIs(i.same_part('name', item1, item2), False)
+            # use no attribute name
+            self.assertIs(i.same_part(None, item1, item2), False)
+
+            # use non-existing attribute name, different item
+            # matching names
+            self.assertIs(i.same_part('namea', item2, item3), False)
+            # use correct attribute name
+            self.assertIs(i.same_part('name', item2, item3), True)
+            # use no attribute name
+            self.assertIs(i.same_part(None, item2, item3), False)
 
 r'''
 class HTMLPermissions:
@@ -1106,7 +1595,6 @@ class HTMLPermissions:
     def edit_check(self):
 
 def input_html4(**attrs):
-def input_xhtml(**attrs):
 
 class HTMLInputMixin:
     def __init__(self):

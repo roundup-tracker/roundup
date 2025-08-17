@@ -75,10 +75,10 @@ class Request(object):
         """NOOP. There aint no such thing as 'end_headers' in mod_python"""
         pass
 
-    def sendfile(self, filename, offset=0, len=-1):
+    def sendfile(self, filename, offset=0, length=-1):
         """Send 'filename' to the user."""
 
-        return self._req.sendfile(filename, offset, len)
+        return self._req.sendfile(filename, offset, length)
 
 
 __tracker_cache = {}
@@ -148,9 +148,11 @@ def handler(req):
     if _timing:
         _env["CGI_SHOW_TIMING"] = _timing
     _form = cgi.FieldStorage(req, environ=_env)
-    _client = _tracker.Client(_tracker, Request(req), _env, _form,
-                        translator=TranslationService.get_translation(_lang,
-                                                      tracker_home=_home))
+    _client = _tracker.Client(
+        _tracker, Request(req), _env, _form,
+        translator=TranslationService.get_translation(_lang,
+                                                      tracker_home=_home)
+    )
     _client.main()
     return apache.OK
 

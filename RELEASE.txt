@@ -44,26 +44,35 @@ Roundup release checklist:
 4.  Update documentation
       doc/announcement.txt
       doc/upgrading.txt
+
+    Use::
+
+       sed -ne '/^20[0-9][0-9]-XX/,/^202[0-9]-/{/^-/p}' CHANGES.txt | wc -l
+
+   to get number of features/fixes included in the release.
+
 4a. cd to website/www and run 'make linkcheck'. See output in
     _tmp/linkcheck/output.txt
        fix broken references in docs
        verify redirects are correct
 
+    Use::
+
+        grep '\[broken\]\s*htt'  _tmp/linkcheck/output.txt
+
+    to find external refs only. Internal refs will probably fail
+    because they don't use :ref: or :doc: roles to reference them.
+    They are referenced using html link syntax.
+
 5.  Update setup.py info if needed (contacts, classifiers, etc.). When
     releasing check that Development Status matches release: stable,
-    beta alpha etc.
+    beta, alpha etc.
 
     Check that metadata is valid and long descriptions is proper reST:
 
       python3 setup.py check --restructuredtext --metadata --strict
    
-6.  Clean out all *.orig, *.rej, .#* files from the source.
-
-      find . -name '*.orig' -exec rm {} \;
-      find . -name '*.rej' -exec rm {} \;
-      find . -name '.#*' -exec rm {} \;
-
-6a. Rebuild .mo translation files in distribution
+6. Rebuild .mo translation files in distribution
 
       cd locale
       make
@@ -74,7 +83,15 @@ Roundup release checklist:
       python3 setup.py clean --all
       rm -rf build/share  # deletes locale .mo files
 
-    Build including new .mo files built in 6a.
+    Clean out all *.orig, *.rej, .#* files from the source.
+
+      find . -name '*.orig' -exec rm {} \;
+      find . -name '*.rej' -exec rm {} \;
+      find . -name '.#*' -exec rm {} \;
+
+7a.
+
+    Build including new .mo files built in 6.
 
       python3 setup.py build
 
@@ -82,7 +99,16 @@ Roundup release checklist:
 
 8.  Rebuild documentation in "share/doc/roundup/html"
 
-      python3 setup.py build_doc
+      cd doc
+      make
+      cd ..
+
+    runs commands to turn man pages into html files and adds them to
+    html_extra/man_pages subdir. Then it generates html text from
+    running roundup_admin. Then it generates a current copy of a
+    config.ini file. Then it runs:
+
+       python3 setup.py build_doc
 
 9.  Generate source distribution:
 
@@ -90,10 +116,11 @@ Roundup release checklist:
 
     (if you find sdist a little verbose, add "--quiet" to the end of the
      command)
+
 9a. 2021/04/17 skip this for now. Need to make sure that whl installs
     executable scripts properly and update these directions to test.
 
-       python2 setup.py bdist_wheel; python3 setup.py bdist_wheel
+       python3 setup.py bdist_wheel
 
     to create binary distributions in wheel format. (egg format is
     deprecated.)
@@ -120,14 +147,15 @@ Roundup release checklist:
 
     any file with a count of 2 or more needs to be removed from
     MANIFEST.in and possibly cleaned out of the build tree.
+
 10b: if you added/removed files rebuild starting at step 6a.
 
 11. Unpack the new tarball created in dist/roundup-<version>.tar.gz
     file in /tmp then
-      a) run tests using installed pytest run under python2 and
-         python3. (python2 -m pytest test/; python3 -m pytest test/)
+      a) run tests using installed pytest run under
+         python3. (python3 -m pytest test/)
       b) demo.py
-    with all available Python versions.
+    with all available Python 3 versions.
 11a. (TBD how to test wheel binary distribution before uploading.)
 
 11b. Generate GPG signature file
@@ -139,10 +167,10 @@ Roundup release checklist:
      can add  --local=roundup-devel@lists.sourceforge.net.
      This will create a file by the name <filename>.tar.gz.asc.
 
-     Move file to website/www/signature directory
+     Move file to website/www/signatures directory
 
-       mv <filename>.tar.gz.asc ../webite/www/signatures/.
-       hg add ../website/www/signature/<filename>.tar.gz.asc
+       mv <filename>.tar.gz.asc ../website/www/signatures/.
+       hg add ../website/www/signatures/<filename>.tar.gz.asc
        # commiting the file will be done in step 12
        cd ..
 
@@ -204,8 +232,10 @@ Roundup release checklist:
      announce@fossies.org
 15d. Update entry on https://directory.fsf.org/wiki/Roundup.
 
-16. Change the release version on the GitHub section at
-    https://wiki.roundup-tracker.org/CiTestingEnvironment
+16. Change the version in the URL that generates the "commits since
+    release ...." badge. Also update Python test versions in the
+    GitHub Actions section at:
+      https://wiki.roundup-tracker.org/CiTestingEnvironment
 16b. Update release info on wikipedia:
      https://en.wikipedia.org/wiki/Roundup_(issue_tracker)
 
@@ -215,21 +245,21 @@ Roundup release checklist:
 17a. install docker
 17b. run: (issues, how to release a version e.g. to update alpine for
            security issues. Currently thinking that release tag is
-	   rounduptracker/roundup:2.2.0-1, -2 etc. Then add a tag
-	   rounduptracker/roundup:2.2.0 that moves to always tag
+	   rounduptracker/roundup:2.4.0-1, -2 etc. Then add a tag
+	   rounduptracker/roundup:2.4.0 that moves to always tag
 	   the latest -N release. Also roundup:latest points to the
 	   newest -N for the newest roundup version.)
 
-        docker build -t rounduptracker/roundup:2.2.0 \
+        docker build -t rounduptracker/roundup:2.4.0 \
            --build-arg="source=pypi" -f scripts/Docker/Dockerfile .
 
-     to create the docker image. *Change 2.2.0 to current version*
+     to create the docker image. *Change 2.4.0 to current version*
      Always use the exact release tag.
 17c. vulnerability scan local image using:
 
         docker run --rm --volume \
 	/var/run/docker.sock:/var/run/docker.sock \
-            --name Grype anchore/grype:latest rounduptracker/roundup:2.2.0
+            --name Grype anchore/grype:latest rounduptracker/roundup:2.4.0
 
      should report no vulnerabilities (note match version with current
      build)
@@ -238,25 +268,40 @@ Roundup release checklist:
 
         docker run -it --rm --volume \
 	/var/run/docker.sock:/var/run/docker.sock \
-          --name trivy aquasec/trivy:latest image rounduptracker/roundup:2.2.0
+          --name trivy aquasec/trivy:latest image --exit-code 1 \
+          --ignore-unfixed rounduptracker/roundup:2.4.0
 
      You may need to explicitly update/refresh the scanners with:
      "docker pull anchore/grype:latest" and similarly for
      aquasec/trivy if used.
+
+     Note that some security issues may show up. If they are in the
+     underlying OS package we can't do anything but make sure the
+     latest python:3-alpine package is used to build the image. Look
+     at the index digest on the image release page and compare it to
+     the sha256 at the top of the Dockerfile.
+
 17d. test roundup in demo mode:
 
         docker run -it --rm -p 8917:8080 \
          -v $PWD/tracker:/usr/src/app/tracker \
-         rounduptracker/roundup:2.2.0 demo
+         rounduptracker/roundup:2.4.0 demo
+
+     FIXME: right now the external port number (8917) in the above
+       command is hardcoded in DOCKER. It can be overridden usng
+       PORT_8080=9017 for example. However the host is always
+       localhost. Consider replacing PORT_8080 with ORIGIN="host:port"
+       or ORIGIN="port" so that the web URL can be made correct when
+       running docker on a remote server.
 
 17e. push to DockerHub login (login using 'docker login <username>'
      first and user must be member of rounduptracker org with ability
      to publish). Replace -N with the release number (e.g. -1, -2, -3...)
 
-	 docker tag rounduptracker/roundup:2.2.0 roundup-tracker/roundup
-	 docker tag rounduptracker/roundup:2.2.0 roundup-tracker/roundup:2.2.0-N
-         docker push rounduptracker/roundup:2.2.0
-         docker push rounduptracker/roundup:2.2.0-N
+	 docker tag rounduptracker/roundup:2.4.0 roundup-tracker/roundup:latest
+	 docker tag rounduptracker/roundup:2.4.0 roundup-tracker/roundup:2.4.0-N
+         docker push rounduptracker/roundup:2.4.0
+         docker push rounduptracker/roundup:2.4.0-N
          docker push rounduptracker/roundup  # update roundup:latest
 
 -------------
@@ -325,3 +370,11 @@ with: -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 and add back the preamble that describes where to find doc for
 it. Commmit new key to mercurial.
+
+SAVE TO KEYSERVER
+=================
+
+$ gpg --keyserver pgp.mit.edu --send-keys \
+     411E354B5D1AF26125D621221F2DD0CB756A76D8
+
+update it on the keysserver so users can download it.
