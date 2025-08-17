@@ -23,6 +23,9 @@ Fixed:
   roundup.cgi.exceptions. Also it now inherits from HTTPException
   rather than Exception since it is an HTTP exception. (John
   Rouillard)
+- cleaned up repo. Close obsolete branches and close a split head due
+  to an identical merge intwo different workicng copies. (John
+  Rouillard)
 
 Features:
 
