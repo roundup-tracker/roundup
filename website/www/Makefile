@@ -12,7 +12,7 @@ help:
 # after upgrade to sphinx 1.8.5, search.html is missing load of searchtools.
 # fix that in postprocess
 # also sed index.html to properly format meta og:... entries.
-html: doc_links  ## make standalone HTML files
+html: doc_links  ## make standalone HTML files (KEEP_HTML=1 speeds build)
 	if [ -z "${KEEP_HTML}" ]; then rm -rf html; fi
 	rm -f html/robots.txt  # otherwise sphinx errors
 	mkdir -p $(TMP)/doctrees $(HTML)
