@@ -26,6 +26,10 @@ Fixed:
 
 Features:
 
+- add support for authorized changes. User can be prompted to enter
+  their password to authorize a change. If the user's password is
+  properly entered, the change is committed. (John Rouillard)
+
 2025-07-13 2.5.0
 
 Fixed:

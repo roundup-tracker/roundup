@@ -1,0 +1,111 @@
+{% extends 'layout/page.html' %}
+
+{% block head_title %}
+  {% trans %}Authorize{% endtrans %} - {{ config.TRACKER_NAME }}
+{% endblock %}
+
+{% block page_header %}
+  {% trans %}Authorize Change{% endtrans %}
+{% endblock %}
+
+{% block content %}
+
+  {% include 'layout/permission.html' %}
+
+  {% if '@reauth_message' in request.client.form %}
+    <p> {{ request.client.form['@reauth_message'].value }} </p>
+  {% endif %}
+  <p> {% trans %}The action you requested needs to be
+      authorized.{% endtrans %}</p>
+  <p> {% trans %}Please enter your password to continue with your
+      change. {% endtrans %}</p>
+
+  <form id="reauth_form" method="POST" enctype="multipart/form-data">
+      <input name="@reauth_password" type="password"
+	     spellcheck="false" autofocus class="form-control">
+  <input type="hidden" name="@action" value="reauth">
+  <input type="submit" name="submit"
+	 value="{% trans %} Authorize Change {% endtrans %}">
+  <input name="@csrf" type="hidden"
+	 value="{{ utils.anti_csrf_nonce() }}">
+
+  {{ utils.embed_form_fields(('submit',))|u|safe }}
+
+  </form>
+
+<script nonce="{{ request.client.client_nonce }}">
+/* This IIFE decodes the base64 file contents in the pre blocks,
+   creates a new file blob for each one. Then adds a multiple file
+   input and attaches all the files to it.
+
+   I am not crazy about the base64 encoding since it increases size by
+   1/3. But it is included in all browsers natively.
+*/
+
+'use strict';
+
+(function attach_file_data() {
+  console.time('reattach_files');
+
+  /* skip file entries without a name (created by empty file input) */
+  const pre_file_list = document.querySelectorAll(
+    'pre[data-filename]:not([data-filename=""]');
+  /* if no files, skip all this. */
+  if (! pre_file_list.length) {
+    console.timeEnd('reattach_files');
+    return;
+  }
+
+  function base64ToUint8Array(base64String) {
+    // source: google search AI: "turn atob into uint8array javascript"
+
+    // Decode the Base64 string
+    const binaryString = window.atob(base64String);
+
+    // Create a Uint8Array with the same length as the binary string
+    const uint8Array = new Uint8Array(binaryString.length);
+
+    // Populate the Uint8Array with the character codes
+    for (let i = 0; i < binaryString.length; i++) {
+      uint8Array[i] = binaryString.charCodeAt(i);
+    }
+    return uint8Array;
+  }
+
+  const transfer = new DataTransfer();
+
+  pre_file_list.forEach( file =>
+    transfer.items.add(
+      new File([base64ToUint8Array(file.textContent)],
+	       file.dataset.filename,
+	       {"type": file.dataset.mimetype}
+	      )
+    )
+  )
+
+  const form = document.querySelector("#reauth_form")
+  if (!form) alert("Unable to find form with id=reauth_form on page.\n\n" +
+                   "Please notify your administrator")
+  let file_input = document.createElement('input')
+  /* make it hidden first so no flash on screen */
+  file_input.setAttribute("hidden", "")
+  file_input = form.appendChild(file_input)
+  /* Set the rest of the attributes now that is in the DOM.
+     One report said some attributes only worked once it
+     was added to the	DOM.
+  */
+  file_input.setAttribute("type", "file")
+  file_input.setAttribute("name", "@file")
+  /* Put all the files on one file input rather than
+     separate inputs. AFAICT there is no benefit to
+     creating a bunch of single file inputs and assigning
+     the files one by one.
+  */
+  file_input.setAttribute("multiple", "")
+  file_input.files = transfer.files
+
+  console.timeEnd('reattach_files');
+})()	
+</script>
+    
+{% endblock %}

@@ -5,10 +5,11 @@ import shutil, errno, pytest, json, gzip, mimetypes, os, re
 from roundup import date as rdate
 from roundup import i18n
 from roundup import password
-from roundup.anypy.strings import b2s
+from roundup.anypy.strings import b2s, s2b
 from roundup.cgi.wsgi_handler import RequestDispatcher
 from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
+from textwrap import dedent
 from time import sleep
 from .test_postgresql import skip_postgresql
 
@@ -109,6 +110,20 @@ class WsgiSetup(LiveServerTestCase):
         # set up and open a tracker
         cls.instance = db_test_base.setupTracker(cls.dirname, cls.backend)
 
+        # add an auditor that triggers a Reauth
+        with open("%s/detectors/reauth.py" % cls.dirname, "w") as f:
+            auditor = dedent("""
+              from roundup.cgi.exceptions import Reauth
+
+              def trigger_reauth(db, cl, nodeid, newvalues):
+                  if 'realname' in newvalues and not hasattr(db, 'reauth_done'):
+                      raise Reauth('Add an optional message to the user')
+
+              def init(db):
+                  db.user.audit('set', trigger_reauth, priority=110)
+             """)
+            f.write(auditor)
+
         # open the database
         cls.db = cls.instance.open('admin')
 
@@ -116,12 +131,21 @@ class WsgiSetup(LiveServerTestCase):
         cls.db.user.create(username="fred", roles='User',
             password=password.Password('sekrit'), address='fred@example.com')
 
+        # add a user for reauth tests
+        cls.db.user.create(username="reauth",
+                           realname="reauth test user",
+                           password=password.Password("reauth"),
+                           address="reauth@example.com", roles="User")
+
         # set the url the test instance will run at.
         cls.db.config['TRACKER_WEB'] = cls.tracker_web
         # set up mailhost so errors get reported to debuging capture file
         cls.db.config.MAILHOST = "localhost"
         cls.db.config.MAIL_HOST = "localhost"
         cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
+
+        # also report it in the web.
+        cls.db.config.WEB_DEBUG = "yes"
 
         # added to enable csrf forgeries/CORS to be tested
         cls.db.config.WEB_CSRF_ENFORCE_HEADER_ORIGIN = "required"
@@ -336,6 +360,180 @@ class BaseTestCases(WsgiSetup, ClientSetup):
        wsgi server is started with various feature flags
     """
 
+    def test_reauth_workflow(self):
+        """as admin user:
+             change reauth user realname include all fields on the form
+                 also add a dummy file to the submitted request.
+             get back a reauth page/template (look for id="reauth_form")
+             verify hidden input for realname
+             verify hidden input for roles
+             verify the base 64 file content are on the page.
+        
+             submit form with bad password
+             verify error reported
+             verify hidden input for realname
+             (note the file contents will be gone because
+               preserving that requires javascript)
+        
+             enter good password
+             verify on user page (look for
+                              "(the default is" hint for timezone)
+             verify new name present
+             verify success banner
+        """
+        from html.parser import HTMLParser
+        class HTMLExtractForm(HTMLParser):
+            """Custom parser to extract input fields from a form.
+
+               Set the form_label to extract inputs only inside a form
+               with a name or id matching form_label. Default is
+               "reauth_form".
+
+               Set names to a tuple/list/set with the names of the
+               inputs you are interested in. Defalt is None which
+               extracts all inputs on the page with a name property.
+            """
+            def __init__(self, names=None, form_label="reauth_form"):
+                super().__init__()
+                self.fields = {}
+                self.names = names
+                self.form_label = form_label
+                self._inside_form = False
+                
+            def handle_starttag(self, tag, attrs):
+                if tag == 'form':
+                    for attr, value in attrs:
+                        if attr in ('id', 'name') and value == self.form_label:
+                            self._inside_form = True
+                            return
+
+                if not self._inside_form: return
+                
+                if tag == 'input':
+                    field_name = None
+                    field_value = None
+                    for attr, value in attrs:
+                        if attr == 'name':
+                            field_name = value
+                        if attr == 'value':
+                            field_value = value
+
+                    # skip input type="submit" without name
+                    if not field_name: return
+                    
+                    if self.names is None:
+                        self.fields[field_name] = field_value
+                    elif field_name in self.names:
+                        self.fields[field_name] = field_value
+
+            def handle_endtag(self, tag):
+                if tag == "form":
+                    self._inside_form = False
+                    
+            def get_fields(self):
+                return self.fields
+
+
+        # for some reason the lookup works with anydbm but
+        # returns a cursor closed error under postgresql.
+        # adding setup/teardown to TestPostgresWsgiServer
+        # with self.db = self.instance.open('admin') looks like
+        # it caused the wsgi server to hang. So hardcode the id.
+        #  self.db.user.lookup('reauth')
+        reauth_id = '4'
+
+        user_url = "%s/user%s" % (self.url_base(),
+                                  reauth_id)
+
+        session, _response = self.create_login_session()
+        
+        user_page = session.get(user_url)
+        
+        self.assertEqual(user_page.status_code, 200)
+        self.assertTrue(b'reauth' in user_page.content)
+
+        parser = HTMLExtractForm(('@lastactivity', '@csrf'), 'itemSynopsis')
+        parser.feed(user_page.text)
+                                 
+        change = {"realname": "reauth1",
+                  "username": "reauth",
+                  "password": "",
+                  "@confirm@password": "",
+                  "phone": "",
+                  "organisation": "",
+                  "roles": "User",
+                  "timezone": "",
+                  "address": "reauth@example.com",
+                  "alternate_addresses": "",
+                  "@template": "item",
+                  "@required": "username,address",
+                  "@submit_button": "Submit Changes",
+                  "@action": "edit",
+                  **parser.get_fields()
+                  }
+        lastactivity = parser.get_fields()['@lastactivity']
+
+        # make the simple name/value dict into a name/tuple dict
+        # setting tuple[0] to None to indicate pulre string
+        # value. Then we use change2 with file to trigger
+        # multipart/form-data form encoding which preserves fields
+        # with empty values. application/x-www-form-urlencoded forms
+        # have fields with empty values dropped by cgi by default.
+        userpage_change = {key: (None, value) for key, value in change.items()}
+        userpage_change.update({"@file": ("filename.txt", "this is some text")})
+        
+        on_reauth = session.post(user_url, files=userpage_change)
+
+        self.assertIn(b'id="reauth_form"', on_reauth.content)
+        self.assertIn(b'Please enter your password to continue with',
+                      on_reauth.content)
+        # make sure the base64 encoded content for @file is present on
+        # the page. Because we are not running a javascript capable
+        # browser, it is not converted into an actual file input.
+        # But this check shows that a file generated by reauth is trying
+        # to maintain the file input.
+        self.assertIn(b'dGhpcyBpcyBzb21lIHRleHQ=', on_reauth.content)
+
+        parser = HTMLExtractForm()
+        parser.feed(on_reauth.text)
+        fields = parser.get_fields()
+        self.assertEqual(fields["@lastactivity"], lastactivity)
+        self.assertEqual(fields["@next_action"], "edit")
+        self.assertEqual(fields["@action"], "reauth")
+        self.assertEqual(fields["address"], "reauth@example.com")
+        self.assertEqual(fields["phone"], "")
+        self.assertEqual(fields["roles"], "User")
+        self.assertEqual(fields["realname"], "reauth1")
+
+        reauth_fields = {
+            "@reauth_password": (None, "sekret not right"),
+            "submit": (None, " Authorize Change "),
+            }
+        reauth_submit = {key: (None, value) for key, value in fields.items()}
+        reauth_submit.update(reauth_fields)
+
+        fail_reauth = session.post(user_url,
+                                   files=reauth_submit)
+        self.assertIn(b'id="reauth_form"', fail_reauth.content)
+        self.assertIn(b'Please enter your password to continue with',
+                      fail_reauth.content)
+        self.assertIn(b'Password incorrect', fail_reauth.content)
+
+        parser = HTMLExtractForm(('@csrf',))
+        parser.feed(fail_reauth.text)
+        # remeber we are logged in as admin - use admin pw.
+        reauth_submit.update({"@reauth_password": (None, "sekrit"),
+                              "@csrf":
+                                (None, parser.get_fields()['@csrf'])})
+        pass_reauth = session.post(user_url,
+                                   files=reauth_submit)
+        self.assertNotIn(b'id="reauth_form"', pass_reauth.content)
+        self.assertNotIn(b'Please enter your password to continue with',
+                      pass_reauth.content)
+        self.assertIn(b'user %s realname edited ok' % s2b(reauth_id),
+                      pass_reauth.content)
+        self.assertIn(b'(the default is', pass_reauth.content)
+        
     def test_cookie_attributes(self):
         session, _response = self.create_login_session()
 
@@ -1642,12 +1840,32 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         # set up and open a tracker
         cls.instance = db_test_base.setupTracker(cls.dirname, cls.backend)
 
+        # add an auditor that triggers a Reauth
+        with open("%s/detectors/reauth.py" % cls.dirname, "w") as f:
+            auditor = dedent("""
+              from roundup.cgi.exceptions import Reauth
+
+              def trigger_reauth(db, cl, nodeid, newvalues):
+                  if 'realname' in newvalues and not hasattr(db, 'reauth_done'):
+                      raise Reauth('Add an optional message to the user')
+
+              def init(db):
+                  db.user.audit('set', trigger_reauth, priority=110)
+             """)
+            f.write(auditor)
+
         # open the database
         cls.db = cls.instance.open('admin')
 
         # add a user without edit access for status.
         cls.db.user.create(username="fred", roles='User',
             password=password.Password('sekrit'), address='fred@example.com')
+
+        # add a user for reauth tests
+        cls.db.user.create(username="reauth",
+                           realname="reauth test user",
+                           password=password.Password("reauth"),
+                           address="reauth@example.com", roles="User")
 
         # set the url the test instance will run at.
         cls.db.config['TRACKER_WEB'] = cls.tracker_web
@@ -1656,11 +1874,15 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         cls.db.config.MAIL_HOST = "localhost"
         cls.db.config.MAIL_DEBUG = "../_test_tracker_mail.log"
 
+        # also report it in the web.
+        cls.db.config.WEB_DEBUG = "yes"
+
         # added to enable csrf forgeries/CORS to be tested
         cls.db.config.WEB_CSRF_ENFORCE_HEADER_ORIGIN = "required"
         cls.db.config.WEB_ALLOWED_API_ORIGINS = "https://client.com"
         cls.db.config['WEB_CSRF_ENFORCE_HEADER_X-REQUESTED-WITH'] = "required"
 
+        # use native indexer
         cls.db.config.INDEXER = "native-fts"
 
         # disable web login rate limiting. The fast rate of tests
@@ -1678,6 +1900,8 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
         # re-open the database to get the updated INDEXER
         cls.db = cls.instance.open('admin')
 
+        # add an issue to allow testing retrieval.
+        # also used for text searching.
         result = cls.db.issue.create(title="foo bar RESULT")
 
         # add a message to allow retrieval
@@ -1685,6 +1909,16 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
                                    content = "a message foo bar RESULT",
                                    date=rdate.Date(),
                                    messageid="test-msg-id")
+
+        # add a query using @current_user
+        result = cls.db.query.create(
+            klass="issue",
+            name="I created",
+            private_for=None,
+            url=("@columns=title,id,activity,status,assignedto&"
+                 "@sort=activity&@group=priority&@filter=creator&"
+                 "@pagesize=50&@startwith=0&creator=%40current_user")
+            )
 
         cls.db.commit()
         cls.db.close()
@@ -1710,8 +1944,7 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
 
 @skip_requests
 class TestApiRateLogin(WsgiSetup):
-    """Class to run test in BaseTestCases with the cache_tracker
-       feature flag enabled when starting the wsgi server
+    """Test api rate limiting on login use sqlite db.
     """
 
     backend = 'sqlite'

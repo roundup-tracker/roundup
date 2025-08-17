@@ -1,0 +1,130 @@
+<tal:block metal:use-macro="templates/page/macros/icing">
+<title metal:fill-slot="head_title" i18n:translate="">Authorize - <span
+ i18n:name="tracker" tal:replace="config/TRACKER_NAME" /></title>
+<span metal:fill-slot="body_title" tal:omit-tag="python:1"
+ i18n:translate="">Authorize Change</span>
+<td class="content" metal:fill-slot="content">
+
+  <h2>Authorization required</h2>
+
+  <p tal:condition="python:'@reauth_message' in request.client.form"
+     tal:content="request/client/form/@reauth_message/value"></p>
+
+  <p i18n:translate="">The action you requested needs to be
+    authorized.</p>
+  <p i18n:translate="">Please enter your password to continue with
+    your change.</p>
+
+  <form id="reauth_form" method="POST" enctype="multipart/form-data">
+    <input name="@reauth_password" type="password" spellcheck="false" autofocus>
+    <input type="hidden" name="@action" value="reauth">
+    <input type="submit" name="submit" value=" Authorize Change "
+	   i18n:attributes="value">
+    <input name="@csrf" type="hidden"
+           tal:attributes="value python:utils.anti_csrf_nonce()">
+
+      
+    <tal:comment tal:replace="nothing">
+      Embed all fields from the original form as hidden
+      fields. Once the reauth is done, these fields will be
+      processed to make the change that was requested.
+
+      Standard fields like: @action, @csrf and @template are stripped
+      by the code that handles Reauth requests. But there can be a few
+      fields that still need to be stripped based on the template that
+      generated the reauth process.
+
+      Use the templating function to make this easier and safer.
+
+        utils:embed_form_fields(excluded_fields=('fieldname1', 'fieldname2'))
+
+      excluded_fields can be any object with a __contains__ dunder
+      method: lists, set, tuple...
+
+      embed_form_fields encodes values and names safely even if a user
+      uses a name like '"><script>alert("hello")</script>''
+
+      It also base64 encodes the contents of file inputs into pre blocks.
+      The textContent of these blocks is then processed by javascript
+      to recreate a file input.
+    </tal:comment>
+    <tal:x tal:content="structure
+			python:utils.embed_form_fields(('submit',))" />
+  </form>
+
+<script tal:attributes="nonce request/client/client_nonce">
+/* This IIFE decodes the base64 file contents in the pre blocks,
+   creates a new file blob for each one. Then adds a multiple file
+   input and attaches all the files to it.
+
+   I am not crazy about the base64 encoding since it increases size by
+   1/3. But it is included in all browsers natively.
+*/
+
+'use strict';
+
+(function attach_file_data() {
+  console.time('reattach_files');
+
+  /* skip file entries without a name (created by empty file input) */
+  const pre_file_list = document.querySelectorAll(
+    'pre[data-filename]:not([data-filename=""]');
+  /* if no files, skip all this. */
+  if (! pre_file_list.length) {
+    console.timeEnd('reattach_files');
+    return;
+  }
+
+  function base64ToUint8Array(base64String) {
+    // source: google search AI: "turn atob into uint8array javascript"
+
+    // Decode the Base64 string
+    const binaryString = window.atob(base64String);
+
+    // Create a Uint8Array with the same length as the binary string
+    const uint8Array = new Uint8Array(binaryString.length);
+
+    // Populate the Uint8Array with the character codes
+    for (let i = 0; i < binaryString.length; i++) {
+      uint8Array[i] = binaryString.charCodeAt(i);
+    }
+    return uint8Array;
+  }
+
+  const transfer = new DataTransfer();
+
+  pre_file_list.forEach( file =>
+    transfer.items.add(
+      new File([base64ToUint8Array(file.textContent)],
+	       file.dataset.filename,
+	       {"type": file.dataset.mimetype}
+	      )
+    )
+  )
+
+  const form = document.querySelector("#reauth_form")
+  if (!form) alert("Unable to find form with id=reauth_form on page.\n\n" +
+                   "Please notify your administrator")
+  let file_input = document.createElement('input')
+  /* make it hidden first so no flash on screen */
+  file_input.setAttribute("hidden", "")
+  file_input = form.appendChild(file_input)
+  /* Set the rest of the attributes now that is in the DOM.
+     One report said some attributes only worked once it
+     was added to the	DOM.
+  */
+  file_input.setAttribute("type", "file")
+  file_input.setAttribute("name", "@file")
+  /* Put all the files on one file input rather than
+     separate inputs. AFAICT there is no benefit to
+     creating a bunch of single file inputs and assigning
+     the files one by one.
+  */
+  file_input.setAttribute("multiple", "")
+  file_input.files = transfer.files
+
+  console.timeEnd('reattach_files');
+})()	
+</script>
+</td>
+</tal:block>
