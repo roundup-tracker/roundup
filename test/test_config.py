@@ -20,6 +20,7 @@ import fileinput
 import logging
 import os
 import pytest
+import re
 import shutil
 import sys
 import unittest
@@ -1072,14 +1073,14 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
                   "level": "INFO",
                   "formatter": "http",
                   "class": "logging.FileHandler",
-                  "filename": "demo/access.log"
+                  "filename": "_test_instance/access.log"
                 },
                 # logging for roundup.* loggers
                 "roundup": {
                   "level": "DEBUG",
                   "formatter": "standard",
                   "class": "logging.FileHandler",
-                  "filename": "demo/roundup.log"
+                  "filename": "_test_instance/roundup.log"
                 },
                 # print to stdout - fall through for other logging
                 "default": {
@@ -1241,3 +1242,29 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
              "'MANGO'\n")
 
         )
+
+        # broken invalid output directory
+        test_config = config1.replace(
+            ' "_test_instance/access.log"',
+            ' "not_a_test_instance/access.log"')
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        # file is made relative to tracker dir.
+        self.db.config["LOGGING_CONFIG"] = '_test_log_config.json'
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.init_logging()
+
+        # error includes full path which is different on different
+        # CI and dev platforms. So munge the path using re.sub.
+        self.assertEqual(
+            re.sub("directory: \'/.*not_a", 'directory: not_a' ,
+                   cm.exception.args[0]),
+            ("Error loading logging dict from "
+             "_test_instance/_test_log_config.json.\n"
+             "ValueError: Unable to configure handler 'access'\n"
+             "[Errno 2] No such file or directory: "
+             "not_a_test_instance/access.log'\n"
+            )
+        )
+
