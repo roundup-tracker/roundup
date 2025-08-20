@@ -43,6 +43,16 @@ class ParsingOptionError(ConfigurationError):
         return self.args[0]
 
 
+class LoggingConfigError(ConfigurationError):
+    def __init__(self, message, **attrs):
+        super().__init__(message)
+        for key, value in attrs.items():
+            self.__setattr__(key, value)
+
+    def __str__(self):
+        return self.args[0]
+
+
 class NoConfigError(ConfigurationError):
 
     """Raised when configuration loading fails
@@ -2330,12 +2340,95 @@ class CoreConfig(Config):
             self.detectors.reset()
         self.init_logging()
 
+    def load_config_dict_from_json_file(self, filename):
+        import json
+        comment_re = re.compile(
+            r"""^\s*\#.*  # comment at beginning of line possibly indented.
+            |  # or
+            ^(.*)\s\s\s\#.*  # comment char preceeded by at least three spaces.
+            """, re.VERBOSE)
+
+        config_list = []
+        with open(filename) as config_file:
+            for line in config_file:
+                match = comment_re.search(line)
+                if match:
+                    if match.lastindex:
+                        config_list.append(match.group(1) + "\n")
+                    else:
+                        # insert blank line for comment line to
+                        # keep line numbers in sync.
+                        config_list.append("\n")
+                    continue
+                config_list.append(line)
+
+        try:
+            config_dict = json.loads("".join(config_list))
+        except json.decoder.JSONDecodeError as e:
+            error_at_doc_line = e.lineno
+            # subtract 1 - zero index on config_list
+            # remove '\n' for display
+            line = config_list[error_at_doc_line - 1][:-1]
+
+            hint = ""
+            if line.find('#') != -1:
+                hint = "\nMaybe bad inline comment, 3 spaces needed before #."
+
+            raise LoggingConfigError(
+                'Error parsing json logging dict (%(file)s) '
+                'near \n\n  %(line)s\n\n'
+                '%(msg)s: line %(lineno)s column %(colno)s.%(hint)s' %
+                {"file": filename,
+                 "line": line,
+                 "msg": e.msg,
+                 "lineno": error_at_doc_line,
+                 "colno": e.colno,
+                 "hint": hint},
+                config_file=self.filepath,
+                source="json.loads"
+            )
+
+        return config_dict
+
     def init_logging(self):
         _file = self["LOGGING_CONFIG"]
-        if _file and os.path.isfile(_file):
+        if _file and os.path.isfile(_file) and _file.endswith(".ini"):
             logging.config.fileConfig(
                 _file,
                 disable_existing_loggers=self["LOGGING_DISABLE_LOGGERS"])
+            return
+
+        if _file and os.path.isfile(_file) and _file.endswith(".json"):
+            config_dict = self.load_config_dict_from_json_file(_file)
+            try:
+                logging.config.dictConfig(config_dict)
+            except ValueError as e:
+                # docs say these exceptions:
+                #    ValueError, TypeError, AttributeError, ImportError
+                # could be raised, but
+                # looking through the code, it looks like
+                # configure() maps all exceptions (including
+                # ImportError, TypeError) raised by functions to
+                # ValueError.
+                context = "No additional information available."
+                if hasattr(e, '__context__') and e.__context__:
+                    # get additional error info. E.G. if INFO
+                    # is replaced by MANGO, context is:
+                    #    ValueError("Unknown level: 'MANGO'")
+                    # while str(e) is "Unable to configure handler 'access'"
+                    context = e.__context__
+
+                raise LoggingConfigError(
+                    'Error loading logging dict from %(file)s.\n'
+                    '%(msg)s\n%(context)s\n' % {
+                        "file": _file,
+                        "msg": type(e).__name__ + ": " + str(e),
+                        "context": context
+                    },
+                    config_file=self.filepath,
+                    source="dictConfig"
+                )
+
             return
 
         _file = self["LOGGING_FILENAME"]

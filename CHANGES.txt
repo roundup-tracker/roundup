@@ -32,6 +32,8 @@ Features:
 - add support for authorized changes. User can be prompted to enter
   their password to authorize a change. If the user's password is
   properly entered, the change is committed. (John Rouillard)
+- add support for dictConfig style logging configuration. Ini/File
+  style configs will still be supported. (John Rouillard)
 
 2025-07-13 2.5.0
 

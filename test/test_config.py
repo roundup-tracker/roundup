@@ -25,6 +25,7 @@ import sys
 import unittest
 
 from os.path import normpath
+from textwrap import dedent
 
 from roundup import configuration
 from roundup.backends import get_backend, have_backend
@@ -1046,3 +1047,197 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         print(string_rep)
         self.assertIn("nati", string_rep)
         self.assertIn("'whoosh'", string_rep)
+
+    def testDictLoggerConfigViaJson(self):
+
+        # test case broken, comment on version line misformatted
+        config1 = dedent("""
+           {
+              "version": 1,   # only supported version
+              "disable_existing_loggers": false,      # keep the wsgi loggers
+
+              "formatters": {
+                # standard Roundup formatter including context id.
+                  "standard": {
+                    "format": "%(asctime)s %(levelname)s %(name)s:%(module)s %(msg)s"
+                },
+                # used for waitress wsgi server to produce httpd style logs
+                "http": {
+                  "format": "%(message)s"
+                }
+              },
+              "handlers": {
+                # create an access.log style http log file
+                "access": {
+                  "level": "INFO",
+                  "formatter": "http",
+                  "class": "logging.FileHandler",
+                  "filename": "demo/access.log"
+                },
+                # logging for roundup.* loggers
+                "roundup": {
+                  "level": "DEBUG",
+                  "formatter": "standard",
+                  "class": "logging.FileHandler",
+                  "filename": "demo/roundup.log"
+                },
+                # print to stdout - fall through for other logging
+                "default": {
+                  "level": "DEBUG",
+                  "formatter": "standard",
+                  "class": "logging.StreamHandler",
+                  "stream": "ext://sys.stdout"
+                }
+            },
+              "loggers": {
+                "": {
+                  "handlers": [
+                    "default"     # used by wsgi/usgi
+                  ],
+                  "level": "DEBUG",
+                  "propagate": false
+                },
+                # used by roundup.* loggers
+                "roundup": {
+                  "handlers": [
+                    "roundup"
+                  ],
+                  "level": "DEBUG",
+                  "propagate": false   # note pytest testing with caplog requires
+                                       # this to be true
+                },
+                "roundup.hyperdb": {
+                  "handlers": [
+                    "roundup"
+                  ],
+                  "level": "INFO",    # can be a little noisy INFO for production
+                  "propagate": false
+                },
+               "roundup.wsgi": {    # using the waitress framework
+                  "handlers": [
+                    "roundup"
+                  ],
+                  "level": "DEBUG",
+                  "propagate": false
+                },
+               "roundup.wsgi.translogger": {   # httpd style logging
+                  "handlers": [
+                    "access"
+                  ],
+                  "level": "DEBUG",
+                  "propagate": false
+                },
+               "root": {
+                  "handlers": [
+                    "default"
+                  ],
+                  "level": "DEBUG",
+                  "propagate": false
+                }
+              }
+            }
+        """)
+
+        log_config_filename = self.instance.tracker_home \
+            + "/_test_log_config.json"
+
+        # happy path
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(config1)
+            
+        config = self.db.config.load_config_dict_from_json_file(
+            log_config_filename)
+        self.assertIn("version", config)
+        self.assertEqual(config['version'], 1)
+
+        # broken inline comment misformatted
+        test_config = config1.replace(": 1,   #", ": 1, #")
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.load_config_dict_from_json_file(
+                log_config_filename)
+        self.assertEqual(
+            cm.exception.args[0],
+            ('Error parsing json logging dict '
+             '(_test_instance/_test_log_config.json) near \n\n     '
+             '"version": 1, # only supported version\n\nExpecting '
+             'property name enclosed in double quotes: line 3 column 18.\n'
+             'Maybe bad inline comment, 3 spaces needed before #.')
+        )
+
+        # broken trailing , on last dict element
+        test_config = config1.replace(' "ext://sys.stdout"',
+                                      ' "ext://sys.stdout",'
+                                      )
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+            
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.load_config_dict_from_json_file(
+                log_config_filename)
+        self.assertEqual(
+            cm.exception.args[0],
+            ('Error parsing json logging dict '
+             '(_test_instance/_test_log_config.json) near \n\n'
+             '       }\n\nExpecting property name enclosed in double '
+             'quotes: line 37 column 6.')
+        )
+
+        # happy path for init_logging()
+
+        # verify preconditions
+        logger = logging.getLogger("roundup")
+        self.assertEqual(logger.level, 40) # error default from config.ini
+        self.assertEqual(logger.filters, [])
+
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(config1)
+
+        # file is made relative to tracker dir.
+        self.db.config["LOGGING_CONFIG"] = '_test_log_config.json'
+        config = self.db.config.init_logging()
+        self.assertIs(config, None)
+
+        logger = logging.getLogger("roundup")
+        self.assertEqual(logger.level, 10) # debug
+        self.assertEqual(logger.filters, [])
+        
+        # broken invalid format type (int not str)
+        test_config = config1.replace('"format": "%(message)s"',
+                                      '"format": 1234',)
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        # file is made relative to tracker dir.
+        self.db.config["LOGGING_CONFIG"] = '_test_log_config.json'
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.init_logging()
+        self.assertEqual(
+            cm.exception.args[0],
+            ('Error loading logging dict from '
+             '_test_instance/_test_log_config.json.\n'
+             "ValueError: Unable to configure formatter 'http'\n"
+             'expected string or bytes-like object\n')
+        )
+
+        # broken invalid level MANGO
+        test_config = config1.replace(
+            ': "INFO",    # can',
+            ': "MANGO",    # can')
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        # file is made relative to tracker dir.
+        self.db.config["LOGGING_CONFIG"] = '_test_log_config.json'
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.init_logging()
+        self.assertEqual(
+            cm.exception.args[0],
+            ("Error loading logging dict from "
+             "_test_instance/_test_log_config.json.\nValueError: "
+             "Unable to configure logger 'roundup.hyperdb'\nUnknown level: "
+             "'MANGO'\n")
+
+        )

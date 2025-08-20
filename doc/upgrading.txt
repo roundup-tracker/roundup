@@ -133,6 +133,21 @@ date, text etc.) do not need JavaScript to work.
 
 See :ref:`Confirming the User` in the reference manual for details.
 
+Support for dictConfig Logging Configuration (optional)
+-------------------------------------------------------
+
+Roundup's basic log configuration via config.ini has always had the
+ability to use an ini style logging configuration to set levels per
+log channel, control output file rotation etc.
+
+With Roundup 2.6 you can use a JSON like file to configure logging
+using `dictConfig
+<https://docs.python.org/3/library/logging.config.html#logging.config.dictConfig>`_. The
+JSON file format as been enhanced to support comments that are
+stripped before being processed by the logging system.
+
+You can read about the details in the :ref:`admin manual <dictLogConfig>`.
+
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0
