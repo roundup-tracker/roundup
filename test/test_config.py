@@ -415,7 +415,70 @@ class ConfigTest(unittest.TestCase):
         print(type(config._get_option('UMASK')))
 
 
+@pytest.mark.usefixtures("save_restore_logging")
 class TrackerConfig(unittest.TestCase):
+
+    @pytest.fixture(scope="class")
+    def save_restore_logging(self):
+        """Save logger state and try to restore it after all tests in
+           this class have finished.
+
+           The primary test is testDictLoggerConfigViaJson which
+           can change the loggers and break tests that depend on caplog
+        """
+        # Save logger state for root and roundup top level logger
+        loggernames = ("", "roundup")
+
+        # The state attributes to save. Lists are shallow copied
+        state_to_save = ("filters", "handlers", "level", "propagate")
+
+        logger_state = {}
+        for name in loggernames:
+            logger_state[name] = {}
+            roundup_logger = logging.getLogger(name)
+
+            for i in state_to_save:
+                attr = getattr(roundup_logger, i)
+                if isinstance(attr, list):
+                    logger_state[name][i] = attr.copy()
+                else:
+                    logger_state[name][i] = getattr(roundup_logger, i)
+
+        # run all class tests here
+        yield
+
+        # rip down all the loggers leaving the root logger reporting
+        # to stdout.
+        # otherwise logger config is leaking to other tests
+        roundup_loggers = [logging.getLogger(name) for name in
+                           logging.root.manager.loggerDict
+                   if name.startswith("roundup")]
+
+        # cribbed from configuration.py:init_loggers
+        hdlr = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter(
+            '%(asctime)s %(levelname)s %(message)s')
+        hdlr.setFormatter(formatter)
+
+        for logger in roundup_loggers:
+            # no logging API to remove all existing handlers!?!
+            for h in logger.handlers:
+                h.close()
+                logger.removeHandler(h)
+            logger.handlers = [hdlr]
+            logger.setLevel("WARNING")
+            logger.propagate = True  # important as caplog requires this
+
+        # Restore the info we stored before running tests
+        for name in loggernames:
+            local_logger = logging.getLogger(name)
+            for attr in logger_state[name]:
+                setattr(local_logger, attr, logger_state[name][attr])
+
+        # reset logging as well
+        from importlib import reload
+        logging.shutdown()
+        reload(logging)
 
     backend = 'anydbm'
 
@@ -1139,22 +1202,8 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
             }
         """)
 
-        # save roundup logger state
-        loggernames = ("", "roundup")
-        logger_state = {}
-        for name in loggernames:
-            logger_state[name] = {}
-
-            roundup_logger = logging.getLogger("roundup")
-            for i in ("filters", "handlers", "level", "propagate"):
-                attr = getattr(roundup_logger, i)
-                if isinstance(attr, list):
-                    logger_state[name][i] = attr.copy()
-                else:
-                    logger_state[name][i] = getattr(roundup_logger, i)
-
-        log_config_filename = self.instance.tracker_home \
-            + "/_test_log_config.json"
+        log_config_filename = os.path.join(self.instance.tracker_home,
+                                           "_test_log_config.json")
 
         # happy path
         with open(log_config_filename, "w") as log_config_file:
@@ -1176,10 +1225,11 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         self.assertEqual(
             cm.exception.args[0],
             ('Error parsing json logging dict '
-             '(_test_instance/_test_log_config.json) near \n\n     '
+             '(%s) near \n\n     '
              '"version": 1, # only supported version\n\nExpecting '
              'property name enclosed in double quotes: line 3 column 18.\n'
-             'Maybe bad inline comment, 3 spaces needed before #.')
+             'Maybe bad inline comment, 3 spaces needed before #.' %
+             log_config_filename)
         )
 
         # broken trailing , on last dict element
@@ -1198,9 +1248,10 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
             self.assertEqual(
                 cm.exception.args[0],
                 ('Error parsing json logging dict '
-                 '(_test_instance/_test_log_config.json) near \n\n'
-                 '       }\n\nExpecting property name enclosed in double '
-                 'quotes: line 37 column 6.')
+                 '(%s) near \n\n'
+                 '       }\n\n'
+                 'Expecting property name enclosed in double '
+                 'quotes: line 37 column 6.' % log_config_filename)
             )
 
         # 3.13+ diags FIXME
@@ -1211,22 +1262,12 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
             self.assertEqual(
                 cm.exception.args[0],
                 ('Error parsing json logging dict '
-                 '(_test_instance/_test_log_config.json) near \n\n'
-                 '       }\n\nExpecting property name enclosed in double '
-                 'quotes: line 37 column 6.')
+                 '(%s) near \n\n'
+                 '       "stream": "ext://sys.stdout"\n\n'
+                 'Expecting property name enclosed in double '
+                 'quotes: line 37 column 6.' % log_config_filename)
             )
         '''
-
-        '''
-        # comment out as it breaks the logging config for caplog
-        # on test_rest.py:testBadFormAttributeErrorException
-        # for all rdbms backends.
-        # the log ERROR check never gets any info
-
-        # commenting out root logger in config doesn't make it work.
-        # storing root logger and roundup logger state and restoring it
-        # still fails.
-
         # happy path for init_logging()
 
         # verify preconditions
@@ -1269,9 +1310,10 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
                     cm.exception.args[0].replace(
                         "object\n", "object, got 'int'\n"),
                     ('Error loading logging dict from '
-                     '_test_instance/_test_log_config.json.\n'
+                     '%s.\n'
                      "ValueError: Unable to configure formatter 'http'\n"
-                     "expected string or bytes-like object, got 'int'\n")
+                     "expected string or bytes-like object, got 'int'\n" %
+                     log_config_filename)
                 )
 
         # broken invalid level MANGO
@@ -1288,9 +1330,9 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         self.assertEqual(
             cm.exception.args[0],
             ("Error loading logging dict from "
-             "_test_instance/_test_log_config.json.\nValueError: "
+             "%s.\nValueError: "
              "Unable to configure logger 'roundup.hyperdb'\nUnknown level: "
-             "'MANGO'\n")
+             "'MANGO'\n" % log_config_filename)
 
         )
 
@@ -1298,6 +1340,8 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         test_config = config1.replace(
             ' "_test_instance/access.log"',
             ' "not_a_test_instance/access.log"')
+        access_filename = os.path.join("not_a_test_instance", "access.log")
+
         with open(log_config_filename, "w") as log_config_file:
             log_config_file.write(test_config)
 
@@ -1307,51 +1351,22 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
             config = self.db.config.init_logging()
 
         # error includes full path which is different on different
-        # CI and dev platforms. So munge the path using re.sub.
-        self.assertEqual(
-            re.sub("directory: \'/.*not_a", 'directory: not_a' ,
-                   cm.exception.args[0]),
-            ("Error loading logging dict from "
-             "_test_instance/_test_log_config.json.\n"
-             "ValueError: Unable to configure handler 'access'\n"
-             "[Errno 2] No such file or directory: "
-             "not_a_test_instance/access.log'\n"
-            )
-        )
-
-        '''
-        # rip down all the loggers leaving the root logger reporting
-        # to stdout.
-        # otherwise logger config is leaking to other tests
-
-        roundup_loggers = [logging.getLogger(name) for name in
-                   logging.root.manager.loggerDict
-                   if name.startswith("roundup")]
-
-        # cribbed from configuration.py:init_loggers
-        hdlr = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s %(message)s')
-        hdlr.setFormatter(formatter)
-
-        for logger in roundup_loggers:
-            # no logging API to remove all existing handlers!?!
-            for h in logger.handlers:
-                h.close()
-                logger.removeHandler(h)
-            logger.handlers = [hdlr]
-            logger.setLevel("DEBUG")
-            logger.propagate = True
-
-        for name in loggernames:
-            local_logger = logging.getLogger(name)
-            for attr in logger_state[name]:
-                # if I restore handlers state for root logger
-                # I break the test referenced above. -- WHY????
-                if attr == "handlers" and name == "": continue
-                setattr(local_logger, attr, logger_state[name][attr])
-                
-        from importlib import reload
-        logging.shutdown()
-        reload(logging)
+        # CI and dev platforms. So munge the path using re.sub and
+        # replace. Windows needs replace as the full path for windows
+        # to the file has '\\\\' not '\\' when taken from __context__.
+        # E.G.
+        # ("Error loading logging dict from '
+        # '_test_instance\\_test_log_config.json.\nValueError: '
+        # "Unable to configure handler 'access'\n[Errno 2] No such file "
+        # "or directory: "
+        # "'C:\\\\tracker\\\\path\\\\not_a_test_instance\\\\access.log'\n")
+        # sigh.....
+        output = re.sub("directory: \'.*not_a", 'directory: not_a' ,
+                   cm.exception.args[0].replace(r'\\','\\'))
+        target = ("Error loading logging dict from "
+                  "%s.\n"
+                  "ValueError: Unable to configure handler 'access'\n"
+                  "[Errno 2] No such file or directory: "
+                  "%s'\n" % (log_config_filename, access_filename))
+        self.assertEqual(output, target)
 
