@@ -1300,7 +1300,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         # different versions of python have different errors
         # (or no error for this case in 3.7)
         # FIXME remove version check post 3.7 as minimum version
-        if sys.version_info > (3,7):
+        if sys.version_info >= (3, 8, 0):
             with self.assertRaises(configuration.LoggingConfigError) as cm:
                 config = self.db.config.init_logging()
 
