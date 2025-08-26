@@ -2188,7 +2188,7 @@ running::
     roundup-admin -i <tracker_home> table password,id,username
 
 Look for lines starting with ``{CRYPT}``. You can reset the user's
-password using::
+password using [#history-pragma]_ ::
 
     roundup-admin -i <tracker_home>
     roundup> set user16 password=somenewpassword
@@ -2198,6 +2198,14 @@ The example uses interactive mode (indicated by the ``roundup>``
 prompt). This prevents the new password from showing up in the output
 of ps or shell history. The new password will be encrypted using the
 default encryption method (usually pbkdf2).
+
+.. [#history-pragma] If your version of roundup-admin provides history
+  support, you should add ``-P history_features=2`` to the command
+  line or run ``pragma history_features=2`` at the ``roundup>``
+  prompt. This will prevent the command line (and password) from being
+  saved to your history file (usually ``.roundup_admin_history`` in
+  your user's home directory.  You can use ``roundup-admin -i
+  <tracker_home> pragma list`` to see if pragmas are supported.
 
 Enable performance improvement for wsgi mode (optional)
 -------------------------------------------------------

@@ -2151,13 +2151,16 @@ you can put the initialise command and password on the command
 line. But this allows others on the host to see the password (using
 the ps command). To initialise a tracker non-interactively without
 exposing the password, create a file (e.g init_tracker) set to mode
-600 (so only the owner can read it) with the contents:
+600 (so only the owner can read it) with the contents::
 
    initialise admin_password
 
-and feed it to roundup-admin on standard input. E.G.
+and feed it to roundup-admin on standard input. E.G.::
 
-  cat init_tracker | roundup-admin -i tracker_dir
+  cat init_tracker | roundup-admin -i tracker_dir -P history_features=2
+
+setting the pragma ``history_features=2`` prevents storing the command
+in the user's history file.
 
 (for more details see https://issues.roundup-tracker.org/issue2550789.)
 
