@@ -949,9 +949,9 @@ bug. Splitting the large script into two parts:
 allows use of ``structure`` on the script with no replaced
 strings should it be required for your tracker.
 
-.. [#markdown-note] If you are using markdown formatting for your tracker's notes,
-   the user will see the markdown label rather than the long
-   (suspicious) URL. You may want to add something like::
+.. [#markdown-note] If you are using markdown formatting for your
+   tracker's notes, the user will see the markdown label rather than
+   the long (suspicious) URL. You may want to add something like::
 
      a[href*=\@template]::after {
          content: ' [' attr(href) ']';
