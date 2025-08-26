@@ -1321,6 +1321,12 @@ user to submit each sensitive property separately.  For example::
 		   'at the same time is not allowed. Please '
 		   'submit two changes.')
 
+   if db.tx_Source not in ("web"):
+      # the user is using rest, xmlrpc, command line,
+      # email (unlikely) which don't support interactive
+      # verification
+      return
+
    if 'password' in newvalues and not hasattr(db, 'reauth_done'):
       raise Reauth()
 

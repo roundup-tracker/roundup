@@ -1836,6 +1836,12 @@ contents::
            # the user has confirmed their identity
            return
 
+	if db.tx_Source not in ("web"):
+	   # the user is using rest, xmlrpc, command line,
+	   # email (unlikely) which don't support interactive
+	   # verification
+	   return
+	   
         # if the password or email are changing, require id confirmation
         if 'password' in newvalues:
             raise Reauth('Add an optional message to the user')
