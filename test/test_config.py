@@ -1117,35 +1117,35 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         # good base test case
         config1 = dedent("""
            {
-              "version": 1,   # only supported version
-              "disable_existing_loggers": false,      # keep the wsgi loggers
+              "version": 1,   // only supported version
+              "disable_existing_loggers": false,      // keep the wsgi loggers
 
               "formatters": {
-                # standard Roundup formatter including context id.
+                // standard Roundup formatter including context id.
                   "standard": {
                     "format": "%(asctime)s %(levelname)s %(name)s:%(module)s %(msg)s"
                 },
-                # used for waitress wsgi server to produce httpd style logs
+                // used for waitress wsgi server to produce httpd style logs
                 "http": {
                   "format": "%(message)s"
                 }
               },
               "handlers": {
-                # create an access.log style http log file
+                // create an access.log style http log file
                 "access": {
                   "level": "INFO",
                   "formatter": "http",
                   "class": "logging.FileHandler",
                   "filename": "_test_instance/access.log"
                 },
-                # logging for roundup.* loggers
+                // logging for roundup.* loggers
                 "roundup": {
                   "level": "DEBUG",
                   "formatter": "standard",
                   "class": "logging.FileHandler",
                   "filename": "_test_instance/roundup.log"
                 },
-                # print to stdout - fall through for other logging
+                // print to stdout - fall through for other logging
                 "default": {
                   "level": "DEBUG",
                   "formatter": "standard",
@@ -1156,35 +1156,35 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
               "loggers": {
                 "": {
                   "handlers": [
-                    "default"     # used by wsgi/usgi
+                    "default"     // used by wsgi/usgi
                   ],
                   "level": "DEBUG",
                   "propagate": false
                 },
-                # used by roundup.* loggers
+                // used by roundup.* loggers
                 "roundup": {
                   "handlers": [
                     "roundup"
                   ],
                   "level": "DEBUG",
-                  "propagate": false   # note pytest testing with caplog requires
-                                       # this to be true
+                  "propagate": false   // note pytest testing with caplog requires
+                                       // this to be true
                 },
                 "roundup.hyperdb": {
                   "handlers": [
                     "roundup"
                   ],
-                  "level": "INFO",    # can be a little noisy INFO for production
+                  "level": "INFO",    // can be a little noisy INFO for production
                   "propagate": false
                 },
-               "roundup.wsgi": {    # using the waitress framework
+               "roundup.wsgi": {    // using the waitress framework
                   "handlers": [
                     "roundup"
                   ],
                   "level": "DEBUG",
                   "propagate": false
                 },
-               "roundup.wsgi.translogger": {   # httpd style logging
+               "roundup.wsgi.translogger": {   // httpd style logging
                   "handlers": [
                     "access"
                   ],
@@ -1215,7 +1215,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         self.assertEqual(config['version'], 1)
 
         # broken inline comment misformatted
-        test_config = config1.replace(": 1,   #", ": 1, #")
+        test_config = config1.replace(": 1,   //", ": 1, //")
         with open(log_config_filename, "w") as log_config_file:
             log_config_file.write(test_config)
 
@@ -1226,9 +1226,9 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
             cm.exception.args[0],
             ('Error parsing json logging dict '
              '(%s) near \n\n     '
-             '"version": 1, # only supported version\n\nExpecting '
+             '"version": 1, // only supported version\n\nExpecting '
              'property name enclosed in double quotes: line 3 column 18.\n'
-             'Maybe bad inline comment, 3 spaces needed before #.' %
+             'Maybe bad inline comment, 3 spaces needed before //.' %
              log_config_filename)
         )
 
@@ -1318,8 +1318,8 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
 
         # broken invalid level MANGO
         test_config = config1.replace(
-            ': "INFO",    # can',
-            ': "MANGO",    # can')
+            ': "INFO",    // can',
+            ': "MANGO",    // can')
         with open(log_config_filename, "w") as log_config_file:
             log_config_file.write(test_config)
 

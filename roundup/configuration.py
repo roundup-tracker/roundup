@@ -2343,9 +2343,9 @@ class CoreConfig(Config):
     def load_config_dict_from_json_file(self, filename):
         import json
         comment_re = re.compile(
-            r"""^\s*\#.*  # comment at beginning of line possibly indented.
+            r"""^\s*//#.*  # comment at beginning of line possibly indented.
             |  # or
-            ^(.*)\s\s\s\#.*  # comment char preceeded by at least three spaces.
+            ^(.*)\s\s\s\//.*  # comment char preceeded by at least three spaces.
             """, re.VERBOSE)
 
         config_list = []
@@ -2371,8 +2371,8 @@ class CoreConfig(Config):
             line = config_list[error_at_doc_line - 1][:-1]
 
             hint = ""
-            if line.find('#') != -1:
-                hint = "\nMaybe bad inline comment, 3 spaces needed before #."
+            if line.find('//') != -1:
+                hint = "\nMaybe bad inline comment, 3 spaces needed before //."
 
             raise LoggingConfigError(
                 'Error parsing json logging dict (%(file)s) '
