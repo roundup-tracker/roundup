@@ -2067,6 +2067,9 @@ The basic usage is:
  Commands may be abbreviated as long as the abbreviation
  matches only one command, e.g. l == li == lis == list.
 
+In interactive mode entering: ``q``, ``quit``, or ``exit`` alone on a
+line will exit the program.
+
 One thing to note, The ``-u user`` setting does not currently operate
 like a user logging in via the web. The user running roundup-admin
 must have read access to the tracker home directory. As a result the

@@ -2415,7 +2415,8 @@ Desc: %(description)s
             except ValueError:
                 continue        # Ignore invalid quoted token
             if not args: continue  # noqa: E701
-            if args[0] in ('quit', 'exit'): break   # noqa: E701
+            if args[0] in ('q', 'quit', 'exit') and len(args) == 1:
+                break   # noqa: E701
             self.run_command(args)
 
         # exit.. check for transactions

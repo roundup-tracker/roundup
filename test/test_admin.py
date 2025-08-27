@@ -150,7 +150,7 @@ class AdminTest(object):
         expected = 'ready for input.\nType "help" for help.'
         self.assertEqual(expected, out[-1*len(expected):])
 
-        inputs = iter(["list user", "quit"])
+        inputs = iter(["list user", "q"])
 
         AdminTool.my_input = lambda _self, _prompt: next(inputs)
 
@@ -1067,7 +1067,7 @@ class AdminTest(object):
 
         # must set verbose to see _reopen_tracker hidden setting.
         # and to get "Reopening tracker" verbose log output
-        inputs = iter(["pragma verbose=true", "pragma list", "quit"])
+        inputs = iter(["pragma verbose=true", "pragma list", "exit"])
         AdminTool.my_input = lambda _self, _prompt: next(inputs)
 
         self.install_init()

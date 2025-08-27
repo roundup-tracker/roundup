@@ -34,6 +34,8 @@ Features:
   properly entered, the change is committed. (John Rouillard)
 - add support for dictConfig style logging configuration. Ini/File
   style configs will still be supported. (John Rouillard)
+- add 'q' as alias for quit in roundup-admin interactive mode. (John
+  Rouillard)
 
 2025-07-13 2.5.0
 
