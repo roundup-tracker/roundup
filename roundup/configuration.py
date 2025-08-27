@@ -2392,45 +2392,56 @@ class CoreConfig(Config):
 
     def init_logging(self):
         _file = self["LOGGING_CONFIG"]
-        if _file and os.path.isfile(_file) and _file.endswith(".ini"):
-            logging.config.fileConfig(
-                _file,
-                disable_existing_loggers=self["LOGGING_DISABLE_LOGGERS"])
+        if _file and os.path.isfile(_file):
+            if _file.endswith(".ini"):
+                logging.config.fileConfig(
+                    _file,
+                    disable_existing_loggers=self["LOGGING_DISABLE_LOGGERS"])
+            elif _file.endswith(".json"):
+                config_dict = self.load_config_dict_from_json_file(_file)
+                try:
+                    logging.config.dictConfig(config_dict)
+                except ValueError as e:
+                    # docs say these exceptions:
+                    #    ValueError, TypeError, AttributeError, ImportError
+                    # could be raised, but
+                    # looking through the code, it looks like
+                    # configure() maps all exceptions (including
+                    # ImportError, TypeError) raised by functions to
+                    # ValueError.
+                    context = "No additional information available."
+                    if hasattr(e, '__context__') and e.__context__:
+                        # get additional error info. E.G. if INFO
+                        # is replaced by MANGO, context is:
+                        #    ValueError("Unknown level: 'MANGO'")
+                        # while str(e) is "Unable to configure handler 'access'"
+                        context = e.__context__
+
+                    raise LoggingConfigError(
+                        'Error loading logging dict from %(file)s.\n'
+                        '%(msg)s\n%(context)s\n' % {
+                            "file": _file,
+                            "msg": type(e).__name__ + ": " + str(e),
+                            "context": context
+                        },
+                        config_file=self.filepath,
+                        source="dictConfig"
+                    )
+            else:
+                raise OptionValueError(
+                    self.options['LOGGING_CONFIG'],
+                    _file,
+                    "Unable to load logging config file. "
+                    "File extension must be '.ini' or '.json'.\n"
+                    )
+                
             return
 
-        if _file and os.path.isfile(_file) and _file.endswith(".json"):
-            config_dict = self.load_config_dict_from_json_file(_file)
-            try:
-                logging.config.dictConfig(config_dict)
-            except ValueError as e:
-                # docs say these exceptions:
-                #    ValueError, TypeError, AttributeError, ImportError
-                # could be raised, but
-                # looking through the code, it looks like
-                # configure() maps all exceptions (including
-                # ImportError, TypeError) raised by functions to
-                # ValueError.
-                context = "No additional information available."
-                if hasattr(e, '__context__') and e.__context__:
-                    # get additional error info. E.G. if INFO
-                    # is replaced by MANGO, context is:
-                    #    ValueError("Unknown level: 'MANGO'")
-                    # while str(e) is "Unable to configure handler 'access'"
-                    context = e.__context__
-
-                raise LoggingConfigError(
-                    'Error loading logging dict from %(file)s.\n'
-                    '%(msg)s\n%(context)s\n' % {
-                        "file": _file,
-                        "msg": type(e).__name__ + ": " + str(e),
-                        "context": context
-                    },
-                    config_file=self.filepath,
-                    source="dictConfig"
-                )
-
-            return
-
+        if _file:
+            raise OptionValueError(self.options['LOGGING_CONFIG'],
+                                   _file,
+                                   "Unable to find logging config file.")
+        
         _file = self["LOGGING_FILENAME"]
         # set file & level on the roundup logger
         logger = logging.getLogger('roundup')

@@ -1370,3 +1370,41 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
                   "%s'\n" % (log_config_filename, access_filename))
         self.assertEqual(output, target)
 
+    def test_missing_logging_config_file(self):
+        saved_config = self.db.config['LOGGING_CONFIG']
+        
+        self.db.config['LOGGING_CONFIG'] = 'logging.json'
+        
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            self.db.config.init_logging()
+
+        self.assertEqual(cm.exception.args[1], "_test_instance/logging.json")
+        self.assertEqual(cm.exception.args[2],
+                         "Unable to find logging config file.")
+
+        self.db.config['LOGGING_CONFIG'] = 'logging.ini'
+
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            self.db.config.init_logging()
+
+        self.assertEqual(cm.exception.args[1], "_test_instance/logging.ini")
+        self.assertEqual(cm.exception.args[2],
+                         "Unable to find logging config file.")
+
+        self.db.config['LOGGING_CONFIG'] = saved_config
+        
+    def test_unknown_logging_config_file_type(self):
+        saved_config = self.db.config['LOGGING_CONFIG']
+
+        self.db.config['LOGGING_CONFIG'] = 'schema.py'
+
+        
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            self.db.config.init_logging()
+
+        self.assertEqual(cm.exception.args[1], "_test_instance/schema.py")
+        self.assertEqual(cm.exception.args[2],
+                         "Unable to load logging config file. "
+                         "File extension must be '.ini' or '.json'.\n")
+
+        self.db.config['LOGGING_CONFIG'] = saved_config
