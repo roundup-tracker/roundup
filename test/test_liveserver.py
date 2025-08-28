@@ -256,6 +256,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
 
     @given(sampled_from(['@verbose', '@page_size', '@page_index']),
            text(min_size=1))
+    @example("@verbose", "0\r#")
     @example("@verbose", "1#")
     @example("@verbose", "#1stuff")
     @example("@verbose", "0 #stuff")
@@ -271,10 +272,18 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
         f = session.get(url, params=query)
         try:
             # test case '0 #', '0#', '12345#stuff' '12345&stuff'
-            match = re.match(r'(^[0-9]*\s*)[#&]', value)
+            # Normalize like a server does by breaking value at
+            # # or & as these mark a fragment or subsequent
+            # query arg and are not part of the value.
+            match = re.match(r'^(.*)[#&]', value)
             if match is not None:
                 value = match[1]
-            elif int(value) >= 0:
+                # parameter is ignored by server if empty.
+                # so set it to 0 to force 200 status code.
+                if value == "":
+                    value = "0"
+
+            if int(value) >= 0:
                 self.assertEqual(f.status_code, 200)
         except ValueError:
             # test case '#' '#0', '&', '&anything here really'
@@ -285,6 +294,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
                 self.assertEqual(f.status_code, 400)
 
     @given(sampled_from(['@verbose']), text(min_size=1))
+    @example("@verbose", "0\r#")
     @example("@verbose", "10#")
     @example("@verbose", u'Ø\U000dd990')
     @settings(max_examples=_max_examples,
@@ -298,10 +308,18 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
         f = session.get(url, params=query)
         try:
             # test case '0#' '12345#stuff' '12345&stuff'
-            match = re.match('(^[0-9]*)[#&]', value)
+            # Normalize like a server does by breaking value at
+            # # or & as these mark a fragment or subsequent
+            # query arg and are not part of the value.
+            match = re.match(r'^(.*)[#&]', value)
             if match is not None:
                 value = match[1]
-            elif int(value) >= 0:
+                # parameter is ignored by server if empty.
+                # so set it to 0 to force 200 status code.
+                if value == "":
+                    value = "0"
+
+            if int(value) >= 0:
                 self.assertEqual(f.status_code, 200)
         except ValueError:
             # test case '#' '#0', '&', '&anything here really'
