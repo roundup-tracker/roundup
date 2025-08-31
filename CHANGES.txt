@@ -36,6 +36,9 @@ Features:
   style configs will still be supported. (John Rouillard)
 - add 'q' as alias for quit in roundup-admin interactive mode. (John
   Rouillard)
+- add readline command to roundup-admin to list history, control input
+  mode etc. Also support bang (!) commands to rerun commands in history
+  or put them in the input buffer for editing. (John Rouillard)
 
 2025-07-13 2.5.0
 

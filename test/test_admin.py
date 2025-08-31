@@ -5,8 +5,17 @@
 #
 
 from __future__ import print_function
+import difflib
+import errno
 import fileinput
-import unittest, os, shutil, errno, sys, difflib, re
+import io
+import os
+import platform
+import pytest
+import re
+import shutil
+import sys
+import unittest
 
 from roundup.admin import AdminTool
 
@@ -82,6 +91,10 @@ class AdminTest(object):
     def setUp(self):
         self.dirname = '_test_admin'
 
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, monkeypatch):
+        self._monkeypatch = monkeypatch
+
     def tearDown(self):
         try:
             shutil.rmtree(self.dirname)
@@ -148,7 +161,9 @@ class AdminTest(object):
         print(ret)
         self.assertTrue(ret == 0)
         expected = 'ready for input.\nType "help" for help.'
-        self.assertEqual(expected, out[-1*len(expected):])
+        # back up by 30 to make sure 'ready for input' in slice.
+        self.assertIn(expected,
+                      "\n".join(out.split('\n')[-3:-1]))
 
         inputs = iter(["list user", "q"])
 
@@ -161,8 +176,10 @@ class AdminTest(object):
         
         print(ret)
         self.assertTrue(ret == 0)
-        expected = 'help.\n   1: admin\n   2: anonymous'
-        self.assertEqual(expected, out[-1*len(expected):])
+        expected = '   1: admin\n   2: anonymous'
+
+        self.assertEqual(expected,
+                         "\n".join(out.split('\n')[-2:]))
 
 
         AdminTool.my_input = orig_input
@@ -1104,7 +1121,7 @@ class AdminTest(object):
         
         print(ret)
         self.assertTrue(ret == 0)
-        self.assertEqual('Reopening tracker', out[2])
+        self.assertEqual('Reopening tracker', out[3])
         expected = '   _reopen_tracker=True'
         self.assertIn(expected, out)
 
@@ -1133,7 +1150,7 @@ class AdminTest(object):
                 ret = self.admin.main()
 
             out = out.getvalue().strip().split('\n')
-        
+
             print(ret)
             self.assertTrue(ret == 0)
             expected = '   verbose=True'
@@ -1155,7 +1172,7 @@ class AdminTest(object):
                 ret = self.admin.main()
 
             out = out.getvalue().strip().split('\n')
-        
+
             print(ret)
             self.assertTrue(ret == 0)
             expected = '   verbose=False'
@@ -1809,6 +1826,325 @@ Role "user":
         err = err.getvalue().strip()
         self.assertEqual(out, expected)
         self.assertEqual(len(err), 0)
+
+    def testReadline(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+
+        '''history didn't work when testing. The commands being
+           executed aren't being sent into the history
+           buffer. Failed under both windows and linux.
+
+           Explicitly using: readline.set_auto_history(True) in
+           roundup-admin setup had no effect.
+
+           Looks like monkeypatching stdin is the issue since:
+        
+              printf... | roundup-admin | tee
+
+           doesn't work either when printf uses
+
+              "readline vi\nreadline emacs\nreadline history\nquit\n"
+
+           Added explicit readline.add_history() if stdin or
+           stdout are not a tty to admin.py:interactive().
+
+           Still no way to drive editing with control/escape
+           chars to verify editing mode, check keybindings. Need
+           to trick Admintool to believe it's running on a
+           tty/pty/con in linux/windows to remove my hack.
+        '''
+
+        # Put the init file in the tracker test directory so
+        # we don't clobber user's actual init file.
+        original_home = None
+        if 'HOME' in os.environ:
+            original_home = os.environ['HOME']
+            os.environ['HOME'] = self.dirname
+
+        # same but for windows.
+        original_userprofile = None
+        if 'USERPROFILE' in os.environ:
+            # windows
+            original_userprofile = os.environ['USERPROFILE']
+            os.environ['USERPROFILE'] = self.dirname
+
+        inputs = ["readline vi", "readline emacs", "readline reload", "quit"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        # disable loading and saving history
+        self.admin.settings['history_features'] = 3
+
+        # verify correct init file is being
+        self.assertIn(os.path.join(os.path.expanduser("~"),
+                                   ".roundup_admin_rlrc"),
+                      self.admin.get_readline_init_file())
+
+        # No exception is raised for missing file
+        # under pyreadline3. Detect pyreadline3 looking for:
+        #   readline.Readline
+        pyreadline = hasattr(self.admin.readline, "Readline")
+
+        sys.argv=['main', '-i', self.dirname]
+
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+            out = out.getvalue().strip().split('\n')
+            
+        print(ret)
+        self.assertTrue(ret == 0)
+
+        expected = 'roundup> Enabled vi mode.'
+        self.assertIn(expected, out)
+
+        expected = 'roundup> Enabled emacs mode.'
+        self.assertIn(expected, out)
+
+        if not pyreadline:
+            expected = ('roundup> Init file %s '
+                        'not found.' % self.admin.get_readline_init_file())
+            self.assertIn(expected, out)
+
+        # --- test 2
+        
+        inputs = ["readline reload", "q"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        with open(self.admin.get_readline_init_file(),
+                  "w") as config_file:
+            # there is no config line that works for all
+            # pyreadline3 (windows), readline(*nix), or editline
+            # (mac). So write empty file.
+            config_file.write("")
+
+        # disable loading and saving history
+        self.admin.settings['history_features'] = 3
+        sys.argv=['main', '-i', self.dirname]
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+            out = out.getvalue().strip().split('\n')
+            
+        print(ret)
+        self.assertTrue(ret == 0)
+
+        expected = ('roundup> File %s reloaded.' %
+                    self.admin.get_readline_init_file())
+        
+        self.assertIn(expected, out)
+
+        # === cleanup
+        if original_home:
+            os.environ['HOME'] = original_home
+        if original_userprofile:
+            os.environ['USERPROFILE'] = original_userprofile
+
+    def test_admin_history_save_load(self):
+        # To prevent overwriting/reading user's actual history,
+        # change HOME enviroment var.
+        original_home = None
+        if 'HOME' in os.environ:
+            original_home = os.environ['HOME']
+            os.environ['HOME'] = self.dirname
+        os.environ['HOME'] = self.dirname
+
+        # same idea but windows
+        original_userprofile = None
+        if 'USERPROFILE' in os.environ:
+            # windows
+            original_userprofile = os.environ['USERPROFILE']
+            os.environ['USERPROFILE'] = self.dirname
+
+        # -- history test
+        inputs = ["readline history", "q"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        # use defaults load/save history
+        self.admin.settings['history_features'] = 0
+        
+        sys.argv=['main', '-i', self.dirname]
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+
+        expected = 'roundup> history size 1'
+        self.assertIn(expected, out)
+
+        expected = '  1 readline history'
+        self.assertIn(expected, out)
+
+        # -- history test 3 reruns readline vi
+        inputs = ["readline vi", "readline history", "!3",
+                  "readline history", "!23s", "q"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        # preserve directory self.install_init()
+        self.admin=AdminTool()
+
+        # default use all features
+        #self.admin.settings['history_features'] = 3
+        sys.argv=['main', '-i', self.dirname]
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+
+        # 4 includes 2 commands in saved history
+        expected = 'roundup> history size 4'
+        self.assertIn(expected, out)
+
+        expected = '  4 readline history'
+        self.assertIn(expected, out)
+
+        # Shouldn't work on windows.
+        if platform.system() != "Windows":
+            expected = '  5 readline vi'
+            self.assertIn(expected, out)
+        else:
+            # PYREADLINE UNDER WINDOWS
+            # py3readline on windows can't replace
+            # command strings in history when connected
+            # to a console. (Console triggers autosave and
+            # I have to turn !3 into it's substituted value.)
+            # but in testing autosave is disabled so
+            # I don't get the !number but the actual command
+            # It should have 
+            #
+            #             expected = '  5 !3'
+            #
+            # but it is the same as the unix case.
+            expected = '  5 readline vi'
+            self.assertIn(expected, out)
+
+        expected = ('roundup> Unknown command "!23s" ("help commands" '
+                    'for a list)')
+        self.assertIn(expected, out)
+        
+        print(out)
+        # can't test !#:p mode as readline editing doesn't work
+        # if not in a tty.
+        
+        # === cleanup
+        if original_home:
+            os.environ['HOME'] = original_home
+        if original_userprofile:
+            os.environ['USERPROFILE'] = original_userprofile
+        
+    def test_admin_readline_history(self):
+        original_home = os.environ['HOME']
+        # To prevent overwriting/reading user's actual history,
+        # change HOME enviroment var.
+        os.environ['HOME'] = self.dirname
+
+        original_userprofile = None
+        if 'USERPROFILE' in os.environ:
+            # windows
+            original_userprofile = os.environ['USERPROFILE']
+            os.environ['USERPROFILE'] = self.dirname
+
+        # -- history test
+        inputs = ["readline history", "q"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        # disable loading, but save history
+        self.admin.settings['history_features'] = 3
+        sys.argv=['main', '-i', self.dirname]
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+
+        expected = 'roundup> history size 1'
+        self.assertIn(expected, out)
+
+        expected = '  1 readline history'
+        self.assertIn(expected, out)
+
+        # -- history test
+        inputs = ["readline vi", "readline history", "!1", "!2", "q"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        # disable loading, but save history
+        self.admin.settings['history_features'] = 3
+        sys.argv=['main', '-i', self.dirname]
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+
+        expected = 'roundup> history size 2'
+        self.assertIn(expected, out)
+
+        expected = '  2 readline history'
+        self.assertIn(expected, out)
+
+        # doesn't work on windows.
+        if platform.system() != "Windows":
+            expected = '  4 readline history'
+            self.assertIn(expected, out)
+        else:
+            # See 
+            # PYREADLINE UNDER WINDOWS
+            # elsewhere in this file for why I am not checking for
+            #  expected = '  4 !2'
+            expected = '  4 readline history'
+            self.assertIn(expected, out)
+
+        # can't test !#:p mode as readline editing doesn't work
+        # if not in a tty.
+        
+        # === cleanup
+        os.environ['HOME'] = original_home
+        if original_userprofile:
+            os.environ['USERPROFILE'] = original_userprofile
 
     def testSpecification(self):
         ''' Note the tests will fail if you run this under pdb.

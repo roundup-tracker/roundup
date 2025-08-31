@@ -34,8 +34,8 @@ import sys
 
 import roundup.instance
 from roundup import __version__ as roundup_version
-from roundup import date, hyperdb, init, password, token_r
-from roundup.anypy import scandir_
+from roundup import date, hyperdb, init, password, support, token_r
+from roundup.anypy import scandir_  # noqa: F401 define os.scandir
 from roundup.anypy.my_input import my_input
 from roundup.anypy.strings import repr_export
 from roundup.configuration import (
@@ -49,7 +49,6 @@ from roundup.configuration import (
 )
 from roundup.exceptions import UsageError
 from roundup.i18n import _, get_translation
-from roundup import support
 
 try:
     from UserDict import UserDict
@@ -92,6 +91,13 @@ class AdminTool:
 
         Additional help may be supplied by help_*() methods.
     """
+
+    # import here to make AdminTool.readline accessible or
+    # mockable from tests.
+    try:
+        import readline   # noqa: I001, PLC0415
+    except ImportError:
+        readline = None
 
     # Make my_input a property to allow overriding in testing.
     # my_input is imported in other places, so just set it from
@@ -1815,6 +1821,111 @@ Erase it? Y/N: """) % locals())
                              type(self.settings[setting]).__name__)
         self.settings[setting] = value
 
+    def do_readline(self, args):
+        ''"""Usage: readline initrc_line | 'emacs' | 'history' | 'reload' | 'vi'
+
+        Using 'reload' will reload the file ~/.roundup_admin_rlrc.
+        'history' will show (and number) all commands in the history.
+
+        You can change input mode using the 'emacs' or 'vi' parameters.
+        The default is emacs. This is the same as using::
+
+           readline set editing-mode emacs
+
+        or::
+
+           readline set editing-mode vi
+
+        Any command that can be placed in a readline .inputrc file can
+        be executed using the readline command. You can assign
+        dump-variables to control O using::
+
+           readline Control-o: dump-variables
+
+        Assigning multi-key values also works.
+
+        pyreadline3 support on windows:
+
+          Mode switching doesn't work, emacs only.
+
+          Binding single key commands works with::
+
+            readline Control-w: history-search-backward
+
+          Multiple key sequences don't work.
+
+          Setting values may work. Difficult to tell because the library
+          has no way to view the live settings.
+
+        """
+
+        # TODO: allow history 20 # most recent 20 commands
+        #    history 100-200 # show commands 100-200
+
+        if not self.readline:
+            print(_("Readline support is not available."))
+            return
+        # The if test allows pyreadline3 settings like:
+        #   bind_exit_key("Control-z") get through to
+        #   parse_and_bind(). It is not obvious that this form of
+        #   command is supported. Pyreadline3 is supposed to parse
+        #   readline style commands, so we use those for emacs/vi.
+        #   Trying set-mode(...) as in the pyreadline3 init file
+        #   didn't work in testing.
+
+        if len(args) == 1 and args[0].find('(') == -1:
+            if args[0] == "vi":
+                self.readline.parse_and_bind("set editing-mode vi")
+                print(_("Enabled vi mode."))
+            elif args[0] == "emacs":
+                self.readline.parse_and_bind("set editing-mode emacs")
+                print(_("Enabled emacs mode."))
+            elif args[0] == "history":
+                print("history size",
+                      self.readline.get_current_history_length())
+                print('\n'.join([
+                    str("%3d " % (i + 1) +
+                        self.readline.get_history_item(i + 1))
+                    for i in range(
+                            self.readline.get_current_history_length())
+                ]))
+            elif args[0] == "reload":
+                try:
+                    # readline is a singleton. In testing previous
+                    # tests using read_init_file are loading from ~
+                    # not the test directory because it doesn't
+                    # matter.  But for reload we want to test with the
+                    # init file under the test directory. Calling
+                    # read_init_file() calls with the ~/.. init
+                    # location and I can't seem to reset it
+                    # or the readline state.
+                    # So call with explicit file here.
+                    self.readline.read_init_file(
+                        self.get_readline_init_file())
+                except FileNotFoundError as e:
+                    # If user invoked reload explicitly, report
+                    # if file not found.
+                    #
+                    # DOES NOT WORK with pyreadline3. Exception
+                    # is not raised if file is missing.
+                    #
+                    # Also e.filename is None under cygwin. A
+                    # simple test case does set e.filename
+                    # correctly?? sigh.  So I just call
+                    # get_readline_init_file again to get
+                    # filename.
+                    fn = e.filename or self.get_readline_init_file()
+                    print(_("Init file %s not found.") % fn)
+                else:
+                    print(_("File %s reloaded.") %
+                          self.get_readline_init_file())
+            else:
+                print(_("Unknown readline parameter %s") % args[0])
+            return
+
+        self.readline.parse_and_bind(" ".join(args))
+        return
+
     designator_re = re.compile('([A-Za-z]+)([0-9]+)$')
     designator_rng = re.compile('([A-Za-z]+):([0-9]+)-([0-9]+)$')
 
@@ -2365,29 +2476,34 @@ Desc: %(description)s
         # setting the bit disables the feature, so use not.
         return not self.settings['history_features'] & features[feature]
 
+    def get_readline_init_file(self):
+        return os.path.join(os.path.expanduser("~"),
+                                ".roundup_admin_rlrc")
+
     def interactive(self):
         """Run in an interactive mode
         """
         print(_('Roundup %s ready for input.\nType "help" for help.')
                 % roundup_version)
 
-        initfile = os.path.join(os.path.expanduser("~"),
-                                ".roundup_admin_rlrc")
+        initfile = self.get_readline_init_file()
         histfile = os.path.join(os.path.expanduser("~"),
                                 ".roundup_admin_history")
 
-        try:
-            import readline
+        if self.readline:
+            # clear any history that might be left over from caller
+            # when reusing AdminTool from tests or program.
+            self.readline.clear_history()
             try:
                 if self.history_features('load_rc'):
-                    readline.read_init_file(initfile)
-            except IOError: # FileNotFoundError under python3
+                    self.readline.read_init_file(initfile)
+            except FileNotFoundError:
                 # file is optional
                 pass
 
             try:
                 if self.history_features('load_history'):
-                    readline.read_history_file(histfile)
+                    self.readline.read_history_file(histfile)
             except IOError:  # FileNotFoundError under python3
                 # no history file yet
                 pass
@@ -2397,19 +2513,75 @@ Desc: %(description)s
             # Pragma history_length allows setting on a per
             #   invocation basis at startup
             if self.settings['history_length'] != -1:
-                readline.set_history_length(
+                self.readline.set_history_length(
                     self.settings['history_length'])
-        except ImportError:
-            readline = None
-            print(_('Note: command history and editing not available'))
 
+            if hasattr(self.readline, 'backend'):
+                # FIXME after min 3.13 version; no backend prints pyreadline3
+                print(_("Readline enabled using %s.") % self.readline.backend)
+            else:
+                print(_("Readline enabled using unknown library."))
+                      
+        else:
+            print(_('Command history and line editing not available'))
+
+        autosave_enabled = sys.stdin.isatty() and sys.stdout.isatty()
         while 1:
             try:
                 command = self.my_input('roundup> ')
+                # clear an input hook in case it was used to prefill
+                # buffer.
+                self.readline.set_pre_input_hook()
             except EOFError:
                 print(_('exit...'))
                 break
             if not command: continue  # noqa: E701
+            if command.startswith('!'):  # Pull numbered command from history
+                print_only = command.endswith(":p")
+                try:
+                    hist_num = int(command[1:]) \
+                        if not print_only else int(command[1:-2])
+                    command = self.readline.get_history_item(hist_num)
+                except ValueError:
+                    # pass the unknown command
+                    pass
+                else:
+                    if autosave_enabled and \
+                       hasattr(self.readline, "replace_history_item"):
+                        # history has the !23 input. Replace it if possible.
+                        # replace_history_item not supported by pyreadline3
+                        # so !23 will show up in history not the command.
+                        self.readline.replace_history_item(
+                            self.readline.get_current_history_length() - 1,
+                            command)
+
+                    if print_only:
+                        # fill the edit buffer with the command
+                        # the user selected.
+
+                        # from https://stackoverflow.com/questions/8505163/is-it-possible-to-prefill-a-input-in-python-3s-command-line-interface
+                        # This triggers:
+                        #   B023 Function definition does not bind loop variable
+                        #   `command`
+                        # in ruff. command will be the value of the command
+                        # variable at the time the function is run.
+                        # Not the value at define time. This is ok since
+                        # hook is run before command is changed by the
+                        # return from (readline) input.
+                        def hook():
+                            self.readline.insert_text(command)  # noqa: B023
+                            self.readline.redisplay()
+                        self.readline.set_pre_input_hook(hook)
+                        # we clear the hook after the next line is read.
+                        continue
+
+            if not autosave_enabled:
+                # needed to make testing work and also capture
+                # commands received on stdin from file/other command
+                # output. Disable saving with pragma on command line:
+                #    -P history_features=2.
+                self.readline.add_history(command)
+
             try:
                 args = token_r.token_split(command)
             except ValueError:
@@ -2426,8 +2598,9 @@ Desc: %(description)s
                 self.db.commit()
 
         # looks like histfile is saved with mode 600
-        if readline and self.history_features('save_history'):
-                readline.write_history_file(histfile)
+        if self.readline and self.history_features('save_history'):
+                self.readline.write_history_file(histfile)
+
         return 0
 
     def main(self):  # noqa: PLR0912, PLR0911

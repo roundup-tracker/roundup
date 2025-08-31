@@ -2202,6 +2202,57 @@ https://pythonhosted.org/pyreadline/usage.html#configuration-file.
 History is saved to the file ``.roundup_admin_history`` in your home
 directory (for windows usually ``\Users\<username>``.
 
+In Roundup 2.6.0 and newer, you can use the ``readline`` command to
+make changes on the fly.
+
+* ``readline vi`` - change input mode to use vi key binding when
+  editing. It starts in entry mode.
+* ``readline emacs`` - change input mode to emacs key bindings when
+  editing. This is also the default.
+* ``readline reload`` - reloads the ``~/.roundup_admin_rlrc`` file so
+  you can test and use changes.
+* ``readline history`` - dumps the history buffer and numbers all
+  commands.
+* ``readline .inputrc_command_line`` can be used to make on the fly
+  key and key sequence bindings to readline commands. It can also be
+  used to change the internal readline settings using a set
+  command. For example::
+
+    readline set bell-style none
+
+  will turn off a ``visible`` or ``audible`` bell. Single character
+  keybindings::
+
+    readline Control-o: dump-variables
+
+  to list all the variables that can be set are supported. As are
+  multi-character bindings::
+
+    readline "\C-o1": "commit"
+
+  will put "commit" on the input line when you type Control-o followed
+  by 1. See the `readline manual for details
+  <https://tiswww.cwru.edu/php/chet/readline/rluserman.html#Readline-Init-File-Syntax-1>`_
+  on the command lines that can be used.
+
+Also a limited form of ``!`` (bang) history reference was added. The
+reference must be at the start of the line. Typing ``!23`` will rerun
+command number 23 from your history.
+
+Typing ``!23:p`` will load command 23 into the buffer so you can edit
+and submit it. Using the bang feature will append the command to the
+end of the history list.
+
+Pyreadline3 users can use ``readline history`` and the
+bang commands (including ``:p``). Single character bindings can be
+done. For example::
+
+    readline Control-w: history-search-backward
+
+The commands that are available are limited compared to Unix's
+readline or libedit. Setting variables or entry mode (emacs,
+vi) switching do not work in testing.
+
 Using with the shell
 --------------------
 
