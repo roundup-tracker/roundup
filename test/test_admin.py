@@ -184,6 +184,31 @@ class AdminTest(object):
 
         AdminTool.my_input = orig_input
 
+        # test EOF exit
+        inputs = ["help"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        # preserve directory self.install_init()
+        self.admin=AdminTool()
+
+        # disable all features
+        self.admin.settings['history_features'] = 7
+        sys.argv=['main', '-i', self.dirname]
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+        out = out.getvalue().strip().split('\n')
+        
+        print(ret)
+        self.assertTrue(ret == 0)
+
+        # 4 includes 2 commands in saved history
+        expected = 'roundup> exit...'
+        self.assertIn(expected, out)
+
     def testGet(self):
         ''' Note the tests will fail if you run this under pdb.
             the context managers capture the pdb prompts and this screws
@@ -1946,6 +1971,120 @@ Role "user":
                     self.admin.get_readline_init_file())
         
         self.assertIn(expected, out)
+
+        # --- test 3,4 - make sure readline gets history_length pragma.
+        #   test CLI and interactive.
+        
+        inputs = ["pragma list", "q"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        # disable all config/history
+        self.admin.settings['history_features'] = 7
+        sys.argv=['main', '-i', self.dirname, '-P', 'history_length=11']
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+            out = out.getvalue().strip().split('\n')
+            
+        print(ret)
+        self.assertTrue(ret == 0)
+        self.assertEqual(self.admin.readline.get_history_length(),
+                         11)
+
+        # 4
+        inputs = ["pragma history_length=17", "q"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        # disable all config/history
+        self.admin.settings['history_features'] = 7
+        # keep pragma in CLI. Make sure it's overridden by interactive
+        sys.argv=['main', '-i', self.dirname, '-P', 'history_length=11']
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+            out = out.getvalue().strip().split('\n')
+            
+        print(ret)
+        self.assertTrue(ret == 0)
+        # should not be 11.
+        self.assertEqual(self.admin.readline.get_history_length(),
+                         17)
+
+        # --- test 5 invalid single word parameter
+        
+        inputs = ["readline nosuchdirective", "q"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        # disable loading and saving history
+        self.admin.settings['history_features'] = 3
+        sys.argv=['main', '-i', self.dirname]
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+            out = out.getvalue().strip().split('\n')
+            
+        print(ret)
+        self.assertTrue(ret == 0)
+
+        expected = ('roundup> Unknown readline parameter nosuchdirective')
+        
+        self.assertIn(expected, out)
+
+        # --- test 6 set keystroke command.
+        # FIXME: unable to test key binding/setting actually works.
+        #
+        #        No errors seem to come back from readline or
+        #        pyreadline3 even when the keybinding makes no
+        #        sense. Errors are only reported when reading
+        #        from init file. Using "set answer 42" does print
+        #        'readline: answer: unknown variable name' when
+        #        attached to tty/pty and interactive, but not
+        #        inside test case. Pyreadline3 doesn't
+        #        report errors at all.
+        #
+        #        Even if I set a keybidning, I can't invoke it
+        #        because I am not running inside a pty, so
+        #        editing is disabled and I have no way to
+        #        simulate keyboard keystrokes for readline to act
+        #        upon.
+        
+        inputs = ['readline set meaning 42', "q"]
+        
+        self._monkeypatch.setattr(
+            'sys.stdin',
+            io.StringIO("\n".join(inputs)))
+
+        self.install_init()
+        self.admin=AdminTool()
+
+        # disable loading and saving history
+        self.admin.settings['history_features'] = 3
+        sys.argv=['main', '-i', self.dirname]
+        
+        with captured_output() as (out, err):
+            ret = self.admin.main()
+            out = out.getvalue().strip().split('\n')
+            
+        print(ret)
+        self.assertTrue(ret == 0)
 
         # === cleanup
         if original_home:

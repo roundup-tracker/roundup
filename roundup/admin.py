@@ -1821,6 +1821,11 @@ Erase it? Y/N: """) % locals())
                              type(self.settings[setting]).__name__)
         self.settings[setting] = value
 
+        # history_length has to be pushed to readline to have any effect.
+        if setting == "history_length":
+            self.readline.set_history_length(
+                self.settings['history_length'])
+
     def do_readline(self, args):
         ''"""Usage: readline initrc_line | 'emacs' | 'history' | 'reload' | 'vi'
 
@@ -1881,13 +1886,12 @@ Erase it? Y/N: """) % locals())
                 self.readline.parse_and_bind("set editing-mode emacs")
                 print(_("Enabled emacs mode."))
             elif args[0] == "history":
-                print("history size",
-                      self.readline.get_current_history_length())
+                history_size = self.readline.get_current_history_length()
+                print("history size", history_size)
                 print('\n'.join([
-                    str("%3d " % (i + 1) +
+                    "%3d %s" % ((i + 1),
                         self.readline.get_history_item(i + 1))
-                    for i in range(
-                            self.readline.get_current_history_length())
+                    for i in range(history_size)
                 ]))
             elif args[0] == "reload":
                 try:
