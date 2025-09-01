@@ -24,7 +24,7 @@ Fixed:
   rather than Exception since it is an HTTP exception. (John
   Rouillard)
 - cleaned up repo. Close obsolete branches and close a split head due
-  to an identical merge intwo different workicng copies. (John
+  to an identical merge in two different working copies. (John
   Rouillard)
 - in roundup-admin, using 'pragma history_length interactively now
   sets readline history length. Using -P history_length=10 on the
