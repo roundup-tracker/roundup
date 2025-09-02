@@ -117,7 +117,7 @@ comments:
    a comment and is stripped from the file before being passed to the
    json parser. This is a "line comment".
 
-2. A ``//` with at least three white space characters before it is
+2. A ``//`` with at least three white space characters before it is
    stripped from the end of the line before begin passed to the json
    parser. This is an "inline comment".
 
