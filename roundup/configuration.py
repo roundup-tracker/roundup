@@ -273,7 +273,8 @@ class Option:
         try:
             if config.has_option(self.section, self.setting):
                 self.set(config.get(self.section, self.setting))
-        except configparser.InterpolationSyntaxError as e:
+        except (configparser.InterpolationSyntaxError,
+                configparser.InterpolationMissingOptionError) as e:
             raise ParsingOptionError(
                 _("Error in %(filepath)s with section [%(section)s] at "
                   "option %(option)s: %(message)s") % {
@@ -574,6 +575,48 @@ class SpaceSeparatedListOption(Option):
         else:
             return None
 
+
+class LoggingFormatOption(Option):
+    """Replace escaped % (as %%) with single %.
+
+       Config file parsing allows variable interpolation using
+       %(keyname)s.  However this is exactly the format that we need
+       for creating a logging format string. So we tell the user to
+       quote the string using %%(...). Then we turn %%( -> %( when
+       retrieved.
+    """
+
+    class_description = ("Allowed value: Python logging module named "
+                         "attributes with % sign doubled.")
+
+    def str2value(self, value):
+        """Check format of unquoted string looking for missing specifiers.
+
+           This does a dirty check to see if a token is missing a
+           specifier. So "%(ascdate)s %(level) " would fail because of
+           the 's' missing after 'level)'. But "%(ascdate)s %(level)s"
+           would pass.
+
+           Note that %(foo)s generates a error from the ini parser
+           with a less than wonderful message.
+        """
+        unquoted_val = value.replace("%%(", "%(")
+
+        # regexp matches all current logging record object attribute names.
+        scanned_result = re.sub(r'%\([A-Za-z_]+\)\S','', unquoted_val )
+        if scanned_result.find('%(') != -1:
+            raise OptionValueError(
+                self, unquoted_val,
+                "Check that all substitution tokens have a format "
+                "specifier after the ). Unrecognized use of %%(...) in: "
+                "%s" % scanned_result)
+
+        return str(unquoted_val)
+
+    def _value2str(self, value):
+        """Replace %( with %%( to quote the format substitution param.
+        """
+        return value.replace("%(", "%%(")
 
 class OriginHeadersListOption(Option):
 
@@ -1614,6 +1657,10 @@ always passes, so setting it less than 1 is not recommended."""),
             "Minimal severity level of messages written to log file.\n"
             "If above 'config' option is set, this option has no effect.\n"
             "Allowed values: DEBUG, INFO, WARNING, ERROR"),
+        (LoggingFormatOption, "format",
+         "%(asctime)s %(levelname)s %(message)s",
+            "Format of the logging messages with all '%' signs\n"
+            "doubled so they are not interpreted by the config file."),
         (BooleanOption, "disable_loggers", "no",
             "If set to yes, only the loggers configured in this section will\n"
             "be used. Yes will disable gunicorn's --access-logfile.\n"),
@@ -2448,8 +2495,7 @@ class CoreConfig(Config):
         hdlr = logging.FileHandler(_file) if _file else \
             logging.StreamHandler(sys.stdout)
 
-        formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s %(message)s')
+        formatter = logging.Formatter(self["LOGGING_FORMAT"])
         hdlr.setFormatter(formatter)
         # no logging API to remove all existing handlers!?!
         for h in logger.handlers:

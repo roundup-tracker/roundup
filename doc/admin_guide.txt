@@ -63,6 +63,8 @@ Configuration for "BasicLogging" implementation:
  - tracker configuration file lets you disable other loggers
    (e.g. when running under a wsgi framework) with
    ``logging`` -> ``disable_loggers``.
+ - tracker configuration file can set the log format using
+   ``logging`` -> ``format``. See :ref:`logFormat` for more info.
  - ``roundup-server`` specifies the location of a log file on the command
    line
  - ``roundup-server`` enable  using the standard python logger with
@@ -83,10 +85,26 @@ Configuration for standard "logging" module:
 In both cases, if no logfile is specified then logging will simply be sent
 to sys.stderr with only logging of ERROR messages.
 
+.. _logFormat:
+
+Defining the Log Format
+-----------------------
+
+Starting with Roundup 2.6 you can specify the logging format. In the
+``logging`` -> ``format`` setting of config.ini you can use any of the
+`standard logging LogRecord attributes
+<https://docs.python.org/3/library/logging.html#logrecord-attributes>`_.
+However you must double any ``%`` format markers. The default value
+is::
+
+  %%(asctime)s %%(levelname)s %%(message)s
+
 Standard Logging Setup
 ----------------------
 
-You can specify your log configs in one of two formats:
+If the settings in config.ini are not sufficient for your logging
+requirements, you can specify a full logging configuration in one of
+two formats:
 
   * `fileConfig format
     <https://docs.python.org/3/library/logging.config.html#logging.config.fileConfig>`_

@@ -1112,6 +1112,43 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         self.assertIn("nati", string_rep)
         self.assertIn("'whoosh'", string_rep)
 
+    def testLoggerFormat(self):
+        config = configuration.CoreConfig()
+
+        # verify config is initalized to defaults
+        self.assertEqual(config['LOGGING_FORMAT'],
+                         '%(asctime)s %(levelname)s %(message)s')
+
+        # load config
+        config.load(self.dirname)
+        self.assertEqual(config['LOGGING_FORMAT'],
+                         '%(asctime)s %(levelname)s %(message)s')
+
+        # break config using an incomplete format specifier (no trailing 's')
+        self.munge_configini(mods=[ ("format = ", "%%(asctime)s %%(levelname) %%(message)s") ], section="[logging]")
+
+        # load config
+        with self.assertRaises(configuration.OptionValueError) as cm:
+            config.load(self.dirname)
+            
+        self.assertIn('Unrecognized use of %(...) in:  %(levelname)',
+                      cm.exception.args[2])
+
+        # break config by not dubling % sign to quote it from configparser
+        self.munge_configini(mods=[ ("format = ", "%(asctime)s %%(levelname) %%(message)s") ], section="[logging]")
+
+        with self.assertRaises(
+                configuration.ParsingOptionError) as cm:
+            config.load(self.dirname)
+
+        self.assertEqual(cm.exception.args[0],
+                         "Error in _test_instance/config.ini with section "
+                         "[logging] at option format: Bad value substitution: "
+                         "option 'format' in section 'logging' contains an "
+                         "interpolation key 'asctime' which is not a valid "
+                         "option name. Raw value: '%(asctime)s %%(levelname) "
+                         "%%(message)s'")
+
     def testDictLoggerConfigViaJson(self):
 
         # good base test case
