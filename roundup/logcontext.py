@@ -155,7 +155,7 @@ def store_trace_reason(location=None):
                 try:
                     login = os.getlogin()
                 except OSError:
-                    login = "unknown"
+                    login = "--unknown--"
                 reason = "roundup-admin(%s): %s" % (login, args[1][:2])
             elif location.startswith("file://"):
                 reason = location
