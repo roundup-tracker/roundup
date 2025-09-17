@@ -422,7 +422,7 @@ class TrackerConfig(unittest.TestCase):
     def inject_fixtures(self, caplog):
         self._caplog = caplog
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture(autouse=True)
     def save_restore_logging(self):
         """Save logger state and try to restore it after all tests in
            this class have finished.
@@ -461,7 +461,7 @@ class TrackerConfig(unittest.TestCase):
         # cribbed from configuration.py:init_loggers
         hdlr = logging.StreamHandler(sys.stdout)
         formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s %(message)s')
+            '%(asctime)s %(trace_id)s %(levelname)s %(message)s')
         hdlr.setFormatter(formatter)
 
         for logger in roundup_loggers:
@@ -1019,11 +1019,7 @@ class TrackerConfig(unittest.TestCase):
         def find_file_occurances(string):
             return len(re.findall(r'\bFile\b', string))
 
-        config = configuration.CoreConfig()
-
-        config.LOGGING_LEVEL = "DEBUG"
-        config.init_logging()
-        
+        config = configuration.CoreConfig(settings={"LOGGING_LEVEL": "DEBUG"})
 
         # format the record and verify the logformat/trace_id.
         config._logging_test(None, msg="message")
@@ -1036,7 +1032,9 @@ class TrackerConfig(unittest.TestCase):
         # verify that %(trace_id) was set and substituted
         # Note: trace_id is not initialized in this test case
         log_parts = log.split()
-        self.assertRegex(log_parts[2], r'^[A-Za-z0-9]{22}')
+        # testing len(shorten_int_uuid(uuid.uuid4().int))
+        # for 20000 tests gives range [19,22]
+        self.assertRegex(log_parts[2], r'^[A-Za-z0-9]{19,22}')
         self._caplog.clear()
 
         # the rest check various values of sinfo and msg formating.
@@ -1250,25 +1248,25 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
 
         # verify config is initalized to defaults
         self.assertEqual(config['LOGGING_FORMAT'],
-                         '%(asctime)s %(levelname)s %(message)s')
+                         '%(asctime)s %(trace_id)s %(levelname)s %(message)s')
 
         # load config
         config.load(self.dirname)
         self.assertEqual(config['LOGGING_FORMAT'],
-                         '%(asctime)s %(levelname)s %(message)s')
+                         '%(asctime)s %(trace_id)s %(levelname)s %(message)s')
 
         # break config using an incomplete format specifier (no trailing 's')
-        self.munge_configini(mods=[ ("format = ", "%%(asctime)s %%(levelname) %%(message)s") ], section="[logging]")
+        self.munge_configini(mods=[ ("format = ", "%%(asctime)s %%(trace_id)s %%(levelname) %%(message)s") ], section="[logging]")
 
         # load config
         with self.assertRaises(configuration.OptionValueError) as cm:
             config.load(self.dirname)
             
-        self.assertIn('Unrecognized use of %(...) in:  %(levelname)',
+        self.assertIn('Unrecognized use of %(...) in:   %(levelname)',
                       cm.exception.args[2])
 
-        # break config by not dubling % sign to quote it from configparser
-        self.munge_configini(mods=[ ("format = ", "%(asctime)s %%(levelname) %%(message)s") ], section="[logging]")
+        # break config by not doubling % sign to quote it from configparser
+        self.munge_configini(mods=[ ("format = ", "%(asctime)s %%(trace_id)s %%(levelname) %%(message)s") ], section="[logging]")
 
         with self.assertRaises(
                 configuration.ParsingOptionError) as cm:
@@ -1279,8 +1277,8 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
                          "[logging] at option format: Bad value substitution: "
                          "option 'format' in section 'logging' contains an "
                          "interpolation key 'asctime' which is not a valid "
-                         "option name. Raw value: '%(asctime)s %%(levelname) "
-                         "%%(message)s'")
+                         "option name. Raw value: '%(asctime)s %%(trace_id)s "
+                         "%%(levelname) %%(message)s'")
 
     def testDictLoggerConfigViaJson(self):
 

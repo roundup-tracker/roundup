@@ -11,6 +11,7 @@ import binascii
 import errno
 import getopt
 import logging
+import logging.config
 import os
 import re
 import smtplib
