@@ -152,7 +152,11 @@ def store_trace_reason(location=None):
             elif location == "mailgw":
                 reason = args[1].get_header('message-id', "no_message_id")
             elif location == "admin":
-                reason = "roundup-admin(%s): %s" % (os.getlogin(), args[1][:2])
+                try:
+                    login = os.getlogin()
+                except OSError:
+                    login = "unknown"
+                reason = "roundup-admin(%s): %s" % (login, args[1][:2])
             elif location.startswith("file://"):
                 reason = location
             elif location == "client_main" and 'REQUEST_URI' in args[0].env:
