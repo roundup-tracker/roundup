@@ -130,7 +130,6 @@ def store_trace_reason(location=None):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            nonlocal location
 
             reason = None
             prev_trace_reason = None
