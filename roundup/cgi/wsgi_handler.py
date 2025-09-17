@@ -13,6 +13,7 @@ from roundup.anypy.html import html_escape
 from roundup.anypy.strings import s2b
 from roundup.cgi import TranslationService
 from roundup.cgi.client import BinaryFieldStorage
+from roundup.logcontext import gen_trace_id, store_trace_reason
 
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
 DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
@@ -102,6 +103,8 @@ class RequestDispatcher(object):
         else:
             self.preload()
 
+    @gen_trace_id()
+    @store_trace_reason("wsgi")
     def __call__(self, environ, start_response):
         """Initialize with `apache.Request` object"""
         request = RequestHandler(environ, start_response)

@@ -418,6 +418,10 @@ class ConfigTest(unittest.TestCase):
 @pytest.mark.usefixtures("save_restore_logging")
 class TrackerConfig(unittest.TestCase):
 
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     @pytest.fixture(scope="class")
     def save_restore_logging(self):
         """Save logger state and try to restore it after all tests in
@@ -1009,7 +1013,136 @@ class TrackerConfig(unittest.TestCase):
         print(cm.exception)
         self.assertEqual(cm.exception.args[0], self.dirname)
 
+    def testFormattedLogging(self):
+        """Depends on using default logging format with %(trace_id)"""
 
+        def find_file_occurances(string):
+            return len(re.findall(r'\bFile\b', string))
+
+        config = configuration.CoreConfig()
+
+        config.LOGGING_LEVEL = "DEBUG"
+        config.init_logging()
+        
+
+        # format the record and verify the logformat/trace_id.
+        config._logging_test(None, msg="message")
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertEqual("message", tuple[2])
+        logger = logging.getLogger('roundup')
+        hdlr = logger.handlers[0]
+        log = hdlr.format(self._caplog.records[0])
+        # verify that %(trace_id) was set and substituted
+        # Note: trace_id is not initialized in this test case
+        log_parts = log.split()
+        self.assertRegex(log_parts[2], r'^[A-Za-z0-9]{22}')
+        self._caplog.clear()
+
+        # the rest check various values of sinfo and msg formating.
+        
+        # sinfo = 1 - one line of stack starting with log call
+        config._logging_test(1)
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertIn("test a_var\n  File", tuple[2])
+        self.assertIn("in _logging_test", tuple[2])
+        self.assertIn("logger.info(msg, extra=", tuple[2])
+        self.assertEqual(find_file_occurances(tuple[2]), 1)
+        self._caplog.clear()
+        
+        # sinfo = None - 5 lines of stack starting with log call
+        config._logging_test(None)
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertIn("test a_var\n  File", tuple[2])
+        self.assertIn("in _logging_test", tuple[2])
+        self.assertIn("logger.info(msg, extra=", tuple[2])
+        self.assertEqual(find_file_occurances(tuple[2]), 5)
+        self._caplog.clear()
+
+        # sinfo = 0 - whole stack starting with log call
+        config._logging_test(0)
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertIn("test a_var\n  File", tuple[2])
+        self.assertIn("in _logging_test", tuple[2])
+        self.assertIn("logger.info(msg, extra=", tuple[2])
+        # A file in 'pytest' directory should be at the top of stack.
+        self.assertIn("pytest", tuple[2])
+        # no idea how deep the actual stack is, could change with python
+        # versions, but 3.12 is 33 so ....
+        self.assertTrue(find_file_occurances(tuple[2]) > 10)
+        self._caplog.clear()
+
+        # sinfo = -1 - one line of stack starting with extract_stack()
+        config._logging_test(-1)
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertIn("test a_var\n  File", tuple[2])
+        # The call to extract_stack should be included as the frame
+        # at bottom of stack.
+        self.assertIn("extract_stack()", tuple[2])
+        # only one frame included
+        self.assertEqual(find_file_occurances(tuple[2]), 1)
+        self._caplog.clear()
+
+        # sinfo = 1000 - whole stack starting with log call 1000>stack size
+        config._logging_test(1000)
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertIn("test a_var\n  File", tuple[2])
+        self.assertIn("in _logging_test", tuple[2])
+        self.assertIn("logger.info(msg, extra=", tuple[2])
+        # A file in 'pytest' directory should be at the top of stack.
+        self.assertIn("pytest", tuple[2])
+        # no idea how deep the actual stack is, could change with python
+        # versions, but 3.12 is 33 so ....
+        self.assertTrue(find_file_occurances(tuple[2]) > 10)
+        self._caplog.clear()
+
+        # sinfo = -1000 - whole stack starting with extract_stack
+        config._logging_test(-1000)
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertIn("test a_var\n  File", tuple[2])
+        self.assertIn("in _logging_test", tuple[2])
+        self.assertIn("logger.info(msg, extra=", tuple[2])
+        # The call to extract_stack should be included as the frame
+        # at bottom of stack.
+        self.assertIn("extract_stack()", tuple[2])
+        # A file in 'pytest' directory should be at the top of stack.
+        # no idea how deep the actual stack is, could change with python
+        # versions, but 3.12 is 33 so ....
+        self.assertTrue(find_file_occurances(tuple[2]) > 10)
+        self.assertIn("pytest", tuple[2])
+        self._caplog.clear()
+
+        # pass args and compatible message
+        config._logging_test(None, args=(1,2,3),
+                             msg="one: %s, two: %s, three: %s"
+                             )
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertEqual('one: 1, two: 2, three: 3', tuple[2])
+        self._caplog.clear()
+
+        # error case for incorrect placeholder
+        config._logging_test(None, msg="%(a)")
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertEqual("%(a)", tuple[2])
+        self._caplog.clear()
+
+        # error case for incompatible format record is the first argument
+        # and it can't be turned into floating point.
+        config._logging_test(None, msg="%f")
+        tuple = self._caplog.record_tuples[0]
+        self.assertEqual(tuple[1], 20)
+        self.assertEqual("%f", tuple[2])
+        self._caplog.clear()
+        
+        
     def testXhtmlRaisesOptionError(self):
         self.munge_configini(mods=[ ("html_version = ", "xhtml") ])
 

@@ -128,6 +128,7 @@ from roundup.anypy.my_input import my_input
 from roundup.anypy.strings import StringIO, b2s, u2s
 from roundup.hyperdb import iter_roles
 from roundup.i18n import _
+from roundup.logcontext import gen_trace_id, store_trace_reason
 from roundup.mailer import Mailer
 from roundup.dehtml import dehtml
 
@@ -1646,6 +1647,8 @@ The mail gateway is not properly set up. Please contact
         return self.handle_Message(message_from_binary_file(fp,
                                                             RoundupMessage))
 
+    @gen_trace_id()
+    @store_trace_reason("mailgw")
     def handle_Message(self, message):
         """Handle an RFC822 Message
 

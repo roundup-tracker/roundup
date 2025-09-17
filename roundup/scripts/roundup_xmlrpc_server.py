@@ -8,8 +8,12 @@
 
 # --- patch sys.path to make sure 'import roundup' finds correct version
 from __future__ import print_function
-import sys
+
+import base64
+import getopt
 import os.path as osp
+import socket
+import sys
 
 thisdir = osp.dirname(osp.abspath(__file__))
 rootdir = osp.dirname(osp.dirname(thisdir))
@@ -19,15 +23,14 @@ if (osp.exists(thisdir + '/__init__.py') and
     sys.path.insert(0, rootdir)
 # --/
 
-
-import base64, getopt, os, sys, socket
-from roundup.anypy import urllib_
-from roundup.xmlrpc import translate
-from roundup.xmlrpc import RoundupInstance
 import roundup.instance
-from roundup.instance import TrackerError
+from roundup.anypy import urllib_, xmlrpc_
+from roundup.anypy.strings import b2s
 from roundup.cgi.exceptions import Unauthorised
-from roundup.anypy import xmlrpc_
+from roundup.instance import TrackerError
+from roundup.logcontext import gen_trace_id, store_trace_url
+from roundup.xmlrpc import RoundupInstance, translate
+
 SimpleXMLRPCServer = xmlrpc_.server.SimpleXMLRPCServer
 SimpleXMLRPCRequestHandler = xmlrpc_.server.SimpleXMLRPCRequestHandler
 
@@ -64,7 +67,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
         scheme, challenge = authorization.split(' ', 1)
 
         if scheme.lower() == 'basic':
-            decoded = base64.b64decode(challenge)
+            decoded = b2s(base64.b64decode(challenge))
             if ':' in decoded:
                 username, password = decoded.split(':')
             else:
@@ -85,6 +88,8 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
         db.setCurrentUser(username)
         return db
 
+    @gen_trace_id()
+    @store_trace_url("xmlrpc-server")
     def do_POST(self):
         """Extract username and password from authorization header."""
 
@@ -149,7 +154,7 @@ def run():
         elif opt in ['-p', '--port']:
             port = int(arg)
         elif opt in ['-e', '--encoding']:
-            encoding = encoding
+            encoding = arg
 
     tracker_homes = {}
     for arg in args:

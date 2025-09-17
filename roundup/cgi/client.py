@@ -56,9 +56,9 @@ from roundup.exceptions import (
     UsageError,
 )
 
-from roundup.mlink_expr import ExpressionError
-
+from roundup.logcontext import gen_trace_id, store_trace_reason
 from roundup.mailer import Mailer, MessageSendError
+from roundup.mlink_expr import ExpressionError
 
 logger = logging.getLogger('roundup')
 
@@ -434,6 +434,8 @@ class Client:
     # content-type.
     precompressed_mime_types = ["image/png", "image/jpeg"]
 
+    @gen_trace_id()
+    @store_trace_reason('client')
     def __init__(self, instance, request, env, form=None, translator=None):
         # re-seed the random number generator. Is this is an instance of
         # random.SystemRandom it has no effect.
@@ -581,6 +583,8 @@ class Client:
         self._ = self.gettext = translator.gettext
         self.ngettext = translator.ngettext
 
+    @gen_trace_id()
+    @store_trace_reason('client_main')
     def main(self):
         """ Wrap the real main in a try/finally so we always close off the db.
         """

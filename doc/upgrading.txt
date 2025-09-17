@@ -108,6 +108,35 @@ your database.
 Migrating from 2.5.0 to 2.6.0
 =============================
 
+Default Logs Include Unique Request Identifier (info)
+-----------------------------------------------------
+
+The default logging format has been changed from::
+
+  %(asctime)s %(levelname)s %(message)s
+
+to::
+
+  %(asctime)s %(trace_id)s %(levelname)s %(message)s
+
+So logs now look like::
+
+    2025-08-20 03:25:00,308 f6RPbT2s70vvJ2jFb9BQNF DEBUG get user1 cached
+
+which in the previous format would look like::
+
+    2025-08-20 03:25:00,308 DEBUG get user1 cached
+
+The new format includes ``trace_id`` which is a thread and process
+unique identifier for a single request. So you can link together all
+of the log lines and determine where a slow down or other
+problem occurred.
+
+The logging format is now a ``config.ini`` parameter in the
+``logging`` section with the name ``format``. You can change it if you
+would like the old logging format without having to create a logging
+configuration file. See :ref:`rounduplogging` for details.
+
 Support authorized changes in your tracker (optional)
 -----------------------------------------------------
 

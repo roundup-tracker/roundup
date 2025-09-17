@@ -46,98 +46,284 @@ There's two "installations" that we talk about when using Roundup:
    both choosing your "tracker home" and the ``main`` -> ``database`` variable
    in the tracker's config.ini.
 
+.. _rounduplogging:
 
 Configuring Roundup Message Logging
 ===================================
 
 You can control how Roundup logs messages using your tracker's
-config.ini file. Roundup uses the standard Python (2.3+) logging
-implementation.  The config file and ``roundup-server`` provide very
-basic control over logging.
+config.ini file. Roundup uses the standard Python logging
+implementation.  The config file and ``roundup-server`` provide
+very basic control over logging.
 
-Configuration for "BasicLogging" implementation:
- - tracker configuration file specifies the location of a log file
-   ``logging`` -> ``filename``
- - tracker configuration file specifies the level to log to as
-   ``logging`` -> ``level``
- - tracker configuration file lets you disable other loggers
-   (e.g. when running under a wsgi framework) with
-   ``logging`` -> ``disable_loggers``.
- - tracker configuration file can set the log format using
-   ``logging`` -> ``format``. See :ref:`logFormat` for more info.
- - ``roundup-server`` specifies the location of a log file on the command
-   line
- - ``roundup-server`` enable  using the standard python logger with
-    the tag/channel ``roundup.http`` on the command line
+``roundup-server``'s logging is controlled from the command
+line. You can:
 
-By supplying a standard log config file in ini or json (dictionary)
-format, you get more control over the logs. You can set different
-levels for logs (e.g. roundup.hyperdb can be set to WARNING while
-other Roundup log channels are set to INFO and roundup.mailgw logs at
-DEBUG level). You can also send the logs for roundup.mailgw to syslog,
-and other roundup logs go to an automatically rotating log file, or
-are submitted to your log aggregator over https.
+- specify the location of a log file or
+- enable logging using the standard Python logging library under
+  the tag/channel ``roundup.http``
 
-Configuration for standard "logging" module:
- - tracker configuration file specifies the location of a logging
-   configuration file as ``logging`` -> ``config``.
+Configuration for "BasicLogging" implementation for your tracker
+is done using the settings in the tracker's ``config.ini`` under
+the ``logging`` section:
 
-In both cases, if no logfile is specified then logging will simply be sent
-to sys.stderr with only logging of ERROR messages.
+- ``filename`` setting: specifies the location of a log file
+- ``level`` setting: specifies the minimum level to log
+- ``disable_loggers`` setting: disable other loggers (e.g. when
+  running under a wsgi framework)
+- ``format`` setting: set the log format template. See
+  :ref:`logFormat` for more info.
+
+In either case, if logfile is not specified, logging is sent to
+sys.stderr. If level is not set, only ERROR or higher priority
+log messages will be reported.
+
+You can get more control over logging by using the ``config``
+setting in the tracker's ``config.ini``. Using a logging config
+file overrides all the rest of the other logging settings in
+``config.ini``.  You get more control over the logs by supplying
+a log config file in ini or json (dictionary) format.
+
+Using this, you can set different levels by channel.  For example
+roundup.hyperdb can be set to WARNING while other Roundup log
+channels are set to INFO and the roundup.mailgw channel logs at
+the DEBUG level. You can also control the distribution of
+logs. For example roundup.mailgw logs to syslog, other channels
+log to an automatically rotating log file, or are submitted to
+your log aggregator over https.
 
 .. _logFormat:
 
 Defining the Log Format
 -----------------------
 
-Starting with Roundup 2.6 you can specify the logging format. In the
-``logging`` -> ``format`` setting of config.ini you can use any of the
-`standard logging LogRecord attributes
-<https://docs.python.org/3/library/logging.html#logrecord-attributes>`_.
-However you must double any ``%`` format markers. The default value
-is::
+Starting with Roundup 2.6 you can specify the logging format in
+config.ini. The ``logging`` -> ``format`` setting of config.ini
+supports all of the `standard logging LogRecord attributes
+<https://docs.python.org/3/library/logging.html#logrecord-attributes>`_
+or Roundup logging attributes.  However you must double any ``%``
+format markers. The default value is::
 
-  %%(asctime)s %%(levelname)s %%(message)s
+  %%(asctime)s %%(trace_id)s %%(levelname)s %%(message)s
 
-Standard Logging Setup
+Roundup Logging Attributes
+--------------------------
+
+The `logging package has a number of attributes
+<https://docs.python.org/3/library/logging.html#logrecord-attributes>`_
+that can be expanded in the format template. In addition to the
+ones supplied by Python's logging module, Roundup defines
+additional attributes:
+
+  trace_id
+     a unique string that is generated for each request. It is
+     unique per thread.
+
+  trace_reason
+     a string describing the reason for the trace/request.
+     
+     * the URL for a web triggered (http, rest, xmlrpc) request
+     * the email message id for an email triggered request
+     * the roundup-admin os user and start of command. Only first
+       two words in command are printed so seting a password will
+       not be leaked to the logs.
+
+  sinfo
+     the stack traceback information at the time the log call id
+     made.
+
+     This must be intentionally activated by using the extras
+     parameter. For example calling::
+
+        logging.get_logger('roundup.something').warning(
+		"I am here\n%(sinfo)s", extra={"sinfo": 2})
+
+     in the function confirmid() of the file detectors/reauth.py
+     in your demo tracker will print 2 items on the stack
+     including the log call. It results in the following (5 lines
+     total in the log file)::
+
+       2025-09-14 23:07:58,668 Cm0ZPlBaklLZ3Mm6hAAgoC WARNING I am here
+         File "[...]/roundup/hyperdb.py", line 1924, in fireAuditors
+           audit(self.db, self, nodeid, newvalues)
+         File "demo/detectors/reauth.py", line 7, in confirmid
+           logging.getLogger('roundup.something').warning(
+
+     Note that the output does not include the arguments to
+     ``warning`` because they are on the following line.  If you
+     want arguments to the log call included, they have to be on
+     the same line.
+
+     Setting ``sinfo`` to an integer value N includes N lines up
+     the stack ending with the logging call. Setting it to 0
+     includes all the lines in the stack ending with the logging
+     call.
+
+     If the value is less than 0, the stack dump doesn't end at
+     the logging call but continues to the function that
+     generates the stack report. So it includes functions inside
+     the logging module.
+
+     Setting it to a number larger than the stack trace will
+     print the trace down to the log call. So using ``-1000``
+     will print up to 1000 stack frames and start at the function
+     that generates the stack report.
+     
+     Setting ``sinfo`` to a non-integer value ``{"sinfo": None}``
+     will produce 5 lines of the stack trace ending at the
+     logging call.
+
+  pct_char
+     produces a single ``%`` sign in the log. The usual way of
+     embedding a percent sign in a formatted string is to double
+     it like: ``%%``. However when the format string is specified
+     in the config.ini file percent signs are manipulated. So
+     ``%%(pct_char)s`` can be used in config.ini to print a
+     percent sign.
+
+The default logging template is defined in config.ini in the
+``logging`` -> ``format`` setting. It includes the ``trace_id``.
+When searching logs, you can use the trace_id to see all the log
+messages associated with a request.
+
+If you want to log from a detector, extension or other code, you
+can use these tokens in your messages when calling the logging
+functions. (Note that doubling ``%`` signs is only required when
+defining the log format in a config file, not when defining a
+msg.)  For example::
+
+    logging.getLogger('roundup.myextension').error('problem with '
+                      '%(trace_reason)s')
+
+will include the url in the message when triggered from the
+web. This also works with other log methods: ``warning()``,
+``debug()``, ....
+
+Note you must **not** use positional arguments in your
+message. Using::
+
+    logging.getLogger('roundup.myextension').error(
+	'%s problem with %(trace_reason)s', "a")
+
+will not properly substitute the argument. You must use mapping
+key based arguments and define the local values as part of the
+extra dictionary. For example::
+
+    logging.getLogger('roundup.myextension').error('%(article)s '
+                      'problem with %(trace_reason)',
+		      extra={"article": some_local_variable})
+
+Also if you are logging any data supplied by a user, you must not
+log it directly. If the variable ``url`` contains the url typed in
+by the user, never use:
+
+    logger.info(url)
+
+or
+
+    logger.info("Url is %s" % url)
+
+Use:
+
+    logger.info("Url is %s", url)
+
+or
+
+    logger.info("Url is %(url)s", extra={"url": url)
+
+This prevents printf style tokens in ``url`` from being processed
+where it can raise an exception. This could be used to prevent
+the log message from being generated.
+
+More on trace_id
+~~~~~~~~~~~~~~~~
+
+The trace_id provides a unique token (a UUID4 encoded to make it
+shorter) for each transaction in the database. It is unique to
+each thread or transaction. A transaction:
+
+  for the web interface is
+      each web, rest or xmlrpc request
+
+  for the email interface is
+      each email request. Using pipe mode will generate one
+      transaction. Using pop/imap etc can generate multiple
+      transactions, one for each email. Logging that occurs prior
+      to processing an email transaction has the default
+      ``not_set`` value for trace_id
+
+  for the roundup-admin interface is
+      each command in the interactive interface or on the command
+      line.  Plus one transaction when/if a commit happens on
+      roundup-admin exit.
+
+When creating scripts written using the roundup package the entry
+point should use the ``@gen_trace_id`` decorator. For example to
+decorate the entry point that performs one transaction::
+
+    from roundup.logcontext import gen_trace_id
+
+    # stuff ...
+
+    @gen_trace_id()
+    def main(...):
+       ...
+	   
+If your script does multiple processing operations, decorate the entry
+point for the processing operation::
+
+    from roundup.logcontext import gen_trace_id
+
+    @gen_trace_id()
+    def process_one(thing):
+       ...
+
+    def main():
+       for thing in things:
+	   process_one(thing)
+      
+
+Advanced Logging Setup
 ----------------------
 
 If the settings in config.ini are not sufficient for your logging
-requirements, you can specify a full logging configuration in one of
-two formats:
+requirements, you can specify a full logging configuration in one
+of two formats:
 
-  * `fileConfig format
-    <https://docs.python.org/3/library/logging.config.html#logging.config.fileConfig>`_
-    in ini style
   * `dictConfig format
     <https://docs.python.org/3/library/logging.config.html#logging.config.dictConfig>`_
     using json with comment support
+  * `fileConfig format
+    <https://docs.python.org/3/library/logging.config.html#logging.config.fileConfig>`_
+    in ini style
 
-The dictConfig allows more control over configuration including
-loading your own log handlers and disabling existing handlers. If you
-use the fileConfig format, the ``logging`` -> ``disable_loggers`` flag
-in the tracker's config is used to enable/disable pre-existing loggers
-as there is no way to do this in the logging config file.
+The dictConfig format allows more control over configuration
+including loading your own log handlers and disabling existing
+handlers. If you use the fileConfig format, the ``logging`` ->
+``disable_loggers`` flag in the tracker's config is used to
+enable/disable pre-existing loggers as there is no way to do this
+in the logging config file.
 
 .. _`dictLogConfig`:
 
 dictConfig Based Logging Config
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-dictConfigs are specified in JSON format with support for comments.
-The file name in the tracker's config for the ``logging`` -> ``config``
-setting must end with ``.json`` to choose the correct processing.
+dictConfigs are specified in JSON format with support for
+comments.  The file name in the tracker's config for the
+``logging`` -> ``config`` setting must end with ``.json`` to
+choose the correct processing.
 
 Comments have to be in one of two forms based on javascript line
 comments:
 
-1. A ``//`` possibly indented with whitespace on a line is considereda
-   a comment and is stripped from the file before being passed to the
-   json parser. This is a "line comment".
+1. A ``//`` possibly indented with whitespace on a line is
+   considereda a comment and is stripped from the file before
+   being passed to the json parser. This is a "line comment".
 
-2. A ``//`` with at least three white space characters before it is
-   stripped from the end of the line before begin passed to the json
-   parser. This is an "inline comment".
+2. A ``//`` with at least three white space characters before it
+   is stripped from the end of the line before being passed to
+   the json parser. This is an "inline comment".
 
 Block style comments are not supported.
 
@@ -151,20 +337,23 @@ Example dictConfig Logging Config
 .................................
 
 Note that this file is not actually JSON format as it include
-comments.  However by using javascript style comments, some tools that
-expect JSON (editors, linters, formatters) might work with it.  A
-command like ``sed -e 's#^\s*//.*##' -e 's#\s*\s\s\s//.*##'
-logging.json`` can be used to strip comments for programs that need
-it.
+comments.  However by using javascript style comments, some tools
+that treat JSON like javascript (editors, linters, formatters)
+might work with it.  A command like::
+
+  sed -e 's#^\s*//.*##' -e 's#\s*\s\s\s//.*##' logging.json
+
+can be used to strip comments for programs that need it.
 
 The config below works with the `Waitress wsgi server
 <https://github.com/Pylons/waitress>`_ configured to use the
-roundup.wsgi channel. It also controls the `TransLogger middleware
-<https://github.com/pasteorg/paste>`_ configured to use
-roundup.wsgi.translogger, to produce httpd style combined logs. The
-log file is specified relative to the current working directory not
-the tracker home. The tracker home is the subdirectory demo under the
-current working directory. The commented config is::
+roundup.wsgi channel. It also controls the `TransLogger
+middleware <https://github.com/pasteorg/paste>`_ configured to
+use roundup.wsgi.translogger, to produce httpd style combined
+logs. The log file is specified relative to the current working
+directory not the tracker home. The tracker home is the
+subdirectory demo under the current working directory. The
+commented config is::
 
   {
     "version": 1,   // only supported version
@@ -173,11 +362,12 @@ current working directory. The commented config is::
     "formatters": {
       // standard format for Roundup messages
       "standard": {
-        "format": "%(asctime)s %(ctx_id)s %(levelname)s %(name)s:%(module)s %(msg)s"
+        "format": "%(asctime)s %(trace_id)s %(levelname)s %(name)s:%(module)s %(msg)s"
       },
       // used for waitress wsgi server to produce httpd style logs
       "http": {
-	"format": "%(message)s"
+	"format": "%(message)s %(trace_id)"
+
       }
     },
     "handlers": {
@@ -254,12 +444,13 @@ current working directory. The commented config is::
 fileConfig Based Logging Config
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The file config is an older and more limited method of configuring
-logging. It is described by the `Configuration file format
+The file config is an older and more limited method of
+configuring logging. It is described by the `Configuration file
+format
 <https://docs.python.org/3/library/logging.config.html#configuration-file-format>`_
-in the Python documentation. The file name in the tracker's config for
-the ``logging`` -> ``config`` setting must end with ``.ini`` to choose
-the correct processing.
+in the Python documentation. The file name in the tracker's
+config for the ``logging`` -> ``config`` setting must end with
+``.ini`` to choose the correct processing.
 
 Example fileConfig LoggingConfig
 ................................
@@ -343,7 +534,7 @@ extension output::
   keys=basic,plain
 
   [formatter_basic]
-  format=%(asctime)s %(process)d %(name)s:%(module)s.%(funcName)s,%(levelname)s: %(message)s
+  format=%(asctime)s %(trace_id)s %(process)d %(name)s:%(module)s.%(funcName)s,%(levelname)s: %(message)s
   datefmt=%Y-%m-%d %H:%M:%S
 
   [formatter_plain]

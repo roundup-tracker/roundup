@@ -11,18 +11,19 @@ import binascii
 import errno
 import getopt
 import logging
-import logging.config
 import os
 import re
 import smtplib
 import sys
 import time
+import traceback
 
 import roundup.date
 from roundup.anypy import random_
 from roundup.anypy.strings import b2s
 from roundup.backends import list_backends
 from roundup.i18n import _
+from roundup.logcontext import gen_trace_id, get_context_info
 
 if sys.version_info[0] > 2:
     import configparser  # Python 3
@@ -577,33 +578,36 @@ class SpaceSeparatedListOption(Option):
 
 
 class LoggingFormatOption(Option):
-    """Replace escaped % (as %%) with single %.
+    """Escape/unescape logging format string '%(' <-> '%%('
 
        Config file parsing allows variable interpolation using
        %(keyname)s.  However this is exactly the format that we need
        for creating a logging format string. So we tell the user to
        quote the string using %%(...). Then we turn %%( -> %( when
-       retrieved.
+       retrieved and turn %( into %%( when saving the file.
     """
 
-    class_description = ("Allowed value: Python logging module named "
-                         "attributes with % sign doubled.")
+    class_description = ("Allowed value: Python LogRecord attribute named "
+                         "formats with % *sign doubled*.\n"
+                         "Also you can include the following attributes:\n"
+                         "  %%(trace_id)s %%(trace_reason)s and %%(pct_char)s"
+                         )
 
     def str2value(self, value):
-        """Check format of unquoted string looking for missing specifiers.
+        """Validate and convert value of logging format string.
 
            This does a dirty check to see if a token is missing a
-           specifier. So "%(ascdate)s %(level) " would fail because of
-           the 's' missing after 'level)'. But "%(ascdate)s %(level)s"
+           specifier. So "%%(ascdate)s %%(level) " would fail because of
+           the 's' missing after 'level)'. But "%%(ascdate)s %%(level)s"
            would pass.
 
-           Note that %(foo)s generates a error from the ini parser
-           with a less than wonderful message.
+           Note that '%(foo)s' (i.e. unescaped substitution) generates
+           a error from the ini parser with a less than wonderful message.
         """
         unquoted_val = value.replace("%%(", "%(")
 
         # regexp matches all current logging record object attribute names.
-        scanned_result = re.sub(r'%\([A-Za-z_]+\)\S','', unquoted_val )
+        scanned_result = re.sub(r'%\([A-Za-z_]+\)\S', '', unquoted_val)
         if scanned_result.find('%(') != -1:
             raise OptionValueError(
                 self, unquoted_val,
@@ -617,6 +621,7 @@ class LoggingFormatOption(Option):
         """Replace %( with %%( to quote the format substitution param.
         """
         return value.replace("%(", "%%(")
+
 
 class OriginHeadersListOption(Option):
 
@@ -1658,7 +1663,7 @@ always passes, so setting it less than 1 is not recommended."""),
             "If above 'config' option is set, this option has no effect.\n"
             "Allowed values: DEBUG, INFO, WARNING, ERROR"),
         (LoggingFormatOption, "format",
-         "%(asctime)s %(levelname)s %(message)s",
+            "%(asctime)s %(trace_id)s %(levelname)s %(message)s",
             "Format of the logging messages with all '%' signs\n"
             "doubled so they are not interpreted by the config file."),
         (BooleanOption, "disable_loggers", "no",
@@ -2379,6 +2384,18 @@ class CoreConfig(Config):
     def _get_name(self):
         return self["TRACKER_NAME"]
 
+    @gen_trace_id()
+    def _logging_test(self, sinfo, msg="test %(a)s\n%(sinfo)s", args=None):
+        """Test method for logging formatting.
+
+           Not used in production.
+        """
+        logger = logging.getLogger('roundup')
+        if args:
+            logger.info(msg, *args)
+        else:
+            logger.info(msg, extra={"a": "a_var", "sinfo": sinfo})
+
     def reset(self):
         Config.reset(self)
         if self.ext:
@@ -2386,6 +2403,177 @@ class CoreConfig(Config):
         if self.detectors:
             self.detectors.reset()
         self.init_logging()
+
+    def gather_callstack(self, keep_full_stack=False):
+        # Locate logging call in stack
+        stack = traceback.extract_stack()
+        if keep_full_stack:
+            last_frame_index = len(stack)
+        else:
+            for last_frame_index, frame in enumerate(stack):
+                # Walk from the top of stack looking for
+                # "logging" in filename (really
+                # filepath). Can't use /logging/ as
+                # windows uses \logging\.
+                #
+                # Filtering by looking for "logging" in
+                # the filename isn't great.
+                if "logging" in frame.filename:
+                    break
+        if not keep_full_stack:
+            stack = stack[0:last_frame_index]
+        return (stack, last_frame_index)
+
+    def context_filter(self, record):
+        """Add context to record, expand context references in record.msg
+           Define pct_char as '%'
+        """
+
+        # This method can be called multiple times on different handlers.
+        # However it modifies the record on the first call and the changes
+        # persist in the record. So we only want to be called once per
+        # record.
+        if hasattr(record, "ROUNDUP_CONTEXT_FILTER_CALLED"):
+            return True
+
+        for name, value in get_context_info():
+            if not hasattr(record, name):
+                setattr(record, name, value)
+        record.pct_char = "%"
+        record.ROUNDUP_CONTEXT_FILTER_CALLED = True
+
+        if hasattr(record, "sinfo"):
+            # sinfo has to be set via extras argument to logging commands
+            #   to activate this.
+            #
+            # sinfo value can be:
+            #  non-integer: "", None etc. Print 5 elements of
+            #      stack before logging call
+            #  integer N > 0: print N elements of stack before
+            #      logging call
+            #  0: print whole stack before logging call
+            #  integer N < 0: undocumented print stack starting at
+            #      extract_stack() below. I.E. do not set bottom of
+            #      stack to the logging call.
+            # if |N| is greater than stack height, print whole stack.
+            stack_height = record.sinfo
+            keep_full_stack = False
+
+            if isinstance(stack_height, int):
+                if stack_height < 0:
+                    keep_full_stack = True
+                    stack_height = abs(stack_height)
+                if stack_height == 0:
+                    # None will set value to actual stack height.
+                    stack_height = None
+            else:
+                stack_height = 5
+
+            stack, last_frame_index = self.gather_callstack(keep_full_stack)
+
+            if stack_height is None:
+                stack_height = last_frame_index
+            elif stack_height > last_frame_index:
+                stack_height = last_frame_index  # start at frame 0
+
+            # report the stack info
+            record.sinfo = "".join(
+                traceback.format_list(
+                    stack[last_frame_index - stack_height:last_frame_index]
+                )
+            )
+
+        # if args are present, just return. Logging will
+        # expand the arguments.
+        if record.args:
+            return True
+
+        # Since args not present, try formatting msg using
+        # named arguments.
+        try:
+            record.msg = record.msg % record.__dict__
+        except (ValueError, TypeError):
+            # ValueError: means there is a % sign in the msg
+            # somewhere that is not meant to be a format token. So
+            # just leave msg unexpanded.
+            #
+            # TypeError - a positional format string is being
+            # handled without setting record.args. E.G.
+            #     .info("result is %f")
+            # Leave message unexpanded.
+            pass
+        return True
+
+    def add_logging_context_filter(self):
+        """Update log record with contextvar values and expand msg
+
+           The contextvar values are stored as attributes on the log
+           record object in record.__dict__. They should not exist
+           when this is called. Do not overwrite them if they do exist
+           as they can be set in a logger call using::
+
+               logging.warning("a message", extra = {"trace_id": foo})
+
+           the extra argument/parameter.
+
+           Attempt to expand msg using the variables in
+           record.__dict__. This makes::
+
+               logging.warning("the URL was: %(trace_reason)s")
+
+           work and replaces the ``%(trace_reason)s`` token with the value.
+           Note that you can't use positional params and named params
+           together.  For example::
+
+               logging.warning("user = %s and URL was: %(trace_reason)s", user)
+
+           will result in an exception in logging when it formats the
+           message.
+
+           Also ``%(pct_char)`` is defined to allow the addition of %
+           characters in the format string as bare % chars can't make
+           it past the configparser and %% encoded ones run into issue
+           with the format verifier.
+
+           Calling a logger (.warning() etc.) with the argument::
+
+                extra={"sinfo": an_int}
+
+           will result in a stack trace starting at the logger call
+           and going up the stack for `an_int` frames. Using "True"
+           in place of `an_int` will print only the call to the logger.
+
+           Note that logging untrusted strings in the msg set by user
+           (untrusted) may be an issue. So don't do something like:
+
+               .info("%s" % web_url)
+
+           as web_url could include '%(trace_id)s'. Instead use:
+
+               .info("%(url)s", extra=("url": web_url))
+
+          Even in the problem case, I think the damage is contained since:
+
+           * data doesn't leak as the log string is not exposed to the
+             user.
+
+           * the log string isn't executed or used internally.
+
+           * log formating can raise an exception. But this won't
+             affect the application as the exception is swallowed in
+             the logging package. The raw message would be printed by
+             the fallback logging handler.
+
+           but if it is a concern, make sure user data is added using
+           the extra dict when calling one of the logging functions.
+        """
+        loggers = [logging.getLogger(name) for name in
+                   logging.root.manager.loggerDict]
+        # append the root logger as it is not listed in loggerDict
+        loggers.append(logging.getLogger())
+        for logger in loggers:
+            for hdlr in logger.handlers:
+                hdlr.addFilter(self.context_filter)
 
     def load_config_dict_from_json_file(self, filename):
         import json
@@ -2481,14 +2669,15 @@ class CoreConfig(Config):
                     "Unable to load logging config file. "
                     "File extension must be '.ini' or '.json'.\n"
                     )
-                
+
+            self.add_logging_context_filter()
             return
 
         if _file:
             raise OptionValueError(self.options['LOGGING_CONFIG'],
                                    _file,
                                    "Unable to find logging config file.")
-        
+
         _file = self["LOGGING_FILENAME"]
         # set file & level on the roundup logger
         logger = logging.getLogger('roundup')
@@ -2503,6 +2692,15 @@ class CoreConfig(Config):
             logger.removeHandler(hdlr)
         logger.handlers = [hdlr]
         logger.setLevel(self["LOGGING_LEVEL"] or "ERROR")
+        if 'pytest' not in sys.modules:
+            # logger.propatgate is True by default. This is
+            # needed so that pytest caplog code will work. In
+            # production leaving it set to True relogs everything
+            # using the root logger with logging BASIC_FORMAT:
+            #    "%(level)s:%(name)s:%(message)s
+            logger.propagate = False
+
+        self.add_logging_context_filter()
 
     def validator(self, options):
         """ Validate options once all options are loaded.

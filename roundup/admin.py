@@ -49,6 +49,7 @@ from roundup.configuration import (
 )
 from roundup.exceptions import UsageError
 from roundup.i18n import _, get_translation
+from roundup.logcontext import gen_trace_id, store_trace_reason
 
 try:
     from UserDict import UserDict
@@ -2354,6 +2355,8 @@ Desc: %(description)s
         print(function.__doc__)
         return 1
 
+    @gen_trace_id()
+    @store_trace_reason('admin')
     def run_command(self, args):
         """Run a single command
         """
@@ -2599,7 +2602,7 @@ Desc: %(description)s
         if self.db and self.db_uncommitted:
             commit = self.my_input(_('There are unsaved changes. Commit them (y/N)? '))
             if commit and commit[0].lower() == 'y':
-                self.db.commit()
+                self.run_command(["commit"])
 
         # looks like histfile is saved with mode 600
         if self.readline and self.history_features('save_history'):
@@ -2674,7 +2677,7 @@ Desc: %(description)s
                 self.interactive()
             else:
                 ret = self.run_command(args)
-                if self.db: self.db.commit()  # noqa: E701
+                if self.db: self.run_command(["commit"])  # noqa: E701
             return ret
         finally:
             if self.db:
