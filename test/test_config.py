@@ -1169,14 +1169,15 @@ class TrackerConfig(unittest.TestCase):
         self.assertEqual(config['STATIC_FILES'], None)
 
         # load config
+        STATIC_FILES = os.path.join(self.dirname, "html2")
         config.load(self.dirname)
-        self.assertEqual(config['STATIC_FILES'], ['_test_instance/html2'])
+        self.assertEqual(config['STATIC_FILES'], [ STATIC_FILES ])
 
         # copy config
         config_copy = config.copy()
 
         # this should work
-        self.assertEqual(config_copy['STATIC_FILES'], ['_test_instance/html2'])
+        self.assertEqual(config_copy['STATIC_FILES'], [STATIC_FILES])
 
     @skip_py2
     def testConfigValueInterpolateError(self):
@@ -1272,13 +1273,14 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
                 configuration.ParsingOptionError) as cm:
             config.load(self.dirname)
 
-        self.assertEqual(cm.exception.args[0],
-                         "Error in _test_instance/config.ini with section "
+        ini_path = os.path.join(self.dirname, "config.ini")
+        self.assertEqual(cm.exception.args[0],(
+                         f"Error in {ini_path} with section "
                          "[logging] at option format: Bad value substitution: "
                          "option 'format' in section 'logging' contains an "
                          "interpolation key 'asctime' which is not a valid "
                          "option name. Raw value: '%(asctime)s %%(trace_id)s "
-                         "%%(levelname) %%(message)s'")
+                         "%%(levelname) %%(message)s'"))
 
     def testDictLoggerConfigViaJson(self):
 
@@ -1538,26 +1540,41 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
                   "%s'\n" % (log_config_filename, access_filename))
         self.assertEqual(output, target)
 
+        # mess up '}' so json file block isn't properly closed.
+        test_config = config1.replace(
+            ' }',
+            ' ')
+
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        # file is made relative to tracker dir.
+        self.db.config["LOGGING_CONFIG"] = '_test_log_config.json'
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.init_logging()
+
+        output = cm.exception.args[0].replace(r'\\','\\')
+        target = ("Error parsing json logging dict "
+                  "(%s) near \n\n"
+                  "  Error found at end of file. Maybe missing a "
+                  "block closing '}'.\n\n"
+                  "Expecting ',' delimiter: line 86 column 1." %
+                  (log_config_filename,))
+        self.assertEqual(output, target)
+
     def test_missing_logging_config_file(self):
         saved_config = self.db.config['LOGGING_CONFIG']
+
+        for logging_file in ["logging.json", "logging.ini", "logging.foobar"]:
+            self.db.config['LOGGING_CONFIG'] = logging_file
         
-        self.db.config['LOGGING_CONFIG'] = 'logging.json'
-        
-        with self.assertRaises(configuration.OptionValueError) as cm:
-            self.db.config.init_logging()
+            with self.assertRaises(configuration.OptionValueError) as cm:
+                self.db.config.init_logging()
 
-        self.assertEqual(cm.exception.args[1], "_test_instance/logging.json")
-        self.assertEqual(cm.exception.args[2],
-                         "Unable to find logging config file.")
-
-        self.db.config['LOGGING_CONFIG'] = 'logging.ini'
-
-        with self.assertRaises(configuration.OptionValueError) as cm:
-            self.db.config.init_logging()
-
-        self.assertEqual(cm.exception.args[1], "_test_instance/logging.ini")
-        self.assertEqual(cm.exception.args[2],
-                         "Unable to find logging config file.")
+                logging_configfile = os.path.join(self.dirname, logging_file)
+                self.assertEqual(cm.exception.args[1], logging_configfile)
+                self.assertEqual(cm.exception.args[2],
+                                 "Unable to find logging config file.")
 
         self.db.config['LOGGING_CONFIG'] = saved_config
         
@@ -1566,11 +1583,12 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
 
         self.db.config['LOGGING_CONFIG'] = 'schema.py'
 
-        
+
         with self.assertRaises(configuration.OptionValueError) as cm:
             self.db.config.init_logging()
 
-        self.assertEqual(cm.exception.args[1], "_test_instance/schema.py")
+        logging_configfile = os.path.join(self.dirname, "schema.py")
+        self.assertEqual(cm.exception.args[1], logging_configfile)
         self.assertEqual(cm.exception.args[2],
                          "Unable to load logging config file. "
                          "File extension must be '.ini' or '.json'.\n")

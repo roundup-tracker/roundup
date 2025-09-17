@@ -2604,7 +2604,11 @@ class CoreConfig(Config):
             error_at_doc_line = e.lineno
             # subtract 1 - zero index on config_list
             # remove '\n' for display
-            line = config_list[error_at_doc_line - 1][:-1]
+            try:
+                line = config_list[error_at_doc_line - 1][:-1]
+            except IndexError:
+                line = _("Error found at end of file. Maybe missing a "
+                         "block closing '}'.")
 
             hint = ""
             if line.find('//') != -1:
