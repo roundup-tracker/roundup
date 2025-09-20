@@ -15,6 +15,7 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
+import configparser
 import errno
 import fileinput
 import logging
@@ -424,8 +425,8 @@ class TrackerConfig(unittest.TestCase):
 
     @pytest.fixture(autouse=True)
     def save_restore_logging(self):
-        """Save logger state and try to restore it after all tests in
-           this class have finished.
+        """Save logger state and try to restore it after each test
+           has finished.
 
            The primary test is testDictLoggerConfigViaJson which
            can change the loggers and break tests that depend on caplog
@@ -484,6 +485,18 @@ class TrackerConfig(unittest.TestCase):
         logging.shutdown()
         reload(logging)
 
+    def reset_logging(self):
+        """https://til.tafkas.net/posts/-resetting-python-logging-before-running-tests/"""
+        loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+        loggers.append(logging.getLogger())
+        for logger in loggers:
+            handlers = logger.handlers[:]
+            for handler in handlers:
+                logger.removeHandler(handler)
+                handler.close()
+            logger.setLevel(logging.NOTSET)
+            logger.propagate = True
+        
     backend = 'anydbm'
 
     def setUp(self):
@@ -1562,6 +1575,225 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
                   (log_config_filename,))
         self.assertEqual(output, target)
 
+    def testIniFileLoggerConfig(self):
+
+        # good base test case
+        config1 = dedent("""
+        [loggers]
+        keys=root,roundup,roundup.http,roundup.hyperdb,actions,schema,extension,detector
+
+        [logger_root]
+        #DEBUG, INFO, WARNING, ERROR, CRITICAL
+        #also for root only NOTSET (all)
+        level=DEBUG
+        handlers=basic
+
+        [logger_roundup]
+        #DEBUG, INFO, WARNING, ERROR, CRITICAL
+        #also for root only NOTSET (all)
+        level=DEBUG
+        handlers=rotate
+        qualname=roundup
+        propagate=0
+
+        [logger_roundup.http]
+        level=INFO
+        handlers=rotate_weblog
+        qualname=roundup.http
+        propagate=0
+
+        [logger_roundup.hyperdb]
+        level=WARNING
+        handlers=rotate
+        qualname=roundup.hyperdb
+        propagate=0
+
+        [logger_actions]
+        #DEBUG, INFO, WARNING, ERROR, CRITICAL
+        #also for root only NOTSET (all)
+        level=DEBUG
+        handlers=rotate
+        qualname=actions
+        propagate=0
+
+        [logger_detector]
+        #DEBUG, INFO, WARNING, ERROR, CRITICAL
+        #also for root only NOTSET (all)
+        level=DEBUG
+        handlers=rotate
+        qualname=detector
+        propagate=0
+
+        [logger_schema]
+        level=DEBUG
+        handlers=rotate
+        qualname=schema
+        propagate=0
+
+        [logger_extension]
+        level=DEBUG
+        handlers=rotate
+        qualname=extension
+        propagate=0
+
+        [handlers]
+        keys=basic,rotate,rotate_weblog
+
+        [handler_basic]
+        class=StreamHandler
+        args=(sys.stderr,)
+        formatter=basic
+
+        [handler_rotate]
+        class=logging.handlers.RotatingFileHandler
+        args=('roundup.log','a', 512000, 2)
+        formatter=basic
+
+        [handler_rotate_weblog]
+        class=logging.handlers.RotatingFileHandler
+        args=('httpd.log','a', 512000, 2)
+        formatter=plain
+
+        [formatters]
+        keys=basic,plain
+
+        [formatter_basic]
+        format=%(asctime)s %(name)s:%(module)s.%(funcName)s,%(levelname)s: %(message)s
+        datefmt=%Y-%m-%d %H:%M:%S
+
+        [formatter_plain]
+        format=%(message)s
+        """)
+
+        log_config_filename = os.path.join(self.instance.tracker_home,
+                                           "_test_log_config.ini")
+
+        # happy path
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(config1)
+
+        self.db.config.LOGGING_CONFIG = "_test_log_config.ini"
+
+        # verify we have a clean environment
+        self.assertEqual(len(logging.getLogger('roundup.http').handlers), 0)
+        
+        # always returns None
+        self.db.config.init_logging()
+
+        # verify that logging loaded and handler is set
+        # default log config doesn't define handlers for roundup.http
+        self.assertEqual(len(logging.getLogger('roundup.http').handlers), 1)
+        self.reset_logging()
+
+        # use undefined enumeration
+        test_config = config1.replace("=DEBUG\n", "=DEBUF\n")
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.init_logging()
+ 
+        # verify that logging was reset
+        # default log config doesn't define handlers for roundup.http
+        self.assertEqual(len(logging.getLogger('roundup.http').handlers), 0)
+        
+        self.assertEqual(
+            cm.exception.args[0].replace(r'\\','\\'),
+            ('Error loading logging config from %s.\n\n'
+             "   Unknown level: 'DEBUF'\n\n"
+             'Inappropriate argument value (of correct type).\n' %
+             log_config_filename)
+        )
+        self.reset_logging()
+
+
+        # add a syntax error "= foo"
+        test_config = config1.replace("=DEBUG\n", "=DEBUG\n=foo\n", 1)
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.init_logging()
+ 
+        # verify that logging was reset
+        # default log config doesn't define handlers for roundup.http
+        self.assertEqual(len(logging.getLogger('roundup.http').handlers), 0)
+        
+        self.assertEqual(
+            cm.exception.args[0].replace(r'\\','\\'),
+            ("Error loading logging config from %(filename)s.\n\n"
+             "   %(filename)s is invalid: Source contains parsing errors: "
+             "'%(filename)s'\n\t[line  9]: '=foo\\n'\n\n"
+             "Source contains parsing errors: '%(filename)s'\n"
+             "\t[line  9]: '=foo\\n' Unspecified run-time error.\n" %
+             {"filename": log_config_filename})
+        )
+        self.reset_logging()
+        
+        # handler = basic to handler = basi
+        test_config = config1.replace("handlers=basic\n", "handlers=basi\n", 1)
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.init_logging()
+ 
+        # verify that logging was reset
+        # default log config doesn't define handlers for roundup.http
+        self.assertEqual(len(logging.getLogger('roundup.http').handlers), 0)
+        
+        self.assertEqual(
+            cm.exception.args[0].replace(r'\\','\\'),
+            ("Error loading logging config from %(filename)s.\n\n"
+             "   basi\n\n"
+             "Mapping key not found. No section found with this name.\n" %
+             {"filename": log_config_filename})
+        )
+        self.reset_logging()
+
+        # Change class to missing class
+        test_config = config1.replace("class=StreamHandler\n",
+                                      "class=SHAndler\n", 1)
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        with self.assertRaises(configuration.LoggingConfigError) as cm:
+            config = self.db.config.init_logging()
+ 
+        # verify that logging was reset
+        # default log config doesn't define handlers for roundup.http
+        self.assertEqual(len(logging.getLogger('roundup.http').handlers), 0)
+        
+        self.assertEqual(
+            cm.exception.args[0].replace(r'\\','\\'),
+            ("Error loading logging config from %(filename)s.\n\n"
+             "   No module named 'SHAndler'\n\n"
+             "name 'SHAndler' is not defined Module not found.\n" %
+             {"filename": log_config_filename})
+        )
+        self.reset_logging()
+
+        # remove section to cause duplicate option definition
+        test_config = config1.replace("[logger_roundup.http]\n",
+                                      "\n", 1)
+        with open(log_config_filename, "w") as log_config_file:
+            log_config_file.write(test_config)
+
+        with self.assertRaises(configparser.DuplicateOptionError) as cm:
+            config = self.db.config.init_logging()
+ 
+        # verify that logging was reset
+        # default log config doesn't define handlers for roundup.http
+        self.assertEqual(len(logging.getLogger('roundup.http').handlers), 0)
+        
+        self.assertEqual(
+            str(cm.exception).replace(r'\\','\\'),
+            ("While reading from '%(filename)s' [line 20]: "
+             "option 'level' in section 'logger_roundup' already exists" %
+             {"filename": log_config_filename})
+        )
+        self.reset_logging()
+                
     def test_missing_logging_config_file(self):
         saved_config = self.db.config['LOGGING_CONFIG']
 

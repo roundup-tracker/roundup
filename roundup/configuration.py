@@ -2634,9 +2634,36 @@ class CoreConfig(Config):
         _file = self["LOGGING_CONFIG"]
         if _file and os.path.isfile(_file):
             if _file.endswith(".ini"):
-                logging.config.fileConfig(
-                    _file,
-                    disable_existing_loggers=self["LOGGING_DISABLE_LOGGERS"])
+                try:
+                    logging.config.fileConfig(
+                        _file,
+                        disable_existing_loggers=self[
+                            "LOGGING_DISABLE_LOGGERS"])
+                except (ValueError, RuntimeError,
+                        KeyError, NameError, ModuleNotFoundError) as e:
+                    # configparser.DuplicateOptionError includes
+                    # filename, line number and a useful error.
+                    # so we don't have to augment it.
+                    context = []
+                    if hasattr(e, '__context__') and e.__context__:
+                        # get additional error info.
+                        context.append(str(e.__context__))
+                    if hasattr(e, '__doc__') and e.__doc__:
+                        context.append(e.__doc__)
+
+                    if isinstance(e, KeyError):
+                        context.append("No section found with this name.")
+                    if not context:
+                        context = ["No additional information available."]
+
+                    raise LoggingConfigError(
+                        "Error loading logging config from %(file)s.\n\n"
+                        "   %(msg)s\n\n%(context)s\n" % {
+                            "file": _file,
+                            "msg": e.args[0],
+                            "context": " ".join(context),
+                        }
+                        )
             elif _file.endswith(".json"):
                 config_dict = self.load_config_dict_from_json_file(_file)
                 try:

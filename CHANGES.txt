@@ -29,6 +29,8 @@ Fixed:
 - in roundup-admin, using 'pragma history_length interactively now
   sets readline history length. Using -P history_length=10 on the
   command line always worked. (John Rouillard)
+- enhanced error reporting for errors in ini style logging
+  configuration. (John Rouillard)
 
 Features:
 
