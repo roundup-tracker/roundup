@@ -1724,7 +1724,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         if sys.version_info >= (3, 12, 0):
             expected = (
                 "Error loading logging config from %(filename)s.\n\n"
-                "   %(filename)s is invalid: Source contains parsing errors: "
+                "   RuntimeError: %(filename)s is invalid: Source contains parsing errors: "
                 "'%(filename)s'\n\t[line  9]: '=foo\\n'\n\n"
                 "Source contains parsing errors: '%(filename)s'\n"
                 "\t[line  9]: '=foo\\n' Unspecified run-time error.\n" %
@@ -1740,8 +1740,6 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
                 "Raised when a configuration file does not follow legal "
                 "syntax.\n" % {"filename": log_config_filename})
 
-        print(output)
-        
         self.assertEqual(output, expected)
         self.reset_logging()
         
