@@ -2639,7 +2639,7 @@ class CoreConfig(Config):
                         _file,
                         disable_existing_loggers=self[
                             "LOGGING_DISABLE_LOGGERS"])
-                except (ValueError, RuntimeError,
+                except (ValueError, RuntimeError, configparser.ParsingError,
                         KeyError, NameError, ModuleNotFoundError) as e:
                     # configparser.DuplicateOptionError includes
                     # filename, line number and a useful error.
