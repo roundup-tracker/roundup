@@ -1700,7 +1700,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         self.assertEqual(
             cm.exception.args[0].replace(r'\\','\\'),
             ('Error loading logging config from %s.\n\n'
-             "   Unknown level: 'DEBUF'\n\n"
+             "   ValueError: Unknown level: 'DEBUF'\n\n"
              'Inappropriate argument value (of correct type).\n' %
              log_config_filename)
         )
@@ -1718,16 +1718,31 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         # verify that logging was reset
         # default log config doesn't define handlers for roundup.http
         self.assertEqual(len(logging.getLogger('roundup.http').handlers), 0)
-        
-        self.assertEqual(
-            cm.exception.args[0].replace(r'\\','\\'),
-            ("Error loading logging config from %(filename)s.\n\n"
-             "   %(filename)s is invalid: Source contains parsing errors: "
-             "'%(filename)s'\n\t[line  9]: '=foo\\n'\n\n"
-             "Source contains parsing errors: '%(filename)s'\n"
-             "\t[line  9]: '=foo\\n' Unspecified run-time error.\n" %
-             {"filename": log_config_filename})
-        )
+
+        output = cm.exception.args[0].replace(r'\\','\\')
+
+        if sys.version_info >= (3, 12, 0):
+            expected = (
+                "Error loading logging config from %(filename)s.\n\n"
+                "   RuntimeError: %(filename)s is invalid: Source contains parsing errors: "
+                "'%(filename)s'\n\t[line  9]: '=foo\\n'\n\n"
+                "Source contains parsing errors: '%(filename)s'\n"
+                "\t[line  9]: '=foo\\n' Unspecified run-time error.\n" %
+                {"filename": log_config_filename})
+
+        else: # 3.7 <= x < 3.12.0
+
+            expected = (
+                "Error loading logging config from %(filename)s.\n\n"
+
+                "   ParsingError: Source contains parsing errors: "
+                "'%(filename)s'\n"
+                "\t[line  9]: '=foo\\n'\n\n"
+
+                "Raised when a configuration file does not follow legal "
+                "syntax.\n" % {"filename": log_config_filename})
+
+        self.assertEqual(output, expected)
         self.reset_logging()
         
         # handler = basic to handler = basi
@@ -1745,7 +1760,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         self.assertEqual(
             cm.exception.args[0].replace(r'\\','\\'),
             ("Error loading logging config from %(filename)s.\n\n"
-             "   basi\n\n"
+             "   KeyError: 'basi'\n\n"
              "Mapping key not found. No section found with this name.\n" %
              {"filename": log_config_filename})
         )
@@ -1767,7 +1782,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
         self.assertEqual(
             cm.exception.args[0].replace(r'\\','\\'),
             ("Error loading logging config from %(filename)s.\n\n"
-             "   No module named 'SHAndler'\n\n"
+             "   ModuleNotFoundError: No module named 'SHAndler'\n\n"
              "name 'SHAndler' is not defined Module not found.\n" %
              {"filename": log_config_filename})
         )
