@@ -2660,7 +2660,7 @@ class CoreConfig(Config):
                         "Error loading logging config from %(file)s.\n\n"
                         "   %(msg)s\n\n%(context)s\n" % {
                             "file": _file,
-                            "msg": e.args[0],
+                            "msg":  type(e).__name__ + ": " + str(e),
                             "context": " ".join(context),
                         }
                         )
