@@ -369,7 +369,7 @@ See user.item.html in the classic template for examples.
 
 <!-- src: value will be re-used for other input fields -->
 <input metal:define-macro="user_src_input"
-    type="text" tal:attributes="onblur python:edit_ok and 'split_name(this)';
+    type="text" tal:attributes="onblur python:'split_name(this)' if edit_ok else '';
     id name; name name; value value; readonly not:edit_ok"
     value="heinz.kunz">
 <!-- normal: no re-using -->
