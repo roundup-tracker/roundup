@@ -177,6 +177,26 @@ stripped before being processed by the logging system.
 
 You can read about the details in the :ref:`admin manual <dictLogConfig>`.
 
+Fix user.item.html template producing invalid Javascript (optional)
+-------------------------------------------------------------------
+
+The html template ``page.html`` in the classic, devel, minimal, and
+responsive tracker templates define a ``user_src_input`` macro. This
+macro produces invalid javascript for the ``onblur`` event when used
+by ``user.item.html``. The only effect from this bug is a javascript
+error reported in the user's browser when the user does not have edit
+permissions on the page. It doesn't have any user visible impact. 
+
+If you want to fix this, replace::
+
+  tal:attributes="onblur python:edit_ok and 'split_name(this)';
+
+with::
+
+  tal:attributes="onblur python:'split_name(this)' if edit_ok else '';
+  
+in the ``html/page.html`` file in your tracker.
+
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0

@@ -31,7 +31,9 @@ Fixed:
   command line always worked. (John Rouillard)
 - enhanced error reporting for errors in ini style logging
   configuration. (John Rouillard)
-
+- fix bogus javascript emitted by user_src_input macro. (John
+  Rouillard)
+  
 Features:
 
 - add support for authorized changes. User can be prompted to enter
