@@ -1283,7 +1283,7 @@ FastCGI (Cherokee, Hiawatha, lighttpd)
 
 The Hiawatha and lighttpd web servers can run Roundup using FastCGI.
 Cherokee can run FastCGI but it also supports wsgi directly using a
-wsgi server like uWSGI, Gnuicorn etc.
+wsgi server like Waitress, Gnuicorn etc.
 
 To run Roundup using FastCGI, the flup_ package can be used under
 Python 2 and Python 3. We don't have a detailed config for this, but
@@ -1498,23 +1498,6 @@ including putting it behind a proxy, IPV6 support etc.
 
 .. _`See the Waitress docs`:
    https://docs.pylonsproject.org/projects/waitress/en/stable/
-
-.. index:: pair: web interface; uWSGI
-   single: wsgi; uWSGI
-
-uWSGI Installation
-~~~~~~~~~~~~~~~~~~
-
-For a basic roundup install using uWSGI behind a front end server,
-install uwsgi and the python3 (or python) plugin. Then run::
-
-   uwsgi --http-socket 127.0.0.1:8917 \
-       --plugin python3 --mount=/tracker=wsgi.py \
-       --manage-script-name --callable app
-
-using the same wsgi.py as was used for Gunicorn. If you get path not
-found errors, check the mount option. The /tracker entry must match
-the path used for the [tracker] web value in the tracker's config.ini.
 
 Configure an Email Interface
 ============================

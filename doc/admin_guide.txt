@@ -738,7 +738,7 @@ on the fly, compression is enabled by default, to disable it set::
     dynamic_compression = No
 
 in the tracker's ``config.ini``. You should disable compression if
-your proxy (e.g. nginx or apache) or wsgi server (uwsgi) is configured
+your proxy (e.g. nginx or apache) is configured
 to compress responses on the fly. The python standard library includes
 gzip support. For brotli or zstd you will need to install packages. See
 the `installation documentation`_ for details.
@@ -900,9 +900,9 @@ There are two ways to add a CSP:
 Fixed CSP
 ---------
 
-If you are using a web server (Apache, Nginx) to run Roundup, you can
-add a ``Content-Security-Policy`` header using that server. WSGI
-servers like uWSGI can also be configured to add headers.  An example
+If you are using a web server (Apache, Nginx) to run Roundup, you
+can add a ``Content-Security-Policy`` header using that
+server. WSGI middleware can be written to add headers.  An example
 header would look like::
 
   Content-Security-Policy: default-src 'self' 'unsafe-inline' 'strict-dynamic';
