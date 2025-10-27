@@ -4,4 +4,4 @@
 # returns last one for testing that server is up. Does not test
 # each tracker.
 tracker=$(ps -ef | sed -ne '/roundup-server/s/^.*\s\(\w*\)=.*$/\1/p')
-wget -q -O /dev/null --proxy off --no-verbose http://localhost:8080/"${tracker:-demo}"/
+wget -q -O /dev/null --proxy off --no-verbose http://127.0.0.1:8080/"${tracker:-demo}"/
