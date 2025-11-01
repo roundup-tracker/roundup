@@ -33,7 +33,9 @@ Fixed:
   configuration. (John Rouillard)
 - fix bogus javascript emitted by user_src_input macro. (John
   Rouillard)
-  
+- replaced hostname localhost with 127.0.0.1 in docker healthcheck
+  script. Found/patch by Norbert Schlemmer. (John Rouillard)
+
 Features:
 
 - add support for authorized changes. User can be prompted to enter
