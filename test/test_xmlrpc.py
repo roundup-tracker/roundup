@@ -228,7 +228,6 @@ class XmlrpcTest(object):
 
     def testAuthFilter(self):
         # this checks if we properly check for search permissions
-        self.db.security.permissions = {}
         # self.db.security.set_props_only_default(props_only=False)
         self.db.security.addRole(name='User')
         self.db.security.addRole(name='Project')

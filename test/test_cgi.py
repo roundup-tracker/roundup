@@ -1973,7 +1973,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             actions.EditItemAction(cl).handle)
 
     def testCheckAndPropertyPermission(self):
-        self.db.security.permissions = {}
+        self.db.security.permission = {}
         def own_record(db, userid, itemid):
             return userid == itemid
         p = self.db.security.addPermission(name='Edit', klass='user',
@@ -2004,7 +2004,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
     def testCreatePermission(self):
         # this checks if we properly differentiate between create and
         # edit permissions
-        self.db.security.permissions = {}
+        self.db.security.permission = {}
         self.db.security.addRole(name='UserAdd')
         # Don't allow roles
         p = self.db.security.addPermission(name='Create', klass='user',
@@ -2061,7 +2061,6 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
     def testSearchPermission(self):
         # this checks if we properly check for search permissions
-        self.db.security.permissions = {}
         self.db.security.addRole(name='User')
         self.db.security.addRole(name='Project')
         self.db.security.addPermissionToRole('User', 'Web Access')

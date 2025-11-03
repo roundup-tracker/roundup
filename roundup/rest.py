@@ -426,6 +426,9 @@ class Routing(object):
                 func = func_obj['func']
 
                 # zip the varlist into a dictionary, and pass it to the caller
+                # FIXME: 3.10 is min version- add strict=True to zip
+                # also wrap with try/except ValueError if different number of
+                # items (which should never happen).
                 args = dict(zip(list_vars, match_obj.groups()))
                 args['input_payload'] = input_payload
                 return func(instance, **args)
@@ -2741,6 +2744,9 @@ class SimulateFieldStorageFromJson():
     string.
 
     '''
+
+    __slots__ = ("json_dict", "value")
+
     def __init__(self, json_string):
         '''Parse the json string into an internal dict.
 
@@ -2764,6 +2770,9 @@ class SimulateFieldStorageFromJson():
             raise ValueError(e.args[0] + ". JSON is: " + json_string)
 
     class FsValue:
+
+        __slots__ = ("name", "value")
+
         '''Class that does nothing but response to a .value property '''
         def __init__(self, name, val):
             self.name = u2s(name)

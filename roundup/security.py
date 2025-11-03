@@ -18,6 +18,7 @@ class Permission:
         - properties (optional)
         - check function (optional)
         - props_only (optional, internal field is limit_perm_to_props_only)
+          default value taken from Permission.limit_perm_to_props_only_default.
         - filter function (optional) returns filter arguments for
           determining which records are visible by the user. The filter
           function comes into play when determining if a set of nodes
@@ -58,7 +59,18 @@ class Permission:
         with a True or False value.
     '''
 
-    limit_perm_to_props_only = False
+    __slots__ = (
+        "_properties_dict",
+        "check",
+        "check_version",
+        "description",
+        "filter",
+        "klass",
+        "limit_perm_to_props_only",
+        "name",
+        "properties")
+
+    limit_perm_to_props_only_default = False
 
     def __init__(self, name='', description='', klass=None,
                  properties=None, check=None, props_only=None, filter=None):
@@ -80,7 +92,7 @@ class Permission:
             # a == b will be true.
             if props_only is None:
                 self.limit_perm_to_props_only = \
-                                Permission.limit_perm_to_props_only
+                                Permission.limit_perm_to_props_only_default
             else:
                 # see note on use of bool() in set_props_only_default()
                 self.limit_perm_to_props_only = bool(props_only)
@@ -122,6 +134,9 @@ class Permission:
             return False
 
         return check
+
+    def props_dict(self):
+        return {name: getattr(self, name) for name in self.__slots__}
 
     def test(self, db, permission, classname, property, userid, itemid):
         ''' Test permissions 5 args:
@@ -222,6 +237,9 @@ class Role:
         - description
         - permissions
     '''
+
+    __slots__ = ("_permissions", "description", "name")
+
     def __init__(self, name='', description='', permissions=None):
         self.name = name.lower()
         self.description = description
@@ -301,6 +319,9 @@ class Role:
         perm_list.sort(key=lambda x: (x.klass or '', x.name))
         return perm_list
 
+    def props_dict(self):
+        return {name: getattr(self, name) for name in self.__slots__}
+
     def searchable(self, classname, propname):
         for perm_name in 'View', 'Search':
             # Only permissions without a check method
@@ -321,6 +342,12 @@ class Role:
 
 
 class Security:
+
+    # __dict__ is needed to allow mocking of db.security.hasPermission
+    # in test/test_templating.py. Define slots for properties used in
+    # production to increase speed.
+    __slots__ = ("__dict__", "db", "permission", "role")
+
     def __init__(self, db):
         ''' Initialise the permission and role classes, and add in the
             base roles (for admin user).
@@ -452,6 +479,9 @@ class Security:
                 return False
         return True
 
+    def props_dict(self):
+        return {name: getattr(self, name) for name in self.__slots__}
+
     def roleHasSearchPermission(self, classname, property, *rolenames):
         """ For each of the given roles, check the permissions.
             Property can be a transitive property.
@@ -544,11 +574,11 @@ class Security:
             # will be compared as part of tuple == tuple and
             # (3,) == (True,) is False even though 3 is a True value
             # in a boolean context. So use bool() to coerce value.
-            Permission.limit_perm_to_props_only = \
+            Permission.limit_perm_to_props_only_default = \
                                     bool(props_only)
 
     def get_props_only_default(self):
-        return Permission.limit_perm_to_props_only
+        return Permission.limit_perm_to_props_only_default
 
     def addPermissionToRole(self, rolename, permission, classname=None,
                             properties=None, check=None, props_only=None):

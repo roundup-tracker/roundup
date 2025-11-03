@@ -35,7 +35,9 @@ Fixed:
   Rouillard)
 - replaced hostname localhost with 127.0.0.1 in docker healthcheck
   script. Found/patch by Norbert Schlemmer. (John Rouillard)
-
+- change some internal classes to use __slots__ for hopefully a small
+  performance improvement. (John Rouillard)
+  
 Features:
 
 - add support for authorized changes. User can be prompted to enter

@@ -11,6 +11,9 @@ import os, time, sys
 class TruthDict:
     '''Returns True for valid keys, False for others.
     '''
+
+    __slots__ = ('keys',)
+
     def __init__(self, keys):
         if keys:
             self.keys = {}
@@ -49,6 +52,9 @@ class PrioList:
     7
 
     '''
+
+    __slots__ = ('key', 'list', 'sorted')
+
     def __init__(self, key=None):
         self.list = []
         self.key = key

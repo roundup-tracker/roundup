@@ -250,7 +250,7 @@ Help:
                 if seq in h:
                     commands.append(' ' + h.split(seq, 1)[1].lstrip())
                     break
-                    
+
         commands.sort()
         commands.append(_(
 """Commands may be abbreviated as long as the abbreviation
@@ -2084,9 +2084,9 @@ Erase it? Y/N: """) % locals())
                 sys.stdout.write(_('New Email users get the Role "%(role)s"\n') % locals())
         roles.sort()
         for _rolename, role in roles:
-            sys.stdout.write(_('Role "%(name)s":\n') % role.__dict__)
+            sys.stdout.write(_('Role "%(name)s":\n') % role.props_dict())
             for permission in role.permission_list():
-                d = permission.__dict__
+                d = permission.props_dict()
                 if permission.klass:
                     if permission.properties:
                         sys.stdout.write(_(
