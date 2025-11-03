@@ -52,14 +52,14 @@ jobs:
         # Run in all these versions of Python
         python-version:
           # - "2.7"
+          - "3.14"
           - "3.13"
-          # - 3.6 run via include on ubuntu 20.04
-          # - "3.7"
+          # - "3.7" run via include for ubuntu-22.04
           # - "3.8" run via include for ubuntu-22.04
           # - "3.9"
           - "3.10"
           # - "3.11"
-          - "3.12"
+          # - "3.12"
 
         # use for multiple os or ubuntu versions
         #os: [ubuntu-latest, macos-latest, windows-latest]
@@ -74,7 +74,7 @@ jobs:
             # example: if this version fails the jobs still succeeds
             # allow-prereleases in setup-python allows alpha/beta
             # releases to run. Also allow free threaded python testing
-            - python-version: 3.13t
+            - python-version: 3.14t
               os: ubuntu-24.04
               experimental: true
             
