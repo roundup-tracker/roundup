@@ -324,6 +324,9 @@ class Date:
         >>> test_fin(u)
     '''
 
+    __slots__ = ("year", "month", "day", "hour", "minute", "second",
+                 "_", "ngettext", "translator")
+    
     def __init__(self, spec='.', offset=0, add_granularity=False,
                  translator=i18n):
         """Construct a date given a specification and a time zone offset.
