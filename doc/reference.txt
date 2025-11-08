@@ -1368,10 +1368,8 @@ from this directory, at which point it calls ``init(instance)`` from
 each file supplying itself as a first argument.
 
 Note that at this point web interface is not loaded, but
-extensions still can register actions for it in the tracker
-instance. This may be fixed in Roundup 1.6 by introducing
-``init_web(client)`` callback or a more flexible extension point
-mechanism.
+extensions can register actions for it in the tracker
+instance.
 
 * ``instance.registerUtil`` is used for adding `templating utilities`_
   (see `adding a time log to your issues
@@ -1384,8 +1382,9 @@ mechanism.
 
 * ``instance.registerAction`` is used to add more actions to the
   instance and to web interface. See `Defining new web actions`_
-  for details.  Generic action can be added by inheriting from
-  ``action.Action`` instead of ``cgi.action.Action``.
+  for details.  Generic action (used by xmlrpc or rest interfaces) can
+  be added by inheriting from ``action.Action`` instead of
+  ``cgi.action.Action``.
 
 .. _interfaces.py:
 .. _modifying the core of Roundup:
