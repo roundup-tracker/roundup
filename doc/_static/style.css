@@ -186,6 +186,8 @@ div[class^=highlight-], div[class^=highlight-] * { width:
 /* style */
 
 :link { color: rgb(220,0,0); text-decoration: none;}
+/* improve contrast to AA */
+.admonition.note :link { color: rgb(170,1,1); text-decoration: none;}
 :link:hover {
     text-decoration: underline solid clamp(1px, .3ex, 4px);
     text-underline-position: under;
@@ -437,6 +439,14 @@ dd > ul:first-child {
     overflow-wrap: anywhere;
     white-space: break-spaces;
 }*/
+
+/* improve color contrast to AA against yellowish highlight bg */
+div.highlight .c1 {
+    color: rgb(3,114,3);
+}
+div.highlight .na {
+    color: rgb(220,2,2);
+}
 
 /* Forcing wrap in a pre leads to some confusing line breaks.
    Use a horizontal scroll. Indicate the scroll by using

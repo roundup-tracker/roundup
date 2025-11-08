@@ -197,17 +197,18 @@ install Roundup. After you've unpacked the source, just run "``python
 demo.py``" and load up the URL it prints out!
 
 Follow the source gratification mode with these steps (change the
-``-2.4.0`` version identifier to match your downloaded file).
+``-2.6.0`` version identifier to match the version of Roundup you want
+to use).
 
 1. ``python3 -m pip download roundup``
-2. ``tar -xzvf roundup-2.4.0.tar.gz``
+2. ``tar -xzvf roundup-2.6.0.tar.gz``
 
    * if you don't have a tar command (e.g windows), use::
 
-       python -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.4.0.tar.gz
+       python -c "import tarfile, sys; tarfile.open(sys.argv[1]).extractall();" roundup-2.6.0.tar.gz
 
 
-3. ``cd roundup-2.4.0``
+3. ``cd roundup-2.6.0``
 4. ``python3 demo.py``
 
 (The source download can also be used to `create a custom Docker
