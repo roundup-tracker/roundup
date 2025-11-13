@@ -350,10 +350,19 @@ The config below works with the `Waitress wsgi server
 roundup.wsgi channel. It also controls the `TransLogger
 middleware <https://github.com/pasteorg/paste>`_ configured to
 use roundup.wsgi.translogger, to produce httpd style combined
-logs. The log file is specified relative to the current working
+logs.
+
+The log file is specified relative to the current working
 directory not the tracker home. The tracker home is the
-subdirectory demo under the current working directory. The
-commented config is::
+subdirectory demo under the current working directory.
+
+The config also expects the ``python-json-logger`` package to be
+installed so that it can produce a jsonl (json line) formatted
+output log file. This format is useful for sending to log
+management/observability platforms like elasticsearch, splunk,
+logly, or honeycomb.
+
+The commented config is::
 
   {
     "version": 1,   // only supported version
@@ -363,6 +372,28 @@ commented config is::
       // standard format for Roundup messages
       "standard": {
         "format": "%(asctime)s %(trace_id)s %(levelname)s %(name)s:%(module)s %(msg)s"
+      },
+      // Used to dump all log requests in jsonl format.
+      // Each json object is on one line. Can be pretty printed
+      // using:
+      //    python -m json.tool --json-lines --sort-keys < roundup.json.log
+      //    jq --slurp --sort-keys . < roundup.json.log
+      // requires that you pip install python-json-logger
+      // * does not report the fields in reserved_attrs
+      // * example to remap a field in the log to traceID in
+      //   the output json. (note trace_id_eg is not defined by
+      //   logging
+      // * also adds the env atribute to json with the value of demo
+      "json": {
+	"()": "pythonjsonlogger.json.JsonFormatter",
+	"reserved_attrs": ["ROUNDUP_CONTEXT_FILTER_CALLED",
+			   "msg", "pct_char", "relativeCreated"],
+	"rename_fields": {
+	  "trace_id_eg": "traceID"
+	},
+	"static_fields": {
+	  "env": "demo"
+	}
       },
       // used for waitress wsgi server to produce httpd style logs
       "http": {
@@ -385,6 +416,13 @@ commented config is::
 	"class": "logging.FileHandler",
 	"filename": "demo/roundup.log"
       },
+      // handler for json output log file
+      "roundup_json": {
+	"level": "DEBUG",        // "DEBUG",
+	"formatter": "json",
+	"class": "logging.FileHandler",
+	"filename": "demo/roundup.json.log"
+      },
       // print to stdout - fall through for other logging
       "default": {
 	"level": "DEBUG",
@@ -396,7 +434,8 @@ commented config is::
     "loggers": {
       "": {
 	"handlers": [
-	  "default"
+	  "default",
+	  "roundup_json"    // add json formatted logging
 	],
 	"level": "DEBUG",
 	"propagate": false
@@ -404,7 +443,8 @@ commented config is::
       // used by roundup.* loggers
       "roundup": {
 	"handlers": [
-	  "roundup"
+	  "roundup",
+	  "roundup_json"
 	],
 	"level": "DEBUG",
 	"propagate": false   // note pytest testing with caplog requires
