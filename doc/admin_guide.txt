@@ -1870,6 +1870,87 @@ Because environment variables can be inadvertently exposed in
 logs or process listings, Roundup does not currently support
 loading secrets from environment variables.
 
+.. _pgpconfig:
+
+Configuring PGP Email Support
+=============================
+
+.. note::
+   This section was written with the help of the Devin/DeepWiki AI.
+
+You have to install the gpg module using pip. See :ref:`directions for
+installing gpg <gpginstall>`
+in the upgrading document for more information.
+
+In your tracker's config.ini configure the following settings in the
+``[pgp]`` section::
+
+  enable = yes
+  homedir = /path/to/pgp/configdir
+  roles = admin
+
+This will allow any user with the admin role to send signed pgp
+email. If ``roles`` is not set, all users will need to use signed
+emails. If it is not signed it will be rejected. Note that ``homedir``
+must be an absolute path. Unlike other path settings, a relative path
+is not interpreted relative to the tracker home. See the documentation
+in config.ini for more information and other settings (e.g. to send
+encrypted emails from the tracker).
+
+When PGP is enabled and a message is signed with a valid signature,
+the database transaction source (db.tx_Source) is set to
+``email-sig-openpgp`` instead of ``email``. This allows you to
+restrict certain operations (e.g. changing a private flag) to
+authenticated/signed emails.
+
+Creating GPG Keys for the Tracker
+---------------------------------
+
+To generate a keypair use::
+
+  gpg --homedir /path/to/pgp/configdir --gen-key
+
+where the homedir directory matches the one you set in
+config.ini. Note the gpg homedir must be created before you run the
+command.  You will be prompted for the full name of your tracker and
+the email address for your tracker. You also need to do with as the
+user who runs roundup (aka the roundup user) and the roundup email
+gateway. Do not encrypt the key.
+
+Roundup has no mechanism for reading the private key if it is
+encrypted. So make sure the permissions on the homedir only allow the
+roundup user to read the files.
+
+You can export the public key for use by clients using::
+
+  gpg --homedir /path/to/pgp/configdir --export -a tracker@example.com > tracker-public.key
+
+with homedir and email matching the values used to generate the
+key. This will allow users to import the public key and encrypt emails
+to the tracker.
+
+The public gpg key for each user's email address must be imported. To
+do this, obtain the user's public key for their primary email address
+and import it using::
+
+  gpg --homedir /path/to/tracker/gpg --import user-public-key.asc
+
+While Roundup supports multiple addresses for each user, only the
+primary address supports PGP signed or encrypted messages.
+
+.. comment:
+   Questions:
+
+   Can roundup send signed emails? (looks like no, why??)
+
+   Why are alternate addresses not supported for receiving PGP emails?
+   
+   Does Roundup ever send an email to an alternate email address?
+
+   Should there be some way for a user to upload their own public key?
+   If so what ui (paste armored asci cert in textbox, upload ascii
+   file from user page and process)?
+   
 Tasks
 =====
 

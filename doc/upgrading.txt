@@ -785,6 +785,8 @@ request (tu.client.request), the translator for the current language
 
 You can find an example in :ref:`dynamic_csp`.
 
+.. _gpginstall:
+
 Directions for installing gpg (optional)
 ----------------------------------------
 
