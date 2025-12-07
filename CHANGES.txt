@@ -57,6 +57,8 @@ Features:
   logs for a specific transaction. Logging also supports a
   trace_reason log token with the url for a web request. The logging
   format can be changed in config.ini. (John Rouillard)
+- issue2551152 - added basic PGP setup/use info to admin_guide. (John
+  Rouillard)
 
 2025-07-13 2.5.0
 
