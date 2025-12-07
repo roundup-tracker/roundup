@@ -1935,8 +1935,27 @@ and import it using::
 
   gpg --homedir /path/to/tracker/gpg --import user-public-key.asc
 
+You may also be able to get it from a public keyserver using::
+
+  gpg --recv-keys KEYID
+
+where the ``KEYID`` is supplied by the roundup user.
+
 While Roundup supports multiple addresses for each user, only the
 primary address supports PGP signed or encrypted messages.
+
+You should verify that the public key is sane and has few signatures
+attached. You can import a key into a throw away keystore::
+
+  mkdir throwaway
+  gpg --homedir throwaway -- import user-public-key.asc
+  gpg --homedir throwaway --list-sigs
+
+and verify that the number of sig lines is small (under 10 or so). If
+it takes a long time to import you can kill the import without
+affecting your production keystore. Large numbers of sig lines can
+take a long time to import/access when compressed. See:
+https://nvd.nist.gov/vuln/detail/CVE-2022-3219.
 
 .. comment:
    Questions:
