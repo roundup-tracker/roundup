@@ -239,8 +239,8 @@ More on trace_id
 ~~~~~~~~~~~~~~~~
 
 The trace_id provides a unique token (a UUID4 encoded to make it
-shorter) for each transaction in the database. It is unique to
-each thread or transaction. A transaction:
+shorter or a nanoid) for each transaction in the database. It is
+unique to each thread or transaction. A transaction:
 
   for the web interface is
       each web, rest or xmlrpc request
@@ -282,7 +282,11 @@ point for the processing operation::
        for thing in things:
 	   process_one(thing)
       
+You can change the format of the trace_id if required using the
+tracker's interfaces.py file. See the :ref:`module docs for the
+logcontext module <logcontext_pydoc>` for details.
 
+	   
 Advanced Logging Setup
 ----------------------
 

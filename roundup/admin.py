@@ -49,7 +49,7 @@ from roundup.configuration import (
 )
 from roundup.exceptions import UsageError
 from roundup.i18n import _, get_translation
-from roundup.logcontext import gen_trace_id, store_trace_reason
+from roundup.logcontext import gen_trace_id, set_processName, store_trace_reason
 
 try:
     from UserDict import UserDict
@@ -2355,6 +2355,7 @@ Desc: %(description)s
         print(function.__doc__)
         return 1
 
+    @set_processName("roundup-admin")
     @gen_trace_id()
     @store_trace_reason('admin')
     def run_command(self, args):

@@ -13,7 +13,7 @@ from roundup.anypy.html import html_escape
 from roundup.anypy.strings import s2b
 from roundup.cgi import TranslationService
 from roundup.cgi.client import BinaryFieldStorage
-from roundup.logcontext import gen_trace_id, store_trace_reason
+from roundup.logcontext import gen_trace_id, set_processName, store_trace_reason
 
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
 DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
@@ -107,6 +107,7 @@ class RequestDispatcher(object):
             "cache_tracker" not in self.feature_flags or
             self.feature_flags["cache_tracker"] is not False)
 
+    @set_processName("wsgi_handler")
     @gen_trace_id()
     @store_trace_reason("wsgi")
     def __call__(self, environ, start_response):

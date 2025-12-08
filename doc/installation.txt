@@ -253,7 +253,11 @@ gpg
   version 2.0 of gpg from test.pypi.org. See the `gpg install
   directions in the upgrading document`_.
 
-
+nanoid
+  If nanoid_ is installed, it is used to generate short unique
+  ids to link all logging to a single request. If not installed,
+  uuid4's from the standard library are used.
+  
 jinja2
   To use the jinja2 template (may still be experimental, check out
   its TEMPLATE-INFO.txt file) you need
@@ -2432,6 +2436,7 @@ the test.
 .. _mod_python: https://github.com/grisha/mod_python
 .. _mod_wsgi: https://pypi.org/project/mod-wsgi/
 .. _MySQLdb: https://pypi.org/project/mysqlclient/
+.. _nanoid: https://pypi.org/project/nanoid/
 .. _Olson tz database: https://www.iana.org/time-zones
 .. _polib: https://polib.readthedocs.io
 .. _Psycopg2: https://www.psycopg.org/

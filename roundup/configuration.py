@@ -2440,6 +2440,12 @@ class CoreConfig(Config):
         for name, value in get_context_info():
             if not hasattr(record, name):
                 setattr(record, name, value)
+                continue
+            if (name == "processName" and
+                isinstance(value, str) and
+                getattr(record, name) == "MainProcess"):
+                setattr(record, name, value)
+                    
         record.pct_char = "%"
         record.ROUNDUP_CONTEXT_FILTER_CALLED = True
 

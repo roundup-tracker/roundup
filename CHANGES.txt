@@ -54,9 +54,10 @@ Features:
   logging format. (John Rouillard)
 - the default logging format template includes an identifier unique
   for a request. This identifier (trace_id) can be use to identify
-  logs for a specific transaction. Logging also supports a
-  trace_reason log token with the url for a web request. The logging
-  format can be changed in config.ini. (John Rouillard)
+  logs for a specific transaction. Will use nanoid if installed, uses
+  uuid.uuid4 otherwise. Logging also supports a trace_reason log token
+  with the url for a web request. The logging format can be changed in
+  config.ini. (John Rouillard)
 
 2025-07-13 2.5.0
 
