@@ -1,9 +1,13 @@
-================
-Pydocs from code
-================
+================================
+Embedded documentation from code
+================================
 
 .. contents::
    :local:
+
+The following are embedded documentation selected from the Roundup
+code base. You can see the same information using the ``help``
+function after importing the modules.
 
 Client class
 ============
@@ -40,3 +44,11 @@ Templating Utils class
 
 .. autoclass:: roundup.cgi.templating::TemplatingUtils
    :members:
+
+Logcontext Module
+=================
+.. _logcontext_pydoc:
+
+.. automodule:: roundup.logcontext
+   :members:
+   :exclude-members: SimpleSentinel

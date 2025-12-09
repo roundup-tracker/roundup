@@ -1,8 +1,69 @@
+"""Generate and store thread local logging context including unique
+trace id for request, request source etc. to be logged.
+
+Trace id generator can use nanoid or uuid.uuid4 stdlib function.
+Nanoid is preferred if nanoid is installed using pip as nanoid is
+faster and generates a shorter id. If nanoid is installed in the
+tracker's lib subdirectory, it must be enabled using the tracker's
+interfaces.py by adding::
+
+   # if nanoid is installed in tracker's lib directory or
+   # if you want to change the length of the nanoid from 12
+   # to 14 chars use:
+   from functools import partial
+   from nanoid import generate
+   import roundup.logcontext
+   # change 14 to 12 to get the default nanoid size.
+   roundup.logcontext.idgen=partial(generate, size=14)
+
+   # to force use of shortened uuid when nanoid is
+   # loaded by default
+   import roundup.logcontext
+   roundup.logcontext.idgen=roundup.logcontext.short_uuid
+
+"""
 import contextvars
 import functools
 import logging
 import os
 import uuid
+
+
+def short_uuid():
+    """Encode a UUID integer in a shorter form for display.
+
+       A uuid is long. Make a shorter version that takes less room
+       in a log line and is easier to store.
+    """
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
+    result = ""
+    alphabet_len = len(alphabet)
+    uuid_int = uuid.uuid4().int
+    while uuid_int:
+        uuid_int, t = divmod(uuid_int, alphabet_len)
+        result += alphabet[t]
+    return result or "0"
+
+
+try:
+    from nanoid import generate
+    # With size=12 and the normal alphabet, it take ~4 months
+    # with 1000 nanoid's/sec to generate a collision with 1%
+    # probability. That's 100 users sec continously. These id's
+    # are used to link logging messages/traces that are all done
+    # in a few seconds. Collisions ae unlikely to happen in the
+    # same time period leading to confusion.
+    #
+    # nanoid is faster than shortened uuids.
+    # 1,000,000 generate(size=12) timeit.timeit at 25.4 seconds
+    # 1,000,000 generate(size=21) timeit.timeit at 33.7 seconds
+
+    #: Variable used for setting the id generator.
+    idgen = functools.partial(generate, size=12)
+except ImportError:
+    # 1,000,000 of short_uuid() timeit.timeit at 54.1 seconds
+    idgen = short_uuid  #: :meta hide-value:
+
 
 logger = logging.getLogger("roundup.logcontext")
 
@@ -46,6 +107,11 @@ ctx_vars = {}
 
 # set up sentinel values that will print a suitable error value
 # and the context vars they are associated with.
+_SENTINEL_PROCESSNAME = SimpleSentinel("processName", None)
+ctx_vars['processName'] = contextvars.ContextVar("processName",
+                                                  default=_SENTINEL_PROCESSNAME)
+
+
 _SENTINEL_ID = SimpleSentinel("trace_id", "not set")
 ctx_vars['trace_id'] = contextvars.ContextVar("trace_id", default=_SENTINEL_ID)
 
@@ -55,23 +121,8 @@ ctx_vars['trace_reason'] = contextvars.ContextVar("trace_reason",
                                                   default=_SENTINEL_REASON)
 
 
-def shorten_int_uuid(uuid):
-    """Encode a UUID integer in a shorter form for display.
-
-       A uuid is long. Make a shorter version that takes less room
-       in a log line.
-    """
-
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
-    result = ""
-    while uuid:
-        uuid, t = divmod(uuid, len(alphabet))
-        result += alphabet[t]
-    return result or "0"
-
-
 def gen_trace_id():
-    """Decorator to generate a trace id (encoded uuid4) and add to contextvar
+    """Decorator to generate a trace id (nanoid or encoded uuid4) as contextvar
 
        The logging routine uses this to label every log line. All
        logs with the same trace_id should be generated from a
@@ -84,15 +135,22 @@ def gen_trace_id():
        used by a different invocation method. It will not set a
        trace_id if one is already assigned.
 
-       A uuid4() is used as the uuid, but to shorten the log line,
-       the uuid4 integer is encoded into a 62 character ascii
-       alphabet (A-Za-z0-9).
+       If a uuid4() is used as the id, the uuid4 integer is encoded
+       into a 62 character alphabet (A-Za-z0-9) to shorten
+       the log line.
 
        This decorator may produce duplicate (colliding) trace_id's
        when used with multiple processes on some platforms where
        uuid.uuid4().is_safe is unknown. Probability of a collision
        is unknown.
 
+       If nanoid is used to generate the id, it is 12 chars long and
+       uses a 64 char ascii alphabet, the 62 above with '_' and '-'.
+       The shorter nanoid has < 1% chance of collision in ~4 months
+       when generating 1000 id's per second.
+
+       See the help text for the module to change how the id is
+       generated.
     """
     def decorator(func):
         @functools.wraps(func)
@@ -100,12 +158,32 @@ def gen_trace_id():
             prev = None
             trace_id = ctx_vars['trace_id']
             if trace_id.get() is _SENTINEL_ID:
-                prev = trace_id.set(shorten_int_uuid(uuid.uuid4().int))
+                prev = trace_id.set(idgen())
             try:
                 r = func(*args, **kwargs)
             finally:
                 if prev:
                     trace_id.reset(prev)
+            return r
+        return wrapper
+    return decorator
+
+
+def set_processName(name):
+    """Decorator to set the processName used in the LogRecord
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            prev = None
+            processName = ctx_vars['processName']
+            if processName.get() is _SENTINEL_PROCESSNAME:
+                prev = processName.set(name)
+            try:
+                r = func(*args, **kwargs)
+            finally:
+                if prev:
+                    processName.reset(prev)
             return r
         return wrapper
     return decorator
@@ -195,7 +273,7 @@ def get_context_info():
 
 #Is returning a dict for this info more pythonic?
 def get_context_dict():
-    """Return dict of context var tuples ["var_name": "var_value", ...}"""
+    """Return dict of context var tuples {"var_name": "var_value", ...}"""
     return {name: ctx.get() for name, ctx in ctx_vars.items()}
 
 # Dummy no=op implementation of this module:
