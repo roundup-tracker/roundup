@@ -37,6 +37,10 @@ Fixed:
   script. Found/patch by Norbert Schlemmer. (John Rouillard)
 - change some internal classes to use __slots__ for hopefully a small
   performance improvement. (John Rouillard)
+- issue2551413 - Broken MultiLink columns in CSV export. CSV export of
+  a multilink link "messages" that does not have a 'name' property
+  causes a crash. (found/fix by cmeerw; commit and better handling of
+  non-labeled multilink by John Rouillard)
   
 Features:
 
