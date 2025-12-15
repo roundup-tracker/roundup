@@ -240,7 +240,7 @@ jobs:
           # pygments for markdown2 to highlight code blocks
           pip install markdown2 pygments
           # docutils for ReStructuredText
-          pip install beautifulsoup4 justhtml brotli docutils jinja2 \
+          pip install beautifulsoup4 brotli docutils jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
           # gpg on PyPi is currently broken with newer OS platform
           #   ubuntu 24.04
@@ -257,6 +257,8 @@ jobs:
         run: |
           set -xv
           pip install zstd || true
+          # justhtml supports python 3.10 or newer.
+          pip install justhtml || true
           if [[ "$PYTHON_VERSION" != "2."* ]]; then 
               pip install Markdown; fi
 
