@@ -5,6 +5,10 @@ import sys
 
 from roundup.anypy.strings import u2s, uchr
 
+# ruff PLC0415 ignore imports not at top of file
+# ruff RET505 ignore else  after return
+# ruff: noqa: PLC0415 RET505
+
 _pyver = sys.version_info[0]
 
 
@@ -27,6 +31,108 @@ class dehtml:
                         script.extract()
 
                     return u2s(soup.get_text("\n", strip=True))
+
+                self.html2text = html2text
+            elif converter == "justhtml":
+                from justhtml import stream
+
+                def html2text(html):
+                    # The below does not work.
+                    # Using stream parser since I couldn't seem to strip
+                    # 'script' and 'style' blocks. But stream doesn't
+                    # have error reporting or stripping of text nodes
+                    # and dropping empty nodes. Also I would like to try
+                    # its GFM markdown output too even though it keeps
+                    # tables as html and doesn't completely covert as
+                    # this would work well for those supporting markdown.
+                    #
+                    #  ctx used for for testing since I have a truncated
+                    #  test doc. It eliminates error from missing DOCTYPE
+                    #  and head.
+                    #
+                    #from justhtml import JustHTML
+                    # from justhtml.context import FragmentContext
+                    #
+                    #ctx = FragmentContext('html')
+                    #justhtml = JustHTML(html,collect_errors=True,
+                    #                    fragment_context=ctx)
+                    # I still have the text output inside style/script tags.
+                    # with :not(style, script). I do get text contents
+                    # with query("style, script").
+                    #
+                    #return u2s("\n".join(
+                    #     [elem.to_text(separator="\n", strip=True)
+                    #        for elem in justhtml.query(":not(style, script)")])
+                    #          )
+
+                    # define inline elements so I can accumulate all unbroken
+                    # text in a single line with embedded inline elements.
+                    # 'br' is inline but should be treated it as a line break
+                    # and element before/after should not be accumulated
+                    # together.
+                    inline_elements = (
+                        "a",
+                        "address",
+                        "b",
+                        "cite",
+                        "code",
+                        "em",
+                        "i",
+                        "img",
+                        "mark",
+                        "q",
+                        "s",
+                        "small",
+                        "span",
+                        "strong",
+                        "sub",
+                        "sup",
+                        "time")
+
+                    # each line is appended and joined at the end
+                    text = []
+                    # the accumulator for all text in inline elements
+                    text_accumulator = ""
+                    # if set skip all lines till matching end tag found
+                    # used to skip script/style blocks
+                    skip_till_endtag = None
+                    # used to force text_accumulator into text with added
+                    # newline so we have a blank line between paragraphs.
+                    _need_parabreak = False
+
+                    for event, data in stream(html):
+                        if event == "end" and skip_till_endtag == data:
+                            skip_till_endtag = None
+                            continue
+                        if skip_till_endtag:
+                            continue
+                        if (event == "start" and
+                              data[0] in ('script', 'style')):
+                            skip_till_endtag = data[0]
+                            continue
+                        if (event == "start" and
+                              text_accumulator and
+                              data[0] not in inline_elements):
+                            # add accumulator to "text"
+                            text.append(text_accumulator)
+                            text_accumulator = ""
+                            _need_parabreak = False
+                        elif event == "text":
+                            if not data.isspace():
+                                text_accumulator = text_accumulator + data
+                                _need_parabreak = True
+                        elif (_need_parabreak and
+                              event == "start" and
+                              data[0] == "p"):
+                            text.append(text_accumulator + "\n")
+                            text_accumulator = ""
+                            _need_parabreak = False
+
+                    # save anything left in the accumulator at end of document
+                    if text_accumulator:
+                        # add newline to match dehtml and beautifulsoup
+                        text.append(text_accumulator + "\n")
+                    return u2s("\n".join(text))
 
                 self.html2text = html2text
             else:
@@ -96,6 +202,16 @@ class dehtml:
 
 
 if __name__ == "__main__":
+    # ruff: noqa: B011 S101
+
+    try:
+        assert False
+    except AssertionError:
+        pass
+    else:
+        print("Error, assertions turned off. Test fails")
+        sys.exit(1)
+
     html = """
 <body>
 <script>
@@ -128,10 +244,10 @@ p {display:block}
 <li class="toctree-l2"><a class="reference internal" href="admin_guide.html">Administration Guide</a></li>
 </ul>
 <div class="section" id="prerequisites">
-<h2><a class="toc-backref" href="#id5">Prerequisites</a></h2>
+<H2><a class="toc-backref" href="#id5">Prerequisites</a></H2>
 <p>Roundup requires Python 2.5 or newer (but not Python 3) with a functioning
 anydbm module. Download the latest version from <a class="reference external" href="http://www.python.org/">http://www.python.org/</a>.
-It is highly recommended that users install the latest patch version
+It is highly recommended that users install the <span>latest patch version</span>
 of python as these contain many fixes to serious bugs.</p>
 <p>Some variants of Linux will need an additional &#8220;python dev&#8221; package
 installed for Roundup installation to work. Debian and derivatives, are
@@ -147,18 +263,42 @@ have to install the win32all package separately (get it from
 </body>
 """
 
-    html2text = dehtml("dehtml").html2text
-    if html2text:
-        print(html2text(html))
+    if len(sys.argv) > 1:
+        with open(sys.argv[1]) as h:
+            html = h.read()
 
+    print("==== beautifulsoup")
     try:
         # trap error seen if N_TOKENS not defined when run.
         html2text = dehtml("beautifulsoup").html2text
         if html2text:
-            print(html2text(html))
+            text = html2text(html)
+            assert ('HELP' not in text)
+            assert ('display:block' not in text)
+            print(text)
     except NameError as e:
         print("captured error %s" % e)
 
+    print("==== justhtml")
+    try:
+        html2text = dehtml("justhtml").html2text
+        if html2text:
+            text = html2text(html)
+            assert ('HELP' not in text)
+            assert ('display:block' not in text)
+            print(text)
+    except NameError as e:
+        print("captured error %s" % e)
+
+    print("==== dehtml")
+    html2text = dehtml("dehtml").html2text
+    if html2text:
+        text = html2text(html)
+        assert ('HELP' not in text)
+        assert ('display:block' not in text)
+        print(text)
+
+    print("==== disabled html -> text conversion")
     html2text = dehtml("none").html2text
     if html2text:
         print("FAIL: Error, dehtml(none) is returning a function")

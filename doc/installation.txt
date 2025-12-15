@@ -311,6 +311,14 @@ polib
   roundup-gettext, you must install polib_. See the `developer's
   guide`_ for details on translating your tracker.
 
+beautifulsoup, justhtml
+  When HTML only email is received, Roundup can convert it into
+  plain text using the native dehtml parser. To convert HTML
+  email into plain text, beautifulsoup4_ or justhtml_ can also be
+  used. You can choose the converter in the tracker's
+  config. Note that justhtml is pure Python, fast and conforms to
+  HTML 5 standards.
+  
 pywin32 - Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
@@ -2423,6 +2431,7 @@ the test.
 .. _`adding MySQL users`:
     https://dev.mysql.com/doc/refman/8.0/en/creating-accounts.html
 .. _apache: https://httpd.apache.org/
+.. _beautifulsoup4: https://pypi.org/project/beautifulsoup4/
 .. _brotli: https://pypi.org/project/Brotli/
 .. _`developer's guide`: developers.html
 .. _defusedxml: https://pypi.org/project/defusedxml/
@@ -2430,6 +2439,7 @@ the test.
 .. _flup: https://pypi.org/project/flup/
 .. _gpg: https://www.gnupg.org/software/gpgme/index.html
 .. _jinja2: https://palletsprojects.com/projects/jinja/
+.. _justhtml: https://pypi.org/project/justhtml/
 .. _markdown: https://python-markdown.github.io/
 .. _markdown2: https://github.com/trentm/python-markdown2
 .. _mistune: https://pypi.org/project/mistune/

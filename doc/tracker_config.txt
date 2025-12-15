@@ -1112,12 +1112,12 @@
 
   # If an email has only text/html parts, use this module
   # to convert the html to text. Choose from beautifulsoup 4,
-  # dehtml - (internal code), or none to disable conversion.
-  # If 'none' is selected, email without a text/plain part
-  # will be returned to the user with a message. If
+  # justhtml, dehtml - (internal code), or none to disable
+  # conversion. If 'none' is selected, email without a text/plain
+  # part will be returned to the user with a message. If
   # beautifulsoup is selected but not installed dehtml will
   # be used instead.
-  # Allowed values: beautifulsoup, dehtml, none
+  # Allowed values: beautifulsoup, justhtml, dehtml, none
   # Default: none
   convert_htmltotext = none
 
