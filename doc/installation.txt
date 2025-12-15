@@ -317,7 +317,7 @@ beautifulsoup, justhtml
   email into plain text, beautifulsoup4_ or justhtml_ can also be
   used. You can choose the converter in the tracker's
   config. Note that justhtml is pure Python, fast and conforms to
-  HTML 5 standards.
+  HTML 5 standards but works only for Python 3.10 or newer.
   
 pywin32 - Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.

@@ -257,8 +257,11 @@ jobs:
         run: |
           set -xv
           pip install zstd || true
-          # justhtml supports python 3.10 or newer.
-          pip install justhtml || true
+          # justhtml supports python 3.10 or newer according to pypi
+          # page, but will install on 3.8 (and maybe 3.9) but formats
+          # differently. So skip install if before 3.10.
+          if echo $PYTHON_VERSION | grep '^3\...'; then
+              pip install justhtml || true; fi
           if [[ "$PYTHON_VERSION" != "2."* ]]; then 
               pip install Markdown; fi
 

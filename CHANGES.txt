@@ -64,10 +64,11 @@ Features:
   config.ini. (John Rouillard)
 - issue2551152 - added basic PGP setup/use info to admin_guide. (John
   Rouillard)
-- add support for the 'justhtml' html 5 parser library. It is written
-  in pure Python. Used to convert html emails into plain text. Faster
-  then beautifulsoup4 and it passes the html 5 standard browser test
-  suite. Beautifulsoup is still supported. (John Rouillard)
+- add support for the 'justhtml' html 5 parser library for python >=
+  3.10. It is written in pure Python. Used to convert html emails into
+  plain text. Faster then beautifulsoup4 and it passes the html 5
+  standard browser test suite. Beautifulsoup is still supported. (John
+  Rouillard)
 
 2025-07-13 2.5.0
 
