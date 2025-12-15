@@ -867,6 +867,14 @@
   # Default: ERROR
   level = ERROR
 
+  # Format of the logging messages with all '%' signs
+  # doubled so they are not interpreted by the config file.
+  # Allowed value: Python LogRecord attribute named formats with % *sign doubled*.
+  # Also you can include the following attributes:
+  #   %%(trace_id)s %%(trace_reason)s and %%(pct_char)s
+  # Default: %%(asctime)s %%(trace_id)s %%(levelname)s %%(message)s
+  format = %%(asctime)s %%(trace_id)s %%(levelname)s %%(message)s
+
   # If set to yes, only the loggers configured in this section will
   # be used. Yes will disable gunicorn's --access-logfile.
   # 
@@ -1115,8 +1123,8 @@
   # justhtml, dehtml - (internal code), or none to disable
   # conversion. If 'none' is selected, email without a text/plain
   # part will be returned to the user with a message. If
-  # beautifulsoup is selected but not installed dehtml will
-  # be used instead.
+  # beautifulsoup or justhtml is selected but not installed
+  # dehtml will be used instead.
   # Allowed values: beautifulsoup, justhtml, dehtml, none
   # Default: none
   convert_htmltotext = none
