@@ -108,8 +108,12 @@ class MessageTestCase(unittest.TestCase):
 class testCsvExport(object):
 
     def testCSVExportBase(self):
+        if 'SENDMAILDEBUG' not in os.environ:
+            os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
+        SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
+
         cl = self._make_client(
-            {'@columns': 'id,title,status,keyword,assignedto,nosy,creation'},
+            {'@columns': 'id,title,status,keyword,assignedto,nosy,creation,messages'},
             nodeid=None, userid='1')
         cl.classname = 'issue'
 
@@ -127,19 +131,26 @@ class testCsvExport(object):
             return dummyClosure
         date.Date = dummyDate()
 
+        a_msg = self.db.msg.create(content="23a", author="4",
+                                   messageid="xyzzy@there",
+                                   recipients=['3'])
+        b_msg = self.db.msg.create(content="23b", author="3",
+                                   messageid="xyzzy@here",
+                                   recipients=['4'])
+        
         self.db.issue.create(title='foo1', status='2', assignedto='4', nosy=['3',demo_id])
         self.db.issue.create(title='bar2', status='1', assignedto='3', keyword=[key_id1,key_id2])
-        self.db.issue.create(title='baz32', status='4')
+        self.db.issue.create(title='baz32', status='4', messages=[a_msg, b_msg])
+        
         output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
-        should_be=(s2b('"id","title","status","keyword","assignedto","nosy","creation"\r\n'
-                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo","2000-06-26 00:34"\r\n'
-                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef","2000-06-26 00:34"\r\n'
-                       '"3","baz32","need-eg","","","","2000-06-26 00:34"\r\n'))
-
+        should_be=(s2b('"id","title","status","keyword","assignedto","nosy","creation","messages"\r\n'
+                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo","2000-06-26 00:34",""\r\n'
+                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef","2000-06-26 00:34",""\r\n'
+                       '"3","baz32","need-eg","","","Bork, Chef;Contrary, Mary","2000-06-26 00:34","1;2"\r\n'))
 
         #print(should_be)
         #print(output.getvalue())
@@ -149,10 +160,10 @@ class testCsvExport(object):
         cl.request.wfile = output
         # call export version that outputs id numbers
         actions.ExportCSVWithIdAction(cl).handle()
-        should_be = s2b('"id","title","status","keyword","assignedto","nosy","creation"\r\n'
-                        '''"1","foo1","2","[]","4","['3', '4', '5']","2000-06-26.00:34:02"\r\n'''
-                        '''"2","bar2","1","['1', '2']","3","['3']","2000-06-26.00:34:02"\r\n'''
-                        '''"3","baz32","4","[]","None","[]","2000-06-26.00:34:02"\r\n''')
+        should_be = s2b('"id","title","status","keyword","assignedto","nosy","creation","messages"\r\n'
+                        '''"1","foo1","2","[]","4","['3', '4', '5']","2000-06-26.00:34:02","[]"\r\n'''
+                        '''"2","bar2","1","['1', '2']","3","['3']","2000-06-26.00:34:02","[]"\r\n'''
+                        '''"3","baz32","4","[]","None","['3', '4']","2000-06-26.00:34:02","['1', '2']"\r\n''')
         #print(should_be)
         #print(output.getvalue())
         self.assertEqual(output.getvalue(), should_be)
@@ -183,6 +194,11 @@ class testCsvExport(object):
         should_be = s2b('"id","title","status","keyword","assignedto","nosy"\r\n'
                         "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n")
         self.assertEqual(output.getvalue(), should_be)
+
+        # clean up from email log
+        if os.path.exists(SENDMAILDEBUG):
+            os.remove(SENDMAILDEBUG)
+
 
 class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unittest.TestCase):
 

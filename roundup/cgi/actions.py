@@ -1688,6 +1688,9 @@ class ExportCSVAction(Action):
             if isinstance(props[col], hyperdb.Multilink):
                 cname = props[col].classname
                 cclass = self.db.getclass(cname)
+                # Use id by default to handle cases like messages
+                # which have no useful label field issue2551413
+                represent[col] = repr_list(cclass, 'id')
                 if not self.hasPermission(self.permissionType, classname=cname):
                     represent[col] = repr_no_right(cclass, 'name')
                 else:
@@ -1695,10 +1698,6 @@ class ExportCSVAction(Action):
                         represent[col] = repr_list(cclass, 'name')
                     elif cname == 'user':
                         represent[col] = repr_list(cclass, 'realname')
-                    else:
-                        # handle cases like messages which have no
-                        # useful label field issue2551413 
-                        represent[col] = repr_list(cclass, 'id')
             if isinstance(props[col], hyperdb.Link):
                 cname = props[col].classname
                 cclass = self.db.getclass(cname)
