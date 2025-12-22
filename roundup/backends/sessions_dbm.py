@@ -201,6 +201,10 @@ class BasicDatabase(SessionCommon):
 
     def clean(self):
         ''' Remove session records that haven't been used for a week. '''
+        ''' Note: deletion of old keys must be completed when this method
+            returns. Calling code must not have any expired keys present
+            after this returns or expired keys could be used to validate
+            a user. This can mean a long delay when expiring but ....'''
         now = time.time()
         week = 60*60*24*7
         a_week_ago = now - week
