@@ -374,7 +374,7 @@ The commented config is::
     "formatters": {
       // standard format for Roundup messages
       "standard": {
-        "format": "%(asctime)s %(trace_id)s %(levelname)s %(name)s:%(module)s %(msg)s"
+        "format": "%(asctime)s %(trace_id)s %(levelname)s %(name)s:%(module)s %(message)s"
       },
       // Used to dump all log requests in jsonl format.
       // Each json object is on one line. Can be pretty printed
