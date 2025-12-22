@@ -106,6 +106,7 @@ def add_message(msg_list, msg, escape=True):
     msg_list.append(msg)
     return msg_list  # for unittests
 
+
 # if set to False via interfaces.py do not log a warning when
 # xmlrpc is used and defusedxml is not installed.
 WARN_FOR_MISSING_DEFUSEDXML = True
@@ -1938,7 +1939,7 @@ class Client:
 
            Can be overridden by code in tracker's interfaces.py.
         """
-        
+
         from roundup.anypy.cgi_ import MiniFieldStorage
 
         original_action = self.form['@action'].value if '@action' \
@@ -1946,11 +1947,11 @@ class Client:
         original_template = self.template
 
         self.template = 'reauth'
-        self.form.list = [ x for x in self.form.list
-                           if x.name not in ('@action',
-                                             '@csrf',
-                                             '@template'
-                                             )]
+        self.form.list = [x for x in self.form.list
+                          if x.name not in ('@action',
+                                            '@csrf',
+                                            '@template'
+                                            )]
 
         # save the action and template used when the Reauth as
         # triggered. Will be used to resolve the change by the reauth
