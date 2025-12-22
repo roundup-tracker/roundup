@@ -1307,7 +1307,7 @@ is added to the db object. As a result, the ``hasattr`` call shown
 above will return True and the Reauth exception is not raised. (Note
 that the value of the ``reauth_done`` attribute is True, so
 ``getattr(db, "reauth_done", False)`` will return True when reauth is
-done and the defile value of False if the attribute is missing. If the
+done and the default value of False if the attribute is missing. If the
 default is not set, `getattr` raises an ``AttributeError`` which might
 be useful for flow control.)
 
