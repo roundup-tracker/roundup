@@ -1404,8 +1404,9 @@ class Client:
 
         # allow Anonymous to view the "user" "register" template if they're
         # allowed to register
-        if (self.db.security.hasPermission('Register', self.userid, 'user')
-                and self.classname == 'user' and self.template == 'register'):
+        if (self.template == 'register' and self.classname == 'user'
+            and self.db.security.hasPermission('Register',
+                                               self.userid, 'user')):
             return
 
         # otherwise for everything else
