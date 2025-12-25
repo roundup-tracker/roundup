@@ -452,9 +452,12 @@ class Client:
         self.env = env
         if translator is not None:
             self.setTranslator(translator)
-            # XXX we should set self.language to "translator"'s language,
-            # but how to get it ?
-            self.language = ""
+            # set self.language to "translator"'s language
+            try:
+                self.language = translator.info()["language"]
+            except (AttributeError, KeyError):
+                # info() missing or no language key
+                self.language = ""
         else:
             self.setTranslator(TranslationService.NullTranslationService())
             self.language = ""  # as is the default from determine_language
