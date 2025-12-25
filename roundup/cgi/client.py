@@ -59,7 +59,6 @@ from roundup.exceptions import (
 from roundup.logcontext import gen_trace_id, store_trace_reason
 from roundup.mailer import Mailer, MessageSendError
 from roundup.mlink_expr import ExpressionError
-from roundup.performance import report_object_use
 
 logger = logging.getLogger('roundup')
 
@@ -587,7 +586,6 @@ class Client:
 
     @gen_trace_id()
     @store_trace_reason('client_main')
-    @report_object_use(highest=20, pre_collect=False)
     def main(self):
         """ Wrap the real main in a try/finally so we always close off the db.
         """
@@ -1190,15 +1188,9 @@ class Client:
         # self.language to the desired language !
         self.language = language
 
-        try:
-            self.setTranslator(TranslationService.get_translation(
+        self.setTranslator(TranslationService.get_translation(
                 language,
                 tracker_home=self.instance.config["TRACKER_HOME"]))
-        except IOError as e:
-            logger.error(str(e), extra={"requested_language": language})
-            # failed to set the requested/TRACKER_LANGUAGE language.
-            # Set to en.
-            self.language = ""
 
     def authenticate_bearer_token(self, challenge):
         ''' authenticate the bearer token. Refactored from determine_user()
