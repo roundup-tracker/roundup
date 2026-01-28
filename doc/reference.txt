@@ -1820,15 +1820,15 @@ The ``addPermission`` method takes a four optional parameters:
   ``issue`` class and the ``user`` class include a reference to an
   ``organization`` class. Users are permitted to view only those
   issues that are associated with their respective organizations. A
-  check function or this could look like::
+  check function for this could look like::
 
     def view_issue(db, userid, itemid):
         user  = db.user.getnode(userid)
         if not user.organisation:
             return False
         issue = db.issue.getnode(itemid)
-        if user.organisation == issue.organisation:
-            return True
+        return user.organisation == issue.organisation
+
 
   The corresponding ``filter`` function::
 
