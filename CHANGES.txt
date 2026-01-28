@@ -41,7 +41,9 @@ Fixed:
   a multilink link "messages" that does not have a 'name' property
   causes a crash. (found/fix by cmeerw; commit and better handling of
   non-labeled multilink by John Rouillard)
-  
+- in cgi/client.py, set self.language attribute when translator passed
+  into Client(). (John Rouillard)
+
 Features:
 
 - add support for authorized changes. User can be prompted to enter
