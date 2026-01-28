@@ -151,7 +151,7 @@
     <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
     {%- for cssfile in css_files %}
     <!-- loading css_files -->
-    <link rel="stylesheet" href="{{ pathto(cssfile, 1) }}" type="text/css" />
+    <link rel="stylesheet" href="{{ cssfile.filename }}" type="text/css" />
     {%- endfor %}
     <script>
       /* locally hosted goatcounter https://www.goatcounter.com/ */
