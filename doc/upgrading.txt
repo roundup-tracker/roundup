@@ -137,6 +137,46 @@ The logging format is now a ``config.ini`` parameter in the
 would like the old logging format without having to create a logging
 configuration file. See :ref:`rounduplogging` for details.
 
+Make Pagination Links Keep Search Name (optional)
+-------------------------------------------------
+
+When displaying a named search, index templates don't preserve
+the name when using the pagination (Next/Prev) links. This is
+fixed in the 2.6.0 templates for issues/bugs/tasks. To make the
+change to your templates, look for the pagination links (look for
+prev or previous case insensitive) in your tracker's html
+subdirectory and change::
+
+   request.indexargs_url(request.classname,
+         {'@startwith':prev.first, '@pagesize':prev.size})"
+
+to read::
+
+   request.indexargs_url(request.classname,
+                     dict({'@dispname': request.dispname}
+                     if request.dispname
+                     else {},
+                     **{'@startwith':prev.first, '@pagesize':prev.size}))"
+
+This code will be embedded in templating markup that is not shown
+above. The change above is for your previous/prev link. The
+change for the next pagination link is similar with::
+
+   {'@startwith':next.first, '@pagesize':next.size}
+
+replacing::
+
+    {'@startwith':prev.first, '@pagesize':prev.size}
+
+in the example.
+
+This moves the existing dictionary used to override the URL
+arguments to the second argument inside a ``dict()`` call. It
+also adds ``**`` before it. This change creates a new override
+dictionary that includes an ``@dispname`` parameter if it is set
+in the request. If ``@dispname`` is not set, the existing
+dictionary contents are used.
+
 Support authorized changes in your tracker (optional)
 -----------------------------------------------------
 

@@ -43,6 +43,8 @@ Fixed:
   non-labeled multilink by John Rouillard)
 - in cgi/client.py, set self.language attribute when translator passed
   into Client(). (John Rouillard)
+- issue2551393 -  Named searches lose their name in title when next
+  page is selected. (John Rouillard)
 
 Features:
 

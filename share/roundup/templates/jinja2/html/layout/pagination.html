@@ -4,7 +4,10 @@
     {% if batch and batch.previous %}
       <li class="page-item">
         <a class="page-link" href="{{ request.indexargs_url(request.classname,
-                                   {'@startwith':batch.previous().first, '@pagesize':batch.previous().size}) }}">{% trans %}Previous{% endtrans %}</a>
+                                   dict({'@dispname': request.dispname}
+                                   if request.dispname
+                                   else {},
+                                   **{'@startwith':batch.previous().first, '@pagesize':batch.previous().size})) }}">{% trans %}Previous{% endtrans %}</a>
       </li>
     {% else %}
       <li class='page-item disabled'>
@@ -21,7 +24,10 @@
     {% if batch and batch.next() %}
       <li class="page-item">
         <a class="page-link" href="{{ request.indexargs_url(request.classname,
-                                   {'@startwith':batch.next().first, '@pagesize':batch.next().size}) }}">{% trans %}Next{% endtrans %}</a>
+                                   dict({'@dispname': request.dispname}
+                                   if request.dispname
+                                   else {},
+                                   **{'@startwith':batch.next().first, '@pagesize':batch.next().size})) }}">{% trans %}Next{% endtrans %}</a>
       </li>
     {% else %}
       <li class='page-item disabled'>
