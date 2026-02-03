@@ -6,6 +6,7 @@ import logging
 import weakref
 
 from roundup import hyperdb, support
+from roundup.anypy import findargspec
 
 logger = logging.getLogger('roundup.security')
 
@@ -74,7 +75,6 @@ class Permission:
 
     def __init__(self, name='', description='', klass=None,
                  properties=None, check=None, props_only=None, filter=None):
-        from roundup.anypy import findargspec
         self.name = name
         self.description = description
         self.klass = klass
