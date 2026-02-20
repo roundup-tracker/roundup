@@ -7,12 +7,11 @@
 from __future__ import print_function
 
 import os
-
-# --- patch sys.path to make sure 'import roundup' finds correct version
 import os.path as osp
 import sys
 import tempfile
 
+# --- patch sys.path to make sure 'import roundup' finds correct version
 thisdir = osp.dirname(osp.abspath(__file__))
 rootdir = osp.dirname(osp.dirname(thisdir))
 if (osp.exists(thisdir + '/__init__.py') and
@@ -21,11 +20,10 @@ if (osp.exists(thisdir + '/__init__.py') and
     sys.path.insert(0, rootdir)
 # --/
 
-from roundup.anypy import scandir_
-from roundup import configuration
-from roundup.cgi.TAL import talgettext
-from roundup.i18n import _
-from roundup.pygettext import TokenEater, make_escapes, tokenize
+from roundup import configuration  # noqa: E402
+from roundup.cgi.TAL import talgettext  # noqa: E402
+from roundup.i18n import _  # noqa: E402
+from roundup.pygettext import TokenEater, make_escapes, tokenize  # noqa: E402
 
 try:
     import polib
