@@ -32,10 +32,10 @@ if (osp.exists(thisdir + '/__init__.py') and
 
 
 # python version check - import exits if version invalid
-from roundup import version_check  # noqa: F401
+from roundup import version_check  # noqa: E402 F401
 
 # import the admin tool guts and make it go
-from roundup.admin import AdminTool
+from roundup.admin import AdminTool  # noqa: E402
 
 
 def run():
