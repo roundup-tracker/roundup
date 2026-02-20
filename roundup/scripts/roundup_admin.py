@@ -40,10 +40,6 @@ from roundup.i18n import _
 
 
 def run():
-    # time out after a minute if we can
-    import socket
-    if hasattr(socket, 'setdefaulttimeout'):
-        socket.setdefaulttimeout(60)
     tool = AdminTool()
     sys.exit(tool.main())
 
