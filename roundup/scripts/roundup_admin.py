@@ -36,7 +36,6 @@ from roundup import version_check  # noqa: F401
 
 # import the admin tool guts and make it go
 from roundup.admin import AdminTool
-from roundup.i18n import _
 
 
 def run():
