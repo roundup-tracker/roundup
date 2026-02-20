@@ -215,15 +215,20 @@ def main(argv):
 
     # the source will be a network server, so obtain the credentials to
     # use in connecting to the server
+    authenticator = None
     try:
         # attempt to obtain credentials from a ~/.netrc file
+        # returns None if host not found
         authenticator = netrc.netrc().authenticators(specification)
+    except FileNotFoundError:
+        # FileNotFoundError if no ~/.netrc file
+        pass
+
+    if authenticator:
         username = authenticator[0]
         password = authenticator[2]
         server = specification
-        # IOError if no ~/.netrc file, TypeError if the hostname
-        # not found in the ~/.netrc file:
-    except (IOError, TypeError):
+    else:
         match = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
                          specification)
         if match:
