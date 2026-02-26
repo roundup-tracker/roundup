@@ -22,7 +22,7 @@ for home in sys.argv[1:]:
     # Do some basic exception handling to catch bad arguments.
     try:
         instance = roundup.instance.open(home)
-    except:
+    except Exception:
         print('Cannot open instance home directory %s!' % home)
         continue
 

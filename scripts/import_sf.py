@@ -299,7 +299,7 @@ def import_xml(tracker_home, xml_file, file_dir):
                         f = open(os.path.join(file_dir, fid), 'rb')
                         content = f.read()
                         f.close()
-                    except:
+                    except Exception:
                         content = 'content missing'
                     file_data.append({
                         'id': fid,

@@ -2612,7 +2612,7 @@ class Class(hyperdb.Class):
             e.context['class'] = pln
             e.context['attr'] = prp
             raise
-        except:
+        except Exception:
             pass
         # Fallback to original code
         args = []
@@ -2693,7 +2693,7 @@ class Class(hyperdb.Class):
             e.context['class'] = classname
             e.context['attr'] = proptree.name
             raise
-        except:
+        except Exception:
             # fallback behavior when expression parsing above fails
             orclause = ''
             if '-1' in v:

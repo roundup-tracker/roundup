@@ -33,7 +33,7 @@ class LockingTest(unittest.TestCase):
         f = acquire_lock(self.path)
         try:
             acquire_lock(self.path, block=0)
-        except:
+        except Exception:
             pass
         else:
             raise AssertionError('no exception')

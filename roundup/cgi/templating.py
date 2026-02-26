@@ -2717,7 +2717,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             # ignore these errors to preserve user input
             try:
                 display_value.sort(key=keyfun)
-            except:
+            except Exception:
                 pass
             self._value = display_value
 

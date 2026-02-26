@@ -105,7 +105,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
             SimpleXMLRPCRequestHandler.do_POST(self)
         except Unauthorised as message:
             self.send_error(403, '%s (%s)' % (self.path, message))
-        except:
+        except Exception:
             if db:
                 db.close()
             exc, val, tb = sys.exc_info()

@@ -225,7 +225,7 @@ class IMAPServer:
 
                             # We are done with this mailbox
                             serv.close()
-                    except:
+                    except Exception:
                         log.exception('Exception with server %s user %s',
                             server, user)
                         noErrors = False
@@ -233,7 +233,7 @@ class IMAPServer:
                     serv.logout()
                     serv.shutdown()
                     del serv
-            except:
+            except Exception:
                 log.exception('Exception while connecting to %s', server)
                 noErrors = False
         return noErrors
