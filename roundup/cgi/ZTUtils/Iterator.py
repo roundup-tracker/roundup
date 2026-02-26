@@ -189,7 +189,7 @@ class IterInner(InnerBase):
         try:
             if hasattr(ob, 'next') and (ob is iter(ob)):
                 return 1
-        except:
+        except Exception:
             return 0
 
     def prep_next(self, it):

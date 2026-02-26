@@ -55,7 +55,7 @@ Quis ultricies urna odio sed orci.'''.splitlines()
 try:
     try:
         db.user.lookup('alpha0')
-    except:
+    except Exception:
         # add some users
         M = N//100
         for i in range(M):

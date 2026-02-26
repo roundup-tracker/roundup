@@ -30,7 +30,7 @@ def check_manifest():
     manifest_file = 'roundup.egg-info/SOURCES.txt'
     try:
         f=open(manifest_file)
-    except:
+    except Exception:
         print('\n*** SOURCE WARNING: The MANIFEST file "%s" is missing!' % manifest_file)
         return
     try:

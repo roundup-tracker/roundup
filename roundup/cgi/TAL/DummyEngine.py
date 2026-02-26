@@ -118,7 +118,7 @@ class DummyEngine:
         if type == "python":
             try:
                 return eval(expr, self.globals, self.locals)
-            except:
+            except Exception:
                 raise TALESError("evaluation error in %s" % repr(expr))
         if type == "position":
             # Insert the current source file name, line number,

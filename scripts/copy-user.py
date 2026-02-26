@@ -31,14 +31,14 @@ def copy_user(home1, home2, *userids):
     try:
         instance1 = roundup.instance.open(home1)
         print("Opened source instance: %s" % home1)
-    except:
+    except Exception:
         print("Can't open source instance: %s" % home1)
         sys.exit(1)
 
     try:
         instance2 = roundup.instance.open(home2)
         print("Opened target instance: %s" % home2)
-    except:
+    except Exception:
         print("Can't open target instance: %s" % home2)
         sys.exit(1)
 

@@ -210,7 +210,7 @@ class PathElement(Item, Implicit):
         except client.NotFound:
             raise Exception('NotFound ' + REQUEST.URL)
             pass
-        except:
+        except Exception:
             import traceback
             traceback.print_exc()
             # all other exceptions in roundup are valid

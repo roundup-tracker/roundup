@@ -45,6 +45,8 @@ Fixed:
   into Client(). (John Rouillard)
 - issue2551393 -  Named searches lose their name in title when next
   page is selected. (John Rouillard)
+- code cleanup replace bare except: with except Exception:. (patch by
+  Sense_wang (haosenwang1018) applied by John Rouillard)
 
 Features:
 
