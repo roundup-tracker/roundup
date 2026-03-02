@@ -26,7 +26,7 @@ ARG source=local
 # Note this is the index digest for the image, not the manifest digest.
 # The index digest is shared across archetectures (amd64, arm64 etc.)
 # while the manifest digest is unique per platform/arch.
-ARG SHA256=7af51ebeb83610fb69d633d5c61a2efb87efa4caf66b59862d624bb6ef788345
+ARG SHA256=faee120f7885a06fcc9677922331391fa690d911c020abb9e8025ff3d908e510
 
 # Set to any non-empty value to enable shell debugging for troubleshooting
 ARG VERBOSE=
