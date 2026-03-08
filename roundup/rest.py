@@ -2782,6 +2782,8 @@ class SimulateFieldStorageFromJson():
             elif isinstance(val, type([])):
                 # then lists of strings
                 self.value = [u2s(v) for v in val]
+            elif val is None:
+                self.value = None
             else:
                 # then stringify anything else (int, float)
                 self.value = str(val)
