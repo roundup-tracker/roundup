@@ -1818,7 +1818,7 @@ class Class(hyperdb.Class):
                                              value)
 
             elif isinstance(prop, Password):
-                if not isinstance(value, password.Password):
+                if value is not None and not isinstance(value, password.Password):
                     raise TypeError('new property "%s" not a Password' % key)
 
             elif isinstance(prop, Date):
@@ -2132,7 +2132,7 @@ class Class(hyperdb.Class):
                         (self.classname, nodeid, propname), value)
 
             elif isinstance(prop, Password):
-                if not isinstance(value, password.Password):
+                if value is not None and not isinstance(value, password.Password):
                     raise TypeError(
                         'new property "%s" not a Password' % propname)
                 propvalues[propname] = value

@@ -47,6 +47,13 @@ Fixed:
   page is selected. (John Rouillard)
 - code cleanup replace bare except: with except Exception:. (patch by
   Sense_wang (haosenwang1018) applied by John Rouillard)
+- handle "null" values in json objects sent to a rest endpoint by
+  filtering them from the object before processing. A "null" value
+  will not unset an attribute. The 'remove' action using the
+  PATCH verb can unset the value. Before this change "null" values
+  retrieved from the REST interface would cause errors when sent
+  using POST or PUT verbs. Also guard against password being set to
+  None. (John Rouillard)
 
 Features:
 
