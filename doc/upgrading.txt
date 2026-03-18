@@ -237,6 +237,49 @@ with::
   
 in the ``html/page.html`` file in your tracker.
 
+Allow users without a password to log in (optional)
+---------------------------------------------------
+
+You can configure a tracker to allow a login without a password.
+However the default html templates require the password field to
+be filled in. This prevents a login with an empty password.
+
+If you don't want to allow a login without a password, you can
+skip this section.
+
+This change automatically removes the required attribute if the
+``config.ini`` ``login_empty_passwords`` setting is enabled
+(true). The default is disabled with the value ``no``).
+
+This change is the default for the tracker templates in 2.6 and
+newer.
+
+To add this to your tracker, change the ``page.html`` (for TAL
+based trackers) or ``layout/navigation.html (for jinja2 trackers).
+
+For TAL trackers, replace the ``required`` parameter by finding
+the following password input in the tracker's ``html/page.html``
+file::
+
+  <input size="10" spellcheck="false" type="password" required name="__login_password"><br>
+
+and modifying it to look like::
+
+  <input size="10" spellcheck="false" type="password"
+         tal:attributes="required python: 'required'
+               if not db.config.WEB_LOGIN_EMPTY_PASSWORDS else nothing"
+         name="__login_password"><br>
+
+The equivalent change for jinja2's
+``html/layout/navigation.html`` based template starts with::
+
+  <input class="form-control form-control-sm" spellcheck="false" type="password" required name="__login_password" placeholder='password'>
+
+and changes to::
+
+  <input class="form-control form-control-sm" spellcheck="false" type="password" name="__login_password" placeholder='password' {{ "required" if not db.config.WEB_LOGIN_EMPTY_PASSWORDS }}>
+
+
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0

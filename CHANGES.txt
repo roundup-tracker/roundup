@@ -54,6 +54,9 @@ Fixed:
   retrieved from the REST interface would cause errors when sent
   using POST or PUT verbs. Also guard against password being set to
   None. (John Rouillard)
+- change the html templates so that the password is not required if
+  the ``login_empty_passwords`` setting is enabled in ``config.ini``.
+  Directions for your tracker are in upgrading.txt. (John Rouillard)
 
 Features:
 

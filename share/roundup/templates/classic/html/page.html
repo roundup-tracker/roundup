@@ -132,7 +132,10 @@ status_notresolved string:-1,1,2,3,4,5,6,7;
    <p class="userblock">
     <b i18n:translate="">Login</b><br>
     <input size="10" required name="__login_name"><br>
-    <input size="10" spellcheck="false" type="password" required name="__login_password"><br>
+    <input size="10" spellcheck="false" type="password"
+	   tal:attributes="required python: 'required'
+		 if not db.config.WEB_LOGIN_EMPTY_PASSWORDS else nothing"
+	   name="__login_password"><br>
     <input type="hidden" name="@action" value="Login">
     <input type="checkbox" name="remember" id="remember">
     <label for="remember" i18n:translate="">Remember me?</label><br>

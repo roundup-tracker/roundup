@@ -178,7 +178,9 @@
                 <fieldset>
                   <legend><i class='icon-user'></i>Login form</legend>
                   <input name="__login_name" type='text' placeholder='Username' i18n:attributes="placeholder" required>
-                  <input spellcheck="false" type="password" name="__login_password" placeholder='Password' i18n:attributes="placeholder" required>
+                  <input spellcheck="false" type="password" name="__login_password" placeholder='Password' i18n:attributes="placeholder"
+			 tal:attributes="required python: 'required'
+		 if not db.config.WEB_LOGIN_EMPTY_PASSWORDS else nothing">
 		  <input name="@csrf" type="hidden"
 			 tal:attributes="value python:utils.anti_csrf_nonce()">
                   <input type="hidden" name="@action" value="Login"/>
