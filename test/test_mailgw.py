@@ -60,12 +60,6 @@ from roundup import init, instance, password, __version__
 from roundup.test import memorydb
 from .cmp_helper import StringFragmentCmpHelper
 
-def expectedFailure(method):
-    """ For marking a failing test.
-        This will *not* run the test and return success instead.
-    """
-    return lambda x: 0
-
 
 def get_body(message):
     if not message.is_multipart():
@@ -3706,7 +3700,7 @@ sig
 
     # This fails because the sig isn't removed (we currently remove the
     # sig only if the delimiter is the first line in a section)
-    @expectedFailure
+    @pytest.mark.xfail(reason="OK: sig not removed - delim not first section line")
     def testEmailQuotingRemove3(self):
         self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'yes'
         self.innerTestQuoting(self.thirdquotingtest,
