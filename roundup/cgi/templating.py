@@ -1887,7 +1887,7 @@ class StringHTMLProperty(HTMLProperty):
                     raise
 
         return u2s(ReStructuredText(
-            s, writer_name="html",
+            s, writer="html",
             settings_overrides=self.rst_defaults)["html_body"])
 
     def markdown(self, hyperlink=1):
