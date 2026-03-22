@@ -34,7 +34,6 @@ from roundup.cgi.exceptions import NotFound, PreconditionFailed, Unauthorised
 from roundup.exceptions import Reject, UsageError
 from roundup.i18n import _
 from roundup.rate_limit import Gcra, RateLimit
-from roundup.timer import timer
 
 logger = logging.getLogger('roundup.rest')
 
@@ -2433,8 +2432,6 @@ class RestfulInstance(object):
                      "acceptable": ", ".join(sorted(
                          self.__accepted_content_type.keys()))}))
 
-    @timer(name="rest_dispatch", tag="args[2]",
-           writer=logging.getLogger('roundup.timer').error)
     def dispatch(self, method, uri, input_payload):
         """format and process the request"""
         output = None
@@ -2750,8 +2747,6 @@ class SimulateFieldStorageFromJson():
 
     __slots__ = ("json_dict", "value")
 
-    @timer(name="simultateFieldStorage", tag="args[1][:10]",
-           writer=logging.getLogger('roundup.timer').error)
     def __init__(self, json_string):
         '''Parse the json string into an internal dict.
 
