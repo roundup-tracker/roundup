@@ -40,6 +40,7 @@ from .KeywordsExpr import render_keywords_expression_editor
 
 try:
     from docutils.core import publish_parts as ReStructuredText
+    from docutils.writers.html4css1 import Writer as html_writer
 except ImportError:
     ReStructuredText = None
 try:
@@ -1887,7 +1888,7 @@ class StringHTMLProperty(HTMLProperty):
                     raise
 
         return u2s(ReStructuredText(
-            s, writer="html",
+            s, writer=html_writer(),
             settings_overrides=self.rst_defaults)["html_body"])
 
     def markdown(self, hyperlink=1):
