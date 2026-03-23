@@ -39,6 +39,7 @@ from roundup.anypy import scandir_  # noqa: F401 define os.scandir
 from roundup.anypy.my_input import my_input
 from roundup.anypy.strings import repr_export
 from roundup.configuration import (
+    ConfigurationError,
     CoreConfig,
     NoConfigError,
     Option,
@@ -1488,7 +1489,10 @@ Erase it? Y/N: """) % locals())
             defns[k] = template_config[k]
 
         # install!
-        init.install(tracker_home, templates[template]['path'], settings=defns)
+        try:
+            init.install(tracker_home, templates[template]['path'], settings=defns)
+        except ConfigurationError as e:
+            raise UsageError(e)
 
         # Remove config_ini.ini file from tracker_home (not template dir).
         # Ignore file not found - not all templates have
@@ -2350,7 +2354,7 @@ Desc: %(description)s
         self.do_genconfig(args, update=True)
 
     def usageError_feedback(self, message, function):
-        print(_('Error: %s') % message)
+        print(_('\nError: %s') % message)
         print()
         print(function.__doc__)
         return 1

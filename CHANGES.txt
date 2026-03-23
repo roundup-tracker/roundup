@@ -57,7 +57,12 @@ Fixed:
 - change the html templates so that the password is not required if
   the ``login_empty_passwords`` setting is enabled in ``config.ini``.
   Directions for your tracker are in upgrading.txt. (John Rouillard)
-
+- fix traceback displayed when roundup-admin install was used with
+  invalid settings for config.ini. It now reports the error and
+  provides the usage output. Also usage output starts with a newline
+  to provide a blank line between the command and the output to
+  improve readability. (John Rouillard)
+  
 Features:
 
 - add support for authorized changes. User can be prompted to enter
