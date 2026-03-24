@@ -2761,12 +2761,14 @@ class SimulateFieldStorageFromJson():
             self.value = None
             return
 
+        fsvalue = self.FsValue
         try:
             self.json_dict = json.loads(json_string,
                                     parse_constant=raise_error_on_constant)
-            self.value = [self.FsValue(index, self.json_dict[index])
-                          for index in self.json_dict if
-                          self.json_dict[index] is not None]
+            json_dict = self.json_dict
+            self.value = [fsvalue(index, json_dict[index])
+                          for index in json_dict if
+                          json_dict[index] is not None]
         except (JSONDecodeError, ValueError) as e:
             raise ValueError(e.args[0] + ". JSON is: " + json_string)
 
