@@ -1317,6 +1317,7 @@ Command help:
             file_props = None
             # loop through the file and create a node for each entry
             for n, r in enumerate(reader):
+                # read the file header
                 if file_props is None:
                     file_props = r
                     continue
@@ -1330,10 +1331,11 @@ Command help:
                 nodeid = hyperdb_class.import_list(file_props, r)
                 if hasattr(hyperdb_class, 'import_files') and import_files:
                     hyperdb_class.import_files(import_dir, nodeid)
-                    maxid = max(maxid, int(nodeid))
+                
+                maxid = max(maxid, int(nodeid))
 
-                # (print to sys.stdout here to allow tests to squash it .. ugh)
-                print(file=sys.stdout)
+            # (print to sys.stdout here to allow tests to squash it .. ugh)
+            print(file=sys.stdout)
 
         return maxid
 

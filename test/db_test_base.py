@@ -3231,6 +3231,9 @@ class DBTest(commonDBTest):
                 for name in klass.getprops().keys():
                     it[name] = klass.get(id, name)
 
+        # record the newid from the original database
+        orig_newid = {cn: self.db.newid(cn) for cn in self.db.classes.keys()}
+        
         os.mkdir('_test_export')
         try:
             # grab the export
@@ -3356,6 +3359,16 @@ class DBTest(commonDBTest):
                 rj.sort(key = NoneAndDictComparable)
                 ae(oj, rj)
 
+        # compare the newid's. The new database must always have
+        # newid that is greater or equal to the old newid. Ideally
+        # they should be equal but there is a latent bug where the restored
+        # newid is 1 or 2 higher than the old one.
+        for classname, newid in orig_newid.items():
+            self.assertGreaterEqual(
+                self.db.newid(classname), newid,
+                msg="When comparing newid values for classname:old_val:"
+                " %s:%s" % (classname, newid))
+
         # make sure the retired items are actually imported
         ae(self.db.user.get('4', 'username'), 'blop')
         ae(self.db.issue.get('2', 'title'), 'issue two')
@@ -3376,6 +3389,10 @@ class DBTest(commonDBTest):
         self.db.config.CSV_FIELD_SIZE = 400
         self.db.commit()
         output = []
+
+        # record the newid from the original database
+        orig_newid = {cn: self.db.newid(cn) for cn in self.db.classes.keys()}
+
         # ugly hack to get stderr output and disable stdout output
         # during regression test. Depends on roundup.admin not using
         # anything but stdout/stderr from sys (which is currently the
@@ -3426,6 +3443,16 @@ class DBTest(commonDBTest):
 
             # verify the data is loaded.
             self.db.user.getnode("5").values()
+
+            # compare the newid's. The new database must always have
+            # newid that is greater or equal to the old newid. Ideally
+            # they should be equal but there is a latent bug where the restored
+            # newid is 1 or 2 higher than the old one.
+            for classname, newid in orig_newid.items():
+                self.assertGreaterEqual(
+                    self.db.newid(classname), newid,
+                    msg="When comparing newid values for "
+                    "classname:old_val: %s:%s" % (classname, newid))
         finally:
             roundup.admin.sys = sys
             shutil.rmtree('_test_export')

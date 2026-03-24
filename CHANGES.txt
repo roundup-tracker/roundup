@@ -62,6 +62,9 @@ Fixed:
   provides the usage output. Also usage output starts with a newline
   to provide a blank line between the command and the output to
   improve readability. (John Rouillard)
+- fix bug in 2.5.0 where roundup-admin import (or importtable) fails
+  to properly set the next available id for the class. (John Rouillard
+  broke it and fixed it 8-))
   
 Features:
 
