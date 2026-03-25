@@ -104,7 +104,9 @@ Features:
   trail. Manually driving the HTML interface (via curl for example)
   also allows content changes. The new detector prevents changes to
   file contents via Roundup even by a user with admin rights.
-  
+- Added documentation on doing an in place database migration. This is
+  faster for large databases. (John Rouillard)
+
 2025-07-13 2.5.0
 
 Fixed:

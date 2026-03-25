@@ -2050,6 +2050,9 @@ reinstall the older version of the sofware using the same install command::
 Migrating Backends
 ------------------
 
+Note that the ``[rdbms]`` section label was called ``[database]`` in
+earlier versions of Roundup.
+
 1. Stop the existing tracker web and email frontends (preventing changes).
 2. Use the roundup-admin tool "export" command to export the contents of
    your tracker to disk. (If you are running on windows see
@@ -2058,7 +2061,7 @@ Migrating Backends
    export data.)
 3. Copy the tracker home to a new directory.
 4. Delete the "db" directory from the new directory.
-5. Set the value of the ``backend`` key under the ``[database]``
+5. Set the value of the ``backend`` key under the ``[rdbms]``
    section of the tracker's ``config.ini`` file.
 6. Use the roundup-admin "import" command to import the previous export with
    the new tracker home. If non-interactively::
@@ -2082,6 +2085,57 @@ object. You can control the commit frequency by using::
 to set a higher or lower number in roundup-admin. In this example a
 commit will be done every 20,000 objects/rows. The pragma can also be
 set on the roundup-admin command line as described below.
+
+Migrating Only Database Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The method above is well tested and works. However because it
+exports/imports file content and works on a copy of the tracker home
+it is slow. An alternate way is to use the ``exporttables`` and
+``importtables`` commands to export/import only the database entries
+and do the migration in place.
+
+The untested steps using this method are:
+
+0. Backup your tracker.
+1. Stop the existing tracker web and email frontends (preventing changes).
+2. Use the roundup-admin tool's "exporttable" command to export the
+   database for your tracker to disk. (If you are running on windows see
+   `issue1441336 <https://issues.roundup-tracker.org/issue1441336>`_
+   on how to use the command line rather than interactive mode to
+   export data.)
+3. Set the value of the ``backend`` key under the ``[rdbms]``
+   section of the tracker's ``config.ini`` file to the new database
+   backend.
+4. Use the roundup-admin "importtable" command to import the
+   exporttable. The non-interactive command is::
+     
+     roundup-admin -i <tracker home> importtable <tracker export dir>
+
+   If running the importtable interactively, enter 'commit' before exiting.
+5. Test each of the admin tool, web interface and mail gateway using the new
+   backend.
+6. Restart web and email frontends.
+7. Clean up the old database once you are confortable that the migration
+   has suceeded.
+
+   If you are moving from an external database
+   (postgres/mysql/mariadb) to an embedded db, drop your external db
+   tables.
+
+   If you are migrating from anydbm to sqlite, you can move/delete
+   files that match:
+
+   - ``nodes.*``
+   - ``_ids``
+   - ``journals.*``
+   - ``lock``
+
+   Keep the ``db/db`` file as that is your new sqlite database.
+
+   Also if you run for a few days and find the ``otks`` and
+   ``sessions`` file change times are the same, you can move/delete
+   these as well.
 
 Moving a Tracker
 ----------------
