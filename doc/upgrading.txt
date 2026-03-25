@@ -255,7 +255,7 @@ This change is the default for the tracker templates in 2.6 and
 newer.
 
 To add this to your tracker, change the ``page.html`` (for TAL
-based trackers) or ``layout/navigation.html (for jinja2 trackers).
+based trackers) or ``layout/navigation.html`` (for jinja2 trackers).
 
 For TAL trackers, replace the ``required`` parameter by finding
 the following password input in the tracker's ``html/page.html``
@@ -279,6 +279,29 @@ and changes to::
 
   <input class="form-control form-control-sm" spellcheck="false" type="password" name="__login_password" placeholder='password' {{ "required" if not db.config.WEB_LOGIN_EMPTY_PASSWORDS }}>
 
+REST interface changes (info)
+-----------------------------
+
+The default type of a message file (the msg class) is now
+``text/plain``.  This can be change to a different mime type using
+`the interfaces.py file`_. See `the rest documentation on getting file
+content for details <rest.html#getting-message-and-files-content>`_.
+
+Roundup supports a wildcard mime type. So ``text/*`` would match any
+text resource. The response to this request should have a full mime
+type like ``text/plain`` or ``text/csv`` etc. However Roundup used to
+return ``text/*`` which makes it difficult for the client to interpret
+the data. This release should do a better job of returning a proper
+subtype replacing the ``*``.
+
+The mime type of ``application/*`` resolves to ``application/json`` by
+default. Using it before resulted in an error.
+
+Malformed mime types assigned to files/messages could cause a crash,
+now they are just ignored.
+
+There have been some internal refactorings and improvements in the
+REST code that will make it a bit faster.
 
 .. index:: Upgrading; 2.4.0 to 2.5.0
 

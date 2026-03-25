@@ -65,7 +65,10 @@ Fixed:
 - fix bug in 2.5.0 where roundup-admin import (or importtable) fails
   to properly set the next available id for the class. (John Rouillard
   broke it and fixed it 8-))
-  
+- refactor mime detection/handling in the rest interface. Better
+  supports some mime types, ads default mime type for files without a
+  mime type (e.g. message contents). Cleaner code. (John Rouillard)
+
 Features:
 
 - add support for authorized changes. User can be prompted to enter

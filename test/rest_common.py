@@ -1909,7 +1909,7 @@ class TestCase():
         (output_type, uri, error) = dof("/rest/data/issue")
 
         self.assertEqual(self.server.client.response_code, 406)
-        self.assertIn(b"Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/json",
+        self.assertIn(b"Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/*, application/json",
                       s2b(error['error']['msg']))
 
         # simulate: /rest/data/issue works, multiple acceptable output, one
@@ -1985,7 +1985,7 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 400)
         self.assertEqual(output_type, None)
         self.assertEqual(uri, "/rest/data/issue")
-        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/json', error['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/*, application/json', error['error']['msg'])
 
         # test 5 accept mimetype is ok, param is not
         headers={"accept": "*/*; foo",
@@ -2007,7 +2007,7 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 400)
         self.assertEqual(output_type, None)
         self.assertEqual(uri, "/rest/data/issue")
-        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', error['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/*, application/json', error['error']['msg'])
 
         # test 6: test paths:
         #
@@ -2144,7 +2144,7 @@ class TestCase():
                  "output_type": None,
                  "uri": "/rest/data/file/1/binary_content",
                  "error": {'error': 
-                           {'status': 406, 'msg': "Requested content type(s) 'image/svg+html' not available.\nAcceptable mime types are: */*, application/octet-stream, image/png"}},
+                           {'status': 406, 'msg': "Requested content type(s) 'image/svg+html' not available.\nAcceptable mime types are: */*, application/octet-stream, image/*, image/png"}},
                  "has_nosniff": False,
                 }),
             (# use wildcard accept and get back msg's actual mime type
@@ -2199,16 +2199,16 @@ class TestCase():
                 {"path": "/rest/data/msg/2/binary_content",
                  "accept": "*/*",
                  "response_code": "",
-                 "output_type": "text/*",
+                 "output_type": "text/plain",
                  "uri": "/rest/data/msg/2/binary_content",
                  "error": None,
                  "has_nosniff": True,
                 }),
-            (# use text/* and get back text/*
+            (# use text/* and get back text/plain
                 {"path": "/rest/data/msg/2/binary_content",
                  "accept": "text/*",
                  "response_code": "",
-                 "output_type": "text/*",
+                 "output_type": "text/plain",
                  "uri": "/rest/data/msg/2/binary_content",
                  "error": None,
                  "has_nosniff": True,
@@ -2221,7 +2221,7 @@ class TestCase():
                  "uri": "/rest/data/msg/2/binary_content",
                  "error": {'error': 
                            {'status': 406, 'msg':
-                            "Requested content type(s) 'text/markdown' not available.\nAcceptable mime types are: */*, application/octet-stream, text/*"}},
+                            "Requested content type(s) 'text/markdown' not available.\nAcceptable mime types are: */*, application/octet-stream, text/*, text/plain"}},
                  "has_nosniff": False,
                 }),
             (# use error accept and get back error
@@ -2232,7 +2232,7 @@ class TestCase():
                  "uri": "/rest/data/msg/1/binary_content",
                  "error": {'error':
                            {'status': 400, 'msg':
-                            'Unable to parse Accept Header. Invalid media type: q=2. Acceptable types: */*, application/json'}},
+                            'Unable to parse Accept Header. Invalid media type: q=2. Acceptable types: */*, application/*, application/json'}},
                  "has_nosniff": False,
                  }),
             (# use text/* but override with extension of .json get back json
@@ -2358,7 +2358,7 @@ class TestCase():
         print(results)
         json_dict = json.loads(b2s(results))
         self.assertEqual(self.server.client.response_code, 406)
-        self.assertIn("Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/json",
+        self.assertIn("Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/*, application/json",
                       json_dict['error']['msg'])
 
         # simulate: /rest/data/issue works, multiple acceptable output, one
@@ -2439,7 +2439,7 @@ class TestCase():
         print(results)
         self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
-        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/json', json_dict['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/*, application/json', json_dict['error']['msg'])
 
         # test 5 accept mimetype is ok, param is not
         headers={"accept": "*/*; foo",
@@ -2463,7 +2463,7 @@ class TestCase():
         print(results)
         self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
-        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', json_dict['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/*, application/json', json_dict['error']['msg'])
 
     @skip_on_py2
     def testBadJson(self):

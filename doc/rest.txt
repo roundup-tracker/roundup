@@ -945,12 +945,13 @@ with ``Content-Type: application/json`` and a (4x larger) json encoded
 representation of the binary data.
 
 If you want it returned with a ``Content-Type: image/png`` header,
-you can use ``image/png`` or ``*/*`` in the Accept header.
+you can use ``image/png``, ``image/*``, or ``*/*`` in the Accept header.
 
 For message files, you can use
 ``https://.../demo/rest/data/msg/23/binary_content`` with ``Accept:
 application/octet-stream; q=0.5, application/json; q=0.4, image/png;
-q=0.495, text/*``. It will return the plain text of the message.
+q=0.495, text/*``. It will return the plain text (text/plain mime
+type) of the message.
 
 Most message files are not stored with a mime type. Getting
 ``https://.../demo/rest/data/msg/23/type`` returns::
@@ -972,10 +973,16 @@ Messages are meant to be human readable, so the mime type ``text/*``
 can be used to access any text style mime type (``text/plain``,
 ``text/x-rst``, ``text/markdown``, ``text/html``, ...) or an empty
 mime type. If the item's type is not empty, it will be used as the
-Content-Type (similar to ``*/*``). Otherwise ``text/*`` will be the
-Content-Type. If your tracker supports markup languages
-(e.g. markdown), you should set the mime type (e.g. ``text/markdown``)
-when storing your message.
+Content-Type (similar to ``*/*``). Otherwise the default mime type
+``text/plain`` will be the Content-Type. The default mime type can be
+changed using ``interfaces.py`` in your tracker. So you can change the
+default ``text/plain`` to ``text/markdown`` using::
+
+   from roundup.rest import RestfulInstance
+   RestfulInstance.default_text_file_mimetype = "text/markdown"
+
+If your tracker supports markup languages (e.g. markdown), you should
+set the mime type (e.g. ``text/markdown``) when storing your message.
 
 Note that the header ``X-Content-Type-Options: nosniff`` is returned
 with a non javascript or xml binary_content response to prevent the

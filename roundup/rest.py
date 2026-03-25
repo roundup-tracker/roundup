@@ -441,6 +441,7 @@ class RestfulInstance(object):
     __default_patch_op = "replace"  # default operator for PATCH method
     __accepted_content_type = {
         "application/json": "json",
+        "application/*": "json"     # json is preferred over application/xml
     }
     __default_accept_type = "json"
 
@@ -448,6 +449,11 @@ class RestfulInstance(object):
     __supported_api_versions = [1]
 
     api_version = None
+
+    # to allow override from interfaces.py.
+    # Used for msg class. Could
+    # be useful to set to text/markdown.
+    default_text_file_mimetype = "text/plain"
 
     # allow 10M row response - can change using interfaces.py
     # limit is 1 less than this size.
@@ -2227,6 +2233,78 @@ class RestfulInstance(object):
             # human may read it
         ), None)
 
+    def create_valid_content_types(self, mime_type):
+        """Return a list of mime types matching the submitted mime_type.
+
+           For a MIME type of type/subtype return a list that matches:
+
+              type/subtype
+              type/*
+              application/octet-stream
+              */*
+
+           If mime_type for the file is empty return:
+
+               ["text/plain", "text/*", "application/octet-stream", */*]
+
+           Issue messages (msg) often are missing a mime type. So we
+           treat them text/plain. text/plain is the value of
+           RestfulInterface.default_text_file_mimetype. This can be
+           changed.
+
+           The first mime type in the list is usually used as the
+           Content-Type in the http response.
+
+        """
+        valid_binary_content_types = []
+
+        if mime_type:
+            # strip off MIME parameters. We may do param matching
+            # in the future but not now.
+            mime_type, *_more = mime_type.split(';')
+            # remove spaces in case they snuck in.
+            mime_type = mime_type.strip()
+            # Put the mime_type first. If the user is requesting a
+            # specific type/subtype we will match on first item.
+            # Also first item is returned as Content-type/accept_type.
+            valid_binary_content_types.append(mime_type)
+
+            # For mime type main_type/subtype add main_type/*
+            try:
+                (main_type, _subtype) = mime_type.split('/', 2)
+            except ValueError:
+                # malformed mime type, 0, 2+ '/' chars
+                # don't add anything
+                pass
+            else:
+                valid_binary_content_types.append(main_type + "/*")
+
+        if not mime_type:
+            # allow text/* as msg items can have empty type field
+            # also match text/* for text/plain, text/x-rst,
+            # text/markdown, text/html etc.
+            #
+            # Ideally we would know the subtype.
+            #
+            # text/plain works for most messages, but
+            # text/markdown could be valid for a modified tracker.
+            #
+            # Value can be overridden by interfaces.py, but consider
+            # adding config setting for the default file mime type.
+            valid_binary_content_types.append(self.default_text_file_mimetype)
+            valid_binary_content_types.append("text/*")
+
+        # Octet-stream should be allowed for any content.
+        # If mime_type unparsable, the file will get the
+        # Content-Type of application/octet-stream as this will
+        # be the first element of the returned list.
+        valid_binary_content_types.append("application/octet-stream")
+
+        # */* should be allowed for any content.
+        valid_binary_content_types.append("*/*")
+
+        return valid_binary_content_types
+
     def determine_output_format(self, uri):
         """Returns tuple of:
 
@@ -2287,10 +2365,10 @@ class RestfulInstance(object):
                         _("Content type '%(requested)s' requested in URL is "
                           "not available.\nAcceptable types: "
                           "%(acceptable)s\n") %
-                        { "requested": ext_type,
-                          "acceptable": ", ".join(sorted(
-                              set(self.__accepted_content_type.values())))}))
-            
+                        {"requested": ext_type,
+                         "acceptable": ", ".join(sorted(
+                             set(self.__accepted_content_type.values())))}))
+
             # strip extension so uri makes sense.
             # E.G. .../issue.json -> .../issue
             uri = uri[:-(len(ext_type) + 1)]
@@ -2317,12 +2395,12 @@ class RestfulInstance(object):
             return (self.__default_accept_type, uri, None)
 
         accept_type = ""
-        valid_binary_content_types = []
+        valid_binary_content_types = None
         if uri.endswith("/binary_content"):
             request_path = uri
             request_class, request_id = request_path.split('/')[-3:-1]
             try:
-                designator_type = self.db.getclass(
+                declared_type = self.db.getclass(
                     request_class).get(request_id, "type")
             except (KeyError, IndexError):
                 # class (KeyError) or
@@ -2331,28 +2409,14 @@ class RestfulInstance(object):
                 # The 400/404 error will be thrown by other code.
                 return (None, uri, None)
 
-            if designator_type:
-                # put this first as we usually require exact mime
-                # type match and this will be matched most often.
-                # Also for text/* Accept header it will be returned.
-                valid_binary_content_types.append(designator_type)
-
-            if not designator_type or designator_type.startswith('text/'):
-                # allow text/* as msg items can have empty type field
-                # also match text/* for text/plain, text/x-rst,
-                # text/markdown, text/html etc.
-                valid_binary_content_types.append("text/*")
-
-            # Octet-stream should be allowed for any content.
-            # client.py sets 'X-Content-Type-Options: nosniff'
-            # for file downloads (sendfile) via the html interface,
-            # so we should be able to set it in this code as well.
-            valid_binary_content_types.append("application/octet-stream")
+            valid_binary_content_types = self.create_valid_content_types(
+                declared_type)
 
         for part in accept_header:
             if accept_type:
                 # we accepted the best match, stop searching for
-                # lower quality matches.
+                # lower quality matches. A break happens in every clause
+                # that sets accept_type. This is just a safety.
                 break
 
             # check for structured rest return types (json xml)
@@ -2384,25 +2448,24 @@ class RestfulInstance(object):
                                part[1]['version'])
                     return (None, uri,
                            self.error_obj(406, msg))
+                break
 
-            if part[0] == "*/*":
-                if valid_binary_content_types:
-                    self.client.setHeader("X-Content-Type-Options", "nosniff")
-                    accept_type = valid_binary_content_types[0]
-                else:
+            # client.py sets 'X-Content-Type-Options: nosniff'
+            # for file downloads (sendfile) via the html interface,
+            # so we should be able to set it in this code as well.
+            if not valid_binary_content_types:
+                if part[0] == "*/*":
                     accept_type = "json"
+                    break
 
             # check type of binary_content
-            if part[0] in valid_binary_content_types:
+            elif part[0] in valid_binary_content_types:
                 self.client.setHeader("X-Content-Type-Options", "nosniff")
-                accept_type = part[0]
-            # handle text wildcard
-            if ((part[0] in 'text/*') and
-                "text/*" in valid_binary_content_types):
-                self.client.setHeader("X-Content-Type-Options", "nosniff")
-                # use best choice of mime type, try not to use
-                # text/* if there is a real text mime type/subtype.
-                accept_type = valid_binary_content_types[0]
+                # try to return most exact MIME type if request
+                # includes wildcard.
+                accept_type = part[0] if part[0].find('*') == -1 \
+                    else valid_binary_content_types[0]
+                break
 
         # accept_type will be empty only if there is an Accept header
         # with invalid values.
@@ -2410,27 +2473,21 @@ class RestfulInstance(object):
             return (accept_type, uri, None)
 
         if valid_binary_content_types:
-            return (None, uri,
-                    self.error_obj(
-                        406,
-                        _("Requested content type(s) '%(requested)s' not "
-                          "available.\nAcceptable mime types are: */*, "
-                          "%(acceptable)s") %
-                        {"requested":
-                         self.client.request.headers.get('Accept'),
-                         "acceptable": ", ".join(sorted(
-                             valid_binary_content_types))}))
+            report_acceptable_types = valid_binary_content_types
+        else:
+            report_acceptable_types = list(self.__accepted_content_type.keys())
+            report_acceptable_types.append("*/*")
 
         return (None, uri,
                 self.error_obj(
                     406,
                     _("Requested content type(s) '%(requested)s' not "
-                      "available.\nAcceptable mime types are: */*, "
+                      "available.\nAcceptable mime types are: "
                       "%(acceptable)s") %
                     {"requested":
                      self.client.request.headers.get('Accept'),
                      "acceptable": ", ".join(sorted(
-                         self.__accepted_content_type.keys()))}))
+                         report_acceptable_types))}))
 
     def dispatch(self, method, uri, input_payload):
         """format and process the request"""
