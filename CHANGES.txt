@@ -96,7 +96,15 @@ Features:
   plain text. Faster then beautifulsoup4 and it passes the html 5
   standard browser test suite. Beautifulsoup is still supported. (John
   Rouillard)
-
+- add a new detector: immutable_file_contents.py that prevents changes
+  to file contents. By default, the permissions assigned to FileClass
+  based classes (files, msgs) do not prevent editing of file contents.
+  While the usual HTML templates don't provide a way to modify files,
+  the REST interface allows changing file contents without an audit
+  trail. Manually driving the HTML interface (via curl for example)
+  also allows content changes. The new detector prevents changes to
+  file contents via Roundup even by a user with admin rights.
+  
 2025-07-13 2.5.0
 
 Fixed:

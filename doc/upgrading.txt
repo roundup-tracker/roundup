@@ -303,6 +303,44 @@ now they are just ignored.
 There have been some internal refactorings and improvements in the
 REST code that will make it a bit faster.
 
+Make File Contents Immutable for Everybody (optional)
+-----------------------------------------------------
+
+The HTML based interface for files and messages doesn't provide a way
+to change file content. However it is possible for privileged people
+to modify the content via the web. In most cases, this change will not
+be recorded in the audit log. It can be detected by looking at the
+change time of the file. Then compare it to the change time of files
+before and after it. Since files are created in order, the file
+``msg50`` should have a change timestamp after ``msg49`` and before
+``msg51``.
+
+The 2.6.0 release includes an immutable_file_contents.py
+detector.  If you copy the detector into your tracker's detector
+directory nobody, including users with admin rights, can change
+file/msg contents via Roundup. Changes to files would have to be
+done by logging into the Roundup server and editing the files
+locally.
+
+For non-admin user's the following edit permission for FileClass based
+classes will prevent regular users from changing file content via
+Roundup. Remove the existing ``Edit`` permission from your FileClass
+based classes. Then add your classname to the loop. The permission
+strips ``content`` from the list of editable properties and permits
+editing of the other properties::
+
+  for cl in 'file', 'msg':
+    properties = list(x for x in
+                   db.getclass(cl).getprops(protected=False).keys()
+                   if x != 'content')
+
+    file_edit_perm = db.security.addPermission(
+        name='Edit', klass=cl,
+        properties=properties,
+        description="User is allowed to edit all %s props except content" % cl)
+
+    db.security.addPermissionToRole('User', file_edit_perm)
+
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0
