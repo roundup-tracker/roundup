@@ -473,22 +473,64 @@ class PermissionTest(MyTestCase, unittest.TestCase):
         p.setPassword("sekret", config=self.db.config)
         self.assertEqual(p.scheme, default_scheme)
 
-    def test_pbkdf2_migrate_rounds(self):
-        '''Check that migration happens when number of rounds in
-           config is larger than number of rounds in current password.
-        '''
+    def test_migrate_deprecated(self):
+
+        # migrate: deprecated encryption
+
+        # force test to use config file settings
+        # rather than the testing default of 1000
+        os.environ["PYTEST_USE_CONFIG"] = "True"
+        self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 2000
+
+        p = roundup.password.Password('sekrit', 'SSHA',
+                                      config=self.db.config)
+        self.assertEqual(p.needs_migration(config=self.db.config), True)
 
         p = roundup.password.Password('sekrit', 'PBKDF2',
                                       config=self.db.config)
 
-        self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 2000000
+        self.assertEqual(p.needs_migration(config=self.db.config), True)
 
+        # no need to migrate
+        self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 200000
+
+        p = roundup.password.Password('sekrit', 'PBKDF2S5',
+                                      config=self.db.config)
+
+        self.assertEqual(p.needs_migration(config=self.db.config), False)
+
+        self.assertEqual(p.password.find('200000$'), 0)
+        del(os.environ["PYTEST_USE_CONFIG"])
+
+    def test_pbkdf2_migrate_rounds(self):
+        '''Check that migration happens when number of rounds in
+           config is larger than number of rounds in current password.
+        '''
+        default_scheme = roundup.password.Password.default_scheme
+        # will only have 1000 rounds since it's running under
+        # pytest but without PYTEST_USE_CONFIG set in environment.
+        p = roundup.password.Password('sekrit', default_scheme,
+                                      config=self.db.config)
+
+        self.assertEqual(p.password.find('1000$'), 0)
+
+        # reduce it a bit to save runtime
+        self.db.config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = 200000
+
+        # now set PYTEST_USE_CONFIG so we test rounds against
+        # config setting.
         os.environ["PYTEST_USE_CONFIG"] = "True"
         self.assertEqual(p.needs_migration(config=self.db.config), True)
         del(os.environ["PYTEST_USE_CONFIG"])
 
-        # set up p with rounds under 1000. This is usually prevented,
+        
+        # Set up p with rounds under 1000. This is usually prevented,
         # but older software could generate smaller rounds.
+        p = roundup.password.Password('sekrit', default_scheme,
+                                      config=self.db.config)
+
+        # Can't actaully generate a password with fewer than 1000 rounds.
+        # so edit p.password to fake 900 rounds.
         p.password = p.password.replace('1000$', '900$')
         self.assertEqual(p.needs_migration(config=self.db.config), True)
 

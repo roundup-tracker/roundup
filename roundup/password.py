@@ -430,21 +430,10 @@ class Password(JournalPassword):
 
         if rounds < 1000:
             return True
-
-        if (self.scheme == "PBKDF2"):
+        if self.scheme in ["PBKDF2S5", "PBKDF2"]:
             new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
-            if ("pytest" in sys.modules and
-                "PYTEST_CURRENT_TEST" in os.environ):
-                if ("PYTEST_USE_CONFIG" in os.environ):
-                    new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
-                else:
-                    # for testing
-                    new_rounds = 1000
-            if rounds < int(new_rounds):
-                return True
-
-        if (self.scheme == "PBKDF2S5"):
-            new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+            # PYTEST_CURRENT_TEST is set when pytest is running
+            # a test case.
             if ("pytest" in sys.modules and
                 "PYTEST_CURRENT_TEST" in os.environ):
                 if ("PYTEST_USE_CONFIG" in os.environ):
