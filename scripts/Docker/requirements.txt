@@ -1,5 +1,9 @@
+# Get newest versions, but specify minimum versions to get versions
+# without known vulnerabilities as reported by:
+# https://tools.simonwillison.net/python-vulnerability-lookup
+
 # setuptools required for installation - missing from newer base images
-setuptools
+setuptools >= 78.1.1
 # human timezones
 pytz
 # indexer
@@ -8,13 +12,13 @@ Whoosh
 # extra database support
 psycopg2
 mysqlclient
-redis
+redis >= 4.5.4
 # encryption
 gpg
 # java web tokens
-PyJWT
+PyJWT >= 2.12.0
 # extra HTTP compression methods
-Brotli
-zstd
+Brotli >= 1.2.0
+zstd >= 1.5.4
 # jinja2 template engine
-Jinja2
+Jinja2 >= 3.1.6
