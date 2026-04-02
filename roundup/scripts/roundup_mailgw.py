@@ -156,13 +156,14 @@ def parse_arguments(argv):
     cmd.add_argument('-c', '--default-class', default='',
         help="Default class of item to create (else the tracker's "
         "MAILGW_DEFAULT_CLASS)")
-    cmd.add_argument('-O', '--oauth-directory',
-        help='Directory with OAUTH credentials, default "oauth" in '
-        'tracker home')
     cmd.add_argument('-S', '--set-value', action='append',
-        help="Set additional properties on some classes", default=[])
+        help="Set additional properties for classes. Format of SET_VALUE: '[class.]property=value[;property=value]'. Class defaults to DEFAULT_CLASS.", default=[])
+    cmd.add_argument('-O', '--oauth-directory',
+        help='Directory with OAUTH credentials, default "oauth/" in '
+        'tracker home')
     cmd.add_argument('-T', '--oauth-token-endpoint',
-        help="OAUTH token endpoint for access_token renew, default=%(default)s",
+        help="URL of the OAUTH token endpoint when renewing access_token, "
+            "default=%(default)s",
         default='https://login.microsoftonline.com/'
             'organizations/oauth2/v2.0/token')
     return cmd, cmd.parse_args(argv)
