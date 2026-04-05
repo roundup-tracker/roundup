@@ -2357,9 +2357,7 @@ class Client:
                 # receive an error message, and the adminstrator will
                 # receive a traceback, albeit with less information
                 # than the one we tried to generate above.
-                if sys.version_info[0] > 2:
-                    raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
-                exec('raise exc_info[0], exc_info[1], exc_info[2]')  # nosec
+                raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
 
     def renderError(self, error, response_code=400, use_template=True):
         self.response_code = response_code
