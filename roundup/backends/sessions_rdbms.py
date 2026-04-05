@@ -10,6 +10,8 @@ import time
 from roundup.anypy.html import html_escape as escape
 from roundup.backends.sessions_common import SessionCommon
 
+def safe_eval(s):
+    return eval(s, {"__builtins__": {}}, {})
 
 class BasicDatabase(SessionCommon):
     ''' Provide a nice encapsulation of an RDBMS table.
@@ -42,7 +44,7 @@ class BasicDatabase(SessionCommon):
             if default != self._marker:
                 return default
             raise KeyError('No such %s "%s"' % (self.name, escape(infoid)))
-        values = eval(res[0])
+        values = safe_eval(res[0])
         return values.get(value, None)
 
     def getall(self, infoid):
@@ -52,7 +54,7 @@ class BasicDatabase(SessionCommon):
         res = self.cursor.fetchone()
         if not res:
             raise KeyError('No such %s "%s"' % (self.name, escape(infoid)))
-        return eval(res[0])
+        return safe_eval(res[0])
 
     def set(self, infoid, **newvalues):
         """ Store all newvalues under key infoid with a timestamp in database.
@@ -70,7 +72,7 @@ class BasicDatabase(SessionCommon):
 
         timestamp = time.time()
         if res:
-            values = eval(res[0])
+            values = safe_eval(res[0])
         else:
             values = {}
 

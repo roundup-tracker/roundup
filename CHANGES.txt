@@ -68,6 +68,7 @@ Fixed:
 - refactor mime detection/handling in the rest interface. Better
   supports some mime types, ads default mime type for files without a
   mime type (e.g. message contents). Cleaner code. (John Rouillard)
+- run hexora and mitigate/fix some medium sev and above. (John Rouillard)
 
 Features:
 
