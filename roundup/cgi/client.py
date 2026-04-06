@@ -14,6 +14,7 @@ import re
 import socket
 import stat
 import sys
+import tempfile
 import time
 from email.mime.multipart import MIMEMultipart
 from traceback import format_exc
@@ -279,7 +280,6 @@ class BinaryFieldStorage(cgi.FieldStorage, object):
     '''
     def make_file(self, mode=None):
         ''' work around https://bugs.python.org/issue27777 '''
-        import tempfile
         if self.length >= 0:
             return tempfile.TemporaryFile("wb+")
         return super(BinaryFieldStorage, self).make_file()
