@@ -1826,10 +1826,10 @@ class Client:
         is generally only one entry long.
 
         - if there is no path, then we are in the "home" context.
-        - if the path is "_file", then the additional path entry
-          specifies the filename of a static file we're to serve up
-          from the instance "html" directory. Raises a SendStaticFile
-          exception.(*)
+        - if the path is "@@file" (or "_file", then the additional
+          path entry specifies the filename of a static file we're to
+          serve up from the instance "html" directory. Raises a
+          SendStaticFile exception.(*)
         - if there is something in the path (eg "issue"), it identifies
           the tracker class we're to display.
         - if the path is an item designator (eg "issue123"), then we're
@@ -1891,7 +1891,7 @@ class Client:
             else:
                 self.template = ''
             return
-        if path[0] in ('_file', '@@file'):
+        if path[0] in ('@@file', '_file'):
             raise SendStaticFile(os.path.join(*path[1:]))
 
         self.classname = path[0]
