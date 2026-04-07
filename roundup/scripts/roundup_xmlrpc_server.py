@@ -89,7 +89,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
         return db
 
     @gen_trace_id()
-    @store_trace_url("xmlrpc-server")
+    @store_trace_url("xmlrpc-server", extract="args[0].path")
     def do_POST(self):
         """Extract username and password from authorization header."""
 

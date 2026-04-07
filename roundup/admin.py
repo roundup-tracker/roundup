@@ -58,6 +58,18 @@ except ImportError:
     from collections import UserDict
 
 
+def _safe_os_getlogin():
+    """Run os.getlogin handling OSError exception.
+
+       Used when calling @store_trace_reason to add username to string.
+    """
+    
+    try:
+        return os.getlogin()
+    except OSError:
+        return "--unknown--"
+
+
 class CommandDict(UserDict):
     """Simple dictionary that lets us do lookups using partial keys.
 
@@ -2363,7 +2375,10 @@ Desc: %(description)s
 
     @set_processName("roundup-admin")
     @gen_trace_id()
-    @store_trace_reason('admin')
+    @store_trace_reason("admin", extract=(
+        '"roundup-admin(%s): "' % _safe_os_getlogin() +
+        "'%s' % args[1][:2]"
+    ))
     def run_command(self, args):
         """Run a single command
         """

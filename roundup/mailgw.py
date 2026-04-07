@@ -1648,7 +1648,9 @@ The mail gateway is not properly set up. Please contact
                                                             RoundupMessage))
 
     @gen_trace_id()
-    @store_trace_reason("mailgw")
+    @store_trace_reason("mailgw",
+                    extract="args[1].get_header('message-id', 'no_message_id')"
+    )
     def handle_Message(self, message):
         """Handle an RFC822 Message
 

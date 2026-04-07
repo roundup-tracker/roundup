@@ -2,12 +2,13 @@
 trace id for request, request source etc. to be logged.
 
 Trace id generator can use nanoid or uuid.uuid4 stdlib function.
-Nanoid is preferred if nanoid is installed using pip as nanoid is
-faster and generates a shorter id. If nanoid is installed in the
-tracker's lib subdirectory, it must be enabled using the tracker's
-interfaces.py by adding::
+Nanoid is preferred if nanoid is installed using pip. Nanoid is
+faster and generates a shorter id.
 
-   # if nanoid is installed in tracker's lib directory or
+If nanoid is installed in the tracker's lib subdirectory, it must be
+enabled using the tracker's interfaces.py by adding::
+
+   # if nanoid is installed in the tracker's lib directory and
    # if you want to change the length of the nanoid from 12
    # to 14 chars use:
    from functools import partial
@@ -16,10 +17,20 @@ interfaces.py by adding::
    # change 14 to 12 to get the default nanoid size.
    roundup.logcontext.idgen=partial(generate, size=14)
 
-   # to force use of shortened uuid when nanoid is
-   # loaded by default
+   # If nanoid is instanned and you want to use use the shortened uuid
+   # add this to interfaces.py::
    import roundup.logcontext
    roundup.logcontext.idgen=roundup.logcontext.short_uuid
+
+If you are wrapping a staticmethod, you need to include staticmethod
+before the calls to gen_trace_id or store_trace_reason when wrapping a
+static method. If you don't the static method gets the self argument
+prepended which breaks the call. For example to wrap the 'serve'
+staticmethod from WhiteNoise::
+
+    WhiteNoise.serve = staticmethod(store_trace_reason(
+             extract="'whitenoise ' + args[1]['REQUEST_URI']")(
+             gen_trace_id()(WhiteNoise.serve)))
 
 """
 import contextvars
@@ -27,9 +38,10 @@ import functools
 import logging
 import os
 import uuid
+from typing import Callable
 
 
-def short_uuid():
+def short_uuid() -> str:
     """Encode a UUID integer in a shorter form for display.
 
        A uuid is long. Make a shorter version that takes less room
@@ -51,7 +63,7 @@ try:
     # with 1000 nanoid's/sec to generate a collision with 1%
     # probability. That's 100 users sec continously. These id's
     # are used to link logging messages/traces that are all done
-    # in a few seconds. Collisions ae unlikely to happen in the
+    # in a few seconds. Collisions are unlikely to happen in the
     # same time period leading to confusion.
     #
     # nanoid is faster than shortened uuids.
@@ -59,7 +71,7 @@ try:
     # 1,000,000 generate(size=21) timeit.timeit at 33.7 seconds
 
     #: Variable used for setting the id generator.
-    idgen = functools.partial(generate, size=12)
+    idgen: Callable = functools.partial(generate, size=12)
 except ImportError:
     # 1,000,000 of short_uuid() timeit.timeit at 54.1 seconds
     idgen = short_uuid  #: :meta hide-value:
@@ -103,7 +115,7 @@ class SimpleSentinel:
 # contactvars.copy_context().items() returns nothing if set has
 # not been called on a context var. I need the contextvar names
 # even if they have not been set.
-ctx_vars = {}
+ctx_vars: dict[str, contextvars.ContextVar] = {}
 
 # set up sentinel values that will print a suitable error value
 # and the context vars they are associated with.
@@ -121,7 +133,7 @@ ctx_vars['trace_reason'] = contextvars.ContextVar("trace_reason",
                                                   default=_SENTINEL_REASON)
 
 
-def gen_trace_id():
+def gen_trace_id() -> Callable:
     """Decorator to generate a trace id (nanoid or encoded uuid4) as contextvar
 
        The logging routine uses this to label every log line. All
@@ -189,21 +201,25 @@ def set_processName(name):
     return decorator
 
 
-def store_trace_reason(location=None):
+def store_trace_reason(location="unset", extract=None):
     """Decorator finds and stores a reason trace was started in contextvar.
 
-       Record the url for a regular web triggered request.
+       Record the url path for a regular web triggered request.
        Record the message id for an email triggered request.
        Record a roundup-admin command/action for roundup-admin request.
 
-       Because the reason can be stored in different locations
-       depending on where this is called, it is called with a
-       location hint to activate the right extraction method.
+       (*) There are multiple entry points to the code. Some entry
+       points call through other entry points. As a result this can be
+       called multiple times in one request.  Because the reason can
+       be stored from multiple locations depending on where this is
+       called, it is called with a location hint to identify the
+       caller (faster than looking up the stack).
 
-       If the reason has already been stored (and it's not "missing",
-       it tries to extract it again and verifies it's the same as the
+       If a reason has already been stored (and it's not "missing", it
+       tries to extract it again and verifies it's the same as the
        stored reason. If it's not the same it logs an error. This
        safety check may be removed in a future version of Roundup.
+
     """
     def decorator(func):
         @functools.wraps(func)
@@ -222,25 +238,28 @@ def store_trace_reason(location=None):
             # if stored_reason is not _SENTINEL_REASON:
             #     return func(*args, **kwargs)
 
-            # use location to determine how to extract the reason
-            if location == "wsgi" and 'REQUEST_URI' in args[1]:
-                reason = args[1]['REQUEST_URI']
-            elif location == "client" and 'REQUEST_URI' in args[3]:
-                reason = args[3]['REQUEST_URI']
-            elif location == "mailgw":
-                reason = args[1].get_header('message-id', "no_message_id")
-            elif location == "admin":
+            if extract:
                 try:
-                    login = os.getlogin()
-                except OSError:
-                    login = "--unknown--"
-                reason = "roundup-admin(%s): %s" % (login, args[1][:2])
-            elif location.startswith("file://"):
+                    reason = eval(extract,
+                                  {"__builtin__": {}},
+                                  {"args": args, "kwargs": kwargs})
+
+                except (IndexError, KeyError, TypeError) as e:
+                    # extract usually looks something like:
+                    #      "args[1]['PATH_INFO']"
+                    # report bad index/key/type
+                    logger.error(
+                        "Eval of extract('%(extract)s')@%(loc)s caused %(e)s" %
+                        {"e": repr(e), "extract": extract, "loc": location}
+                    )
+
+                    # provide fallback hinting that it is an error
+                    reason = "error@call_location:%s" % location
+
+            else:
+                # if no extract, use location as reason
+                # e.g. file://some_roundup-script
                 reason = location
-            elif location == "client_main" and 'REQUEST_URI' in args[0].env:
-                reason = args[0].env['REQUEST_URI']
-            elif location == "xmlrpc-server":
-                reason = args[0].path
 
             if reason is None:
                 pass
@@ -249,7 +268,9 @@ def store_trace_reason(location=None):
                 prev_trace_reason = trace_reason.set(reason)
             elif reason != stored_reason:   # SANITY CHECK
                 # Throw an error we have mismatched REASON's which
-                # should never happen.
+                # should never happen. It can happen if multiple
+                # functions are decorated and they don't agree on
+                # what the reason should be. see (*) above.
                 logger.error("Mismatched REASON's: stored: %s, new: %s at %s",
                              stored_reason, reason, location)
 

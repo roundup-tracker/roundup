@@ -436,7 +436,7 @@ class Client:
     precompressed_mime_types = ["image/png", "image/jpeg"]
 
     @gen_trace_id()
-    @store_trace_reason('client')
+    @store_trace_reason('client', extract="args[3]['PATH_INFO']")
     def __init__(self, instance, request, env, form=None, translator=None):
         # re-seed the random number generator. Is this is an instance of
         # random.SystemRandom it has no effect.
@@ -588,7 +588,7 @@ class Client:
         self.ngettext = translator.ngettext
 
     @gen_trace_id()
-    @store_trace_reason('client_main')
+    @store_trace_reason('client_main', extract="args[0].env['PATH_INFO']")
     def main(self):
         """ Wrap the real main in a try/finally so we always close off the db.
         """

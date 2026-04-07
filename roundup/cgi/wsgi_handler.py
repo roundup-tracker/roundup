@@ -107,9 +107,11 @@ class RequestDispatcher(object):
             "cache_tracker" not in self.feature_flags or
             self.feature_flags["cache_tracker"] is not False)
 
+    # Client entry point strips initial / from PATH_INFO so
+    # We need to do it here as well to prevent mismatch.
     @set_processName("wsgi_handler")
     @gen_trace_id()
-    @store_trace_reason("wsgi")
+    @store_trace_reason("wsgi", extract="args[1]['PATH_INFO'][1:]")
     def __call__(self, environ, start_response):
         """Initialize with `apache.Request` object"""
         request = RequestHandler(environ, start_response)
