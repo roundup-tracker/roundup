@@ -278,6 +278,10 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             self.send_error(404, self.path)
         except client.Unauthorised as message:
             self.send_error(403, '%s (%s)' % (self.path, message))
+        except ValueError as e:
+            self.send_error(400,
+                            "Invalid value: %s" % str(e.args[0]),
+                            "The value for the header is unacceptable")
         except Exception:
             exc, val, tb = sys.exc_info()
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
@@ -455,6 +459,9 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         env['PATH_INFO'] = urllib_.unquote(rest)
         if query:
             env['QUERY_STRING'] = query
+        problem_header = client.are_header_values_safe(self.headers)
+        if problem_header:
+            raise ValueError(problem_header)
         if hasattr(self.headers, 'get_content_type'):
             # Python 3.  We need the raw header contents.
             content_type = self.headers.get('content-type')

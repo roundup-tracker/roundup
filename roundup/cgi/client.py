@@ -132,6 +132,12 @@ def seed_pseudorandom():
     import random
     random.seed()
 
+_safe_char_set = {chr(x) for x in range(32,127)}
+def are_header_values_safe(header_list):
+    for header, value in header_list.items():
+        if (set(value) - _safe_char_set):
+            return header, value
+    return None
 
 class LiberalCookie(SimpleCookie):
     """ Python's SimpleCookie throws an exception if the cookie uses invalid

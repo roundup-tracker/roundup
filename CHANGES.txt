@@ -69,7 +69,14 @@ Fixed:
   supports some mime types, ads default mime type for files without a
   mime type (e.g. message contents). Cleaner code. (John Rouillard)
 - run hexora and mitigate/fix some medium sev and above. (John Rouillard)
-
+- Return 400 if environment or header variables 
+  have values with characters outside of the printable ascii range
+  (32-127). Applies to  roundup-server and roundup-cgi. wsgi and Zope
+  depend on the hosting server for sanitizing. Se waitress wsgi server
+  bug:
+  https://github.com/Pylons/waitress/security/advisories/GHSA-m5ff-3wj3-8ph4
+  (John Rouillard)
+  
 Features:
 
 - add support for authorized changes. User can be prompted to enter
