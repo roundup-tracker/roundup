@@ -716,8 +716,8 @@ tracker will be heavily used and accessible from the internet, we
 suggest using Apache or Nginx in WSGI mode or as a reverse proxy
 to the stand alone web server or WSGI server like Gunicorn.
 
-A FastCGI deployment with an alternate web server is suitable for
-lower traffic sites.
+A FastCGI or SCGI deployment with an alternate web server is suitable
+for lower traffic sites.
 
 If you already run Zope, Roundup should deploy nicely in that
 framework.
@@ -729,10 +729,10 @@ Using a true HTTP server provide tools including: DOS prevention,
 throttling, web application firewalls etc. that are worth having
 in an internet facing application.
 
-If you are running on an internal intranet, you can use the
-stand alone server: roundup-server, but even in this environment,
-using a real web server to serve static files and other resources
-will perform better.
+If you are running on an internal intranet, you can use the stand
+alone server: roundup-server, but even in this environment, using a
+real web server or proxy (e.g. pound) to serve static files and other
+resources will perform better.
 
 .. contents::
    :depth: 1
@@ -1307,6 +1307,68 @@ configuration files and instructions.
 .. _can be found in the wayback machine archive:
      https://web.archive.org/web/20241010170738/https://flask.palletsprojects.com/en/2.0.x/deploying/fastcgi/
 .. _flup: https://pypi.org/project/flup/
+
+SCGI (althttpd, Cherokee, lighttpd)
+---------------
+
+The `althttpd (written by the author of SQLite)
+<https://sqlite.org/althttpd>`_ web server is a minimal server that
+can run Roundup using SCGI or CGI.
+
+To run Roundup using SCGI, the flup_ package provides a translator
+between SCGI and WSGI.
+
+The following ``roundup-scgi.py`` can be run using Python to start the
+server:
+
+.. code:: python
+
+    #!/usr/bin/env python
+    # Obtain the WSGI request dispatcher
+    from roundup.cgi.wsgi_handler import RequestDispatcher
+    from flup.server.scgi import WSGIServer
+
+    # Set the path to tracker home.
+    tracker_home = '/path/to/tracker/home'
+
+    try:
+        application = RequestDispatcher(tracker_home)
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+
+    ret = WSGIServer(application,
+                     # the tuple:
+                     #  hostname/ip address as a string (0.0.0.0 bind
+                     #      all ip address)
+                     #  port as an integer
+                     bindAddress=("0.0.0.0", 8197),
+                     scriptName="/roundup.scgi/demo").run()
+    sys.exit(ret and 42 or 0)
+
+
+Now you have to configure althttpd so it connects to the scgi
+server. To do this, althttpd requires a file with a ``.scgi``
+extension. Create the file ``roundup.scgi`` and put it in the root of
+your althttpd directory.  It should contain:
+
+.. code::
+
+   SCGI hostname 8197
+
+where hostname is a valid name for the host running the SCGI
+server. You can also put in other directives including a fallback web
+page if the SCGI server is down, or a command to run to restart the
+SCGI server. See the `althttpd.c file
+<https://sqlite.org/althttpd/file?ci=tip&name=althttpd.c&ln=14>`_ on
+the main web site for details. If you have ``althttpd`` or
+``althttpsd`` installed you can just use the ``--help`` argument.
+
+Assuming you run:
+``althttpd --root /var/www/htdocs -port 443 --cert certs.pem`` and you
+installed ``/var/www/htdocs/roundup.scgi``, you will be able to access
+your tracker at: ``https://web_hostname/roundup.scgi/``.
+
 
 WSGI Variations
 ---------------
