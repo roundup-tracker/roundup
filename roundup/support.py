@@ -2,7 +2,6 @@
 places in Roundup code.
 """
 
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import os, time, sys

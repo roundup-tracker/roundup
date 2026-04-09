@@ -5,7 +5,6 @@ Usage: %s <tracker home> <N>
 Load up the indicated tracker with N issues and N/100 users.
 '''
 
-from __future__ import print_function
 import sys, os, random
 from roundup import instance
 

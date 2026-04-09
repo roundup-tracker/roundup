@@ -1,6 +1,4 @@
 
-from __future__ import print_function
-
 import sys
 
 from roundup.anypy.strings import u2s, uchr

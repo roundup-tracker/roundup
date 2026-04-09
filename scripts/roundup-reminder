@@ -27,8 +27,6 @@ TODO: introduce some structure ;)
 TODO: possibly make this more general and configurable...
 '''
 
-from __future__ import print_function
-
 import sys
 from email.mime.multipart import MIMEMultipart
 from email.utils import make_msgid

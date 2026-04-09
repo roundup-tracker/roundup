@@ -21,7 +21,6 @@ test all backends
 
 
 """
-from __future__ import print_function
 import sys, os, time
 import importlib, signal, shutil
 

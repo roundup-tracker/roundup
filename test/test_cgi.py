@@ -8,7 +8,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-from __future__ import print_function
 import unittest, os, shutil, errno, sys, difflib, re, io
 
 import pytest

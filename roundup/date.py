@@ -17,7 +17,6 @@
 
 """Date, time and time interval handling.
 """
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import calendar

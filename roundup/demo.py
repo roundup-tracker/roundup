@@ -2,8 +2,6 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-from __future__ import print_function
-
 import errno
 import getopt
 import os

@@ -3,7 +3,6 @@
 # All rights reserved.
 # For license terms see the file COPYING.txt.
 #
-from __future__ import print_function
 from roundup import msgfmt
 try:
     from setuptool.command.install import install as base

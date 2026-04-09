@@ -17,7 +17,6 @@
 #
 """Init (create) a roundup instance.
 """
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import email.parser

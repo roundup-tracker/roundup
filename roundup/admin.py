@@ -20,8 +20,6 @@
 
 """Administration commands for maintaining Roundup trackers.
 """
-from __future__ import print_function
-
 __docformat__ = 'restructuredtext'
 import csv
 import getopt

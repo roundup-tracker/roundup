@@ -15,8 +15,6 @@ Example:
     (copies users 3, 4, 5, 6, 7, 8, 9, 10, 14 and 16)
 """
 
-from __future__ import print_function
-
 import sys
 
 import roundup.instance

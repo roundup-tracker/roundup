@@ -7,8 +7,6 @@
 
 
 # --- patch sys.path to make sure 'import roundup' finds correct version
-from __future__ import print_function
-
 import base64
 import getopt
 import os.path as osp

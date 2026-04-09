@@ -17,7 +17,6 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 """
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import base64   # decode icon

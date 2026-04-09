@@ -1,4 +1,3 @@
-from __future__ import print_function
 import re
 
 hg_url_base = r'http://sourceforge.net/p/roundup/code/ci/'

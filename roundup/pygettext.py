@@ -15,8 +15,6 @@
 # 2024-07-13 John Rouillard (rouilj@users.sourceforge.net)
 #   Converted from python 2.
 
-from __future__ import print_function
-
 # for selftesting
 try:
     import fintl

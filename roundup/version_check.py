@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 # Roundup requires Python 3.7+ as mentioned in doc\installation.txt
-from __future__ import print_function
 import sys
 
 VERSION_NEEDED = (3, 7)

@@ -5,8 +5,6 @@ This module is free software, you may redistribute it
 and/or modify under the same terms as Python.
 """
 
-from __future__ import print_function
-
 import hmac
 import json
 import logging

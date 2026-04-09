@@ -14,7 +14,6 @@
 #   channels = irc://chat.freenode.net/channelname
 #
 
-from __future__ import print_function
 import re
 import json
 import socket

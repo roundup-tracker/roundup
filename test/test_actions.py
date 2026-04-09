@@ -1,4 +1,3 @@
-from __future__ import print_function
 import unittest, copy
 
 from roundup import hyperdb

@@ -29,7 +29,6 @@ minimal set (to avoid Roundup state changes from template).
     https://github.com/mitsuhiko/jinja2/issues/174
 """
 
-from __future__ import print_function
 import jinja2
 import mimetypes
 import sys

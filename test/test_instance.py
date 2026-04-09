@@ -4,7 +4,6 @@
 # For license terms see the file COPYING.txt.
 #
 
-from __future__ import print_function
 import unittest, os, shutil, errno, sys, difflib
 
 from roundup import instance

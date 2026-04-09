@@ -16,8 +16,6 @@
 
 """Command-line script stub that calls the roundup.mailgw.
 """
-from __future__ import print_function
-
 __docformat__ = 'restructuredtext'
 
 
