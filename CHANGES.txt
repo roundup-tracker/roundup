@@ -76,7 +76,8 @@ Fixed:
   bug:
   https://github.com/Pylons/waitress/security/advisories/GHSA-m5ff-3wj3-8ph4
   (John Rouillard)
-  
+- Cleanups/minor enhancements to roundup.cgi script. (John Rouillard)
+
 Features:
 
 - add support for authorized changes. User can be prompted to enter
