@@ -1309,7 +1309,7 @@ configuration files and instructions.
 .. _flup: https://pypi.org/project/flup/
 
 SCGI (althttpd, Cherokee, lighttpd)
----------------
+-----------------------------------
 
 The `althttpd (written by the author of SQLite)
 <https://sqlite.org/althttpd>`_ web server is a minimal server that
