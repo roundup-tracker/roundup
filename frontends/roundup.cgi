@@ -16,13 +16,12 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-# python version check
-from __future__ import print_function
-
 import sys
 import time
 
-from roundup import version_check
+# If roundup is not on your normal path, add it here.
+# sys.path.append('/home/username/develop/roundup_dev')
+from roundup import version_check  # noqa: F401
 from roundup.anypy.html import html_escape
 from roundup.anypy.strings import StringIO, s2b
 from roundup.i18n import _
@@ -49,6 +48,13 @@ from roundup.i18n import _
 # DEBUG_TO_CLIENT specifies whether debugging goes to the HTTP server (via
 # stderr) or to the web client (via cgitb).
 DEBUG_TO_CLIENT = False
+
+# Return timing information to the client.
+# Set TIMING to:
+#  ""        - Do not sent timing info to client. (Default)
+#  "COMMENT" - Hide timing in html comment, view source to see it.
+#  "INLINE"  - Display timing at bottom of web page
+TIMING = ""
 
 # This indicates where the Roundup tracker lives
 TRACKER_HOMES = {
@@ -161,6 +167,9 @@ def main(out, err):
     import roundup.cgi.client
     import roundup.instance
 
+    if TIMING:
+        os.environ["CGI_SHOW_TIMING"] = TIMING
+
     request = RequestWrapper(out)
     problem_header = roundup.cgi.client.are_header_values_safe(os.environ)
     if problem_header:
@@ -185,7 +194,6 @@ def main(out, err):
         request.end_headers()
         out.write(s2b(error_body))
         return
-
 
     path = os.environ.get('PATH_INFO', '/').split('/')
     request.path = os.environ.get('PATH_INFO', '/')
