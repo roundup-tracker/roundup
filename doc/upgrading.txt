@@ -590,8 +590,8 @@ Modify Custom Rest Endpoints (required)
 If there is no interfaces.py file in your tracker home, you can
 skip this section.
 
-In the course of code maintenance and cleanup, variable ``input``
-used when defining new REST endpoints was renamed to
+In the course of code maintenance and cleanup, the variable
+``input`` used when defining new REST endpoints was renamed to
 ``input_payload``. The ``input`` variable was renamed because it
 was shadowing the ``input`` built-in function.
 
