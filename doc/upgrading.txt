@@ -587,23 +587,26 @@ references that use user supplied content
 Modify Custom Rest Endpoints (required)
 ---------------------------------------
 
-As part of code maintenance and cleanup, the ``input`` variable used
-when defining new REST endpoints was renamed to ``input_payload``. The
-``input`` variable was shadowing the ``input`` built-in function and
-was renamed.
+If there is no interfaces.py file in your tracker home, you can
+skip this section.
 
-So if you defined a custom REST endpoint in interfaces.py and it looks
+In the course of code maintenance and cleanup, variable ``input``
+used when defining new REST endpoints was renamed to
+``input_payload``. The ``input`` variable was renamed because it
+was shadowing the ``input`` built-in function.
+
+If you defined a custom REST endpoint in interfaces.py that looks
 like::
 
   def summary2(self, input):
 
-you should change it to read::
+you should change it to::
 
   def summary2(self, input_payload):
 
-and change any references to input inside the function to
-``input_payload``. The section :ref:`adding_new_rest_endpoints` has
-been updated if you need additional examples.
+Then change any references to ``input`` inside the function to
+``input_payload``. The section :ref:`adding_new_rest_endpoints`
+has been updated if you need additional examples.
 
 Deprecation Notices (required)
 ------------------------------
