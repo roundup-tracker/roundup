@@ -1884,6 +1884,8 @@ You can extend the rest api for a tracker. This describes how to add
 new rest end points. At some point it will also describe the rest.py
 structure and implementation.
 
+.. _adding_new_rest_endpoints:
+
 Adding new rest endpoints
 -------------------------
 

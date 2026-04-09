@@ -584,6 +584,27 @@ references that use user supplied content
    in the url. Also its not positional @sort=1 can appear anywhere in
    the url.
 
+Modify Custom Rest Endpoints (required)
+---------------------------------------
+
+As part of code maintenance and cleanup, the ``input`` variable used
+when defining new REST endpoints was renamed to ``input_payload``. The
+``input`` variable was shadowing the ``input`` built-in function and
+was renamed.
+
+So if you defined a custom REST endpoint in interfaces.py and it looks
+like::
+
+  def summary2(self, input):
+
+you should change it to read::
+
+  def summary2(self, input_payload):
+
+and change any references to input inside the function to
+``input_payload``. The section :ref:`adding_new_rest_endpoints` has
+been updated if you need additional examples.
+
 Deprecation Notices (required)
 ------------------------------
 
