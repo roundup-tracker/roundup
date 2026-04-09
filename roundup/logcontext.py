@@ -38,7 +38,7 @@ import functools
 import logging
 import os
 import uuid
-from typing import Callable
+from typing import Callable, Dict
 
 
 def short_uuid() -> str:
@@ -115,7 +115,7 @@ class SimpleSentinel:
 # contactvars.copy_context().items() returns nothing if set has
 # not been called on a context var. I need the contextvar names
 # even if they have not been set.
-ctx_vars: dict[str, contextvars.ContextVar] = {}
+ctx_vars: Dict[str, contextvars.ContextVar] = {}
 
 # set up sentinel values that will print a suitable error value
 # and the context vars they are associated with.
