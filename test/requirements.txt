@@ -1,0 +1,16 @@
+# the driving harness
+pytest
+
+# coverage stats
+coverage
+# fuzz tests
+hypothesis
+# mock - everybody's favorite
+mock
+# JWT tests
+pyjwt
+# live_server tests use requests
+requests
+
+# readline replacement for windows; used for roundup_admin tests
+pyreadline3 ; sys_platform == 'win32'

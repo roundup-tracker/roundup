@@ -66,13 +66,13 @@ Other project rules:
 - write unit tests for changes you make (where possible),
   and ensure that all unit tests run before committing
   changes.
-- run flake8_ or pylint_ over changed code.
+- run ruff_, flake8_ or pylint_ over changed code.
 - if you have direct commit access to the repository,
   subscribe to roundup-checkins to receive checkin
   notifications from the other developers with write access
   to the source-code repository.
 
-The goal is to have no flake8 issues. Current code has
+The goal is to have no ruff/flake8 issues. Current code has
 complex functions, some long lines and use of mutable
 objects in function signatures. Some third party code
 (e.g. ZPT) vendored into the codebase has more issues.
@@ -228,6 +228,15 @@ html``.
 Testing Notes
 -------------
 
+Use ``python -m pip install -r test/requirements.txt` to get the
+minimal packages needed to run tests.
+
+With the requirements installed, run the test suite using ``python -m
+pytest test`` from the top level directory. This can take a while. In
+CI it takes 15 minutes. On a 15 year old laptop it can take over an
+hour and a half testing only anydbm and sqlite backends (not
+including mysql/postgres).
+
 Create tests for your changes. Also run the tests in reverse to try to
 identify test dependencies. You can do this by creating a
 ``conftest.py`` in the top of the source tree and include the
@@ -248,16 +257,6 @@ test suite. Use it by running::
 
 once over the whole test suite. Then subsequent calls will analyze the
 changed files/functions and run tests that cover those changes.
-
-To run some tests (test_liveserver.py, test_indexer.py, ...) you need
-to have some additional modules installed. These include:
-
-  * requests
-  * mock
-  
-If you are working with a docker container that is set up to execute
-Python application and not for development, you will need to install
-pytest.
 
 Internationalization Notes
 --------------------------
@@ -681,6 +680,7 @@ At run time, Roundup automatically compiles message catalogs whenever
     https://sourceforge.net/projects/roundup/files/
 .. _roundup-devel mailing list:
    https://sourceforge.net/projects/roundup/lists/roundup-devel
+.. _ruff: https://docs.astral.sh/ruff/installation/
 .. _StarterTicket on https://issues.roundup-tracker.org:
    https://issues.roundup-tracker.org/issue?@columns=title,id,activity,status&@sort=activity&@filter=status,keywords&status=-1,1,2&keywords=15&@dispname=Starter%20tickets
 .. _TAL:
