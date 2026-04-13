@@ -890,6 +890,8 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
     def test_DateHTMLWithDate(self):
         """Test methods when DateHTMLProperty._value is a hyperdb.Date()
         """
+        import sys
+        
         self.client.db.config['WEB_USE_BROWSER_DATE_INPUT'] = True
         test_datestring = self.test_datestring
         test_Date = self.client.db.issue.get("1", 'deadline')
@@ -904,7 +906,9 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
                              'deadline', test_Date)
         self.assertIsInstance(d._value, date.Date)
         self.assertEqual(d.pretty(), " 1 January 2021")
-        self.assertEqual(d.pretty("%2d %B %Y"), "01 January 2021")
+        if sys.platform != "win32":  # %2d not supported on windows
+            self.assertEqual(d.pretty("%2d %B %Y"), "01 January 2021")
+        self.assertEqual(d.pretty("%d %B %Y"), " 1 January 2021")            
         self.assertEqual(d.pretty(format="%Y-%m"), "2021-01")
         self.assertEqual(d.plain(), "2021-01-01.13:22:10")
         self.assertEqual(d.local("-4").plain(), "2021-01-01.07:22:10")

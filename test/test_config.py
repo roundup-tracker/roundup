@@ -1721,7 +1721,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
 
         output = cm.exception.args[0].replace(r'\\','\\')
 
-        if sys.version_info >= (3, 12, 0):
+        if sys.version_info >= (3, 11, 4):
             expected = (
                 "Error loading logging config from %(filename)s.\n\n"
                 "   RuntimeError: %(filename)s is invalid: Source contains parsing errors: "
@@ -1731,7 +1731,6 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
                 {"filename": log_config_filename})
 
         else: # 3.7 <= x < 3.12.0
-
             expected = (
                 "Error loading logging config from %(filename)s.\n\n"
                 "   ParsingError: Source contains parsing errors: "
