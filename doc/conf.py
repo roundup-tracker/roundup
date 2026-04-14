@@ -21,7 +21,6 @@
 import sys
 import os
 
-
 # Read Roundup version by importing it from parent directory,
 # this ensures that 'unknown version' is inserted even if
 # `roundup` is importable from other location in sys.path
@@ -51,11 +50,11 @@ finally:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 #extensions = ['toctree']
-extensions = ['sphinx_tabs.tabs', 'sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'sphinx_tabs.tabs']
 
 sphinx_tabs_valid_builders = ['linkcheck']
 sphinx_tabs_disable_tab_closing = True
-
+autodoc_use_legacy_class_based = True
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -119,7 +118,7 @@ exclude_patterns = ['_build', 'tracker_config.txt',
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'borland'
 
 # disable permalinks
 from sphinx import version_info
@@ -181,13 +180,13 @@ html_static_path = ['_static']
 # directly to the root of the documentation.
 html_extra_path = ['html_extra']
 
-# If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
-# using the given strftime format.
-html_last_updated_fmt = '%b %d, %Y'
-
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 #html_use_smartypants = True
+
+# If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
+# using the given strftime format.
+html_last_updated_fmt = '%b %d, %Y'
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}

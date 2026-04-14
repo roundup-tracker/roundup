@@ -111,7 +111,7 @@
       </div>
       </nav>
     </div>
-    <div class="content">
+    <main id="main" class="content">
 	<nav id="subnav" aria-label="sub navigation">
         {%- if prev %}
            <a title="{{ prev.title|striptags }}" href="{{ prev.link|e }}">
@@ -127,7 +127,7 @@
 	<main id="main" role="main" tabindex="-1">
        {% block body %} {% endblock %}
 	</main>
-    </div>
+    </main>
 {%- block footer %}
     <footer class="footer">
       <div>
