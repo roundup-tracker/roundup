@@ -228,7 +228,7 @@ html``.
 Testing Notes
 -------------
 
-Use ``python -m pip install -r test/requirements.txt` to get the
+Use ``python -m pip install -r test/requirements.txt`` to get the
 minimal packages needed to run tests.
 
 With the requirements installed, run the test suite using ``python -m
