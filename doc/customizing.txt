@@ -1829,25 +1829,48 @@ Create a file in your detectors directory with the following
 contents::
 
     from roundup.cgi.exceptions import Reauth
+    from roundup.exceptions import Reject
 
     def confirmid(db, cl, nodeid, newvalues):
 
+        sensitive_fields = ['password', 'address']
+        
         if hasattr(db, 'reauth_done'):
-           # the user has confirmed their identity
-           return
+            # the user has confirmed their identity
+            return
 
-	if db.tx_Source not in ("web"):
-	   # the user is using rest, xmlrpc, command line,
-	   # email (unlikely) which don't support interactive
-	   # verification
-	   return
-	   
-        # if the password or email are changing, require id confirmation
+        # Uncomment to allow changes via cli
+        #if db.tx_Source in ("cli"):
+        #    return
+
+        for field in sensitive_fields:
+            if field not in newvalues:
+                # Sensitive field not found in change.
+                continue
+        
+            if db.tx_Source not in ("web"):
+                # Reject if the user is using rest, xmlrpc,
+                # command line, email which don't support
+                # interactive verification.
+                raise Reject(
+                      "You can only change field '%s' using the web." % field
+                      )
+		break  # not reached, but makes ruff etc. happy.
+		# Note: Reject() can be replaced by UsageError().
+		# Using UsageError() produces a 400 HTTP error
+		# code. Reject() produces a 405 error code. This
+		# is a bug in Roundup.
+        else:
+            # No sensitive field is changing. Allow transaction.
+            return
+           
+        # password or email address is changing, require confirmation
         if 'password' in newvalues:
-            raise Reauth('Add an optional message to the user')
+            raise Reauth('Add an optional message when user changes password.')
 
         if 'address' in newvalues:
-            raise Reauth('Add an optional message to the user')
+            raise Reauth('Add an optional message when user changes address.')
+
 
     def init(db):
         db.user.audit('set', confirmid, priority=110)
