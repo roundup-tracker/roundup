@@ -251,7 +251,7 @@ def anti_csrf_nonce(client, lifetime=None):
         module/function.
 
     '''
-    if self.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION']:
+    if client.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION']:
         return "0"
 
     otks = client.db.getOTKManager()
