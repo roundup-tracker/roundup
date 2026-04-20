@@ -1525,7 +1525,7 @@ class Client:
             otks.commit()
 
     def handle_csrf_tokenless(self):
-        '''Modern way to handle csrf prevention quoted from:
+        r'''Modern way to handle csrf prevention quoted from:
 
                 https://words.filippo.io/csrf/
 
