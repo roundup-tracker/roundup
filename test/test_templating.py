@@ -103,7 +103,8 @@ class TemplatingTestCase(unittest.TestCase):
         self.client.db.getuid = lambda : 10
         self.client.db.config = MockConfig (
             {'WEB_CSRF_TOKEN_LIFETIME': 10,
-             'MARKDOWN_BREAK_ON_NEWLINE': False })
+             'MARKDOWN_BREAK_ON_NEWLINE': False,
+             'WEB_USE_TOKENLESS_CSRF_PROTECTION': False})
 
 class HTMLDatabaseTestCase(TemplatingTestCase):
     def test_HTMLDatabase___getitem__(self):
