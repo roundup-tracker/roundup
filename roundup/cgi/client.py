@@ -824,7 +824,7 @@ class Client:
                 response_code = 400
             # FIXME should format return value according to
             # client's accept header, so application/xml, text/plain etc..
-            output = s2b('{ "error": {"status": %s, "msg": "%s"}}' %
+            output = s2b('{ "error": { "status": %s, "msg": "%s"}}' %
                          (response_code, str(msg)))
             self.reject_request(output,
                                 message_type="application/json",
