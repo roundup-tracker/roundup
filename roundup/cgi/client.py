@@ -1704,8 +1704,9 @@ class Client:
         # once all header checks have passed if it needs to be opened.
         otks = self.db.getOTKManager()
 
+        method = self.env['REQUEST_METHOD']
         # Assume: never allow changes via GET
-        if self.env['REQUEST_METHOD'] not in ['POST', 'PUT', 'DELETE']:
+        if method not in ['POST', 'PUT', 'DELETE']:
             if (self.form.list is not None) and ("@csrf" in self.form):
                 self.expire_exposed_keys(method)
             # do return here. Keys have been obsoleted.
