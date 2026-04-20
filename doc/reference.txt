@@ -2266,7 +2266,7 @@ continue using the older token/nonce based CSRF protection method.
 See Valsorda's page for details.
 
 With this mode enabled, the ``utils.anti_csrf_nonce()`` function
-always returns `"0". It does not generate a nonce nor store it to
+always returns ``"0"``. It does not generate a nonce nor store it to
 the otks database which should improve response times.
 
 Token/nonce based CSRF protection
