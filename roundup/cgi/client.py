@@ -1603,7 +1603,7 @@ class Client:
         found_origin = found_fetch = False
 
         method = self.env['REQUEST_METHOD']
-        if method in {'GET', 'OPTIONS', 'HEAD'}:
+        if method in {'GET', 'OPTIONS', 'HEAD'}:   # list item 1
             if (self.form.list is not None) and ("@csrf" in self.form):
                 self.expire_exposed_keys(method)
             # do return here. Keys have been obsoleted.
@@ -1615,7 +1615,7 @@ class Client:
         if method not in {'POST', 'PUT', 'DELETE', 'PATCH'}:
             raise UsageError("Bad Request: %s" % method)
 
-        if 'HTTP_ORIGIN' in self.env:
+        if 'HTTP_ORIGIN' in self.env:  # list item 2
             found_origin = True
             origin = self.env['HTTP_ORIGIN']
 
@@ -1629,18 +1629,18 @@ class Client:
             if origin in allowed_api_origins:
                 return True
 
-        if 'HTTP_SEC_FETCH_SITE' in self.env:
+        if 'HTTP_SEC_FETCH_SITE' in self.env:  # list item 3
             if self.env['HTTP_SEC_FETCH_SITE'] in ['same-origin', 'none']:
                 return True
 
             raise UsageError(self._("Unable to authorize request"))
 
-        if not (found_origin or found_fetch):
+        if not (found_origin or found_fetch):  # list item 4
             # not a browser request so not a CSRF by definition
             return True
 
         parsed_origin = urllib_.urlsplit(self.env['HTTP_ORIGIN'])
-        if self.env['HTTP_HOST'] == parsed_origin.netloc:
+        if self.env['HTTP_HOST'] == parsed_origin.netloc:  # list item 5
             return True
 
         raise UsageError(self._("Unable to authorize request"))
