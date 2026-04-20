@@ -218,6 +218,10 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         self.FV_SPECIAL = re.compile(FormParser.FV_LABELS%classes,
             re.VERBOSE)
 
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
     #
     # form label extraction
     #
@@ -992,6 +996,256 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         self.db = cl.db # to close new db handle from main() at tearDown
         self.assertFalse('HTTP_PROXY' in cl.env)
         self.assertFalse('HTTP_PROXY' in os.environ)
+
+    def testTokenlessCsrfProtection(self):
+        # need to set SENDMAILDEBUG to prevent
+        # downstream issue when email is sent on successful
+        # issue creation. Also delete the file afterwards
+        # just to make sure that some other test looking for
+        # SENDMAILDEBUG won't trip over ours.
+        if 'SENDMAILDEBUG' not in os.environ:
+            os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
+        SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
+
+        page_template = """
+        <html>
+         <body>
+          <p tal:condition="options/error_message|nothing"
+             tal:repeat="m options/error_message"
+             tal:content="structure m"/>
+          <p tal:content="context/title/plain"/>
+          <p tal:content="context/priority/plain"/>
+          <p tal:content="context/status/plain"/>
+          <p tal:content="context/nosy/plain"/>
+          <p tal:content="context/keyword/plain"/>
+          <p tal:content="structure context/superseder/field"/>
+         </body>
+        </html>
+        """.strip ()
+        self.db.keyword.create (name = 'key1')
+        self.db.keyword.create (name = 'key2')
+        nodeid = self.db.issue.create (title = 'Title', priority = '1',
+            status = '1', nosy = ['1'], keyword = ['1'])
+        self.db.commit ()
+        form = {':note': 'msg-content', 'title': 'New title',
+            'priority': '2', 'status': '2', 'nosy': '1,2', 'keyword': '',
+            ':action': 'edit'}
+
+        pt = RoundupPageTemplate()
+        pt.pt_edit(page_template, 'text/html')
+        out = []
+        def wh(s):
+            out.append(s)
+
+        cl = self.setupClient(form, 'issue', '1')
+        cl.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION'] = 'yes'
+        cl.write_html = wh
+
+        # Enable the following if we get a templating error:
+        #def send_error (*args, **kw):
+        #    import pdb; pdb.set_trace()
+        #cl.send_error_to_admin = send_error
+        # Need to rollback the database on error -- this usually happens
+        # in web-interface (and for other databases) anyway, need it for
+        # testing that the form values are really used, not the database!
+        # We do this together with the setup of the easy template above
+        def load_template(x):
+            cl.db.rollback()
+            return pt
+        cl.instance.templates.load = load_template
+        cl.selectTemplate = MockNull()
+        cl.determine_context = MockNull ()
+        def hasPermission(s, p, classname=None, d=None, e=None, **kw):
+            return True
+        actions.Action.hasPermission = hasPermission
+        orig_HTMLItem_is_edit_ok = _HTMLItem.is_edit_ok
+        e1 = _HTMLItem.is_edit_ok
+        _HTMLItem.is_edit_ok = lambda x : True
+        e2 = HTMLProperty.is_edit_ok
+        orig_HTMLProperty_is_edit_ok = HTMLProperty.is_edit_ok
+        HTMLProperty.is_edit_ok = lambda x : True
+
+        # If Result is not "Unable to authorize request", the CSRF check
+        # passed. Since we are using a form that specified the edit action,
+        # GET, HEAD, OPTIONS should all fail with invalid request as edit
+        # action requires POST.
+        test_table = [
+            { 
+                # Case 1: test with no security headers.
+                # Should get a redirect and create an issue since
+                # browsers will set either Origin or Sec-Fetch-Site. So
+                # request not from a browser and we allow it.
+                "Request_Method": "POST",
+                "HTTP_Origin": None,
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": None,
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+            },
+            {
+                # Case 2: POST should succeed with base origin.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://whoami.com",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20')
+            },
+            {
+                # Case 3: POST should fail due to bad origin.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": "Unable to authorize request"
+            },
+            {
+                # Case 4: POST should succeed with added origin.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+                'allowed_api_origins': "* https://whatRU.com https://foo.bar" 
+            },
+            {
+                # Case 5: GET should get to action and be rejected
+                #   for editing with a GET.
+                "Request_Method": "GET",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": 'Invalid request',
+            },
+            {
+                # Case 6: HEAD should get to action and be rejected
+                #   for editing with a GET.
+                "Request_Method": "HEAD",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": 'Invalid request',
+            },
+            {
+                # Case 7: POST should succeed due to fetch same-origin.
+                #  this combination should never be sent by a browser.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": "same-origin",
+                "HTTP_Host": "whoami.com",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+            },
+            {
+                # Case 8: POST should fail due to fetch same-site.
+                #  this combination should never be sent by a browser.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": "same-site",
+                "HTTP_Host": "whoami.com",
+                "Result": "Unable to authorize request",
+            },
+            {
+                # Case 9: POST should suceed due to fetch none.
+                #  (user triggered browser bookmark)
+                "Request_Method": "POST",
+                "HTTP_Origin": None,
+                "HTTP_Sec_Fetch_Site": "none",
+                "HTTP_Host": "whoami.com",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+            },
+            {
+                # Case 10: POST should fail due to fetch same-site.
+                #  this combination should never be sent by a browser.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": "same-site",
+                "HTTP_Host": "foo.bar",
+                "Result": "Unable to authorize request",
+            },
+            {
+                # Case 11: UNLOCK should fail, unsupported method
+                "Request_Method": "UNLOCK",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": "same-site",
+                "HTTP_Host": "foo.bar",
+                "Result": "Bad Request: UNLOCK",
+            },
+            {
+                # Case 12: POST should pass csrf because origin's host
+                # component and HOST match.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "foo.bar",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+            },
+        ]
+
+        for entry, test in enumerate(test_table):
+            print("Running test", entry)
+            if 'PATH_INFO' in test:
+                cl.env = {"PATH_INFO": test['PATH_INFO']}
+            else:
+                cl.env = {"PATH_INFO": "/"}
+            for header in ["Request_Method", "HTTP_Origin",
+                           "HTTP_Sec_Fetch_Site", "HTTP_Host"]:
+                if test[header]:
+                    cl.env[header.upper()] = test[header]
+            if 'allowed_api_origins' in test:
+                cl.db.config['WEB_ALLOWED_API_ORIGINS'] = test[
+                    'allowed_api_origins']
+            else:
+                cl.db.config['WEB_ALLOWED_API_ORIGINS'] = ""
+
+            cl.main()
+            self.assertIn(test['Result'], out[0])
+
+            del(out[0])
+
+        # get request with nonce
+        cl.env = {"PATH_INFO": "/"}
+        # make sure that a get deletes the csrf.
+        cl.env['REQUEST_METHOD'] = 'GET'
+        cl.env['HTTP_REFERER'] = "test routine"
+
+        # used to test deletion of exposed nonces.
+        # must reset tokenless setting so we get a real nonce and not 0.
+        cl.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION'] = 'no'
+        real_nonce = anti_csrf_nonce(cl)
+        cl.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION'] = 'yes'
+
+        form2 = copy.copy(form)
+        form2.update({'@csrf': real_nonce})
+
+        # add a real csrf field to the form and rerun main
+        cl.form = db_test_base.makeForm(form2)
+        cl.main()
+
+        # csrf passes but fail creating new issue because not a post
+        match_at=out[0].find('<p>Invalid request</p>')
+        self.assertEqual(match_at, 33)
+
+        # verify record was logged.
+        self.assertEqual( 'csrf key used with method GET from: '
+                          'Referer(test routine)',
+                          self._caplog.messages[0])
+
+        # verify nonce is 0 when tokenless protection enabled.
+        self.assertEqual("0", anti_csrf_nonce(cl))
+        
+        # clean up from email log
+        if os.path.exists(SENDMAILDEBUG):
+            os.remove(SENDMAILDEBUG)
 
     def testCsrfProtectionHtml(self):
         # need to set SENDMAILDEBUG to prevent
