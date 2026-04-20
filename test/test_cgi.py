@@ -1177,6 +1177,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                 "HTTP_Sec_Fetch_Site": "same-site",
                 "HTTP_Host": "foo.bar",
                 "Result": "Bad Request: UNLOCK",
+                "response_code": 405
             },
             {
                 # Case 12: POST should pass csrf because origin's host
@@ -1209,6 +1210,9 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
             cl.main()
             self.assertIn(test['Result'], out[0])
+
+            if "response_code" in test:
+                self.assertEqual(test['response_code'], cl.response_code)
 
             del(out[0])
 

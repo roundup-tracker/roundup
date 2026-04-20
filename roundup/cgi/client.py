@@ -817,13 +817,18 @@ class Client:
             # Must check supplied Origin header for bad value first.
             csrf_ok = self.handle_csrf(api=True)
         except (Unauthorised, UsageError) as msg:
+            response_code = self.response_code
+            if response_code < 400:
+                # set the code to a 400 error as this is an error
+                # condition.
+                response_code = 400
             # FIXME should format return value according to
             # client's accept header, so application/xml, text/plain etc..
-            output = s2b('{ "error": { "status": 400, "msg": "%s"}}' %
-                         str(msg))
+            output = s2b('{ "error": {"status": %s, "msg": "%s"}}' %
+                         (response_code, str(msg)))
             self.reject_request(output,
                                 message_type="application/json",
-                                status=400)
+                                status=response_code)
             csrf_ok = False  # we had an error, failed check
             return
 
@@ -1613,6 +1618,7 @@ class Client:
 
         # local addition to fail fast if invalid method.
         if method not in {'POST', 'PUT', 'DELETE', 'PATCH'}:
+            self.response_code = 405  # bad method
             raise UsageError("Bad Request: %s" % method)
 
         if 'HTTP_ORIGIN' in self.env:  # list item 2
