@@ -5,13 +5,16 @@ Yes, it's called "sessions" - because originally it only defined a session
 class. It's now also used for One Time Key handling too.
 """
 __docformat__ = 'restructuredtext'
+import ast
 import time
 
 from roundup.anypy.html import html_escape as escape
 from roundup.backends.sessions_common import SessionCommon
 
 def safe_eval(s):
-    return eval(s, {"__builtins__": {}}, {})
+    """Restricted eval to eval a repr of a dict of constants.
+    """
+    return ast.literal_eval(s)
 
 class BasicDatabase(SessionCommon):
     ''' Provide a nice encapsulation of an RDBMS table.
