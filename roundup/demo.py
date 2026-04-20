@@ -9,12 +9,9 @@ import shutil
 import socket
 import sys
 
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
 
 from roundup import configuration
+from roundup.anypy import urllib_
 from roundup.scripts import roundup_server
 
 # Path where demo instance files will be stored
@@ -146,7 +143,7 @@ def run_demo(home, bind_addr=None, bind_port=None):
     cfg = configuration.CoreConfig(home)
     url = cfg["TRACKER_WEB"]
     try:
-        hostname, port = urlparse.urlparse(url)[1].split(':')
+        hostname, port = urllib_.urlsplit(url)[1].split(':')
     except ValueError:
         print("\nThe TRACKER_WEB url:\n\n  %(url)s\n\nin\n\n"
               "  %(home)s/config.ini"

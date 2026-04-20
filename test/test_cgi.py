@@ -3061,10 +3061,10 @@ class TemplateHtmlRendering(unittest.TestCase, testFtsQuery):
         #
         # break components with unescaped character '<'
         # path component
-        te("http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue", 'Path component (/cgi-bin/roundup.cgi/bugs/<user3) in http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue is not properly escaped')
+        te("http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue", 'Path component (/cgi-bin/roundup.cgi/bugs/<user3;parm=bar) in http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue is not properly escaped')
 
         # params component
-        te("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue", 'Params component (parm=b<ar) in http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue is not properly escaped')
+        te("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue", 'Path component (/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar) in http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue is not properly escaped')
 
         # query component
         te("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=<foo>&parm=(zot)#issue", 'Query component (@template=<foo>&parm=(zot)) in http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=<foo>&parm=(zot)#issue is not properly escaped')

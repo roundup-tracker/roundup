@@ -489,7 +489,7 @@ class Client:
 
         # this is the "cookie path" for this tracker (ie. the path part of
         # the "base" url)
-        self.cookie_path = urllib_.urlparse(self.base)[2]
+        self.cookie_path = urllib_.urlsplit(self.base)[2]
         # cookies to set in http responce
         # {(path, name): (value, expire)}
         self._cookies = {}
@@ -1465,7 +1465,7 @@ class Client:
     def is_referer_header_ok(self, api=False):
         referer = self.env['HTTP_REFERER']
         # parse referer and create an origin
-        referer_comp = urllib_.urlparse(referer)
+        referer_comp = urllib_.urlsplit(referer)
 
         # self.base always has trailing /, so add trailing / to referer_origin
         referer_origin = "%s://%s/" % (referer_comp[0], referer_comp[1])

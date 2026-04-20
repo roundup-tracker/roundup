@@ -119,7 +119,8 @@ Features:
   althttpd web server. (John Rouillard)
 - add support for tokenless/nonceless CSRF prevention following
   https://words.filippo.io/csrf/. (John Rouillard)
-
+- standardize use of roundup.anypy.urllib_. Replace urlparse() with
+  urlsplit() (recommended) for some speedup. (John Rouillard)
 
 2025-07-13 2.5.0
 

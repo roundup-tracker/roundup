@@ -21,13 +21,10 @@ try:
 except ImportError:
     JSONDecodeError = ValueError
 
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
 
 from roundup import actions, date, hyperdb
 from roundup.anypy.strings import b2s, bs2b, is_us, u2s
+from roundup.anypy.urllib_ import urlsplit
 from roundup.cgi.exceptions import NotFound, PreconditionFailed, Unauthorised
 from roundup.exceptions import Reject, UsageError
 from roundup.i18n import _
@@ -2341,7 +2338,7 @@ class RestfulInstance(object):
         #              only json or xml valid at this time.
         #            header (Accept: application/json, application/xml)
         #            default (application/json)
-        ext_type = os.path.splitext(urlparse(uri).path)[1][1:]
+        ext_type = os.path.splitext(urlsplit(uri).path)[1][1:]
 
         # Check to see if the extension matches a value in
         # self.__accepted_content_type. In the future other output
