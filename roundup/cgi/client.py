@@ -1581,6 +1581,8 @@ class Client:
             post-2020 browsers), but note that out-of-date browsers
             are likely to have more pressing security issues."
 
+            **Local Notes**
+
             \*1. The allow list of trusted origins is obtained from
             the tracker's config.ini file in two places:
 
