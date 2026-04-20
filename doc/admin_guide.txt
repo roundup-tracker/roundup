@@ -1679,7 +1679,7 @@ store information about the operation of Roundup.
 This ephemeral data:
 
 * web login session keys,
-* CSRF tokens,
+* CSRF tokens (if enabled),
 * email password recovery one time keys,
 * rate limiting data,
 * ...

@@ -341,6 +341,29 @@ editing of the other properties::
 
     db.security.addPermissionToRole('User', file_edit_perm)
 
+Enable tokenless/nonceless CSRF protection
+------------------------------------------
+
+This version implements CSRF protection using `Cross-Site Request
+Forgery by Filippo Valsorda <https://words.filippo.io/csrf/>`_.
+This is an effective method for CSRF protection and is much
+simpler as well. There are no configurable options unlike the 8
+options for the older method.
+
+It is off by default and must be manually enabled. You can enable
+it on a per-tracker basis using ``config.ini``. In the ``[web]``
+section of ``config.ini`` set ``use_tokenless_csrf_protection`` to
+``yes`` to enable it. This also disable validation using the older
+nonce and header based CSRF settings.
+
+When enabled, calls to ``utils.anti_csrf_nonce()`` will always
+return ``"0"``. As a result, you do not have to change your
+templates. Performance should be better since the random nonce is
+not generated nor saved to the otks database.
+
+Additional details can be found in the :ref:`nonceless CSRF` section of
+the reference guide.
+
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0

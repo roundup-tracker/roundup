@@ -1491,8 +1491,165 @@ class Client:
                 return True
         return False
 
+    def expire_exposed_keys(self, method):
+        """A nonce is used with a method it should not be. If the
+           nonce exists, report to admin so they can fix the nonce
+           leakage and destroy it. (Nonces used in a get are more
+           exposed than those used in a post.) If nonce exists in the
+           database, report the referer and origin headers to try to
+           find where this comes from so it can be fixed.  If nonce
+           doesn't exist just ignore it. If we reported invalid
+           nonces, somebody could spam us with a ton of invalid keys
+           and fill up the logs.
+
+           Use ?@csrf=key in a GET, HEAD, or OPTIONS request to
+           test this code. Python's http server library will not parse
+           Content sent via one of these methods. So smuggle it
+           via a query string when testing.
+        """
+        came_from = []
+        otks = self.db.getOTKManager()
+
+        if 'HTTP_REFERER' in self.env:
+            came_from.append("Referer(%s)" % self.env['HTTP_REFERER'])
+        if 'HTTP_ORIGIN' in self.env:
+            came_from.append("Origin(%s)" % self.env['HTTP_ORIGIN'])
+        if not came_from:
+            came_from.append(self._("Request source headers not available."))
+        key = self.form['@csrf'].value
+        if otks.exists(key):
+            logger.error(
+                self._("csrf key used with method %(method)s from: %(source)s"),
+                {"method": method, "source": ", ".join(came_from)})
+            otks.destroy(key)
+            otks.commit()
+
+    def handle_csrf_tokenless(self):
+        '''Modern way to handle csrf prevention quoted from:
+
+                https://words.filippo.io/csrf/
+
+           and is reformatted with added commentary in []'s:
+
+           "In summary, to protect against CSRF applications (or,
+           rather, libraries and frameworks) should reject
+           cross-origin non-safe browser requests. The most
+           developer-friendly way to do so is using primarily Fetch
+           metadata, which requires no extra instrumentation or
+           configuration.
+
+           1. Allow all GET, HEAD, or OPTIONS requests.  These are
+              safe methods, and are assumed not to change state at
+              various layers of the stack already.
+
+           2. If the Origin header matches an allow-list [see \*1 below]
+              of trusted origins, allow the request.
+
+              Trusted origins should be configured as full origins
+              (e.g. https://example.com) and compared by simple
+              equality with the header value.
+
+           3. If the Sec-Fetch-Site header is present: if its value is
+              same-origin or none, allow the request; otherwise,
+              reject the request.
+
+              This secures all major up-to-date browsers for sites
+              hosted on trustworthy (HTTPS or localhost) origins.
+
+           4. If neither the Sec-Fetch-Site nor the Origin headers are
+              present, allow the request.
+
+              These requests are not from (post-2020) browsers, and
+              can't be affected by CSRF.
+
+           5. If the Origin header's host (including the port) matches
+              the Host header, allow the request, otherwise reject it.
+
+              This is either a request to an HTTP origin, or by an
+              out-of-date browser.
+
+            The only false positives (unnecessary blocking) of this
+            algorithm are requests to non-trustworthy (plain HTTP)
+            origins that go through a reverse proxy that changes the
+            Host header. That edge case can be worked around by adding
+            the origin [see \*2 below] to the allow-list.
+
+            There are no false negatives in modern browsers, but
+            pre-2023 browsers will be vulnerable to HTTP→HTTPS
+            requests, because the Origin fallback is
+            scheme-agnostic. HSTS can be used to mitigate that (in
+            post-2020 browsers), but note that out-of-date browsers
+            are likely to have more pressing security issues."
+
+            \*1. The allow list of trusted origins is obtained from
+            the tracker's config.ini file in two places:
+
+               1. the web setting of the tracker section
+               2. the allowed_api_origins setting in the web section
+
+            \*2. I am not sure what is meant in this section. If the
+            reverse proxy changes the ORIGIN header, then setting
+            allowed_api_origins is a remedy. However the HOST header
+            is only used in step 5 and is compared to the ORIGIN
+            header not to a list of possible origins so....
+
+            The GET/HEAD/OPTIONS requests are scanned for @csrf
+            tokens.  If any are found, they are removed from the
+            database. The @csrf token removal code can be deleted when
+            @csrf token support is removed.
+        '''
+        found_origin = found_fetch = False
+
+        method = self.env['REQUEST_METHOD']
+        if method in {'GET', 'OPTIONS', 'HEAD'}:
+            if (self.form.list is not None) and ("@csrf" in self.form):
+                self.expire_exposed_keys(method)
+            # do return here. Keys have been obsoleted.
+            # we didn't do a expire cycle of session keys,
+            # but that's ok.
+            return True
+
+        # local addition to fail fast if invalid method.
+        if method not in {'POST', 'PUT', 'DELETE', 'PATCH'}:
+            raise UsageError("Bad Request: %s" % method)
+
+        if 'HTTP_ORIGIN' in self.env:
+            found_origin = True
+            origin = self.env['HTTP_ORIGIN']
+
+            tracker_web = self.db.config['TRACKER_WEB']
+            allowed_api_origins = self.db.config['WEB_ALLOWED_API_ORIGINS']
+
+            # tracker_web always ends with a /, so include it in
+            # the find.
+            if tracker_web.find(origin + '/') == 0:
+                return True
+            if origin in allowed_api_origins:
+                return True
+
+        if 'HTTP_SEC_FETCH_SITE' in self.env:
+            if self.env['HTTP_SEC_FETCH_SITE'] in ['same-origin', 'none']:
+                return True
+
+            raise UsageError(self._("Unable to authorize request"))
+
+        if not (found_origin or found_fetch):
+            # not a browser request so not a CSRF by definition
+            return True
+
+        parsed_origin = urllib_.urlsplit(self.env['HTTP_ORIGIN'])
+        if self.env['HTTP_HOST'] == parsed_origin.netloc:
+            return True
+
+        raise UsageError(self._("Unable to authorize request"))
+
     def handle_csrf(self, api=False):
         '''Handle csrf token lookup and validate current user and session
+
+            If the config.ini setting:
+            WEB_USE_TOKENLESS_CSRF_PROTECTION is enabled, this routine
+            returns the result from handle_csrf_tokenless()
+            and doesn't use Nonces at all.
 
             This implements (or tries to implement) the
             Session-Dependent Nonce from
@@ -1538,6 +1695,10 @@ class Client:
             debugging seems to be an advantage.
 
         '''
+
+        if self.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION']:
+            return self.handle_csrf_tokenless()
+
         # Create the otks handle here as we need it almost immediately.
         # If this is perf issue, set to None here and check below
         # once all header checks have passed if it needs to be opened.
@@ -1546,28 +1707,7 @@ class Client:
         # Assume: never allow changes via GET
         if self.env['REQUEST_METHOD'] not in ['POST', 'PUT', 'DELETE']:
             if (self.form.list is not None) and ("@csrf" in self.form):
-                # We have a nonce being used with a method it should
-                # not be. If the nonce exists, report to admin so they
-                # can fix the nonce leakage and destroy it. (nonces
-                # used in a get are more exposed than those used in a
-                # post.) Note, I don't attempt to validate here since
-                # existence here is the sign of a failure.  If nonce
-                # exists try to report the referer header to try to
-                # find where this comes from so it can be fixed.  If
-                # nonce doesn't exist just ignore it. Maybe we should
-                # report, but somebody could spam us with a ton of
-                # invalid keys and fill up the logs.
-                if 'HTTP_REFERER' in self.env:
-                    referer = self.env['HTTP_REFERER']
-                else:
-                    referer = self._("Referer header not available.")
-                key = self.form['@csrf'].value
-                if otks.exists(key):
-                    logger.error(
-                        self._("csrf key used with wrong method from: %s"),
-                        referer)
-                    otks.destroy(key)
-                    otks.commit()
+                self.expire_exposed_keys(method)
             # do return here. Keys have been obsoleted.
             # we didn't do a expire cycle of session keys,
             # but that's ok.

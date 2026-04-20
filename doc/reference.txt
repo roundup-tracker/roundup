@@ -2231,15 +2231,48 @@ for each action are:
 **search**
  Determine whether the user has permission to view this class.
 
+.. _`nonceless CSRF`:
+
 Protecting users from web application attacks
 ---------------------------------------------
 
-There is a class of attacks known as Cross Site Request Forgeries
-(CSRF). Malicious code running in the browser can making a
-request to Roundup while you are logged into Roundup. The
-malicious code piggy backs on your existing Roundup session to
-make changes without your knowledge. Roundup 1.6 has support for
-defending against this by analyzing the
+There is a type of attack known as Cross Site Request Forgeries
+(CSRF). Malicious code running in the browser can send a request
+to Roundup while you are logged in. The malicious code takes
+advantage of your active Roundup session to make changes without
+your knowledge.
+
+Roundup 2.6 added support for tokenless (nonceless) protection.
+This is based on `Cross-Site Request Forgery by Filippo Valsorda
+<https://words.filippo.io/csrf/>`_. Currently you must manually
+enable it. At some point in the future, it will be the default
+CSRF protection method.
+
+You can enable it for each tracker using ``config.ini``. In the
+``[web]`` section of ``config.ini`` setting
+``use_tokenless_csrf_protection`` to ``yes`` enables it. Since
+this is a replacement for the prior anti-CSRF protections, it
+turns off the older nonce and header-based CSRF settings.
+
+The Origin header is checked against the value of the
+``allowed_api_origins`` option. You can use it to allow access to
+Roundup from other web sites. For example your homepage at
+www.example.com displays the 10 most recently updated issues from
+Roundup running at issues.example.com. To allow this, you would
+set the ``allowed_api_origins`` to ``https://www.example.com``.
+
+If your users have older browsers (pre 2023) you may need to
+continue using the older token/nonce based CSRF protection method.
+See Valsorda's page for details.
+
+With this mode enabled, the ``utils.anti_csrf_nonce()`` function
+always returns `"0". It does not generate a nonce nor store it to
+the otks database which should improve response times.
+
+Token/nonce based CSRF protection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Roundup 1.6 has support for defending against this by analyzing the
 
 * Referer,
 * Origin, and

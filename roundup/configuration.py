@@ -1375,6 +1375,31 @@ you want to enable translation based on browsers lang
          "Defines the interval in seconds over which api login failures\n"
          "are recorded. It allows api_failed_login_limit login failures\n"
          "in this time interval. Tune this as needed.\n"),
+        (BooleanOption, 'use_tokenless_csrf_protection', 'no',
+         "Use a more modern CSRF protection method. If enabled, the\n"
+         "other CSRF settings below are disabled and a CSRF token is\n"
+         "not needed when creating your forms.\n"),
+        (OriginHeadersListOption, 'allowed_api_origins', "",
+            """A comma separated list of additonal valid Origin header
+values used when enforcing the origin header. If token style CSRF
+protection is enabled, it is used only for the api URLs (/rest and
+/xmlrpc). It is not used for the standard html URL's. If tokenless
+style csrf protection is enabled, it is used for URLs.
+
+These strings must precisely match the value of the Origin header. For
+example, 'https://bar.edu' and 'https://Bar.edu' are two different
+Origin values. Note origin values consist of scheme://host without any
+path component. Thus 'https://bar.edu/' is not valid.  The value '*'
+can be used to match any origin when token style CSRF is enabled. It
+must be placed first in the list if used. Note that the '*' value
+allows any web page on the internet to make anonymous requests against
+your Roundup tracker.
+
+You must configure this if you have a web application on a different
+origin that accesses your Roundup instance.
+
+(The origin from the tracker.web setting in config.ini is
+always valid and does not need to be specified.)"""),
         (CsrfSettingOption, 'csrf_enforce_token', "yes",
             """How do we deal with @csrf fields in posted forms.
 Set this to 'required' to block the post and notify
@@ -1425,25 +1450,6 @@ Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
 Set this to 'no' to ignore the header and accept the post."""),
-        (OriginHeadersListOption, 'allowed_api_origins', "",
-            """A comma separated list of additonal valid Origin header
-values used when enforcing the header origin. They are used
-only for the api URL's (/rest and /xmlrpc). They are not
-used for the usual html URL's. These strings must match the
-value of the Origin header exactly. So 'https://bar.edu' and
-'https://Bar.edu' are two different Origin values. Note that
-the origin value is scheme://host. There is no path
-component. So 'https://bar.edu/' would never be valid.
-The value '*' can be used to match any origin. It must be
-first in the list if used. Note that this value allows
-any web page on the internet to make anonymous requests
-against your Roundup tracker.
-
-You need to set these if you have a web application on a
-different origin accessing your Roundup instance.
-
-(The origin from the tracker.web setting in config.ini is
-always valid and does not need to be specified.)"""),
         (CsrfSettingOption, 'csrf_enforce_header_x-forwarded-host', "yes",
             """Verify that the X-Forwarded-Host http header matches
 the host part of the tracker.web setting in config.ini.

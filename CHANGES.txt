@@ -117,7 +117,10 @@ Features:
   faster for large databases. (John Rouillard)
 - Added installation.txt docs on setting up SCGI support with the
   althttpd web server. (John Rouillard)
-  
+- add support for tokenless/nonceless CSRF prevention following
+  https://words.filippo.io/csrf/. (John Rouillard)
+
+
 2025-07-13 2.5.0
 
 Fixed:

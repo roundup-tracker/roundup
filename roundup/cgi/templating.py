@@ -241,11 +241,19 @@ markdown = _import_markdown2() or _import_markdown() or _import_mistune()
 def anti_csrf_nonce(client, lifetime=None):
     ''' Create a nonce for defending against CSRF attack.
 
-        Then it stores the nonce, the session id for the user
-        and the user id in the one time key database for use
-        by the csrf validator that runs in the client::inner_main
+        If tokenless/nonceless CSRF is activated, return 0 and
+        continue. 0 should never be a value in the otks db, but even
+        if it is, it will never be checked if tokenless csrf is used.
+
+        If the nonce is used, store the nonce, the session id for the
+        user and the user id in the one time key database for use by
+        the csrf validator that runs in the client::inner_main
         module/function.
+
     '''
+    if self.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION']:
+        return "0"
+
     otks = client.db.getOTKManager()
     key = otks.getUniqueKey()
     # lifetime is in minutes.
