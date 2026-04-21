@@ -1086,7 +1086,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             {
                 # Case 2: POST should succeed with base origin.
                 "Request_Method": "POST",
-                "HTTP_Origin": "https://whoami.com",
+                "HTTP_Origin": "http://tracker.example",
                 "HTTP_Sec_Fetch_Site": None,
                 "HTTP_Host": "whoami.com",
                 "Result": ('Redirecting to '
