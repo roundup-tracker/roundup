@@ -219,8 +219,9 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             re.VERBOSE)
 
     @pytest.fixture(autouse=True)
-    def inject_fixtures(self, caplog):
+    def inject_fixtures(self, caplog, monkeypatch):
         self._caplog = caplog
+        self._monkeypatch = monkeypatch
 
     #
     # form label extraction
@@ -1057,13 +1058,10 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.determine_context = MockNull ()
         def hasPermission(s, p, classname=None, d=None, e=None, **kw):
             return True
-        actions.Action.hasPermission = hasPermission
-        orig_HTMLItem_is_edit_ok = _HTMLItem.is_edit_ok
-        e1 = _HTMLItem.is_edit_ok
-        _HTMLItem.is_edit_ok = lambda x : True
-        e2 = HTMLProperty.is_edit_ok
-        orig_HTMLProperty_is_edit_ok = HTMLProperty.is_edit_ok
-        HTMLProperty.is_edit_ok = lambda x : True
+        self._monkeypatch.setattr(actions.Action, "hasPermission",
+                                  hasPermission)
+        self._monkeypatch.setattr(_HTMLItem, "is_edit_ok",lambda x : True)
+        self._monkeypatch.setattr(HTMLProperty, "is_edit_ok",lambda x : True)
 
         # If Result is not "Unable to authorize request", the CSRF check
         # passed. Since we are using a form that specified the edit action,
@@ -1250,10 +1248,6 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # clean up from email log
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
-
-        # Undo monkey patching
-        _HTMLItem.is_edit_ok = orig_HTMLItem_is_edit_ok
-        HTMLProperty.is_edit_ok = orig_HTMLProperty_is_edit_ok
 
     def testCsrfProtectionHtml(self):
         # need to set SENDMAILDEBUG to prevent
