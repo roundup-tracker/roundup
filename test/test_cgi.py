@@ -219,9 +219,22 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             re.VERBOSE)
 
     @pytest.fixture(autouse=True)
-    def inject_fixtures(self, caplog, monkeypatch):
+    def inject_fixtures(self, caplog, monkeypatch, subtests):
+        """Used to add pytest test fixtures to unittest based tests
+           because adding the name of a fixture to a method does not
+           make the method available.
+
+           So the decrorator runs with autouse=True to set params on
+           the unittest "self" making the fixtures available for
+           tests.
+
+           If you need another fixture, just add it to the argument list
+           and assign it to self and pytest will make it available.
+        """
+        
         self._caplog = caplog
         self._monkeypatch = monkeypatch
+        self._subtests = subtests
 
     #
     # form label extraction
@@ -1207,10 +1220,13 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                 cl.db.config['WEB_ALLOWED_API_ORIGINS'] = ""
 
             cl.main()
-            self.assertIn(test['Result'], out[0])
 
-            if "response_code" in test:
-                self.assertEqual(test['response_code'], cl.response_code)
+            # make each case above a subtest
+            with self._subtests.test(entry=entry):
+                self.assertIn(test['Result'], out[0])
+
+                if "response_code" in test:
+                    self.assertEqual(test['response_code'], cl.response_code)
 
             del(out[0])
 

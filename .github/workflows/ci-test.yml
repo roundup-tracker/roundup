@@ -147,9 +147,10 @@ jobs:
         run: python -m pip install --upgrade pip
 
       # note pytest-env is not needed for redis password as there is
-      # no password on CI's redis.
+      # no password on CI's redis. pytest-subtests isn't needed with
+      # pytest 9.0.0+, but 9.0 only supports 3.10+ so include for 3.7+.
       - name: Install pytest and other packages needed for running tests
-        run: pip install flake8 hypothesis mock pytest pytest-cov requests sphinx-tabs
+        run: pip install flake8 hypothesis mock pytest pytest-cov pytest-subtests requests sphinx-tabs
 
       # https://github.com/mxschmitt/action-tmate
       # allow remote ssh into the CI container. I need this to debug

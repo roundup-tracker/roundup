@@ -1,6 +1,18 @@
 # the driving harness
 pytest
 
+# set environment variables for redis password etc. from ini/toml
+# settings files.
+pytest-env
+
+# change order of tests to find dependencies
+pytest-randomly
+
+# allows execution of subtests when a test function tests multiple
+# scenarios.  It is built into pytest 9.0+, but can co-exist with it
+# and is required for older pytest that run on older python versions.
+pytest-subtests
+
 # coverage stats
 coverage
 # fuzz tests
