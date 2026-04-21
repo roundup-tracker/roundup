@@ -1251,6 +1251,10 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
 
+        # Undo monkey patching
+        _HTMLItem.is_edit_ok = orig_HTMLItem_is_edit_ok
+        HTMLProperty.is_edit_ok = orig_HTMLProperty_is_edit_ok
+
     def testCsrfProtectionHtml(self):
         # need to set SENDMAILDEBUG to prevent
         # downstream issue when email is sent on successful
