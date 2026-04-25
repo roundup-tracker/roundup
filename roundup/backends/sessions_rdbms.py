@@ -11,16 +11,31 @@ import time
 from roundup.anypy.html import html_escape as escape
 from roundup.backends.sessions_common import SessionCommon
 
+
 def safe_eval(s):
     """Restricted eval to eval a repr of a dict of constants.
     """
     return ast.literal_eval(s)
+
 
 class BasicDatabase(SessionCommon):
     ''' Provide a nice encapsulation of an RDBMS table.
 
         Keys are id strings, values are automatically marshalled data.
     '''
+    """ In methods the variables ``n`` and ``a`` should be used
+        only for the values of self.name and self.db.arg
+        respectively. Only these values should be interpolated
+        into a sql string as they are safe.
+
+        self.name is ``otk`` or ``session`` for the otk or
+        session databases.
+
+        self.db.arg is ``%s`` or ``?`` and is the placeholder for
+        parameterized queries in mysql/postgresql or sqlite
+        respectively.
+    """
+
     name = None
 
     def __init__(self, db):
@@ -46,7 +61,7 @@ class BasicDatabase(SessionCommon):
         if not res:
             if default != self._marker:
                 return default
-            raise KeyError('No such %s "%s"' % (self.name, escape(infoid)))
+            raise KeyError('No such %s "%s"' % (n, escape(infoid)))
         values = safe_eval(res[0])
         return values.get(value, None)
 
@@ -56,7 +71,7 @@ class BasicDatabase(SessionCommon):
                             (n, n, n, self.db.arg), (infoid,))
         res = self.cursor.fetchone()
         if not res:
-            raise KeyError('No such %s "%s"' % (self.name, escape(infoid)))
+            raise KeyError('No such %s "%s"' % (n, escape(infoid)))
         return safe_eval(res[0])
 
     def set(self, infoid, **newvalues):
@@ -73,11 +88,9 @@ class BasicDatabase(SessionCommon):
                   (n, n, n, a), (infoid,))
         res = c.fetchone()
 
+        values = safe_eval(res[0]) if res else {}
+
         timestamp = time.time()
-        if res:
-            values = safe_eval(res[0])
-        else:
-            values = {}
 
         if '__timestamp' in newvalues:
             try:
@@ -86,7 +99,7 @@ class BasicDatabase(SessionCommon):
             except ValueError:
                 if res:
                     # keep the original timestamp
-                    del(newvalues['__timestamp'])
+                    del newvalues['__timestamp']
                 else:
                     # here timestamp is the new timestamp
                     newvalues['__timestamp'] = timestamp
@@ -108,25 +121,29 @@ class BasicDatabase(SessionCommon):
         return [res[0] for res in c.fetchall()]
 
     def destroy(self, infoid):
+        n = self.name
         self.cursor.execute('delete from %ss where %s_key=%s' %
-                            (self.name, self.name, self.db.arg), (infoid,))
+                            (n, n, self.db.arg), (infoid,))
 
     def updateTimestamp(self, infoid):
         """ don't update every hit - once a minute should be OK """
+        n = self.name
+        a = self.db.arg
         now = time.time()
         self.cursor.execute('''update %ss set %s_time=%s where %s_key=%s '''
             '''and %s_time < %s''' %
-                            (self.name, self.name, self.db.arg, self.name,
-                             self.db.arg, self.name, self.db.arg),
-                            (now, infoid, now-60))
+                            (n, n, a, n, a, n, a),
+                            (now, infoid, now - 60))
 
     def clean(self):
         ''' Remove session records that haven't been used for a week. '''
+        n = self.name
+        a = self.db.arg
         now = time.time()
-        week = 60*60*24*7
+        week = 60 * 60 * 24 * 7
         old = now - week
         self.cursor.execute('delete from %ss where %s_time < %s' %
-                            (self.name, self.name, self.db.arg), (old, ))
+                            (n, n, a), (old, ))
 
     def commit(self):
         self.log_info('commit %s' % self.name)
@@ -138,7 +155,7 @@ class BasicDatabase(SessionCommon):
            in seconds. Default lifetime is 0.
         """
         now = time.time()
-        week = 60*60*24*7
+        week = 60 * 60 * 24 * 7
         return now - week + item_lifetime
 
     def close(self):
