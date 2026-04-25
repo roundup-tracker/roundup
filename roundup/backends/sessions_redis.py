@@ -1,5 +1,5 @@
 # ruff: noqa: SIM108
- """This module defines a redis based store that's used by
+"""This module defines a redis based store that's used by
 the CGI interface to store session and one-time-key
 information.
 
