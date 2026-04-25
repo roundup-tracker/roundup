@@ -1,6 +1,7 @@
-import base64, logging
+import base64
+import logging
 
-import roundup.anypy.random_ as random_
+from roundup.anypy import random_
 from roundup.anypy.strings import b2s
 
 logger = logging.getLogger('roundup.hyperdb.backend.sessions')
@@ -36,7 +37,7 @@ class SessionCommon:
         # to do it only once.
         if not hasattr(self, '__logger'):
             self.__logger = logging.getLogger('roundup.hyperdb.backends.%s' %
-                                              self.name or "basicdb" )
+                                              self.name or "basicdb")
 
         return self.__logger
 
