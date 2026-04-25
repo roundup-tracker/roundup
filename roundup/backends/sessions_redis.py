@@ -1,4 +1,5 @@
-"""This module defines a redis based store that's used by
+# ruff: noqa: SIM108
+ """This module defines a redis based store that's used by
 the CGI interface to store session and one-time-key
 information.
 
@@ -19,14 +20,13 @@ to read when viewing (using redis-cli).
 __docformat__ = 'restructuredtext'
 
 import marshal
-import redis
 import time
 
+import redis
+
 from roundup.anypy.html import html_escape as escape
-
-from roundup.i18n import _
-
 from roundup.backends.sessions_common import SessionCommon
+from roundup.i18n import _
 
 
 class BasicDatabase(SessionCommon):
@@ -35,7 +35,7 @@ class BasicDatabase(SessionCommon):
         Keys are id strings, values are automatically marshalled data.
     '''
     name = None
-    default_lifetime = 60*60*24*7  # 1 week
+    default_lifetime = 60 * 60 * 24 * 7  # 1 week
 
     # FIXME: figure out how to allow admin to change this
     # to repr/eval using interfaces.py or other method.
@@ -98,7 +98,8 @@ class BasicDatabase(SessionCommon):
                              'database.') % {"name": self.name,
                                             "key": escape(infoid)})
 
-        ''' def set_no_tranaction(self, infoid, **newvalues):
+    '''
+    def set_no_transaction(self, infoid, **newvalues):
         """ this is missing transaction and may be affected by
             a race condition on update. This will work for
             redis-like embedded databases that don't support
@@ -130,7 +131,7 @@ class BasicDatabase(SessionCommon):
 
         self.redis.set(infoid, self.tostr(values))
         self.redis.expireat(infoid, int(values['__timestamp']))
-        '''
+    '''
 
     def set(self, infoid, **newvalues):
         """ Implement set using watch/multi/exec to get some
