@@ -4,8 +4,8 @@ propname, itemid) instances.
 """
 import re
 
+from roundup.anypy.strings import u2s, us2u
 from roundup.backends.indexer_common import Indexer as IndexerBase
-from roundup.anypy.strings import us2u, u2s
 
 
 class Indexer(IndexerBase):
@@ -52,15 +52,15 @@ class Indexer(IndexerBase):
         r = self.db.cursor.fetchone()
         if not r:
             # not previously indexed
-            id = self.db.newid('__textids')
+            text_id = self.db.newid('__textids')
             sql = 'insert into __textids (_textid, _class, _itemid, _prop)'\
                 ' values (%s, %s, %s, %s)' % (a, a, a, a)
-            self.db.cursor.execute(sql, (id, ) + identifier)
+            self.db.cursor.execute(sql, (text_id, ) + identifier)
         else:
-            id = int(r[0])
+            text_id = int(r[0])
             # clear out any existing indexed values
             sql = 'delete from __words where _textid=%s' % a
-            self.db.cursor.execute(sql, (id, ))
+            self.db.cursor.execute(sql, (text_id, ))
 
         # ok, find all the unique words in the text
         text = us2u(text, "replace")
@@ -77,7 +77,7 @@ class Indexer(IndexerBase):
 
         # for each word, add an entry in the db
         sql = 'insert into __words (_word, _textid) values (%s, %s)' % (a, a)
-        words = [(word, id) for word in words]
+        words = [(word, text_id) for word in words]
         self.db.cursor.executemany(sql, words)
 
     def find(self, wordlist):
@@ -88,6 +88,7 @@ class Indexer(IndexerBase):
         if not wordlist:
             return []
 
+        a = self.db.arg  # placeholder for prepared statement
         cap_wl = [word.upper() for word in wordlist
                   if self.minlength <= len(word) <= self.maxlength]
         clean_wl = [word for word in cap_wl if not self.is_stopword(word)]
@@ -97,17 +98,16 @@ class Indexer(IndexerBase):
 
         if self.db.implements_intersect:
             # simple AND search
-            sql = 'select distinct(_textid) from __words where _word=%s' % (
-                self.db.arg)
-            sql = '\nINTERSECT\n'.join([sql]*len(clean_wl))
+            sql = 'select distinct(_textid) from __words where _word=%s' % a
+            sql = '\nINTERSECT\n'.join([sql] * len(clean_wl))
             self.db.cursor.execute(sql, tuple(clean_wl))
             r = self.db.cursor.fetchall()
             if not r:
                 return []
-            a = ','.join([self.db.arg] * len(r))
+            a = ','.join([a] * len(r))
             sql = 'select _class, _itemid, _prop from __textids '\
                 'where _textid in (%s)' % a
-            self.db.cursor.execute(sql, tuple([int(row[0]) for row in r]))
+            self.db.cursor.execute(sql, tuple(int(row[0]) for row in r))
 
         else:
             # A more complex version for MySQL since it doesn't
@@ -126,9 +126,9 @@ class Indexer(IndexerBase):
             match_list = []
             for n in range(len(clean_wl) - 1):
                 join_list.append(join_tmpl % (n + 2))
-                match_list.append(match_tmpl % (n + 2, self.db.arg))
+                match_list.append(match_tmpl % (n + 2, a))
 
-            sql = sql % (' '.join(join_list), self.db.arg,
+            sql = sql % (' '.join(join_list), a,
                          ' '.join(match_list))
             self.db.cursor.execute(sql, clean_wl)
 
@@ -136,7 +136,7 @@ class Indexer(IndexerBase):
             if not r:
                 return []
 
-            a = ','.join([self.db.arg] * len(r))
+            a = ','.join([a] * len(r))
             sql = 'select _class, _itemid, _prop from __textids '\
                 'where _textid in (%s)' % a
 

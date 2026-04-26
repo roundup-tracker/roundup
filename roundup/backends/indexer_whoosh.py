@@ -2,10 +2,10 @@
 '''
 import os
 
-from whoosh import fields, qparser, index, query, analysis
+from whoosh import analysis, fields, index, query
 
-from roundup.backends.indexer_common import Indexer as IndexerBase
 from roundup.anypy.strings import us2u
+from roundup.backends.indexer_common import Indexer as IndexerBase
 
 
 class Indexer(IndexerBase):

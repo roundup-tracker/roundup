@@ -80,6 +80,7 @@ Fixed:
 - fix back_anydm::Class::get() method to properly return default value
   if requested property is set to None. This should fix missing text
   indexing for the anydbm backend. (John Rouillard)
+- ruff driven cleanups/refactor of indexer* files. (John Rouillard)
 
 Features:
 

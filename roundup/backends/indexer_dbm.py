@@ -57,9 +57,8 @@ class Indexer(IndexerBase):
             # for now the file itself is a flag
             self.force_reindex()
         elif os.path.exists(version):
-            fd = open(version)
-            version = fd.read()
-            fd.close()
+            with open(version) as fd:
+                version = fd.read()
             # check the value and reindex if it's not the latest
             if version.strip() != '1':
                 self.force_reindex()
@@ -70,10 +69,9 @@ class Indexer(IndexerBase):
         if os.path.exists(self.indexdb_path):
             shutil.rmtree(self.indexdb_path)
         os.makedirs(self.indexdb_path)
-        os.chmod(self.indexdb_path, 0o775)  # nosec - allow group write
-        fd = open(os.path.join(self.indexdb_path, 'version'), 'w')
-        fd.write('1\n')
-        fd.close()
+        os.chmod(self.indexdb_path, 0o775)  # noqa: S103 allow group write
+        with open(os.path.join(self.indexdb_path, 'version'), 'w') as fd:
+            fd.write('1\n')
         self.reindex = 1
         self.changed = 1
 
@@ -98,7 +96,7 @@ class Indexer(IndexerBase):
 
         # Find new file index, and assign it to identifier
         # (_TOP uses trick of negative to avoid conflict with file index)
-        self.files['_TOP'] = (self.files['_TOP'][0]-1, None)
+        self.files['_TOP'] = (self.files['_TOP'][0] - 1, None)
         file_index = abs(self.files['_TOP'][0])
         self.files[identifier] = (file_index, len(words))
         self.fileids[file_index] = identifier
@@ -109,12 +107,12 @@ class Indexer(IndexerBase):
             if self.is_stopword(word):
                 continue
             if word in filedict:
-                filedict[word] = filedict[word]+1
+                filedict[word] = filedict[word] + 1
             else:
                 filedict[word] = 1
 
         # now add to the totals
-        for word in filedict:
+        for word, word_dict in filedict.items():
             # each word has a dict of {identifier: count}
             if word in self.words:
                 entry = self.words[word]
@@ -124,7 +122,7 @@ class Indexer(IndexerBase):
                 self.words[word] = entry
 
             # make a reference to the file for this word
-            entry[file_index] = filedict[word]
+            entry[file_index] = word_dict
 
         # save needed
         self.changed = 1
@@ -165,7 +163,7 @@ class Indexer(IndexerBase):
             if not self.minlength <= len(word) <= self.maxlength:
                 # word outside the bounds of what we index - ignore
                 continue
-            word = word.upper()
+            word = word.upper()  # noqa: PLW2901  # set loop var is ok
             if self.is_stopword(word):
                 continue
             entry = self.words.get(word)    # For each word, get index
@@ -192,7 +190,7 @@ class Indexer(IndexerBase):
     def load_index(self, reload=0, wordlist=None):
         # Unless reload is indicated, do not load twice
         if self.index_loaded() and not reload:
-            return 0
+            return
 
         # Ok, now let's actually load it
         db = {'WORDS': {}, 'FILES': {'_TOP': (0, None)}, 'FILEIDS': {}}
@@ -211,13 +209,13 @@ class Indexer(IndexerBase):
         # Load the segments
         for segment in segments:
             try:
-                f = open(self.indexdb + segment, 'rb')
-            except IOError as error:
+                with open(self.indexdb + segment, 'rb') as f:
+                    pickle_str = zlib.decompress(f.read())
+            except IOError as error:  # noqa: PERF203 allow except inside loop
                 # probably just nonexistent segment index file
                 if error.errno != errno.ENOENT: raise          # noqa: E701
             else:
-                pickle_str = zlib.decompress(f.read())
-                f.close()
+                # FIXME 3.13 add allow_code=False to call
                 dbslice = marshal.loads(pickle_str)
                 if dbslice.get('WORDS'):
                     # if it has some words, add them
@@ -244,15 +242,14 @@ class Indexer(IndexerBase):
         for segment in self.segments:
             try:
                 os.remove(self.indexdb + segment)
-            except OSError as error:
+            except OSError as error:   # noqa: PERF203 allow except inside loop
                 # probably just nonexistent segment index file
                 if error.errno != errno.ENOENT: raise           # noqa: E701
 
         # First write the much simpler filename/fileid dictionaries
         dbfil = {'WORDS': None, 'FILES': self.files, 'FILEIDS': self.fileids}
-        marshal_fh = open(self.indexdb+'-', 'wb')
-        marshal_fh.write(zlib.compress(marshal.dumps(dbfil)))
-        marshal_fh.close()
+        with open(self.indexdb + '-', 'wb') as marshal_fh:
+            marshal_fh.write(zlib.compress(marshal.dumps(dbfil)))
 
         # The hard part is splitting the word dictionary up, of course
         letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#_"
@@ -271,10 +268,9 @@ class Indexer(IndexerBase):
             db = {'WORDS': segdicts[initchar], 'FILES': None, 'FILEIDS': None}
             pickle_str = marshal.dumps(db)
             filename = self.indexdb + initchar
-            pickle_fh = open(filename, 'wb')
-            pickle_fh.write(zlib.compress(pickle_str))
-            pickle_fh.close()
-            os.chmod(filename, 0o664)
+            with open(filename, 'wb') as pickle_fh:
+                pickle_fh.write(zlib.compress(pickle_str))
+            os.chmod(filename, 0o664) # noqa: S103 allow group write
 
         # save done
         self.changed = 0
@@ -292,7 +288,7 @@ class Indexer(IndexerBase):
         del self.fileids[file_index]
 
         # The much harder part, cleanup the word index
-        for _key, occurs in self.words.items():
+        for occurs in self.words.values():
             if file_index in occurs:
                 del occurs[file_index]
 

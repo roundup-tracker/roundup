@@ -100,7 +100,7 @@ class Indexer:
             nodeids[resid] = {}
             node_dict = nodeids[resid]
             # now figure out where it came from
-            for linkprop in propspec:
+            for linkprop, linkprop_value in propspec.items():
                 v = klass.get(resid, linkprop)
                 # the link might be a Link so deal with a single result or None
                 if isinstance(propdefs[linkprop], hyperdb.Link):
@@ -108,7 +108,7 @@ class Indexer:
                         continue
                     v = [v]
                 for nodeid in v:
-                    if nodeid in propspec[linkprop]:
+                    if nodeid in linkprop_value:
                         # OK, this node[propname] has a winner
                         if linkprop not in node_dict:
                             node_dict[linkprop] = [nodeid]

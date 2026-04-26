@@ -19,8 +19,8 @@ select length(schema) from schema;
 """
 
 from roundup.backends.indexer_common import Indexer as IndexerBase
-from roundup.i18n import _
 from roundup.cgi.exceptions import IndexerQueryError
+from roundup.i18n import _
 
 try:
     import sqlite3 as sqlite
@@ -84,10 +84,10 @@ class Indexer(IndexerBase):
                 ' values (%s, %s, %s, %s)' % (a, a, a, a)
             self.db.cursor.execute(sql, identifier + (text,))
         else:
-            id = int(r[0])
+            text_id = int(r[0])
             sql = 'update __fts set _textblob=%s where rowid=%s' % \
                   (a, a)
-            self.db.cursor.execute(sql, (text, id))
+            self.db.cursor.execute(sql, (text, text_id))
 
     def find(self, wordlist):
         """look up all the words in the wordlist.
@@ -132,8 +132,8 @@ class Indexer(IndexerBase):
                 raise IndexerQueryError(
                     _("Search failed. Try quoting any terms that "
                       "include a '-' and retry the search."))
-            else:
-                raise IndexerQueryError(e.args[0].replace("fts5:",
-                                                          "Query error:"))
+
+            raise IndexerQueryError(e.args[0].replace("fts5:",
+                                                      "Query error:"))
 
         return self.db.cursor.fetchall()
