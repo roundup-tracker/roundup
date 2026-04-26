@@ -1121,7 +1121,7 @@ class Class(hyperdb.Class):
             ids = cls.find(**{prop.rev_propname: nodeid})
             return ids
 
-        if propname not in d:
+        if propname not in d or d[propname] is None:
             if default is _marker:
                 if isinstance(prop, hyperdb.Multilink):
                     return []
