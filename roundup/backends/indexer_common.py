@@ -10,8 +10,7 @@ STOPWORDS = [
 
 
 def _isLink(propclass):
-    return (isinstance(propclass, hyperdb.Link) or
-            isinstance(propclass, hyperdb.Multilink))
+    return (isinstance(propclass, (hyperdb.Link, hyperdb.Multilink)))
 
 
 class Indexer:
@@ -65,10 +64,10 @@ class Indexer:
             ignore = {}
         # don't unpack hits entries as sqlite3's Row can't be unpacked :(
         for entry in hits:
-            # skip this result if we don't care about this class/property
+            # skip this result if we don't care about this class/prop(erty)
             classname = entry[0]
-            property = entry[2]
-            if (classname, property) in ignore:
+            prop = entry[2]
+            if (classname, prop) in ignore:
                 continue
 
             # if it's a property on klass, it's easy
@@ -96,7 +95,6 @@ class Indexer:
         # klass.find tells me the klass nodeids the linked nodes relate to
         propdefs = klass.getprops()
         for resid in klass.find(**propspec):
-            resid = str(resid)
             if resid in nodeids:
                 continue  # we ignore duplicate resids
             nodeids[resid] = {}
