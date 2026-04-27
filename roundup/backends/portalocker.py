@@ -4,6 +4,8 @@
 #
 # http://code.activestate.com/recipes/65203-portalocker-cross-platform-posixnt-api-for-flock-s/
 #
+
+#ruff: noqa: SIM103 return true/false statement without using if.
 """
 Cross-platform (posix/nt) API for flock-style file locking.
 
@@ -52,8 +54,8 @@ __docformat__ = 'restructuredtext'
 import os
 
 if os.name == 'nt':
-    import msvcrt
     import ctypes
+    import msvcrt
     from ctypes import windll
     from ctypes.wintypes import BOOL, DWORD, HANDLE
 
@@ -66,10 +68,9 @@ if os.name == 'nt':
     # detect size of ULONG_PTR
     def is_64bit():
         return ctypes.sizeof(ctypes.c_ulong) != ctypes.sizeof(ctypes.c_void_p)
-    if is_64bit():
-        ULONG_PTR = ctypes.c_int64
-    else:
-        ULONG_PTR = ctypes.c_ulong
+
+    ULONG_PTR = ctypes.c_int64 if is_64bit() else ctypes.c_ulong
+
     PVOID = ctypes.c_void_p
 
     # --- Union inside Structure by stackoverflow:3480240 ---
@@ -118,33 +119,29 @@ if os.name == 'nt':
         if LockFileEx(hfile, flags, 0, 0, 0xFFFF0000,
                       ctypes.byref(overlapped)):
             return True
-        else:
-            return False
+        return False
 
     def unlock(file):
         hfile = msvcrt.get_osfhandle(file.fileno())
         overlapped = OVERLAPPED()
         if UnlockFileEx(hfile, 0, 0, 0xFFFF0000, ctypes.byref(overlapped)):
             return True
-        else:
-            return False
+        return False
 
 elif os.name == 'posix':
     def lock(file, flags):
         if fcntl.flock(file.fileno(), flags) == 0:
             return True
-        else:
-            return False
+        return False
 
     def unlock(file):
         if fcntl.flock(file.fileno(), fcntl.LOCK_UN) == 0:
             return True
-        else:
-            return False
+        return False
 
 if __name__ == '__main__':
-    from time import time, strftime, localtime
     import sys
+    from time import localtime, strftime, time
 
     log = open('log.txt', "a+")
     lock(log, LOCK_EX)
