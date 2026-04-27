@@ -23,14 +23,12 @@ import email.parser
 import errno
 import os
 
-
 from roundup import install_util
-from roundup.anypy import scandir_
 from roundup.configuration import CoreConfig
 from roundup.i18n import _
 
 
-def copytree(src, dst, symlinks=0):
+def copytree(src, dst, symlinks=False):
     """Recursively copy a directory tree using copyDigestedFile().
 
     The destination directory is allowed to exist.
@@ -61,7 +59,7 @@ def copytree(src, dst, symlinks=0):
             install_util.copyDigestedFile(srcname, dstname)
 
 
-def install(instance_home, template, settings={}):
+def install(instance_home, template, settings=None):
     '''Install an instance using the named template and backend.
 
     'instance_home'
@@ -103,6 +101,9 @@ def install(instance_home, template, settings={}):
     ti['name'] = ti['name'] + '-' + os.path.split(instance_home)[1]
     saveTemplateInfo(instance_home, ti)
 
+    if settings is None:
+        settings = {}
+
     # if there is no config.ini or old-style config.py
     # installed from the template, write default config text
     config_ini_file = os.path.join(instance_home, CoreConfig.INI_FILE)
@@ -143,16 +144,13 @@ def loadTemplateInfo(path):
         return None
 
     # load up the template's information
-    try:
-        f = open(tif)
+    with open(tif) as f:
         m = email.parser.Parser().parse(f, True)
         ti = {}
         ti['name'] = m['name']
         ti['description'] = m['description']
         ti['intended-for'] = m['intended-for']
         ti['path'] = path
-    finally:
-        f.close()
     return ti
 
 
@@ -161,8 +159,9 @@ def writeHeader(name, value):
     '''
     out = [name.capitalize() + ':']
     n = len(out[0])
+    comfortable_line_length = 74
     for word in value.split():
-        if len(word) + n > 74:
+        if len(word) + n > comfortable_line_length:
             out.append('\n')
             n = 0
         out.append(' ' + word)
@@ -170,16 +169,13 @@ def writeHeader(name, value):
     return ''.join(out) + '\n'
 
 
-def saveTemplateInfo(dir, info):
+def saveTemplateInfo(directory, info):
     ''' Save the template info (dict of values) to the TEMPLATE-INFO.txt
         file in the indicated directory.
     '''
-    ti = os.path.join(dir, 'TEMPLATE-INFO.txt')
-    f = open(ti, 'w')
-    try:
-        for name in 'name description intended-for path'.split():
+    ti = os.path.join(directory, 'TEMPLATE-INFO.txt')
+    with open(ti, 'w') as f:
+        for name in ['name', 'description', 'intended-for', 'path']:
             f.write(writeHeader(name, info[name]))
-    finally:
-        f.close()
 
 # vim: set filetype=python sts=4 sw=4 et si :
