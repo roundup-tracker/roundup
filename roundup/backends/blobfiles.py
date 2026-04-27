@@ -1,3 +1,4 @@
+# ruff: noqa: ARG002  ignore **database not used
 #
 # Copyright (c) 2001 Bizar Software Pty Ltd (http://www.bizarsoftware.com.au/)
 # This module is free software, and you may redistribute it and/or modify
@@ -22,13 +23,12 @@ __docformat__ = 'restructuredtext'
 
 import os
 
-from roundup.anypy import scandir_
 
-def files_in_dir(dir):
-    if not os.path.exists(dir):
+def files_in_dir(directory):
+    if not os.path.exists(directory):
         return 0
     num_files = 0
-    for dir_entry in os.scandir(dir):
+    for dir_entry in os.scandir(directory):
         if dir_entry.is_file():
             num_files = num_files + 1
         elif dir_entry.is_dir():
@@ -213,10 +213,10 @@ class FileStorage(object):
     def __init__(self, umask):
         self.umask = umask
 
-    def subdirFilename(self, classname, nodeid, property=None):
+    def subdirFilename(self, classname, nodeid, property_=None):
         """Determine what the filename and subdir for nodeid + classname is."""
-        if property:
-            name = '%s%s.%s' % (classname, nodeid, property)
+        if property_:  # noqa: SIM108  don't use ternary
+            name = '%s%s.%s' % (classname, nodeid, property_)
         else:
             # roundupdb.FileClass never specified the property name, so don't
             # include it
@@ -233,20 +233,20 @@ class FileStorage(object):
 
         return filename + self.tempext
 
-    def _editInProgress(self, classname, nodeid, property):
+    def _editInProgress(self, classname, nodeid, property_):
         """Return true if the file indicated is being edited.
 
         returns -- True if the current transaction includes an edit to
         the file indicated."""
 
-        for method, args in self.transactions:
+        for method, args in self.transactions:  # noqa: SIM110 don't use any()
             if (method == self.doStoreFile and
-                    args == (classname, nodeid, property)):
+                    args == (classname, nodeid, property_)):
                 return True
 
         return False
 
-    def filename(self, classname, nodeid, property=None, create=0):
+    def filename(self, classname, nodeid, property_=None, create=0):
         """Determine what the filename for the given node and optionally
         property is.
 
@@ -255,7 +255,7 @@ class FileStorage(object):
         could be in an old-style, backwards-compatible flat directory.
         """
         filename = os.path.join(self.dir, 'files', classname,
-                                self.subdirFilename(classname, nodeid, property))
+                                self.subdirFilename(classname, nodeid, property_))
         # If the caller is going to create the file, return the
         # post-commit filename.  It is the callers responsibility to
         # add self.tempext when actually creating the file.
@@ -266,7 +266,7 @@ class FileStorage(object):
 
         # If an edit to this file is in progress, then return the name
         # of the temporary file containing the edited content.
-        if self._editInProgress(classname, nodeid, property):
+        if self._editInProgress(classname, nodeid, property_):
             if not os.path.exists(tempfile):
                 raise IOError('content file for %s not found' % tempfile)
             return tempfile
@@ -293,9 +293,9 @@ class FileStorage(object):
             return filename
 
         # ok, try flat (very old-style)
-        if property:
+        if property_:
             filename = os.path.join(self.dir, 'files', '%s%s.%s' % (
-                classname, nodeid, property))
+                classname, nodeid, property_))
         else:
             filename = os.path.join(self.dir, 'files', '%s%s' % (classname,
                                                                  nodeid))
@@ -305,17 +305,17 @@ class FileStorage(object):
         # file just ain't there
         raise IOError('content file for %s not found' % filename)
 
-    def filesize(self, classname, nodeid, property=None, create=0):
-        filename = self.filename(classname, nodeid, property, create)
+    def filesize(self, classname, nodeid, property_=None, create=0):
+        filename = self.filename(classname, nodeid, property_, create)
         return os.path.getsize(filename)
 
-    def storefile(self, classname, nodeid, property, content):
+    def storefile(self, classname, nodeid, property_, content):
         """Store the content of the file in the database. The property may be
            None, in which case the filename does not indicate which property
            is being saved.
         """
         # determine the name of the file to write to
-        name = self.filename(classname, nodeid, property, create=1)
+        name = self.filename(classname, nodeid, property_, create=1)
 
         # make sure the file storage dir exists
         if not os.path.exists(os.path.dirname(name)):
@@ -325,29 +325,24 @@ class FileStorage(object):
         name = self._tempfile(name)
 
         # make sure we don't register the rename action more than once
-        if not self._editInProgress(classname, nodeid, property):
+        if not self._editInProgress(classname, nodeid, property_):
             # save off the rename action
             self.transactions.append((self.doStoreFile, (classname, nodeid,
-                                                         property)))
+                                                         property_)))
         # always set umask before writing to make sure we have the proper one
         # in multi-tracker (i.e. multi-umask) or modpython scenarios
         # the umask may have changed since last we set it.
         os.umask(self.umask)
-        fd = open(name, 'wb')
-        fd.write(content)
-        fd.close()
+        with open(name, 'wb') as fd:
+            fd.write(content)
 
-    def getfile(self, classname, nodeid, property):
+    def getfile(self, classname, nodeid, property_):
         """Get the content of the file in the database.
         """
-        filename = self.filename(classname, nodeid, property)
+        filename = self.filename(classname, nodeid, property_)
 
-        f = open(filename, 'rb')
-        try:
-            # snarf the contents and make sure we close the file
+        with open(filename, 'rb') as f:
             return f.read()
-        finally:
-            f.close()
 
     def numfiles(self):
         """Get number of files in storage, even across subdirectories.
@@ -355,11 +350,11 @@ class FileStorage(object):
         files_dir = os.path.join(self.dir, 'files')
         return files_in_dir(files_dir)
 
-    def doStoreFile(self, classname, nodeid, property, **databases):
+    def doStoreFile(self, classname, nodeid, property_, **databases):
         """Store the file as part of a transaction commit.
         """
         # determine the name of the file to write to
-        name = self.filename(classname, nodeid, property, 1)
+        name = self.filename(classname, nodeid, property_, 1)
 
         # the file is currently ".tmp" - move it to its real name to commit
         if name.endswith(self.tempext):
@@ -380,11 +375,11 @@ class FileStorage(object):
         # return the classname, nodeid so we reindex this content
         return (classname, nodeid)
 
-    def rollbackStoreFile(self, classname, nodeid, property, **databases):
+    def rollbackStoreFile(self, classname, nodeid, property_, **databases):
         """Remove the temp file as a part of a rollback
         """
         # determine the name of the file to delete
-        name = self.filename(classname, nodeid, property)
+        name = self.filename(classname, nodeid, property_)
         if not name.endswith(self.tempext):
             name += self.tempext
         os.remove(name)
