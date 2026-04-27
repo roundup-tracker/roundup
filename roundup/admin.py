@@ -33,7 +33,6 @@ import sys
 import roundup.instance
 from roundup import __version__ as roundup_version
 from roundup import date, hyperdb, init, password, support, token_r
-from roundup.anypy import scandir_  # noqa: F401 define os.scandir
 from roundup.anypy.my_input import my_input
 from roundup.anypy.strings import repr_export
 from roundup.configuration import (

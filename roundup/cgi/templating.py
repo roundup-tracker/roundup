@@ -27,7 +27,6 @@ import re
 import textwrap
 
 from roundup import date, hyperdb, support
-from roundup.anypy import scandir_
 from roundup.anypy import urllib_
 from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
