@@ -9,7 +9,6 @@ import shutil
 import socket
 import sys
 
-
 from roundup import configuration
 from roundup.anypy import urllib_
 from roundup.scripts import roundup_server
@@ -90,7 +89,7 @@ def install_demo(home, backend, template, use_port=None, use_host=None):
     # pick a fairly odd, random port
     port = use_port or 8917
     while 1:
-        print('Trying to set up web server on port %d ...' % port,)
+        print('Trying to set up web server on port %d ...' % port)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
@@ -152,7 +151,7 @@ def run_demo(home, bind_addr=None, bind_port=None):
               "Try running\ndemo mode with a different directory. "
               "Use roundup-server to serve\nproduction trackers. "
               "Exiting.\n" % {'home': home, 'url': url})
-        exit(1)
+        sys.exit(1)
 
     bind_addr = bind_addr or hostname
     port = int(bind_port or port)
@@ -169,7 +168,7 @@ edit "%(datadir)s/config.ini"
 and set the "web" option in section "[tracker]" to your host name,
 then restart demo. If you want to change backend types, you must use "nuke".
 
-''' % dict(url=url, script=sys.argv[0], datadir=TRACKER_HOME)
+''' % {"url": url, "script": sys.argv[0], "datadir": TRACKER_HOME}
 
     # disable command line processing in roundup_server
     sys.argv = sys.argv[:1] + ['-p', str(port), '-n', bind_addr, 'demo=' + home]
@@ -193,7 +192,7 @@ Options:
  -h                -- print this help message
  -t template       -- specify the tracker template to use
  -b backend        -- specify the database backend to use
-""" % dict(script=sys.argv[0], datadir=TRACKER_HOME+os.sep))
+""" % {"script": sys.argv[0], "datadir": TRACKER_HOME + os.sep})
 
 
 def main():
@@ -234,7 +233,7 @@ def main():
         print("       Use the 'nuke' command to start over.")
         sys.exit(1)
 
-    run_demo(home)
+    return run_demo(home)
 
 
 if __name__ == '__main__':
