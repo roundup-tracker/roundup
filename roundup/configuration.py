@@ -8,6 +8,7 @@ __docformat__ = "restructuredtext"
 # where not expected by the Python code.  Thus, a version check is
 # used here instead of try/except.
 import binascii
+import errno
 import getopt
 import logging
 import logging.config
@@ -785,11 +786,7 @@ class SecretOption(Option):
             try:
                 with open(filepath) as f:
                     _val = f.readline().rstrip()
-            # except FileNotFoundError: py2/py3
-            # compatible version
-            except FileNotFoundError:
-                pass
-            except OSError as e:
+            except FileNotFoundError as e:
                 raise OptionValueError(
                     self, _val,
                     "Unable to read value for %s. Error opening "
