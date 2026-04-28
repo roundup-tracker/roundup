@@ -1510,11 +1510,8 @@ Erase it? Y/N: """) % locals())
         #   config_ini.ini files.
         try:
             os.remove(tracker_home + "/config_ini.ini")
-        except OSError as e:  # FileNotFound exception under py3
-            if e.errno == 2:
+        except FileNotFoundError:
                 pass
-            else:
-                raise
 
         print(_("""
 ---------------------------------------------------------------------------
