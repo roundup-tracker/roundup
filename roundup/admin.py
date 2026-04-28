@@ -1505,14 +1505,6 @@ Erase it? Y/N: """) % locals())
         except ConfigurationError as e:
             raise UsageError(e)
 
-        # Remove config_ini.ini file from tracker_home (not template dir).
-        # Ignore file not found - not all templates have
-        #   config_ini.ini files.
-        try:
-            os.remove(tracker_home + "/config_ini.ini")
-        except FileNotFoundError:
-                pass
-
         print(_("""
 ---------------------------------------------------------------------------
  You should now edit the tracker configuration file:

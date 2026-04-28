@@ -65,13 +65,6 @@ def install_demo(home, backend, template, use_port=None, use_host=None):
             sys.exit(1)
 
     init.install(home, template_dir)
-    # Remove config_ini.ini file from tracker_home (not template dir).
-    # Ignore file not found - not all templates have
-    #   config_ini.ini files.
-    try:
-        os.remove(home + "/config_ini.ini")
-    except FileNotFoundError:
-            pass
 
     # don't have email flying around
     nosyreaction = os.path.join(home, 'detectors', 'nosyreaction.py')

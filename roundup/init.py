@@ -92,6 +92,8 @@ def install(instance_home, template, settings=None):
       the auditor and reactor modules for this instance
     extensions/
       code extensions to Roundup
+
+    After installation remove config_ini.ini if it exists.
     '''
     # At the moment, it's just a copy
     copytree(template, instance_home)
@@ -111,6 +113,13 @@ def install(instance_home, template, settings=None):
         config = CoreConfig(settings=settings)
         config.save(config_ini_file)
 
+    # Remove config_ini.ini file from tracker_home (not template dir).
+    # Ignore file not found - not all templates have
+    #   config_ini.ini files.
+    try:
+        os.remove(instance_home + "/config_ini.ini")
+    except FileNotFoundError:
+        pass
 
 def listTemplates(directory):
     ''' List all the Roundup template directories in a given directory.
