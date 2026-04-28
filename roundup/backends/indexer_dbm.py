@@ -20,7 +20,6 @@ messages, string properties and text files possible.
 '''
 __docformat__ = 'restructuredtext'
 
-import errno
 import marshal
 import os
 import re
@@ -211,9 +210,9 @@ class Indexer(IndexerBase):
             try:
                 with open(self.indexdb + segment, 'rb') as f:
                     pickle_str = zlib.decompress(f.read())
-            except IOError as error:  # noqa: PERF203 allow except inside loop
+            except FileNotFoundError:  # noqa: PERF203 allow except inside loop
                 # probably just nonexistent segment index file
-                if error.errno != errno.ENOENT: raise          # noqa: E701
+                pass
             else:
                 # FIXME 3.13 add allow_code=False to call
                 dbslice = marshal.loads(pickle_str)
@@ -242,9 +241,9 @@ class Indexer(IndexerBase):
         for segment in self.segments:
             try:
                 os.remove(self.indexdb + segment)
-            except OSError as error:   # noqa: PERF203 allow except inside loop
+            except FileNotFoundError:  # noqa: PERF203 allow except inside loop
                 # probably just nonexistent segment index file
-                if error.errno != errno.ENOENT: raise           # noqa: E701
+                pass
 
         # First write the much simpler filename/fileid dictionaries
         dbfil = {'WORDS': None, 'FILES': self.files, 'FILEIDS': self.fileids}
