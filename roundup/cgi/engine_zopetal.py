@@ -3,7 +3,6 @@ Zope.
 """
 __docformat__ = 'restructuredtext'
 
-import errno
 import mimetypes
 import os
 import os.path
@@ -32,9 +31,8 @@ class Loader(TALLoaderBase):
         # has it changed?
         try:
             stime = os.stat(src)[stat.ST_MTIME]
-        except os.error as error:
-            if error.errno != errno.ENOENT:
-                raise
+        except FileNotFoundError:
+            pass
 
         if src in self.templates and \
                 stime <= self.templates[src].mtime:
