@@ -70,11 +70,8 @@ def install_demo(home, backend, template, use_port=None, use_host=None):
     #   config_ini.ini files.
     try:
         os.remove(home + "/config_ini.ini")
-    except OSError as e:  # FileNotFound exception under py3
-        if e.errno == 2:
+    except FileNotFoundError:
             pass
-        else:
-            raise
 
     # don't have email flying around
     nosyreaction = os.path.join(home, 'detectors', 'nosyreaction.py')
