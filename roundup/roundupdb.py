@@ -24,7 +24,6 @@ import base64
 import logging
 import mimetypes
 import time
-
 from email import encoders
 from email.header import Header
 from email.mime.base import MIMEBase
@@ -33,16 +32,16 @@ from email.mime.text import MIMEText
 from email.parser import FeedParser
 from email.utils import formataddr
 
-import roundup.anypy.random_ as random_
-
 from roundup import date, hyperdb, password
+from roundup.anypy import random_
 from roundup.anypy.strings import b2s, s2u
 from roundup.hyperdb import iter_roles
-from roundup.i18n import _, RoundupNullTranslations
+from roundup.i18n import RoundupNullTranslations, _
 from roundup.mailer import Mailer, MessageSendError, nice_sender_header
 
 try:
-    import gpg, gpg.core  # noqa: E401
+    import gpg
+    import gpg.core
 except ImportError:
     gpg = None
 
@@ -63,15 +62,14 @@ class Database(object):
         that owns this connection to the hyperdatabase."""
         if self.journaltag is None:
             return None
-        elif self.journaltag == 'admin':
+        if self.journaltag == 'admin':
             # admin user may not exist, but always has ID 1
             return '1'
-        else:
-            if (self.journal_uid is None or self.journal_uid[0] !=
-                    self.journaltag):
-                uid = self.user.lookup(self.journaltag)
-                self.journal_uid = (self.journaltag, uid)
-            return self.journal_uid[1]
+        if (self.journal_uid is None or self.journal_uid[0] !=
+                self.journaltag):
+            uid = self.user.lookup(self.journaltag)
+            self.journal_uid = (self.journaltag, uid)
+        return self.journal_uid[1]
 
     def setCurrentUser(self, username):
         """Set the user that is responsible for current database
@@ -138,8 +136,7 @@ class Database(object):
             if str(e) == 'node with key "%s" exists' % username:
                 raise ValueError(
                     _("Username '%s' already exists.") % username)
-            else:
-                raise
+            raise
 
             # clear the props from the otk database
         self.getOTKManager().destroy(otk)
@@ -220,7 +217,7 @@ class IssueClass:
     # Note that this list also includes properties
     # defined in the classic template:
     # assignedto, keyword, priority, status.
-    (
+    (  # noqa: B018
         ''"title", ''"messages", ''"files", ''"nosy", ''"superseder",
         ''"assignedto", ''"keyword", ''"priority", ''"status",
         # following properties are common for all hyperdb classes
@@ -334,8 +331,8 @@ class IssueClass:
             authid = None
             recipients = []
 
-        sendto = dict(plain=[], crypt=[])
-        bcc_sendto = dict(plain=[], crypt=[])
+        sendto = {'plain': [], 'crypt': []}
+        bcc_sendto = {'plain': [], 'crypt': []}
         seen_message = {}
         for recipient in recipients:
             seen_message[recipient] = 1
@@ -347,8 +344,8 @@ class IssueClass:
                 ciphered = encrypt and (not pgproles or
                                         self.db.user.has_role(
                                             userid, *iter_roles(pgproles)))
-                type = ['plain', 'crypt'][ciphered]
-                to[type].append(address)
+                body_type = ['plain', 'crypt'][ciphered]
+                to[body_type].append(address)
                 recipients.append(userid)
 
         def good_recipient(userid):
@@ -412,10 +409,9 @@ class IssueClass:
 
         # If we have new recipients, update the message's recipients
         # and send the mail.
-        if sendto['plain'] or sendto['crypt']:
+        if (sendto['plain'] or sendto['crypt']) and msgid is not None:
             # update msgid and recipients only if non-bcc have changed
-            if msgid is not None:
-                self.db.msg.set(msgid, recipients=recipients)
+            self.db.msg.set(msgid, recipients=recipients)
         if sendto['plain'] or bcc_sendto['plain']:
             self.send_message(issueid, msgid, note, sendto['plain'],
                               from_address, bcc_sendto['plain'],
@@ -789,7 +785,7 @@ class IssueClass:
         email = formataddr((self.db.config.TRACKER_NAME,
                             self.db.config.TRACKER_EMAIL))
 
-        line = '_' * max(len(web)+2, len(email))
+        line = '_' * max(len(web) + 2, len(email))
         return '\n%s\n%s\n<%s>\n%s' % (line, email, web, line)
 
     def generateCreateNote(self, issueid):
@@ -825,7 +821,7 @@ class IssueClass:
             else:
                 value = str(value)
                 if '\n' in value:
-                    value = '\n'+self.indentChangeNoteValue(value)
+                    value = '\n' + self.indentChangeNoteValue(value)
             m.append('%s: %s' % (propname, value))
         m.insert(0, '----------')
         m.insert(0, '')
@@ -844,7 +840,7 @@ class IssueClass:
         props = cl.getprops(protected=0)
 
         # determine what changed
-        for key in oldvalues.keys():
+        for key in oldvalues:
             if key in ['files', 'messages']:
                 continue
             if key in ('actor', 'activity', 'creator', 'creation'):
@@ -880,14 +876,9 @@ class IssueClass:
                 link = self.db.classes[prop.classname]
                 key = link.labelprop(default_to_id=1)
                 if key:
-                    if value:
-                        value = link.get(value, key)
-                    else:
-                        value = ''
-                    if oldvalue:
-                        oldvalue = link.get(oldvalue, key)
-                    else:
-                        oldvalue = ''
+                    value = link.get(value, key) if value else ''
+                    oldvalue = link.get(oldvalue, key) if oldvalue else ''
+
                 change = '%s -> %s' % (oldvalue, value)
             elif isinstance(prop, hyperdb.Multilink):
                 change = ''
@@ -932,7 +923,7 @@ class IssueClass:
 
     def indentChangeNoteValue(self, text):
         lines = text.rstrip('\n').split('\n')
-        lines = ['  '+line for line in lines]
+        lines = ['  ' + line for line in lines]
         return '\n'.join(lines)
 
 # vim: set filetype=python sts=4 sw=4 et si :
