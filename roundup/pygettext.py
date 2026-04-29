@@ -552,15 +552,12 @@ def main():
         elif opt in ('-x', '--exclude-file'):
             options.excludefilename = arg
         elif opt in ('-X', '--no-docstrings'):
-            fp = open(arg)
-            try:
+            with open(arg) as fp:
                 while 1:
                     line = fp.readline()
                     if not line:
                         break
                     options.nodocstrings[line[:-1]] = 1
-            finally:
-                fp.close()
 
     # calculate escapes
     make_escapes(not options.escape)
@@ -571,9 +568,8 @@ def main():
     # initialize list of strings to exclude
     if options.excludefilename:
         try:
-            fp = open(options.excludefilename)
-            options.toexclude = fp.readlines()
-            fp.close()
+            with open(options.excludefilename) as fp:
+                options.toexclude = fp.readlines()
         except IOError:
             print(_(
                 "Can't read --exclude-file: %s") % options.excludefilename, file=sys.stderr)
