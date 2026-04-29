@@ -366,7 +366,7 @@ class Security:
         self.addRole(name="Anonymous", description="An anonymous user")
 
         # default permissions - Admin may do anything
-        for perm_name in 'create edit restore retire view'.split():
+        for perm_name in ['create', 'edit', 'restore', 'retire', 'view']:
             p = self.addPermission(name=perm_name.title(),
                                    description="User may %s everything" %
                                    perm_name)
