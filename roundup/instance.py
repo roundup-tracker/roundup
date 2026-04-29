@@ -33,18 +33,12 @@ try:
 except ImportError:
     import __builtin__ as builtins
 
-try:
-    from collections.abc import Callable
-except ImportError:
-    from collections import Callable
-
 import os
 import sys
 
-from roundup import configuration, mailgw
-from roundup import hyperdb, backends, actions
-from roundup.cgi import client, templating
+from roundup import actions, backends, configuration, hyperdb, mailgw
 from roundup.cgi import actions as cgi_actions
+from roundup.cgi import client, templating
 from roundup.exceptions import RoundupException
 
 
@@ -67,7 +61,7 @@ class Tracker:
         self.templating_utils = {}
 
         libdir = os.path.join(self.tracker_home, 'lib')
-        self.libdir = os.path.isdir(libdir) and libdir or ''
+        self.libdir = (os.path.isdir(libdir) and libdir) or ''
 
         self.load_interfaces()
         self.templates = templating.get_loader(self.config["TEMPLATES"],
@@ -276,8 +270,9 @@ class Tracker:
            to access the client object for your request.
         """
         setattr(self.TemplatingUtils,
-                name, 
+                name,
                 function)
+
 
 class TrackerError(RoundupException):
     pass
