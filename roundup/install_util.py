@@ -38,12 +38,12 @@ def extractFingerprint(lines):
     if lines[-1].startswith(b"#SHA: "):
         # handle .py/.sh comment
         return lines[-1][6:].strip()
-    elif lines[-1].startswith(b"<!-- SHA: "):
+    if lines[-1].startswith(b"<!-- SHA: "):
         # handle xml/html files
         fingerprint = lines[-1][10:]
         fingerprint = fingerprint.replace(b'-->', b'')
         return fingerprint.strip()
-    elif lines[-1].startswith(b"/* SHA: "):
+    if lines[-1].startswith(b"/* SHA: "):
         # handle css files
         fingerprint = lines[-1][8:]
         fingerprint = fingerprint.replace(b'*/', b'')
@@ -54,9 +54,8 @@ def extractFingerprint(lines):
 def checkDigest(filename):
     """Read file, check for valid fingerprint, return TRUE if ok"""
     # open and read file
-    inp = open(filename, "rb")
-    lines = inp.readlines()
-    inp.close()
+    with open(filename, "rb") as inp:
+        lines = inp.readlines()
 
     fingerprint = extractFingerprint(lines)
     if fingerprint is None:
@@ -64,7 +63,7 @@ def checkDigest(filename):
     del lines[-1]
 
     # calculate current digest
-    digest = sha1()
+    digest = sha1()  # noqa: S324
     for line in lines:
         digest.update(line)
 
@@ -79,8 +78,8 @@ class DigestFile:
 
     def __init__(self, filename):
         self.filename = filename
-        self.digest = sha1()
-        self.file = open(self.filename, "wb")
+        self.digest = sha1()  # noqa: S324
+        self.file = open(self.filename, "wb")  # noqa SIM115
 
     def write(self, data):
         lines = data.splitlines()
@@ -93,7 +92,7 @@ class DigestFile:
         self.digest.update(data)
 
     def close(self):
-        file, ext = os.path.splitext(self.filename)
+        _file, ext = os.path.splitext(self.filename)
 
         if ext in sgml_file_types:
             self.file.write(s2b("<!-- SHA: %s -->\n" %
@@ -115,28 +114,45 @@ def copyDigestedFile(src, dst, copystat=1):
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
 
-    dummy, ext = os.path.splitext(src)
+    _dummy, ext = os.path.splitext(src)
     if ext not in digested_file_types:
         if copystat:
             return shutil.copy2(src, dst)
-        else:
-            return shutil.copyfile(src, dst)
+        return shutil.copyfile(src, dst)
 
     fsrc = None
     fdst = None
     try:
-        fsrc = open(src, 'rb')
+        fsrc = open(src, 'rb')  # noqa SIM115  don't use context manager
         fdst = DigestFile(dst)
         shutil.copyfileobj(fsrc, fdst)
     finally:
-        if fdst: fdst.close()
-        if fsrc: fsrc.close()
+        if fdst:
+            fdst.close()
+        if fsrc:
+            fsrc.close()
 
-    if copystat: shutil.copystat(src, dst)
+    if copystat:
+        shutil.copystat(src, dst)
+
+    return 0
 
 
-def test(file):
-    import sys
+def test(file=None):
+    import sys  # noqa: PLC0415
+
+    # ruff: disable[B011, S101, SIM115]
+
+    try:
+        assert False
+    except AssertionError:
+        pass
+    else:
+        print("Error, assertions turned off. Test fails")
+        sys.exit(1)
+
+    if file is None:
+        file = sys.argv[0]
 
     testdata = open(file, 'rb').read()
 
@@ -157,9 +173,10 @@ def test(file):
         assert not checkDigest(testfile), "digest fails after modification"
 
         os.remove(testfile)
+    # ruff: enable[B011, S101, SIM115]
 
 
 if __name__ == '__main__':
-    test(sys.argv[0])
+    test()
 
 # vim: set filetype=python ts=4 sw=4 et si
