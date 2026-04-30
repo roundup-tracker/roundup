@@ -1,17 +1,19 @@
 # misc tests
 
+import os
 import pytest
 import re
+import shutil
 import sys
 import time
 import unittest
 
 import roundup.anypy.cmp_
 
+from roundup import install_util
 from roundup.anypy.strings import StringIO  # define StringIO
 from roundup.cgi import cgitb
 from roundup.cgi.accept_language import parse
-
 from roundup.support import PrioList, Progress, TruthDict
 
 
@@ -43,6 +45,43 @@ class CmpTest(unittest.TestCase):
     def testCmp(self):
         roundup.anypy.cmp_._test()
 
+
+class InstallUtils(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        try:
+            os.mkdir("__install_util")
+        except FileExistsError as e:
+            shutil.rmtree('__install_util')
+            os.mkdir("__install_util")  # if this fails exit with exception
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree('__install_util')
+    
+    def test_install_util(self):
+        #use install_util.py for the test
+        testfile = install_util.test.__code__.co_filename
+        
+        install_util.test(testfile)
+            
+    def test_copyDigestedFile(self):
+        #use install_util.py for the test
+        testfile = install_util.test.__code__.co_filename
+        install_util.copyDigestedFile(testfile, "__install_util" )
+
+        digested_file = '__install_util/install_util.py'
+        self.assertTrue(os.path.isfile(digested_file))
+
+        with open(digested_file) as df:
+            contents = df.readlines()
+
+        last_line = contents[-1]
+        self.assertIn("#SHA:", last_line)
+
+    def test_Check_digest_file_without_digest(self):
+        testfile = install_util.test.__code__.co_filename
+        self.assertEqual(install_util.checkDigest(testfile), 0)
 
 class PrioListTest(unittest.TestCase):
     def testPL(self):

@@ -135,10 +135,10 @@ def copyDigestedFile(src, dst, copystat=1):
     if copystat: shutil.copystat(src, dst)
 
 
-def test():
+def test(file):
     import sys
 
-    testdata = open(sys.argv[0], 'rb').read()
+    testdata = open(file, 'rb').read()
 
     for ext in digested_file_types:
         testfile = "__digest_test" + ext
@@ -151,7 +151,7 @@ def test():
 
         mod = open(testfile, 'r+b')
         mod.seek(0)
-        mod.write('# changed!')
+        mod.write(s2b('# changed!'))
         mod.close()
 
         assert not checkDigest(testfile), "digest fails after modification"
@@ -160,6 +160,6 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+    test(sys.argv[0])
 
 # vim: set filetype=python ts=4 sw=4 et si
