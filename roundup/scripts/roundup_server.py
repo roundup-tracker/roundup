@@ -323,6 +323,19 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(output)
 
+    def handle_method_wrapper(self):
+        """Capture a ConnectionAbortedError exception when client
+           fails to cleanly shut down HTTP 1.1 or higher connection.
+        """
+        try:
+            http_.server.BaseHTTPRequestHandler.handle(self)
+        except ConnectionAbortedError:
+            # client has gone away, nothing we can do about it.
+            pass
+
+    # override handle() to capture the exception.
+    handle = handle_method_wrapper
+
     do_GET = do_POST = do_HEAD = do_PUT = do_DELETE = \
         do_PATCH = do_OPTIONS = run_cgi
 

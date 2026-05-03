@@ -83,6 +83,8 @@ Fixed:
 - ruff driven cleanups/refactor of indexer* files. (John Rouillard)
 - remove roundup.anypy.scandir_ which was needed for python 2 support.
   (John Rouillard)
+- roundup-server no longer logs connection aborted when a client
+  disconnects and is using HTTP 1.1 or newer. (John Rouillard)
 
 Features:
 
