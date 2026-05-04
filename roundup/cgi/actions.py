@@ -414,7 +414,7 @@ class SearchAction(Action):
             prop = cls.get_transitive_prop(key)
             if not prop:
                 continue
-            if isinstance(self.form[key], type([])):
+            if isinstance(self.form[key], list):
                 # search for at least one entry which is not empty
                 for minifield in self.form[key]:
                     if minifield.value:

@@ -771,7 +771,7 @@ class IssueClass:
         # simplistic check to see if the url is valid,
         # then append a trailing slash if it is missing
         base = self.db.config.TRACKER_WEB
-        if (not isinstance(base, type('')) or
+        if (not isinstance(base, str) or
                 not (base.startswith('http://') or
                      base.startswith('https://'))):
             web = "Configuration Error: TRACKER_WEB isn't a " \
@@ -830,7 +830,7 @@ class IssueClass:
     def generateChangeNote(self, issueid, oldvalues):
         """Generate a change note that lists property changes
         """
-        if not isinstance(oldvalues, type({})):
+        if not isinstance(oldvalues, dict):
             raise TypeError("'oldvalues' must be dict-like, not %s." %
                             type(oldvalues))
 
@@ -855,7 +855,7 @@ class IssueClass:
             # this happens when property was added
             try:
                 old_value = oldvalues[key]
-                if isinstance(new_value, type([])):
+                if isinstance(new_value, list):
                     new_value.sort()
                     old_value.sort()
                 if new_value != old_value:

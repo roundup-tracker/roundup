@@ -735,7 +735,7 @@ class RestfulInstance(object):
                     linkcls = self.db.getclass(prop.classname)
                     cp = '%s/%s/' % (self.data_path, prop.classname)
                     if verbose and v:
-                        if isinstance(v, type([])):
+                        if isinstance(v, list):
                             r = []
                             for working_id in v:
                                 d = {"id": working_id,
@@ -2725,8 +2725,8 @@ class RestfulInstance(object):
                 import collections
                 import numbers
                 for key, val in output['error'].items():
-                    if isinstance(val, numbers.Number) or type(val) in \
-                       (str, unicode):  # noqa: SIM114
+                    if (isinstance(val, numbers.Number) or
+                       isinstance(val, (str, unicode))):  # noqa: SIM114
                         pass
                     elif hasattr(val, 'isoformat'):  # datetime # noqa: SIM114
                         pass
@@ -2834,7 +2834,7 @@ class SimulateFieldStorageFromJson():
             if is_us(val):
                 # handle most common type first
                 self.value = u2s(val)
-            elif isinstance(val, type([])):
+            elif isinstance(val, list):
                 # then lists of strings
                 self.value = [u2s(v) for v in val]
             elif val is None:

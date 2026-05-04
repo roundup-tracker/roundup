@@ -759,7 +759,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def doSaveJournal(self, classname, nodeid, action, params, creator,
                       creation):
         # serialise the parameters now if necessary
-        if isinstance(params, type({})):
+        if isinstance(params, dict):
             if action in ('set', 'create'):
                 params = self.serialise(classname, params)
 
@@ -791,7 +791,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         l = []
         for nodeid, journaldate, journaltag, action, params in journal:
             # serialise the parameters now if necessary
-            if isinstance(params, type({})):
+            if isinstance(params, dict):
                 if action in ('set', 'create'):
                     params = self.serialise(classname, params)
             journaldate = journaldate.serialise()
@@ -1240,10 +1240,10 @@ class Class(hyperdb.Class):
             if isinstance(prop, hyperdb.Link):
                 link_class = prop.classname
                 # if it isn't a number, it's a key
-                if value is not None and not isinstance(value, type('')):
+                if value is not None and not isinstance(value, str):
                     raise ValueError('property "%s" link value be a string' % (
                         propname))
-                if isinstance(value, type('')) and not num_re.match(value):
+                if isinstance(value, str) and not num_re.match(value):
                     try:
                         value = self.db.classes[link_class].lookup(value)
                     except (TypeError, KeyError):
@@ -1590,7 +1590,7 @@ class Class(hyperdb.Class):
                     continue
                 for propname, itemids in propspec.items():
                     if not isinstance(itemids, dict):
-                        if itemids is None or isinstance(itemids, type("")):
+                        if itemids is None or isinstance(itemids, str):
                             itemids = {itemids: 1}
                         else:
                             itemids = dict.fromkeys(itemids)
@@ -2208,11 +2208,11 @@ class Class(hyperdb.Class):
                             pass
                         elif isinstance(prop, hyperdb.Date):
                             # this is a hack - some dates are stored as strings
-                            if not isinstance(value, type('')):
+                            if not isinstance(value, str):
                                 value = value.get_tuple()
                         elif isinstance(prop, hyperdb.Interval):
                             # hack too - some intervals are stored as strings
-                            if not isinstance(value, type('')):
+                            if not isinstance(value, str):
                                 value = value.get_tuple()
                         elif isinstance(prop, hyperdb.Password):
                             value = str(value)

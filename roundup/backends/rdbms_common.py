@@ -506,7 +506,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 l = []
                 for entry in row:
                     # mysql will already be a string - psql needs "help"
-                    if entry is not None and not isinstance(entry, type('')):
+                    if entry is not None and not isinstance(entry, str):
                         entry = str(entry)
                     l.append(entry)
                 self.cursor.execute(sql, l)
@@ -597,7 +597,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 mls.append(col)
                 continue
 
-            if isinstance(prop, type('')):
+            if isinstance(prop, str):
                 raise ValueError("string property spec!")
                 # and prop.find('Multilink') != -1:
                 # mls.append(col)
@@ -1419,7 +1419,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             classname, nodeid, journaldate, journaltag, action, params))
 
         # make the journalled data marshallable
-        if isinstance(params, type({})):
+        if isinstance(params, dict):
             self._journal_marshal(params, classname)
 
         params = repr_export(params)
@@ -1446,7 +1446,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 params))
 
             # make the journalled data marshallable
-            if isinstance(params, type({})):
+            if isinstance(params, dict):
                 self._journal_marshal(params, classname)
             params = repr_export(params)
 
@@ -1487,7 +1487,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         properties = self.getclass(classname).getprops()
         for nodeid, date_stamp, user, action, params in journal:
             params = eval_import(params)
-            if isinstance(params, type({})):
+            if isinstance(params, dict):
                 for param, value in params.items():
                     if not value:
                         continue
@@ -1752,7 +1752,7 @@ class Class(hyperdb.Class):
                                                               key))
 
             if value is not None and isinstance(prop, Link):
-                if not isinstance(value, type('')):
+                if not isinstance(value, str):
                     raise ValueError('link value must be String')
                 link_class = self.properties[key].classname
                 # if it isn't a number, it's a key
@@ -1778,14 +1778,14 @@ class Class(hyperdb.Class):
                 if value is None:
                     value = []
                 if not hasattr(value, '__iter__') or \
-                   isinstance(value, type('')):
+                   isinstance(value, str):
                     raise TypeError('new property "%s" not an iterable of ids'
                                     % key)
                 # clean up and validate the list of links
                 link_class = self.properties[key].classname
                 l = []
                 for entry in value:
-                    if not isinstance(entry, type('')):
+                    if not isinstance(entry, str):
                         raise ValueError('"%s" multilink value (%r) '
                                          'must contain Strings' % (
                                              key, value))
@@ -2781,7 +2781,7 @@ class Class(hyperdb.Class):
                     # Note: need the where-clause if p has
                     # children that compute additional restrictions
                     if (not p.has_values or
-                            (not isinstance(v, type([])) and v != '-1') or
+                            (not isinstance(v, list) and v != '-1') or
                             p.children):
                         where.append('_%s.id=%s.%s' % (pln, tn, nid))
                     if v in ('-1', ['-1'], []):
@@ -2790,7 +2790,7 @@ class Class(hyperdb.Class):
                         where.append(self._subselect(p))
                     else:
                         if p.has_values:
-                            if isinstance(v, type([])):
+                            if isinstance(v, list):
                                 # The where-clause above is conditionally
                                 # created in _filter_multilink_expression
                                 w, arg = self._filter_multilink_expression(p, v)
@@ -2806,7 +2806,7 @@ class Class(hyperdb.Class):
                     assert not p.attr_sort_done and not p.sort_ids_needed
             elif k == 'id':
                 if 'search' in p.need_for:
-                    if isinstance(v, type([])):
+                    if isinstance(v, list):
                         # If there are no permitted values, then the
                         # where clause will always be false, and we
                         # can optimize the query away.
@@ -2823,7 +2823,7 @@ class Class(hyperdb.Class):
             elif isinstance(propclass, String):
                 if 'search' in p.need_for:
                     exact = []
-                    if not isinstance(v, type([])):
+                    if not isinstance(v, list):
                         v = [v]
                     new_v = []
                     for x in v:
@@ -2867,7 +2867,7 @@ class Class(hyperdb.Class):
                         if c:
                             where.append('_%s._%s=_%s.id' % (pln, k, ln))
                     if p.has_values:
-                        if isinstance(v, type([])):
+                        if isinstance(v, list):
                             w, arg = self._filter_link_expression(p, v)
                             if w:
                                 where.append(w)
@@ -2895,7 +2895,7 @@ class Class(hyperdb.Class):
                     rc = '_%s._%s' % (pln, k)
             elif isinstance(propclass, Date) and 'search' in p.need_for:
                 dc = self.db.to_sql_value(hyperdb.Date)
-                if isinstance(v, type([])):
+                if isinstance(v, list):
                     s = ','.join([a for x in v])
                     where.append('_%s._%s in (%s)' % (pln, k, s))
                     args = args + [dc(date.Date(x)) for x in v]
@@ -2925,7 +2925,7 @@ class Class(hyperdb.Class):
             elif isinstance(propclass, Interval):
                 # filter/sort using the __<prop>_int__ column
                 if 'search' in p.need_for:
-                    if isinstance(v, type([])):
+                    if isinstance(v, list):
                         s = ','.join([a for x in v])
                         where.append('_%s.__%s_int__ in (%s)' % (pln, k, s))
                         args = args + [date.Interval(x).as_seconds() for x in v]
@@ -2967,7 +2967,7 @@ class Class(hyperdb.Class):
                     where.append('_%s._%s in (%s)' % (pln, k, s))
                     args = args + bv
             elif 'search' in p.need_for:
-                if isinstance(v, type([])):
+                if isinstance(v, list):
                     s = ','.join([a for x in v])
                     where.append('_%s._%s in (%s)' % (pln, k, s))
                     args = args + v

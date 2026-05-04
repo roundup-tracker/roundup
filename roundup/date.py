@@ -357,7 +357,7 @@ class Date:
             self.second += spec.microsecond/1000000.
             return
 
-        if isinstance(spec, type('')):
+        if isinstance(spec, str):
             self.set(spec, offset=offset, add_granularity=add_granularity)
             return
         elif hasattr(spec, 'tuple'):

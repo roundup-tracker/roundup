@@ -341,7 +341,7 @@ class Multilink(_Pointer):
             curvalue = []
 
         # if the value is a comma-separated string then split it now
-        if isinstance(value, type('')):
+        if isinstance(value, str):
             value = value.split(',')
 
         # handle each add/remove in turn
@@ -629,7 +629,7 @@ class Proptree(object):
                 if getattr(p.propclass, 'rev_property', None):
                     pn = p.propclass.rev_property.name
                     cl = p.propclass.rev_property.cls
-                    if not isinstance(p.val, type([])):
+                    if not isinstance(p.val, list):
                         p.val = [p.val]
                     nval = [int(i) for i in p.val]
                     pval = [str(i) for i in nval if i >= 0]
@@ -641,7 +641,7 @@ class Proptree(object):
                             for node_id in cl.getnodeids(retired=False):
                                 node = cl.getnode(node_id)
                                 if node[pn]:
-                                    if isinstance(node[pn], type([])):
+                                    if isinstance(node[pn], list):
                                         s2.update(node[pn])
                                     else:
                                         s2.add(node[pn])
@@ -664,7 +664,7 @@ class Proptree(object):
                             node = cl.getnode(node_id)
                             if node[pn]:
                                 v = node[pn]
-                                if not isinstance(v, type([])):
+                                if not isinstance(v, list):
                                     v = [v]
                                 for x in v:
                                     if x not in by_id:
@@ -680,7 +680,7 @@ class Proptree(object):
                         self.set_val([], force=True)
                         return self.val
                     filterspec[p.name] = sorted(items, key=int)
-                elif isinstance(p.val, type([])):
+                elif isinstance(p.val, list):
                     exact = []
                     subst = []
                     for v in p.val:
@@ -815,10 +815,10 @@ class Proptree(object):
             return
         if self.has_values:
             v = self.val
-            if not isinstance(self.val, type([])):
+            if not isinstance(self.val, list):
                 v = [self.val]
             vals = set(v)
-            if not isinstance(val, type([])):
+            if not isinstance(val, list):
                 val = [val]
         if self.has_result:
             assert result
@@ -1380,7 +1380,7 @@ class Class:
                 j_repr = "%s" % (j,)
             else:
                 j_repr = ''
-            if args and isinstance(args, type({})):
+            if args and isinstance(args, dict):
                 for key in list(args.keys()):
                     if key not in self.properties:
                         if enforceperm and not allow_obsolete:
@@ -1411,7 +1411,7 @@ class Class:
                                  self.classname, nodeid, j_repr)
                     continue
                 journal.append(j)
-            elif action in ['link', 'unlink'] and isinstance(args, type(())):
+            elif action in ['link', 'unlink'] and isinstance(args, tuple):
                 # definitions:
                 # myself - object whose history is being filtered
                 # linkee - object/class whose property is changing to
@@ -1631,12 +1631,12 @@ class Class:
                     if isinstance(p.propclass, Multilink):
                         mlseen = True
                     isnull = v == '-1' or v is None
-                    islist = isinstance(v, type([]))
+                    islist = isinstance(v, list)
                     nullin = islist and ('-1' in v or None in v)
                     r = retr and not mlseen and not isnull and not nullin
                     p = p.append(k, retr=r)
                 if exact:
-                    if isinstance(v, type([])):
+                    if isinstance(v, list):
                         vv = [Exact_Match(x) for x in v]
                         p.set_val(vv, result=False)
                     else:
@@ -2095,7 +2095,7 @@ def rawToHyperdb(db, klass, itemid, propname, value, **kw):
                 'classname': klass.classname})
 
     # if we got a string, strip it now
-    if isinstance(value, type('')):
+    if isinstance(value, str):
         value = value.strip()
 
     # convert the input value to a real property value

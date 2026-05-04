@@ -2607,7 +2607,7 @@ class Client:
             action_klass = self.get_action_class(action)
 
             # call the mapped action
-            if isinstance(action_klass, type('')):
+            if isinstance(action_klass, str):
                 # old way of specifying actions
                 return getattr(self, action_klass)()
 

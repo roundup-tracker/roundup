@@ -784,7 +784,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         """ Get an item of this class by its item id.
         """
         # make sure we're looking at an itemid
-        if not isinstance(itemid, type(1)) and not num_re.match(itemid):
+        if not isinstance(itemid, int) and not num_re.match(itemid):
             itemid = self._klass.lookup(itemid)
 
         return HTMLItem(self._client, self.classname, itemid)
@@ -854,7 +854,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                 value = self._klass.get(nodeid, name)
                 if value is None:
                     l.append('')
-                elif isinstance(value, type([])):
+                elif isinstance(value, list):
                     l.append(':'.join(map(str, value)))
                 else:
                     l.append(str(self._klass.get(nodeid, name)))
@@ -1273,7 +1273,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                     if isinstance(prop, hyperdb.Multilink) and args[k]:
                         ml = []
                         for linkid in args[k]:
-                            if isinstance(linkid, type(())):
+                            if isinstance(linkid, tuple):
                                 sublabel = linkid[0] + ' '
                                 linkids = linkid[1]
                             else:
@@ -3042,7 +3042,7 @@ def handleListCGIValue(value):
     """ Value is either a single item or a list of items. Each item has a
         .value that we're actually interested in.
     """
-    if isinstance(value, type([])):
+    if isinstance(value, list):
         return [value.value for value in value]
     else:
         value = value.value.strip()
@@ -3208,7 +3208,7 @@ class HTMLRequest(HTMLInputMixin):
                     self.filterspec[name] = lookupIds(db, prop,
                                                       handleListCGIValue(fv))
                 else:
-                    if isinstance(fv, type([])):
+                    if isinstance(fv, list):
                         self.filterspec[name] = [v.value for v in fv]
                     elif name == 'id':
                         # special case "id" property

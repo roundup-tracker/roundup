@@ -298,7 +298,7 @@ class BooleanOption(Option):
             return "no"
 
     def str2value(self, value):
-        if isinstance(value, type("")):
+        if isinstance(value, str):
             _val = value.lower()
             if _val in ("yes", "true", "on", "1"):
                 _val = 1
@@ -1041,9 +1041,9 @@ class RegExpOption(Option):
         return value.pattern
 
     def str2value(self, value):
-        if not isinstance(value, type(u'')):
+        if not isinstance(value, str):
             value = str(value)
-        if not isinstance(value, type(u'')):
+        if not isinstance(value, str):
             # if it is 7-bit ascii, use it as string,
             # otherwise convert to unicode.
             try:

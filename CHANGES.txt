@@ -85,6 +85,10 @@ Fixed:
   (John Rouillard)
 - roundup-server no longer logs connection aborted when a client
   disconnects and is using HTTP 1.1 or newer. (John Rouillard)
+- replace isinstance(..., type(X)) where X is an instance of a type
+  (1, {}, [], '', u"") with the type itself (int, dict, list, str,
+  str). This is a leftover construct from early Python 2. Replacing
+  them speeds up code (e.g. type({}) vs dict). (John Rouillard)
 
 Features:
 

@@ -32,7 +32,7 @@ class Iterator(TALES.Iterator):
     def same_part(self, name, ob1, ob2):
         if name is None:
             return ob1 == ob2
-        if isinstance(name, type('')):
+        if isinstance(name, str):
             name = name.split('/')
         name = list(filter(None, name))
         securityManager = getSecurityManager()
