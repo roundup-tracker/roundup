@@ -8,7 +8,6 @@ __docformat__ = "restructuredtext"
 # where not expected by the Python code.  Thus, a version check is
 # used here instead of try/except.
 import binascii
-import errno
 import getopt
 import logging
 import logging.config
