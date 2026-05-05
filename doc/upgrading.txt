@@ -341,8 +341,8 @@ editing of the other properties::
 
     db.security.addPermissionToRole('User', file_edit_perm)
 
-Enable tokenless/nonceless CSRF protection
-------------------------------------------
+Enable tokenless/nonceless CSRF protection (optional)
+-----------------------------------------------------
 
 This version implements CSRF protection using `Cross-Site Request
 Forgery by Filippo Valsorda <https://words.filippo.io/csrf/>`_.
