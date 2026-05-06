@@ -283,7 +283,7 @@ REST interface changes (info)
 -----------------------------
 
 The default type of a message file (the msg class) is now
-``text/plain``.  This can be change to a different mime type using
+``text/plain``.  This can be changed to a different mime type using
 `the interfaces.py file`_. See `the rest documentation on getting file
 content for details <rest.html#getting-message-and-files-content>`_.
 
