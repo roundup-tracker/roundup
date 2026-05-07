@@ -182,13 +182,19 @@ class Tracker:
         dirpath = os.path.join(self.tracker_home, dirname)
         if os.path.isdir(dirpath):
             sys.path.insert(1, dirpath)
-            for dir_entry in os.scandir(dirpath):
-                name = dir_entry.name
-                if not name.endswith('.py'):
-                    continue
-                env = {}
-                self._execfile(os.path.join(dirname, name), env)
-                extensions.append(env['init'])
+            with os.scandir(dirpath) as ext_dir:
+                for dir_entry in ext_dir:
+                    name = dir_entry.name
+                    if not name.endswith('.py'):
+                        continue
+                    env = {}  # reset to empty every cycle
+                    try:
+                        self._execfile(os.path.join(dirname, name), env)
+                    except ImportError as e:
+                        raise TrackerError(
+                            "%(exception)s found when loading tracker extension: %(name)s" % {
+                                "exception": e, "name": os.path.join(dirname, name)})
+                    extensions.append(env['init'])
             sys.path.remove(dirpath)
         return extensions
 
