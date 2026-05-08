@@ -968,12 +968,40 @@ class Client:
                 self.serve_file(designator)
             except SendStaticFile as file:
                 self.serve_static_file(str(file))
-            except IOError:
-                # IOErrors here are due to the client disconnecting before
-                # receiving the reply.
+            except ConnectionAbortedError:
+                # ConnectionAbortedError (subclass of IOErrors which
+                # is alias for OSError as of python 3.3) here are due
+                # to the client disconnecting before receiving the
+                # reply.
                 pass
+            except IOError as e:
+                # We report this so other IOErrors aren't silenced.
+                # https://issues.roundup-tracker.org/issue2551405
+                if self.response_code == http_.client.OK:
+                    self.response_code = http_.client.INTERNAL_SERVER_ERROR
+                # Help the administrator work out what went wrong.
+                try:
+                    html = ("<h1>Traceback</h1>"
+                        + cgitb.html(i18n=self.translator)
+                        + ("<h1>Environment Variables</h1><table>%s</table>"
+                           % cgitb.niceDict("", self.env)))
+                except Exception as e:
+                    # something broke getting a nice formatted traceback.
+                    # use logger.exception to dump something useful to the log.
+                    logger.exception("Unexpected IOError exception %s", e)
+                    # then assign html default value so we return
+                    # something to the client/admin.
+                    html = self._(default_err_msg)
+                if not self.instance.config.WEB_DEBUG:
+                    exc_info = sys.exc_info()
+                    subject = "Error: %s" % exc_info[1]
+                    self.send_error_to_admin(subject, html, format_exc())
+                    self.write_html(self._(default_err_msg))
+                else:
+                    self.write_html(html)
             except SysCallError:
-                # OpenSSL.SSL.SysCallError is similar to IOError above
+                # OpenSSL.SSL.SysCallError is similar to
+                # ConnectionAbortedError (IOError) above
                 pass
             except RateLimitExceeded:
                 raise
@@ -1045,9 +1073,11 @@ class Client:
         except RateLimitExceeded as e:
             self.add_error_message(str(e))
             self.write_html(self.renderContext())
-        except IOError:
-            # IOErrors here are due to the client disconnecting before
-            # receiving the reply.
+        except ConnectionAbortedError:
+            # ConnectionAbortedError (subclass of IOErrors which
+            # is alias for OSError as of python 3.3) here are due
+            # to the client disconnecting before receiving the
+            # reply.
             # may happen during write_html and serve_file, too.
             pass
         except SysCallError:
@@ -1069,10 +1099,19 @@ class Client:
             if self.response_code == http_.client.OK:
                 self.response_code = http_.client.INTERNAL_SERVER_ERROR
             # Help the administrator work out what went wrong.
-            html = ("<h1>Traceback</h1>"
-                    + cgitb.html(i18n=self.translator)
-                    + ("<h1>Environment Variables</h1><table>%s</table>"
-                       % cgitb.niceDict("", self.env)))
+            try:
+                html = ("<h1>Traceback</h1>"
+                        + cgitb.html(i18n=self.translator)
+                        + ("<h1>Environment Variables</h1><table>%s</table>"
+                           % cgitb.niceDict("", self.env)))
+            except Exception:
+                # something broke getting a nice formatted traceback.
+                # use logger.exception to dump something useful to the log.
+                logger.exception("Last Resort Exception handler %s", e)
+                # then assign html default value so we return
+                # something to the client/admin.
+                html = self._(default_err_msg)
+                
             if not self.instance.config.WEB_DEBUG:
                 exc_info = sys.exc_info()
                 subject = "Error: %s" % exc_info[1]

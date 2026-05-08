@@ -89,6 +89,10 @@ Fixed:
   (1, {}, [], '', u"") with the type itself (int, dict, list, str,
   str). This is a leftover construct from early Python 2. Replacing
   them speeds up code (e.g. type({}) vs dict). (John Rouillard)
+- issue2551405 - Missing locale .mo files create 500 error on uwsgi
+  without further info. Added more specific ConnectionAbortedError
+  and changed IOError handling. Case in issue now logs the exception
+  for diagnosis.
 
 Features:
 
