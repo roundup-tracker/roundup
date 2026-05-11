@@ -1280,28 +1280,29 @@ Command help:
             delimiter = ':'
 
         # import all the files
-        for dir_entry in os.scandir(import_dir):
-            filename = dir_entry.name
-            classname, ext = os.path.splitext(filename)
-            # we only care about CSV files
-            if ext != '.csv' or classname.endswith('-journals'):
-                continue
+        with os.scandir(import_dir) as dirs:
+            for dir_entry in dirs:
+                filename = dir_entry.name
+                classname, ext = os.path.splitext(filename)
+                # we only care about CSV files
+                if ext != '.csv' or classname.endswith('-journals'):
+                    continue
 
-            cl = self.get_class(classname)
+                cl = self.get_class(classname)
 
-            maxid = self.import_class(dir_entry.path, colon_separated, cl,
-                         import_dir, import_files)
+                maxid = self.import_class(dir_entry.path, colon_separated, cl,
+                             import_dir, import_files)
 
-            # import the journals
-            with open(os.path.join(import_dir, classname + '-journals.csv'), 'r') as f:
-                reader = csv.reader(f, colon_separated, lineterminator='\n')
-                cl.import_journals(reader)
+                # import the journals
+                with open(os.path.join(import_dir, classname + '-journals.csv'), 'r') as f:
+                    reader = csv.reader(f, colon_separated, lineterminator='\n')
+                    cl.import_journals(reader)
 
-            # (print to sys.stdout here to allow tests to squash it .. ugh)
-            print('setting', classname, maxid + 1, file=sys.stdout)
+                # (print to sys.stdout here to allow tests to squash it .. ugh)
+                print('setting', classname, maxid + 1, file=sys.stdout)
 
-            # set the id counter
-            self.db.setid(classname, str(maxid + 1))
+                # set the id counter
+                self.db.setid(classname, str(maxid + 1))
 
         self.db_uncommitted = True
         return 0
