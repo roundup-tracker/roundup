@@ -154,7 +154,8 @@ def test(file=None):
     if file is None:
         file = sys.argv[0]
 
-    testdata = open(file, 'rb').read()
+    with open(file, 'rb') as f:
+        testdata = f.read()
 
     for ext in digested_file_types:
         testfile = "__digest_test" + ext
