@@ -499,6 +499,8 @@ class TrackerConfig(unittest.TestCase):
         
     backend = 'anydbm'
 
+    nonce = "JJxyzzy"  # use a real nonce at some point
+    
     def setUp(self):
         self.dirname = '_test_instance'
         # set up and open a tracker
@@ -1578,7 +1580,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
     def testIniFileLoggerConfig(self):
 
         # good base test case
-        config1 = dedent("""
+        config1 = dedent(f"""
         [loggers]
         keys=root,roundup,roundup.http,roundup.hyperdb,actions,schema,extension,detector
 
@@ -1646,12 +1648,12 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
 
         [handler_rotate]
         class=logging.handlers.RotatingFileHandler
-        args=('roundup.log','a', 512000, 2)
+        args=('roundup_test-{self.nonce}.log','a', 512000, 2)
         formatter=basic
 
         [handler_rotate_weblog]
         class=logging.handlers.RotatingFileHandler
-        args=('httpd.log','a', 512000, 2)
+        args=('httpd_test-{self.nonce}.log','a', 512000, 2)
         formatter=plain
 
         [formatters]
@@ -1741,7 +1743,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
 
         self.assertEqual(output, expected)
         self.reset_logging()
-        
+
         # handler = basic to handler = basi
         test_config = config1.replace("handlers=basic\n", "handlers=basi\n", 1)
         with open(log_config_filename, "w") as log_config_file:
@@ -1793,7 +1795,7 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
 
         with self.assertRaises(configparser.DuplicateOptionError) as cm:
             config = self.db.config.init_logging()
- 
+
         # verify that logging was reset
         # default log config doesn't define handlers for roundup.http
         self.assertEqual(len(logging.getLogger('roundup.http').handlers), 0)
@@ -1805,7 +1807,12 @@ E           roundup.configuration.ParsingOptionError: Error in _test_instance/co
              {"filename": log_config_filename})
         )
         self.reset_logging()
-                
+
+        for logfile in ['roundup_test-%(nonce)s.log' % {"nonce": self.nonce},
+                        'httpd_test-%(nonce)s.log' % {"nonce": self.nonce} ]:
+            if os.path.exists(logfile):
+                os.remove(logfile)
+
     def test_missing_logging_config_file(self):
         saved_config = self.db.config['LOGGING_CONFIG']
 
