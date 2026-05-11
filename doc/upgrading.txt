@@ -58,6 +58,7 @@ Recent release notes have the following labels:
 * **optional** - new features or changes to existing features you might
   want to use
 * **info** - important possibly visible changes in how things operate
+* **obsolete** - ignore these entries. They are no longer required.
 
 If you use virtual environments for your installation, you
 can run trackers with different versions of Roundup. So you
@@ -978,9 +979,15 @@ You can find an example in :ref:`dynamic_csp`.
 
 .. _gpginstall:
 
-Directions for installing gpg (optional)
+Directions for installing gpg (obsolete)
 ----------------------------------------
 
+.. note::
+   issue2551368 was closed in May 2026. Running ``pip install
+   gpg`` will install gpg 2.0.0 on all versions of Python supported by
+   Roundup. If you installed the test version use ``pip install -U
+   gpg`` to upgrade.
+   
 In this release a new version of the gpg module was needed for Ubuntu
 24.04 and python 3.13. Paul Schwabauer produced a new version of the
 gpg module. However it is only on the test instance of pypi. If you

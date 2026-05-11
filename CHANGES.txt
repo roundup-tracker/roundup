@@ -137,6 +137,9 @@ Features:
   https://words.filippo.io/csrf/. (John Rouillard)
 - standardize use of roundup.anypy.urllib_. Replace urlparse() with
   urlsplit() (recommended) for some speedup. (John Rouillard)
+- issue2551368 - version 2.0.0 of the pgp module was published by
+  Bernhard Reiter.  Updated documentation and tests. (Bernhard Reiter,
+  John Rouillard)
 
 2025-07-13 2.5.0
 

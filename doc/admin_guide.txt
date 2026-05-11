@@ -1881,9 +1881,7 @@ Configuring PGP Email Support
 .. note::
    This section was written with the help of the Devin/DeepWiki AI.
 
-You have to install the gpg module using pip. See :ref:`directions for
-installing gpg <gpginstall>`
-in the upgrading document for more information.
+You have to install the gpg module using pip (``pip install gpg``). 
 
 In your tracker's config.ini configure the following settings in the
 ``[pgp]`` section::
