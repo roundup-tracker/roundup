@@ -372,34 +372,8 @@ is shown in the .po file as::
 allowing the translator to see the replaced string so they can
 understand how name and value are used.
 
-Command Line Interfaces
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Scripts and routines run from the command line use "static" language
-defined by environment variables recognized by ``gettext`` module
-from Python library (``LANGUAGE``, ``LC_ALL``, ``LC_MESSAGES``, and
-``LANG``).  Primarily, these are ``roundup-admin`` script and
-``admin.py`` module, but also help texts and startup error messages
-in other scripts and their supporting modules.
-
-For these interfaces, Python ``gettext`` engine must be initialized
-to use Roundup message catalogs.  This is normally done by including
-the following line in the module imports::
-
-  from i18n import _, ngettext
-
-Simple translations are automatically marked by calls to builtin
-message translation function ``_()``::
-
-  print(_("This message is translated"))
-
-Translations for messages whose grammatical depends on a number
-must be done by ``ngettext()`` function::
-
-  print(ngettext("Nuked %i file", "Nuked %i files", number_of_files_nuked))
-
 Deferred Translations
-~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes translatable strings appear in the source code in untranslated
 form [#note_admin.py]_ and must be translated elsewhere.
@@ -426,7 +400,7 @@ types of string quotes::
    as help messages.
 
 Web User Interface
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 
 For Web User Interface, translation services are provided by Client
 object.  Action classes have methods ``_()`` and ``gettext()``,
@@ -516,7 +490,7 @@ this::
      see: localization; i18n
 
 Extracting Translatable Messages
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The most common tool for message extraction is ``xgettext`` utility
 from `GNU gettext package`_.  Unfortunately, this utility has no means
@@ -535,18 +509,49 @@ make sure that you have both ``xpot`` and ``xgettext`` installed and
 just run ``gmake`` (or ``make``, if you are on a `GNU`_ system like
 `linux`_ or `cygwin`_) in the ``locale`` directory.
 
+On-site Tracker Translation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 For on-site i18n, Roundup provides command-line utility::
 
   roundup-gettext <tracker_home>
 
 extracting translatable messages from tracker's html templates and
-detectors / extensions (assuming `polib`_ is installed) [2]_.
+detectors / extensions (assuming `polib`_ is installed).
 This utility creates message template file ``messages.pot`` in
 ``locale`` subdirectory of the tracker home directory.  Translated
 messages may be put in *locale*.po files (where *locale* is the two
 character locale name) in the same directory, e.g.: ``locale/ru.po``.
 These message catalogs are searched prior to system-wide translations
 kept in the ``share`` directory.
+
+Note that ``roundup-gettext`` only works with trackers using TAL based
+templates. Also it does not support the markup used for deferred
+translations. Deferred translation strings have to be manually added
+to messages.pot.  It also does not support hint comments.
+
+If you are using a jinja2 based template, it looks like the
+`jinja-i18n-tools`_ package might be helpful. It can be installed
+using ``pip``.
+
+After creating the ```locale`` subdirectory in my tracker home, I was
+able to use::
+  
+  pybabel extract -F babel.cfg -d locale --add-comments ".Hint' \
+  --output locale/messages.po .
+
+with the following ``babel.cfg``::
+
+  [python: **.py]
+  [jinja2: html/**.html]
+  extensions=jinja2.ext.i18n
+
+Note that extracting deferred translations using a concatenated empty
+string does not seem to work.
+
+If you are successful at using local translations with your jinja2
+template based tracker, please contact the Roundup authors (see
+Contact on the main web page) so we can add more detailed directions.
 
 If you are creating your own ``.po`` file from scratch rather than
 using ``roundup-gettext``, you must have the minimal preamble
@@ -562,12 +567,9 @@ If you use ``roundup-gettext`` it will add a full preamble including
 of the ASCII range will cause Roundup to crash with a
 UnicodeDecodeError.
 
-.. [2] Note that it will not extract `deferred translations`_
-         from detectors or extensions. Those have to be manually
-         added to messages.pot.
 
 Translating Messages
-^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~
 
 Gettext Message File (`PO`_ file) is a plain text file, that can be created
 by simple copying ``roundup.pot`` to new .po file, like this::
@@ -633,6 +635,31 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. [1] Roundup is written in Python and we believe in using tools in
    the Python ecosystem whenever possible.
 
+Command Line Interfaces
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Scripts and routines run from the command line use "static" language
+defined by environment variables recognized by ``gettext`` module
+from Python library (``LANGUAGE``, ``LC_ALL``, ``LC_MESSAGES``, and
+``LANG``).  Primarily, these are ``roundup-admin`` script and
+``admin.py`` module, but also help texts and startup error messages
+in other scripts and their supporting modules.
+
+For these interfaces, Python ``gettext`` engine must be initialized
+to use Roundup message catalogs.  This is normally done by including
+the following line in the module imports::
+
+  from i18n import _, ngettext
+
+Simple translations are automatically marked by calls to builtin
+message translation function ``_()``::
+
+  print(_("This message is translated"))
+
+Translations for messages whose grammatical depends on a number
+must be done by ``ngettext()`` function::
+
+  print(ngettext("Nuked %i file", "Nuked %i files", number_of_files_nuked))
 
 
 .. _`Customising Roundup`: customizing.html
@@ -660,6 +687,7 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _hosted at sourceforge:
    https://sourceforge.net/p/roundup/code/ci/default/tree/
 .. _issue tracker: https://issues.roundup-tracker.org/
+.. _jinja-i18n-tools: https://pypi.org/project/jinja-i18n-tools/-i
 .. _Lokalize: https://apps.kde.org/lokalize/
 .. _KDE: https://kde.org/
 .. _linux: https://www.linux.org/
