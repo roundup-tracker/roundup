@@ -680,7 +680,7 @@ must be done by ``ngettext()`` function::
 .. _emacs: https://www.gnu.org/software/emacs/
 .. _flake8: https://flake8.pycqa.org/en/latest/
 .. _gettext package: https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
-.. _gettext module: https://docs.python.org/2/library/gettext.html
+.. _gettext module: https://docs.python.org/3.14/library/gettext.html
 .. _GitHub Actions: https://github.com/roundup-tracker/roundup/actions
 .. _GNU: https://www.gnu.org/
 .. _GNU mirror sites: https://www.gnu.org/prep/ftp.html
