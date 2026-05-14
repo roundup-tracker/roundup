@@ -537,7 +537,7 @@ using ``pip``.
 After creating the ```locale`` subdirectory in my tracker home, I was
 able to use::
   
-  pybabel extract -F babel.cfg -d locale --add-comments ".Hint' \
+  pybabel extract -F babel.cfg --add-comments ".Hint' \
   --output locale/messages.po .
 
 with the following ``babel.cfg``::
