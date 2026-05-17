@@ -1,3 +1,16 @@
+:root {
+    /* uncomment and set this to control the indentation for wrapped
+       lines in the Your Queries section of the sidebar */
+    /*--long-query-indent: 0.5em;*/
+
+    /* search this file for single-column-breakpoint to control the
+       minimum screen size where the left/right column layout is
+       changed to a top/bottom single column layout. */
+}
+
+/* reset */
+*, *:before, *:after { box-sizing: border-box; }
+
 /* main page styles */
 body.body {
   font-family: sans-serif, Arial, Helvetica;
@@ -5,41 +18,93 @@ body.body {
   color: #333;
   margin: 0;
 }
-a[href]:hover {
-  color:blue;
-  text-decoration: underline;
-}
 a[href], a[href]:link {
   color:blue;
   text-decoration: none;
+}
+a[href]:hover {
+  color: blue;
+  text-decoration: underline;
+  text-decoration-color: hsl(from blue h s calc(l - 20));
 }
 
 pre {
   white-space: pre-wrap;
 }
 
-table.body {
-  border: 0;
-  padding: 0;
-  border-spacing: 0;
-  border-collapse: separate;
+body {
+    padding: 0 0.5em;
 }
 
-td.page-header-left {
-  padding: 5px;
-  border-bottom: 1px solid #444;
-}
-td.sidebar {
-  padding: 1px 0 0 1px;
-  white-space: nowrap;
+header {
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    margin-block-start: 1em;
+    margin-block-end: 2px;
 }
 
-/* don't display the sidebar when printing */
-@media print {
-    td.page-header-left {
-        display: none;
+.header-left {
+  display: flex;
+}
+
+div.body {
+    /* contains nav and main elements. */
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+}
+
+nav {
+    flex-basis: auto;
+    flex-shrink: 1;
+    /* force wrapping of long search names. */
+    max-width: 20%;
+}
+
+nav > p > a {
+    /* indent wrapped lines in the Your Queries section
+       to make scanning each query easier */
+    display: inline-block;
+    padding-inline-start: var(--long-query-indent, 0.5em);
+    text-indent: calc(var(--long-query-indent, 0.5em) * -1);
+}
+
+main {
+    flex-basis: 0%;
+    flex-grow: 1;
+    /* make content accessible on overflow. */
+    overflow-x: auto;
+}
+
+/* single-column-breakpoint (600px) - when a two column layout is
+   changed to a single left -> top, right -> bottom layout. */
+
+@media (width < 600px) {
+    main {
+        flex-basis:100%;
+        flex-grow: 0;
+        flex-shrink:0;
     }
-    td.sidebar {
+    nav {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(auto-fit,minmax(10em,1fr));
+        max-width: initial;
+        width: 100%;
+    }
+    nav > form > p {
+        /* force nav children that are forms to stretch to the full
+           grid cell height by expanding their internal p
+           tags.  Otherwise short forms do not fill the same
+           space as the other items in the grid. */
+        height: 100%;
+    }
+}
+
+/* don't display interactive controls when printing */
+@media print {
+    nav {
         display: none;
     }
     .index-controls {
@@ -48,19 +113,18 @@ td.sidebar {
     #searchbox {
         display: none;
     }
+
+    a[href*="action=export"] {
+	/* hide CSV export on index pages */
+	display: none;
+    }
 }
 
-td.page-header-top {
-  padding: 5px;
-  border-bottom: 1px solid #444;
+#searchbox {
+  padding-top: 1.5em;
 }
 
-div#searchbox {
-  float: right;
-  padding-top: 1em;
-}
-
-div#searchbox input#search-text {
+#searchbox input#search-text {
   width: 10em;
 }
 
@@ -72,14 +136,14 @@ textarea {
     font-family: monospace;
 }
 
-td.sidebar p.classblock {
+nav p.classblock {
   padding: 2px 5px 2px 5px;
   margin: 1px;
   border: 1px solid #444;
   background-color: #eee;
 }
 
-td.sidebar p.userblock {
+nav p.userblock {
   padding: 2px 5px 2px 5px;
   margin: 1px 1px 1px 1px;
   border: 1px solid #444;

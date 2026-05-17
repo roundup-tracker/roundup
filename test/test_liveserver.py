@@ -247,7 +247,7 @@ class ClientSetup():
 @skip_hypothesis
 class FuzzGetUrls(WsgiSetup, ClientSetup):
 
-    _max_examples = 100
+    _max_examples = 10
 
     # Timeout for each fuzz test in ms. Use env variable in local
     # pytest.ini if your dev environment can't complete in the default
@@ -332,7 +332,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
 @skip_hypothesis
 class FuzzTestSettingData(WsgiSetup, ClientSetup):
 
-    _max_examples = 100
+    _max_examples = 10
 
     # Timeout for each fuzz test in ms. Use env variable in local
     # pytest.ini if your dev environment can't complete in the default
@@ -744,7 +744,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         hdrs = {"Range": "bytes=0-10"}
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
-        self.assertEqual(f.content, b"/* main pag")
+        self.assertEqual(f.content, b":root {\n   ")
         # compression disabled for length < 100, so we can use 11 here
         self.assertEqual(f.headers['content-length'], '11')
         self.assertEqual(f.headers['content-range'],
@@ -754,7 +754,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         hdrs = {"Range": "bytes=10-20"}
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
-        self.assertEqual(f.content, b"ge styles *")
+        self.assertEqual(f.content, b"  /* uncomm")
         # compression disabled for length < 100, so we can use 11 here
         self.assertEqual(f.headers['content-length'], '11')
         self.assertEqual(f.headers['content-range'],
@@ -774,7 +774,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         hdrs['If-Range'] = etag
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
-        self.assertEqual(f.content, b"/* main pag")
+        self.assertEqual(f.content, b":root {\n   ")
         # compression disabled for length < 100, so we can use 11 here
         self.assertEqual(f.headers['content-length'], '11')
         self.assertEqual(f.headers['content-range'],

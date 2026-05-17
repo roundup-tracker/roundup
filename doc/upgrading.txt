@@ -421,6 +421,54 @@ to the ``head_title`` and ``page_header`` blocks so they look like::
       {% endif %}
     {% endblock %}
 
+
+Modernizing Classic Tracker HTML (optional)
+-------------------------------------------
+
+This update improves the classic tracker by changing the page layout
+to use modern HTML and CSS instead of the old table layout from
+2001. All the updates are done by changing the ``page.html`` and the
+``style.css`` files.
+
+Among the fixes are:
+
+* HTML5 landmarks like header, main, search, and nav replace the
+  table that was used for layout.
+* a meta viewport tag was added for mobile devices.
+* the sidebar and main columns now use flexbox. They will stack and
+  turn into one column when the screen size is less than 600px.
+* The sidebar will change from 6 blocks in a column to 6 blocks in a
+  responsive grid when the screen size is under 600px.
+* Text in the nav/sidebar will have wrapped lines indented making it
+  easier to identify individual queries with long names.
+* The other templates in your tracker should not need any changes. If
+  they are too wide the updated ``page.html`` enables keyboard or
+  touch horizontal scrolling to see all of a table or other content.
+* A line now appears under a link when you hover over it.
+* The header uses flexbox to arrange the left side (logo/page
+  description) and right side (search) components.
+  
+The most noticable change is that the page title now lines up with the
+edge of the screen instead of the edge of the main column. Other than
+that your tracker should look pretty much the same as before.
+
+Two files were changed to provide this basic responsiveness:
+``page.html`` and ``style.css``.
+
+Most local changes to ``page.html`` are done to add javascript. You
+should be able to copy the new page.html from the classic tracker
+template and put your ``script`` tags back in to benefit from this
+upgrade.
+
+You should also copy ``style.css`` into your tracker home's html
+directory and merge any local changes you made. At the top of the new
+``style.css`` are directions for two adjustments. Long query names
+that wrap in the sidebar will have their wrapped lines indented by
+0.5em. You can control this by uncommenting and adjusting the value of
+the css custom property ``--long-query-indent``. Additionally you can
+change the 600px viewport breakpoint by following the directions at
+the top of ``style.css``.
+
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0

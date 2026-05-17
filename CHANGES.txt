@@ -107,6 +107,14 @@ Fixed:
   you were trying to edit the existing query. This fix modifies the
   queryname before generating the error form. So when submitted it
   doesn't overwrite "asearch". (John Rouillard)
+- update the classic tracker's page.html to remove table based
+  layout. It now uses html5 landmarks like header, main, search,
+  nav. It also uses flexbox and grid layouts and includes a viewport
+  meta tag for use on mobile devices.  It can be navigated with the
+  keyboard. Parts of the page that are too wide for the viewport can
+  be scrolled horizontally with the keyboard or touch. Some other CSS
+  changes make it easier to use. This is a first step to making the
+  classic template more responsive. (John Rouillard)
 
 Features:
 
