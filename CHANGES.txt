@@ -96,6 +96,17 @@ Fixed:
 - Make queries selected from query edit screen include the query
   name/display name. This makes it work the same as invoking a query
   from the main "Your Queries" menu. (John Rouillard)
+- Fix SearchAction to not clobber a saved search when a new search of
+  the same name is created.  Assume a search named "asearch"
+  exists. Create a new search (not editing the existing
+  "asearch"). Set new query params and name it "asearch". Roundup will
+  warn you that "asearch" already exists and you need to choose a new
+  name. In the warning form, you rename it to "bsearch" and
+  save/execute. Before this would overwrite "asearch" as it set the
+  "@old-queryname" of the warning form to "asearch". So it looked like
+  you were trying to edit the existing query. This fix modifies the
+  queryname before generating the error form. So when submitted it
+  doesn't overwrite "asearch". (John Rouillard)
 
 Features:
 

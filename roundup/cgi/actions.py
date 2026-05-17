@@ -358,6 +358,23 @@ class SearchAction(Action):
                             "Please choose another name.") % (queryname)
 
                         self.client.add_error_message(message)
+                        # Assume we duplicate query "a".  When the
+                        # response is generated, @old-queryname is set
+                        # to 'a' in the template.  This causes the 'a'
+                        # query to be changed to the new query name
+                        # and values.
+                        
+                        # So we change @queryname by appending ' -
+                        # duplicate'. This way @old-queryname will be
+                        # 'a - duplicate' and will not overwrite the
+                        # query named 'a'. (but it will
+                        # overwrite/change a query named "a -
+                        # duplicate". Hopefully nobody uses that name
+                        # 8-).
+                        self.client.form['@queryname'].value = (
+                            # .Hint suffix added to queryname when
+                            # a new queryname is already used.
+                            queryname + _(" - duplicate"))
                         return
 
                 # edit the new way, query name not a key any more
