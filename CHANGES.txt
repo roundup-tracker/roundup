@@ -93,6 +93,9 @@ Fixed:
   without further info. Added more specific ConnectionAbortedError
   and changed IOError handling. Case in issue now logs the exception
   for diagnosis.
+- Make queries selected from query edit screen include the query
+  name/display name. This makes it work the same as invoking a query
+  from the main "Your Queries" menu. (John Rouillard)
 
 Features:
 

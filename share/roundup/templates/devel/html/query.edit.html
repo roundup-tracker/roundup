@@ -67,8 +67,8 @@ function post_to_url(path, params, method) {
 <tr tal:repeat="query mine">
  <tal:block condition="query/is_retired">
 
- <td><a tal:attributes="href string:${query/klass}?${query/url}"
-        tal:content="query/name">query</a></td>
+     <td><a tal:attributes="href string:${query/klass}?${query/url}&@dispname=${query/name/url_quote}"
+            tal:content="query/name">query</a></td>
 
  <td metal:define-macro="include">
   <select tal:condition="python:query.id not in mine"

@@ -365,6 +365,62 @@ not generated nor saved to the otks database.
 Additional details can be found in the :ref:`nonceless CSRF` section of
 the reference guide.
 
+Make Query Edit Page Queries Display Query Name (optional)
+----------------------------------------------------------
+
+When queries are started from the main ``Your Queries`` menu section,
+the window shows the query name for TAL based trackers.  Users can
+pick which queries/searches appear in the main menu's ``Your Queries``
+section by clicking the ``edit`` link to go to the edit screen.  The
+``edit`` screen also lets users run the queries that aren't in the
+main section.
+
+Before this update, the query name wasn't shown when running queries
+from the ``edit`` screen.  This update fixes that for all the included
+templates.  It also makes the jinja2 issue index template show the
+query name.
+
+You can add this to your tracker. If you are not using a jinja2 based
+tracker, open your tracker's ``html/query.edit.html`` file.  Find and
+change the line that includes::
+
+    <a tal:attributes="href string:${query/klass}?${query/url}"
+
+to look like::
+
+    <a tal:attributes="href string:${query/klass}?${query/url}&@dispname=${query/name/url_quote}"
+
+If you are using the jinja2 template, a similar change is needed to
+``html/query.edit.html`` replacing::
+
+    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}">{{ query.name.plain() }}</a>
+
+with::
+
+    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}&@dispname={{ query.name.url_quote()|u }}">{{ query.name.plain() }}</a>
+
+Then in the ``html/issue.index.html`` you will add::
+
+    {% if request.form['@dispname'] %}
+    - {{  request.form['@dispname'].value|u }}
+    {% endif %}
+
+to the ``head_title`` and ``page_header`` blocks so they look like::
+
+    {% block head_title %}
+      {% trans %}List of issues{% endtrans %}
+      {% if request.form['@dispname'] %}
+      - {{  request.form['@dispname'].value|u }}
+      {% endif %}
+    {% endblock %}
+
+    {% block page_header %}
+      {% trans %}List of issues{% endtrans %}
+      {% if request.form['@dispname'] %}
+      - {{  request.form['@dispname'].value|u }}
+      {% endif %}
+    {% endblock %}
+
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0

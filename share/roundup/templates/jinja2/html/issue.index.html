@@ -2,10 +2,16 @@
 
 {% block head_title %}
   {% trans %}List of issues{% endtrans %}
+  {% if request.form['@dispname'] %}
+  - {{  request.form['@dispname'].value|u }}
+  {% endif %}
 {% endblock %}
 
 {% block page_header %}
   {% trans %}List of issues{% endtrans %}
+  {% if request.form['@dispname'] %}
+  - {{  request.form['@dispname'].value|u }}
+  {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -108,3 +114,4 @@
   {% endif %}
 
 {% endblock %}
+<!-- SHA: 6d38a513a175e5167c501d47dbb7528617df4bca -->
