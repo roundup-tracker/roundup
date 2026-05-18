@@ -469,6 +469,24 @@ the css custom property ``--long-query-indent``. Additionally you can
 change the 600px viewport breakpoint by following the directions at
 the top of ``style.css``.
 
+Jinja Template Bootstrap Dependency Updated (optional)
+------------------------------------------------------
+
+A dependency for the jinja template has been updated.  This is an
+upgrade to the latest 4.x stable release.
+
+bootstrap:
+  Upgraded from 4.4.1 to 4.6.2
+
+Copy the files: ``bootstrap.min.css`` and ``bootstrap.min.js`` from
+the jinja2 ``static`` :term:`template` directory (meaning 3) to your
+tracker's ``static`` directory.
+
+This change did not show any issues in testing, but you might want to
+hold onto your original files in case of an issue. If you experience
+and issue you should report it on the `roundup-users mailing list
+<https://roundup-tracker.org/contact.html>`_.
+
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0

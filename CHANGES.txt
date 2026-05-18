@@ -115,6 +115,8 @@ Fixed:
   be scrolled horizontally with the keyboard or touch. Some other CSS
   changes make it easier to use. This is a first step to making the
   classic template more responsive. (John Rouillard)
+- jinja2 template dependencies updated: bootstrap 4.4.1 -> 4.6.2.
+  (John Rouillard)
 
 Features:
 
