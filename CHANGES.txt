@@ -123,6 +123,8 @@ Fixed:
   submits the form. Clicking it says the form has been submitted
   please wait. This change allows the submit button to submit the form
   again after 5 seconds.  (John Rouillard)
+- Fix developers.txt doc bug (discovered by Ross Boylan, change by
+  John Rouillard)
 
 Features:
 

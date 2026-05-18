@@ -114,10 +114,10 @@ See https://www.roundup-tracker.org/code.html for URL's and
 directions on getting read write access which allows pushing
 to the repository.
 
-Once you have your clone, you can run ``python3 ./demo -b
-sqlite`` and get a working Roundup server. This will start
-the server using the ``sqlite`` backend. The code is in the
-``roundup`` subdirectory.
+Once you have your clone, change to the root of the tree and 
+run ``python3 ./demo.py -b sqlite`` to get a working Roundup
+server. This will start the server using the ``sqlite`` backend. The
+code is in the ``roundup`` subdirectory.
 
 To test internationalization in your environment, you have to
 process the locale sub-directory into a form that roundup's
