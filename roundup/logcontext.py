@@ -36,7 +36,6 @@ staticmethod from WhiteNoise::
 import contextvars
 import functools
 import logging
-import os
 import uuid
 from typing import Callable, Dict
 
@@ -249,7 +248,7 @@ def store_trace_reason(location="unset", extract=None):
                     #      "args[1]['PATH_INFO']"
                     # report bad index/key/type
                     logger.error(
-                        "Eval of extract('%(extract)s')@%(loc)s caused %(e)s" %
+                        "Eval of extract('%(extract)s')@%(loc)s caused %(e)s",
                         {"e": repr(e), "extract": extract, "loc": location}
                     )
 
