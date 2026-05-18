@@ -129,7 +129,13 @@ def run_demo(home, bind_addr=None, bind_port=None):
 
     print("\nDemo Tracker Home:", home)
 
-    cfg = configuration.CoreConfig(home)
+    try:
+        cfg = configuration.CoreConfig(home)
+    except configuration.ConfigurationError as e:
+        print(e)
+        print("when processing: %s", os.path.join(home, "config.ini")
+        sys.exit(2)
+
     url = cfg["TRACKER_WEB"]
     try:
         hostname, port = urllib_.urlsplit(url)[1].split(':')

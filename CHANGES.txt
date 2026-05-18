@@ -125,6 +125,8 @@ Fixed:
   again after 5 seconds.  (John Rouillard)
 - Fix developers.txt doc bug (discovered by Ross Boylan, change by
   John Rouillard)
+- Handle ConfigurationErrors in demo.py cleanly. Used to dump a full
+  traceback. Now prints error and exits. (John Rouillard)
 
 Features:
 
