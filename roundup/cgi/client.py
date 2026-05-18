@@ -2510,22 +2510,33 @@ class Client:
 
             if 'Content-Type' not in self.additional_headers:
                 self.additional_headers['Content-Type'] = pt.content_type
-            if self.env.get('CGI_SHOW_TIMING', ''):
+
+            show_timing = self.env.get('CGI_SHOW_TIMING', '').upper()
+
+            # check content_type so we don't calculate timing if
+            # we can't display it. This also prevents matching
+            # '</body>' in js, css, svg or comment strings in
+            # images that will mangle result.
+            content_type = (self.additional_headers.get('Content-Type', "")
+                            or pt.content_type)
+            if (show_timing in ('COMMENT', 'INLINE') and
+                content_type == "text/html"):
+                timings = {}
                 if self.env['CGI_SHOW_TIMING'].upper() == 'COMMENT':
-                    timings = {'starttag': '<!-- ', 'endtag': ' -->'}
+                    delims = {'starttag': '<!-- ', 'endtag': ' -->'}
                 else:
-                    timings = {'starttag': '<p>', 'endtag': '</p>'}
+                    delims = {'starttag': '<p>', 'endtag': '</p>'}
                 timings['seconds'] = time.time() - self.start
                 s = self._(
                     '%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n'
-                ) % timings
+                ) % {**timings, **delims}
                 if hasattr(self.db, 'stats'):
                     timings.update(self.db.stats)
-                    s += self._("%(starttag)sCache hits: %(cache_hits)d,"
-                                " misses %(cache_misses)d."
-                                " Loading items: %(get_items)f secs."
-                                " Filtering: %(filtering)f secs."
-                                "%(endtag)s\n") % timings
+                    allstats = ", ".join(["{}: {:.6g}".format(key, value)
+                                         for key, value in timings.items()
+                                         if key != 'seconds'])
+                    s += '%(starttag)s %(allstats)s %(endtag)s\n' % {
+                        'allstats': allstats, **delims}
                 s += '</body>'
                 result = result.replace('</body>', s)
             return result
