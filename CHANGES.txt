@@ -117,6 +117,12 @@ Fixed:
   classic template more responsive. (John Rouillard)
 - jinja2 template dependencies updated: bootstrap 4.4.1 -> 4.6.2.
   (John Rouillard)
+- issue2551377 - Disabled submit button UI issues. When the submit
+  button is clicked (triggering submit_once) but client side
+  validation blocks the submission, the submit button no longer
+  submits the form. Clicking it says the form has been submitted
+  please wait. This change allows the submit button to submit the form
+  again after 5 seconds.  (John Rouillard)
 
 Features:
 

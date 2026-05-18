@@ -3447,6 +3447,9 @@ function submit_once() {
         alert("Your request is being processed.\\nPlease be patient.");
         return false;
     }
+
+    window.setTimeout("submitted = false;", 5000)
+
     submitted = true;
     return true;
 }
