@@ -60,6 +60,12 @@ nav {
     flex-shrink: 1;
     /* force wrapping of long search names. */
     max-width: 20%;
+    /* Don't allow shrink below size of longest word
+       (e.g. Administration). Otherwise the word extends outside of
+       nav column. Maybe consider using: overflow-wrap: break-word;
+       instead if word is long enough if takes up too much of the
+       screed width? */
+    min-width: min-content;
 }
 
 nav > p > a {
@@ -92,6 +98,12 @@ main {
         grid-template-columns: repeat(auto-fit,minmax(10em,1fr));
         max-width: initial;
         width: 100%;
+    }
+    nav > * {
+	/* I want:
+               grid-template-columns: repeat(auto-fit,minmax(min-content,1fr));
+           to work, but it's an invalid declaration, so we break words. */
+	overflow-wrap: break-word;
     }
     nav > form > p {
         /* force nav children that are forms to stretch to the full
