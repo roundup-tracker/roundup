@@ -133,7 +133,7 @@ def run_demo(home, bind_addr=None, bind_port=None):
         cfg = configuration.CoreConfig(home)
     except configuration.ConfigurationError as e:
         print(e)
-        print("when processing: %s", os.path.join(home, "config.ini")
+        print("when processing: %s", os.path.join(home, "config.ini"))
         sys.exit(2)
 
     url = cfg["TRACKER_WEB"]
