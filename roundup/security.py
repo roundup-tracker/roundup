@@ -147,7 +147,7 @@ class Permission:
                    if None this is an item or klass access check.
             userid - number that is id for user.
             itemid - id for classname. e.g. 3 in issue3. If missing this is
-                 a class access check, otherwies it's a object access check.
+                 a class access check, otherwise it's a object access check.
         '''
 
         if permission != self.name:
