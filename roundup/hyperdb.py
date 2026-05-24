@@ -1392,13 +1392,18 @@ class Class:
                                      self.classname, key, j_repr)
                         del args[key]
                         continue
+                    # check if user can access the property on the
+                    # item. This allows the check function in the
+                    # property to deny access.
                     if enforceperm and not (perm("View",
                                                  uid,
                                                  self.classname,
+                                                 itemid=nodeid,
                                                  property=key) or
                                             perm("Edit",
                                                  uid,
                                                  self.classname,
+                                                 itemid=nodeid,
                                                  property=key)):
                         logger.debug("skipping unaccessible property "
                                      "%s::%s seen by user%s in %s",

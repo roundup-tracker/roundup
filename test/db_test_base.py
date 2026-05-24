@@ -165,6 +165,22 @@ def setupSchema(db, create, module):
 
     db.security.addPermissionToRole("User", v1)
 
+    # testFilteredJournal requires this. Allow age prop access if
+    # db user is accessing own record.
+    def own_record(db, userid, itemid):
+        '''Determine whether the userid matches the item being accessed.'''
+        return userid == itemid
+    
+    v2 = db.security.addPermission(
+        name='View', klass='user', check=own_record,
+        properties=['username', 'supervisor', 'assignable', 'age'],
+        description="Allow viewing of age by own user")
+
+    db.security.addPermissionToRole("User", v2)
+
+    # update testAdminOtherCommands do_security test
+    # if you add permissions
+    
 class MyTestCase(object):
     def tearDown(self):
         if hasattr(self, 'db'):
@@ -1146,8 +1162,41 @@ class DBTest(commonDBTest):
         self.db.issue.properties['nosy'].quiet=True
         self.db.issue.properties['deadline'].quiet=True
 
-    def testViewPremJournal(self):
-        pass
+    def testFilteredJournal(self):
+        """Create two new users pete, david. Permissions do not allow
+           access to the user's age prop by any user except admin and
+           the same user.  Change david's age prop. Invoke
+           history/journal as pete, david and admin. Verify age
+           changes are not shown to pete, but are shown in other two
+           cases.
+
+        """
+        
+        new_pete=self.db.user.create(username="pete",
+                                     age=10, roles="User", assignable=False)
+        new_david=self.db.user.create(username="david",
+                                      age=10, roles="User", assignable=False)
+
+        self.db.user.set(new_david, age=20)
+        self.db.commit()
+  
+        self.db.setCurrentUser("pete")
+        journal = self.db.user.history(new_david, skipquiet=False)
+        entry = journal[-1]
+        self.assertIsInstance(entry[4], dict)
+        self.assertNotIn('age', entry[4])
+
+        self.db.setCurrentUser("david")
+        journal = self.db.user.history(new_david, skipquiet=False)
+        entry = journal[-1]
+        self.assertIsInstance(entry[4], dict)
+        self.assertIn('age', entry[4])
+
+        self.db.setCurrentUser("admin") # "1" is admin
+        journal = self.db.user.history(new_david, skipquiet=False)
+        entry = journal[-1]
+        self.assertIsInstance(entry[4], dict)
+        self.assertIn('age', entry[4])
 
     def testQuietJournal(self):
         ## This is an example of how to enable logging module
@@ -3565,7 +3614,8 @@ class DBTest(commonDBTest):
                           ' User may access the xmlrpc interface (Xmlrpc Access)\n',
                           'Role "anonymous":\n', 'Role "user":\n',
                           ' User is allowed to access msg (View for "msg" only)\n',
-                          ' Prevent users from seeing roles (View for "user": [\'username\', \'supervisor\', \'assignable\'] only)\n']
+                          ' Prevent users from seeing roles (View for "user": [\'username\', \'supervisor\', \'assignable\'] only)\n',
+                         ' Allow viewing of age by own user (View for "user": [\'username\', \'supervisor\', \'assignable\', \'age\'] only)\n']
 
             self.assertEqual(soutput, expected)
 

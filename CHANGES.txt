@@ -127,6 +127,8 @@ Fixed:
   John Rouillard)
 - Handle ConfigurationErrors in demo.py cleanly. Used to dump a full
   traceback. Now prints error and exits. (John Rouillard)
+- Do not display journal/history fields when user does not have access
+  to the property being changed. (John Rouillard)
 
 Features:
 

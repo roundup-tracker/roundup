@@ -1,6 +1,7 @@
 '''Implement an in-memory hyperdb for testing purposes.
 '''
 
+import copy
 import os
 import shutil
 import time
@@ -439,7 +440,7 @@ class Database(back_anydbm.Database):
         # add any journal entries for transactions not committed to the
         # database
         for method, args in self.transactions:
-            if method != self.doSaveJournal:
+            if method not in (self.doSaveJournal, self.doSetJournal):
                 continue
             (cache_classname, cache_nodeid, cache_action, cache_params,
                 cache_creator, cache_creation) = args
@@ -455,7 +456,10 @@ class Database(back_anydbm.Database):
         except KeyError:
             if res: return res                                     # noqa: E701
             raise IndexError(nodeid)
-        return res
+        # use copy otherwise we are returning the actual in memory
+        # database entry. Hence changes to the journal (e.g. remove quiet
+        # properties) changes the actual database.
+        return copy.deepcopy(res)
 
     def pack(self, pack_before):
         """ Delete all journal entries except "create" before 'pack_before'.
