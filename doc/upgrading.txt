@@ -109,6 +109,62 @@ your database.
 Migrating from 2.5.0 to 2.6.0
 =============================
 
+Correct property permission check in history display (recommended)
+------------------------------------------------------------------
+
+If you are upgrading to 2.6, you don't have to do anything and you cn
+skip this section.
+
+If you are running versions 1.6.0 to version 2.5 the filtering of
+history/journal items does not work correctly if the property is
+protected by a check function.
+
+To fix this, you need to find the ``View`` and ``Edit`` checks in the
+history method in the ``roundup/hyperdb.py`` file.  (Note that the 1.6
+releases only checked for ``View`` permissions.) In the 1.6 release it
+looks something like::
+
+      if enforceperm and not perm("View",
+              self.db.getuid(),
+              self.classname,
+              property=k ):
+      logger.debug("skipping unViewable property %s in >
+                   k, j_repr)
+      del j[4][k]
+      continue
+
+Add::
+
+  itemid=nodeid
+
+to the View (and Edit check if present) so it looks like::
+
+      if enforceperm and not perm("View",
+              self.db.getuid(),
+              self.classname,
+	      itemid=nodeid,
+              property=k )
+
+In the 2.5 and newer releases this code block includes a check for
+Edit permissions and when fixed looks like::
+
+    if enforceperm and not (perm("View",
+                                 uid,
+                                 self.classname,
+                                 itemid=nodeid,
+                                 property=key) or
+                            perm("Edit",
+                                 uid,
+                                 self.classname,
+                                 itemid=nodeid,
+                                 property=key)):
+        logger.debug("skipping unaccessible property "
+                     "%s::%s seen by user%s in %s",
+                     self.classname, key, uid, j_repr)
+        del args[key]
+        continue
+
+
 Default Logs Include Unique Request Identifier (info)
 -----------------------------------------------------
 
