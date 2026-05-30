@@ -19,7 +19,6 @@ try:
 
     # ruff: noqa: E402
     from hypothesis import example, given, reproduce_failure, settings
-    raise ImportError
     from hypothesis.strategies import binary, dictionaries, characters, emails, none, one_of, sampled_from, text
 
 except ImportError:
