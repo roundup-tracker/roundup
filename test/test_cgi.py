@@ -13,6 +13,37 @@ import unittest, os, shutil, errno, sys, difflib, re, io
 import pytest
 import copy
 
+try:
+    import hypothesis
+    skip_hypothesis = lambda func, *args, **kwargs: func
+
+    # ruff: noqa: E402
+    from hypothesis import example, given, reproduce_failure, settings
+    raise ImportError
+    from hypothesis.strategies import binary, dictionaries, characters, emails, none, one_of, sampled_from, text
+
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_hypothesis = mark_class(pytest.mark.skip(
+        reason='Skipping hypothesis based test: hypothesis library not available'))
+
+    # define a dummy decorator that can take args
+    def noop_decorators_with_args(*args, **kwargs):
+        def noop_decorators(func):
+            def internal():
+                pass
+            return func
+        return noop_decorators
+
+    # define a dummy strategy
+    def noop_strategy(*args, **kwargs):
+        pass
+
+    # define the decorator functions
+    example = given = reproduce_failure = settings = noop_decorators_with_args
+    # and strategies using in decorators
+    binary = characters = dictionaries = emails = none = one_of = sampled_from = text = noop_strategy
+
 from os.path import normpath
 
 from roundup.anypy.cgi_ import cgi
@@ -1759,6 +1790,19 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         self.assertEqual(json.loads(b2s(out[0])),json.loads(expected))
         del(out[0])
 
+    _safe_char_set = {chr(x) for x in range(32,127)}        
+    @skip_hypothesis
+    @given(dictionaries(
+        text(alphabet=characters(codec='utf-8', include_characters=_safe_char_set),
+             min_size=1,max_size=10),
+        text(alphabet=characters(exclude_characters=_safe_char_set),
+             min_size=1, max_size=10),
+        min_size=1, max_size=2))
+    @example({"safe": "myheader%$#", "unsafe": "value\r\nNew-Header"})    
+    @settings(max_examples=50) 
+    def testHeaderRejection(self, headers):
+        v = client.are_header_values_safe(headers)
+        self.assertIsNot(v, None)
 
     def testRestOptionsBadAttribute(self):
         import json
