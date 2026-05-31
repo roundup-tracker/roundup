@@ -231,6 +231,11 @@ class testCsvExport(object):
 
 class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unittest.TestCase):
 
+    # Timeout for each fuzz test in ms. Use env variable in local
+    # pytest.ini if your dev environment can't complete in the default
+    # 10 seconds.
+    fuzz_deadline = int(os.environ.get('pytest_fuzz_timeout', 0)) or 10000
+
     def setUp(self):
         FormTestParent.setUp(self)
 
@@ -1798,7 +1803,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
              min_size=1, max_size=10),
         min_size=1, max_size=2))
     @example({"safe": "myheader%$#", "unsafe": "value\r\nNew-Header"})    
-    @settings(max_examples=50) 
+    @settings(max_examples=50, deadline=fuzz_deadline)
     def testHeaderRejection(self, headers):
         v = client.are_header_values_safe(headers)
         self.assertIsNot(v, None)
