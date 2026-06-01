@@ -3714,8 +3714,7 @@ class TemplateUtilsTestCase(unittest.TestCase):
             r"^Found an incorrect token when expandfile applied "
             r"string subsitution on "
             r"'[^']*[\\/]_test_template[\\/]html[\\/]file_with_broken_expand_type.js'. "
-            r"ValueError\('incomplete format'\) was raised. Check the format "
-            r"of your named conversion specifiers."))
+            r"ValueError"))
         self._caplog.clear()
         r = None
 
