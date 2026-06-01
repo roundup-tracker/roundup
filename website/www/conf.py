@@ -134,7 +134,7 @@ pygments_style = 'borland'
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = ''
+html_style = 'style.css'
 # 'default.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
