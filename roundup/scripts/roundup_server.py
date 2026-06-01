@@ -74,6 +74,7 @@ from roundup.anypy.strings import s2b, StringIO            # noqa: E402
 from roundup.cgi import cgitb, client                      # noqa: E402
 from roundup.cgi.PageTemplates.PageTemplate import PageTemplate  # noqa: E402
 from roundup.i18n import _                                 # noqa: E402
+from roundup.logcontext import gen_trace_id, get_context_dict  # noqa: E402
 
 # "default" favicon.ico
 # generate by using "icotool" and tools/base64
@@ -267,6 +268,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             self.TRACKERS[name] = tracker
         return tracker
 
+    @gen_trace_id()
     def run_cgi(self):
         """ Execute the CGI command. Wrap an innner call in an error
             handler so all errors can be caught.
@@ -602,9 +604,12 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                          self.log_date_time_string(),
                          format % args))
         else:
+            log_context = get_context_dict()
             try:
-                http_.server.BaseHTTPRequestHandler.log_message(self,
-                                                                format, *args)
+                http_.server.BaseHTTPRequestHandler.log_message(
+                    self,
+                    format + " " + str(log_context['trace_id']),
+                    *args)
             except IOError:
                 # stderr is no longer viable
                 pass
