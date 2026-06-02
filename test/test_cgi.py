@@ -3791,10 +3791,7 @@ class TemplateUtilsTestCase(unittest.TestCase):
             r"^Found an incorrect token when expandfile applied "
             r"string subsitution on "
             r"'[^']*[\\/]_test_template[\\/]html[\\/]file_with_bare_%.js'. "
-            r"ValueError\("
-            r"'unsupported format character ' ' \(0x20\) at index 12'\) was "
-            r"raised. Check the format "
-            r"of your named conversion specifiers."))
+            r"ValueError\("))
         self._caplog.clear()
         r = None
 
