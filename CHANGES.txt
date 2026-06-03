@@ -129,6 +129,7 @@ Fixed:
   traceback. Now prints error and exits. (John Rouillard)
 - Do not display journal/history fields when user does not have access
   to the property being changed. (John Rouillard)
+- Fix missing CSRF protection for PATCH method (John Rouillard)
 
 Features:
 
