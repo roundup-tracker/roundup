@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 2.6.0b1\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2026-05-25 19:29-0400\n"
+"POT-Creation-Date: 2026-06-03 12:45-0400\n"
 "PO-Revision-Date: 2013-10-31 12:23+0100\n"
 "Last-Translator: Fred Lin <gasolin@gmail>\n"
 "Language-Team: Chinese Traditional <gasolin@gmail.com>\n"
@@ -2118,8 +2118,8 @@ msgstr ""
 msgid "Client is not allowed to use Rest Interface."
 msgstr "匿名用戶不允許使用web界面"
 
-#: ../roundup/cgi/client.py:783 ../roundup/cgi/client.py:1890
-#: ../roundup/cgi/client.py:783:1890
+#: ../roundup/cgi/client.py:783 ../roundup/cgi/client.py:1903
+#: ../roundup/cgi/client.py:783:1903
 msgid "Required Header Missing"
 msgstr ""
 
@@ -2132,8 +2132,8 @@ msgstr "表格錯誤："
 msgid "Unrecognized charset: %r"
 msgstr "無法識別的字符集：%r"
 
-#: ../roundup/cgi/client.py:1442 ../roundup/cgi/client.py:2652
-#: ../roundup/cgi/client.py:1442:2652
+#: ../roundup/cgi/client.py:1442 ../roundup/cgi/client.py:2665
+#: ../roundup/cgi/client.py:1442:2665
 msgid "broken form: multiple @action values submitted"
 msgstr ""
 
@@ -2150,118 +2150,118 @@ msgstr ""
 msgid "csrf key used with method %(method)s from: %(source)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1681 ../roundup/cgi/client.py:1691
-#: ../roundup/cgi/client.py:1681:1691
+#: ../roundup/cgi/client.py:1683 ../roundup/cgi/client.py:1693
+#: ../roundup/cgi/client.py:1683:1693
 msgid "Unable to authorize request"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1784
+#: ../roundup/cgi/client.py:1797
 #, python-format
 msgid "csrf header %(header)s required but missing for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1788
+#: ../roundup/cgi/client.py:1801
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1796
+#: ../roundup/cgi/client.py:1809
 #, python-format
 msgid "csrf Referer header check failed for user%(userid)s. Value=%(referer)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1801
+#: ../roundup/cgi/client.py:1814
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
 msgstr "無效登錄"
 
-#: ../roundup/cgi/client.py:1816
+#: ../roundup/cgi/client.py:1829
 #, python-format
 msgid "csrf Origin header check failed for user%(userid)s. Value=%(origin)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1821
+#: ../roundup/cgi/client.py:1834
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "無效登錄"
 
-#: ../roundup/cgi/client.py:1835
+#: ../roundup/cgi/client.py:1848
 #, python-format
 msgid ""
 "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1841
+#: ../roundup/cgi/client.py:1854
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1860
+#: ../roundup/cgi/client.py:1873
 #, python-format
 msgid "csrf HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1865
+#: ../roundup/cgi/client.py:1878
 #, python-format
 msgid "Invalid HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1873
+#: ../roundup/cgi/client.py:1886
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1874
+#: ../roundup/cgi/client.py:1887
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1887
+#: ../roundup/cgi/client.py:1900
 #, python-format
 msgid ""
 "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1928
+#: ../roundup/cgi/client.py:1941
 #, python-format
 msgid "Required csrf field missing for user%(userid)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1931 ../roundup/cgi/client.py:1959
-#: ../roundup/cgi/client.py:1976 ../roundup/cgi/client.py:1931:1959:1976
+#: ../roundup/cgi/client.py:1944 ../roundup/cgi/client.py:1972
+#: ../roundup/cgi/client.py:1989 ../roundup/cgi/client.py:1944:1972:1989
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1936
+#: ../roundup/cgi/client.py:1949
 #, python-format
 msgid "csrf field not supplied by user%(userid)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1948
+#: ../roundup/cgi/client.py:1961
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
 "session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1966
+#: ../roundup/cgi/client.py:1979
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %(curr_sess)s != stored session "
 "%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:2196
+#: ../roundup/cgi/client.py:2209
 #, fuzzy
 msgid "You are not allowed to view this file."
 msgstr "你不允許查看此頁"
 
-#: ../roundup/cgi/client.py:2531
+#: ../roundup/cgi/client.py:2544
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr ""
 
-#: ../roundup/cgi/client.py:3073
+#: ../roundup/cgi/client.py:3086
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -3195,33 +3195,33 @@ msgid ""
 msgstr ""
 "錯誤：源必須是 \"mailbox\", \"pop\", \"apop\", \"imap\" 或者 \"imaps\" 之一"
 
-#: ../roundup/scripts/roundup_server.py:112
+#: ../roundup/scripts/roundup_server.py:113
 msgid "WARNING: generating temporary SSL certificate"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:143
+#: ../roundup/scripts/roundup_server.py:144
 #, python-format
 msgid "Unable to find/use key from file: %(pemfile)s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:144
+#: ../roundup/scripts/roundup_server.py:145
 msgid ""
 "Does it have a private key surrounded by '-----BEGIN PRIVATE KEY-----' and\n"
 "  '-----END PRIVATE KEY-----' markers?"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:149
+#: ../roundup/scripts/roundup_server.py:150
 #, python-format
 msgid "Unable to find/use certificate from file: %(pemfile)s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:150
+#: ../roundup/scripts/roundup_server.py:151
 msgid ""
 "Does it have a certificate surrounded by '-----BEGIN CERTIFICATE-----' and\n"
 "  '-----END CERTIFICATE-----' markers?"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:370
+#: ../roundup/scripts/roundup_server.py:372
 msgid ""
 "<html><head><title>Roundup trackers index</title></head>\n"
 "<body><h1>Roundup trackers index</h1><ol>\n"
@@ -3229,58 +3229,58 @@ msgstr ""
 "<html><head><title>Roundup tracker 索引</title></head>\n"
 "<body><h1>Roundup tracker 索引</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:621
+#: ../roundup/scripts/roundup_server.py:626
 #, fuzzy, python-format
 msgid "Error: %(type)s: %(value)s"
 msgstr "%(key)s: %(value)s (關鍵屬性)"
 
-#: ../roundup/scripts/roundup_server.py:633
+#: ../roundup/scripts/roundup_server.py:638
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr "警告：忽略 \"-g\" 參數，不是 root"
 
-#: ../roundup/scripts/roundup_server.py:639
+#: ../roundup/scripts/roundup_server.py:644
 msgid "Can't change groups - no grp module"
 msgstr "不能修改組 - 無 grp 模塊"
 
-#: ../roundup/scripts/roundup_server.py:648
+#: ../roundup/scripts/roundup_server.py:653
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr "組 %(group)s 不存在"
 
-#: ../roundup/scripts/roundup_server.py:660
+#: ../roundup/scripts/roundup_server.py:665
 msgid "Can't run as root!"
 msgstr "不能以 root 運行！"
 
-#: ../roundup/scripts/roundup_server.py:663
+#: ../roundup/scripts/roundup_server.py:668
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr "警告：忽略 \"-u\" 參數，不是 root"
 
-#: ../roundup/scripts/roundup_server.py:669
+#: ../roundup/scripts/roundup_server.py:674
 msgid "Can't change users - no pwd module"
 msgstr "不能修改用戶 - 無 pwd 模塊"
 
-#: ../roundup/scripts/roundup_server.py:678
+#: ../roundup/scripts/roundup_server.py:683
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr "用戶 %(user)s 不存在"
 
-#: ../roundup/scripts/roundup_server.py:890
+#: ../roundup/scripts/roundup_server.py:895
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:918
+#: ../roundup/scripts/roundup_server.py:923
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "無法綁定到端口 %s, 端口已經被佔用。"
 
-#: ../roundup/scripts/roundup_server.py:922
+#: ../roundup/scripts/roundup_server.py:927
 #, fuzzy, python-format
 msgid ""
 "Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
 msgstr "無法綁定到端口 %s, 端口已經被佔用。"
 
-#: ../roundup/scripts/roundup_server.py:1001
+#: ../roundup/scripts/roundup_server.py:1006
 #, fuzzy
 msgid ""
 " -c <Command>  Windows Service options.\n"
@@ -3297,7 +3297,7 @@ msgstr ""
 "               變量上配置一個tracker。這個選項與其經選項是互斥的。打入\n"
 "               \"roundup-server -c help\" 來瞭解Windows服務的規範。"
 
-#: ../roundup/scripts/roundup_server.py:1008
+#: ../roundup/scripts/roundup_server.py:1013
 #, fuzzy
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
@@ -3313,7 +3313,7 @@ msgstr ""
 "去。\n"
 "               如果使用了 -d 選項，則 -l 選項 *必須* 要指定。"
 
-#: ../roundup/scripts/roundup_server.py:1016
+#: ../roundup/scripts/roundup_server.py:1021
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -3415,24 +3415,24 @@ msgstr ""
 "   意數量的 name=home 對。要確保 name 部分不能包括任何非url安全的\n"
 "   字符，像空格，因為它們會把IE搞亂。\n"
 
-#: ../roundup/scripts/roundup_server.py:1196
+#: ../roundup/scripts/roundup_server.py:1201
 msgid "Instances must be name=home"
 msgstr "實例必須是 實例名=實例路徑"
 
-#: ../roundup/scripts/roundup_server.py:1210
+#: ../roundup/scripts/roundup_server.py:1215
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "配置保存到 %s"
 
-#: ../roundup/scripts/roundup_server.py:1225
+#: ../roundup/scripts/roundup_server.py:1230
 msgid "If you specify a PID file you must use -l or -L."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:1231
+#: ../roundup/scripts/roundup_server.py:1236
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr "抱歉，在這個操作系統上不能以守護進程的方式來運行服務"
 
-#: ../roundup/scripts/roundup_server.py:1251
+#: ../roundup/scripts/roundup_server.py:1256
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Roundup server 啟動於 %(HOST)s:%(PORT)s"

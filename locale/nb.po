@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Roundup 2.6.0b1\n"
 "Report-Msgid-Bugs-To: roundup-devel@lists.sourceforge.net\n"
-"POT-Creation-Date: 2026-05-25 19:29-0400\n"
+"POT-Creation-Date: 2026-06-03 12:45-0400\n"
 "PO-Revision-Date: 2013-10-31 12:21+0100\n"
 "Last-Translator: Christian Aastorp <christian.aastorp@gmail.com>\n"
 "Language-Team: Norwegian Bokmal <LL@li.org>\n"
@@ -2195,8 +2195,8 @@ msgstr ""
 msgid "Client is not allowed to use Rest Interface."
 msgstr "Anonyme brukere får ikke benytte web-grensesnittet"
 
-#: ../roundup/cgi/client.py:783 ../roundup/cgi/client.py:1890
-#: ../roundup/cgi/client.py:783:1890
+#: ../roundup/cgi/client.py:783 ../roundup/cgi/client.py:1903
+#: ../roundup/cgi/client.py:783:1903
 msgid "Required Header Missing"
 msgstr ""
 
@@ -2209,8 +2209,8 @@ msgstr "Skjema feil:"
 msgid "Unrecognized charset: %r"
 msgstr "Ukjent tegnsett: %r"
 
-#: ../roundup/cgi/client.py:1442 ../roundup/cgi/client.py:2652
-#: ../roundup/cgi/client.py:1442:2652
+#: ../roundup/cgi/client.py:1442 ../roundup/cgi/client.py:2665
+#: ../roundup/cgi/client.py:1442:2665
 msgid "broken form: multiple @action values submitted"
 msgstr ""
 
@@ -2227,117 +2227,117 @@ msgstr ""
 msgid "csrf key used with method %(method)s from: %(source)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1681 ../roundup/cgi/client.py:1691
-#: ../roundup/cgi/client.py:1681:1691
+#: ../roundup/cgi/client.py:1683 ../roundup/cgi/client.py:1693
+#: ../roundup/cgi/client.py:1683:1693
 msgid "Unable to authorize request"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1784
+#: ../roundup/cgi/client.py:1797
 #, python-format
 msgid "csrf header %(header)s required but missing for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1788
+#: ../roundup/cgi/client.py:1801
 #, python-format
 msgid "Missing header: %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1796
+#: ../roundup/cgi/client.py:1809
 #, python-format
 msgid "csrf Referer header check failed for user%(userid)s. Value=%(referer)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1801
+#: ../roundup/cgi/client.py:1814
 #, fuzzy, python-format
 msgid "Invalid Referer: %s"
 msgstr "Ugylig login"
 
-#: ../roundup/cgi/client.py:1816
+#: ../roundup/cgi/client.py:1829
 #, python-format
 msgid "csrf Origin header check failed for user%(userid)s. Value=%(origin)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1821
+#: ../roundup/cgi/client.py:1834
 #, fuzzy, python-format
 msgid "Invalid Origin %s"
 msgstr "Ugylig login"
 
-#: ../roundup/cgi/client.py:1835
+#: ../roundup/cgi/client.py:1848
 #, python-format
 msgid ""
 "csrf X-FORWARDED-HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1841
+#: ../roundup/cgi/client.py:1854
 #, python-format
 msgid "Invalid X-FORWARDED-HOST %s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1860
+#: ../roundup/cgi/client.py:1873
 #, python-format
 msgid "csrf HOST header check failed for user%(userid)s. Value=%(host)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1865
+#: ../roundup/cgi/client.py:1878
 #, fuzzy, python-format
 msgid "Invalid HOST %s"
 msgstr "Ugyldig forespørsel"
 
-#: ../roundup/cgi/client.py:1873
+#: ../roundup/cgi/client.py:1886
 msgid "Csrf: unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1874
+#: ../roundup/cgi/client.py:1887
 msgid "Unable to verify sufficient headers"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1887
+#: ../roundup/cgi/client.py:1900
 #, python-format
 msgid ""
 "csrf X-REQUESTED-WITH xmlrpc required header check failed for user%(userid)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1928
+#: ../roundup/cgi/client.py:1941
 #, python-format
 msgid "Required csrf field missing for user%(userid)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1931 ../roundup/cgi/client.py:1959
-#: ../roundup/cgi/client.py:1976 ../roundup/cgi/client.py:1931:1959:1976
+#: ../roundup/cgi/client.py:1944 ../roundup/cgi/client.py:1972
+#: ../roundup/cgi/client.py:1989 ../roundup/cgi/client.py:1944:1972:1989
 msgid ""
 "We can't validate your session (csrf failure). Re-enter any unsaved data and "
 "try again."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1936
+#: ../roundup/cgi/client.py:1949
 #, python-format
 msgid "csrf field not supplied by user%(userid)s"
 msgstr ""
 
-#: ../roundup/cgi/client.py:1948
+#: ../roundup/cgi/client.py:1961
 #, python-format
 msgid ""
 "Csrf mismatch user: current user %(user)s != stored user %(stored)s, current "
 "session, stored session: %(cur_sess)s,%(stor_sess)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:1966
+#: ../roundup/cgi/client.py:1979
 #, python-format
 msgid ""
 "Csrf mismatch user: current session %(curr_sess)s != stored session "
 "%(stor_sess)s, current user/stored user is: %(user)s for key %(key)s."
 msgstr ""
 
-#: ../roundup/cgi/client.py:2196
+#: ../roundup/cgi/client.py:2209
 msgid "You are not allowed to view this file."
 msgstr "Du har ikke lov å se denne filen."
 
-#: ../roundup/cgi/client.py:2531
+#: ../roundup/cgi/client.py:2544
 #, python-format
 msgid "%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n"
 msgstr "%(starttag)sMedgått tid: %(seconds)fs%(endtag)s\n"
 
-#: ../roundup/cgi/client.py:3073
+#: ../roundup/cgi/client.py:3086
 #, python-format
 msgid ""
 "Cache failure: compressed file %(compressed)s is older than its source file "
@@ -3377,33 +3377,33 @@ msgstr ""
 "Feil: Kilden må være enten \"mailbox\", \"pop\", \"pops\", \"apop\", "
 "\"imap\" eller \"imaps\""
 
-#: ../roundup/scripts/roundup_server.py:112
+#: ../roundup/scripts/roundup_server.py:113
 msgid "WARNING: generating temporary SSL certificate"
 msgstr "ADVARSEL: genererer midlertidig SSL sertifikat"
 
-#: ../roundup/scripts/roundup_server.py:143
+#: ../roundup/scripts/roundup_server.py:144
 #, python-format
 msgid "Unable to find/use key from file: %(pemfile)s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:144
+#: ../roundup/scripts/roundup_server.py:145
 msgid ""
 "Does it have a private key surrounded by '-----BEGIN PRIVATE KEY-----' and\n"
 "  '-----END PRIVATE KEY-----' markers?"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:149
+#: ../roundup/scripts/roundup_server.py:150
 #, python-format
 msgid "Unable to find/use certificate from file: %(pemfile)s"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:150
+#: ../roundup/scripts/roundup_server.py:151
 msgid ""
 "Does it have a certificate surrounded by '-----BEGIN CERTIFICATE-----' and\n"
 "  '-----END CERTIFICATE-----' markers?"
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:370
+#: ../roundup/scripts/roundup_server.py:372
 msgid ""
 "<html><head><title>Roundup trackers index</title></head>\n"
 "<body><h1>Roundup trackers index</h1><ol>\n"
@@ -3411,59 +3411,59 @@ msgstr ""
 "<html><head><title>Roundup saksliste</title></head>\n"
 "<body><h1>Roundup saksliste</h1><ol>\n"
 
-#: ../roundup/scripts/roundup_server.py:621
+#: ../roundup/scripts/roundup_server.py:626
 #, fuzzy, python-format
 msgid "Error: %(type)s: %(value)s"
 msgstr "%(key)s: %(value)s"
 
-#: ../roundup/scripts/roundup_server.py:633
+#: ../roundup/scripts/roundup_server.py:638
 msgid "WARNING: ignoring \"-g\" argument, not root"
 msgstr "ADVARSEL: ignorerer \"-g\" argument, ikke root"
 
-#: ../roundup/scripts/roundup_server.py:639
+#: ../roundup/scripts/roundup_server.py:644
 msgid "Can't change groups - no grp module"
 msgstr "Kan ikke skifte gruppe, ingen grp modul"
 
-#: ../roundup/scripts/roundup_server.py:648
+#: ../roundup/scripts/roundup_server.py:653
 #, python-format
 msgid "Group %(group)s doesn't exist"
 msgstr "Gruppe %(group)s finnes ikke"
 
-#: ../roundup/scripts/roundup_server.py:660
+#: ../roundup/scripts/roundup_server.py:665
 msgid "Can't run as root!"
 msgstr "Kan ikke kjøre som root"
 
-#: ../roundup/scripts/roundup_server.py:663
+#: ../roundup/scripts/roundup_server.py:668
 msgid "WARNING: ignoring \"-u\" argument, not root"
 msgstr "ADVARSEL: ignorerer \"-u\" argument, ikke root"
 
-#: ../roundup/scripts/roundup_server.py:669
+#: ../roundup/scripts/roundup_server.py:674
 msgid "Can't change users - no pwd module"
 msgstr "Kan ikke skifte bruker , ingen pwd modul"
 
-#: ../roundup/scripts/roundup_server.py:678
+#: ../roundup/scripts/roundup_server.py:683
 #, python-format
 msgid "User %(user)s doesn't exist"
 msgstr "Bruker %(user)s finnes ikke"
 
-#: ../roundup/scripts/roundup_server.py:890
+#: ../roundup/scripts/roundup_server.py:895
 #, python-format
 msgid "Multiprocess mode \"%s\" is not available, switching to single-process"
 msgstr ""
 "Multiprosess modus  \"%s\" ikke tilgjengelig, fortsetter som enkeltprosess"
 
-#: ../roundup/scripts/roundup_server.py:918
+#: ../roundup/scripts/roundup_server.py:923
 #, python-format
 msgid "Unable to bind to port %s, port already in use."
 msgstr "Ikke mulig å binde til port %s, porten er allerede i bruk."
 
-#: ../roundup/scripts/roundup_server.py:922
+#: ../roundup/scripts/roundup_server.py:927
 #, fuzzy, python-format
 msgid ""
 "Unable to bind to port %(port)s, access not allowed, errno: %(errno)s %(msg)s"
 msgstr "Ikke mulig å binde til port %s, porten er allerede i bruk."
 
-#: ../roundup/scripts/roundup_server.py:1001
+#: ../roundup/scripts/roundup_server.py:1006
 msgid ""
 " -c <Command>  Windows Service options.\n"
 "               If you want to run the server as a Windows Service, you\n"
@@ -3480,7 +3480,7 @@ msgstr ""
 "               Skriv \"roundup-server -c help\" for å vise Windows Services\n"
 "               informasjon."
 
-#: ../roundup/scripts/roundup_server.py:1008
+#: ../roundup/scripts/roundup_server.py:1013
 #, fuzzy
 msgid ""
 " -u <UID>      runs the Roundup web server as this UID\n"
@@ -3496,7 +3496,7 @@ msgstr ""
 "               serverens PID til filen indikert av PIDfile.\n"
 "               -l optsjonen *må* brukes hvis -d brukes."
 
-#: ../roundup/scripts/roundup_server.py:1016
+#: ../roundup/scripts/roundup_server.py:1021
 #, fuzzy, python-format
 msgid ""
 "\n"
@@ -3624,25 +3624,25 @@ msgstr ""
 "   Pass på at de ikke inneholder url-utrygge tegn som mellomrom, for de kan "
 "forvirre IE.\n"
 
-#: ../roundup/scripts/roundup_server.py:1196
+#: ../roundup/scripts/roundup_server.py:1201
 msgid "Instances must be name=home"
 msgstr "Instanser må være navn=home"
 
-#: ../roundup/scripts/roundup_server.py:1210
+#: ../roundup/scripts/roundup_server.py:1215
 #, python-format
 msgid "Configuration saved to %s"
 msgstr "Konfigurasjon lagret til %s"
 
-#: ../roundup/scripts/roundup_server.py:1225
+#: ../roundup/scripts/roundup_server.py:1230
 msgid "If you specify a PID file you must use -l or -L."
 msgstr ""
 
-#: ../roundup/scripts/roundup_server.py:1231
+#: ../roundup/scripts/roundup_server.py:1236
 msgid "Sorry, you can't run the server as a daemon on this Operating System"
 msgstr ""
 "Beklager, du kan ikke kjøre servern som daemon under dette operativsystemet"
 
-#: ../roundup/scripts/roundup_server.py:1251
+#: ../roundup/scripts/roundup_server.py:1256
 #, python-format
 msgid "Roundup server started on %(HOST)s:%(PORT)s"
 msgstr "Roundup server startet på %(HOST)s:%(PORT)s"
