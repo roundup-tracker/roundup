@@ -16,6 +16,36 @@ ideas and everything else that helped!
 
 .. _`Announcement with changelog for current release.`: announcement.html
 
+2.6
+---
+
+2.6.0
+~~~~~
+
+Maintainer: John Rouillard
+
+Release Manager: John Rouillard
+
+Developer activity by changesets::
+
+  rouilj@ieee.org    258
+  *****************************************************
+
+Other contributers:
+
+Ross Boylan - documentation fixes
+
+Christof Meerwald - crash when exporting multilink columns as csv.
+
+Bernhard Reiter - released gpg-2.0.0 which makes Roundup pgp/gpg support
+work using released version of gpg.
+
+Ralf Schlatterbeck - reported issue 2551405 - crash without traceback
+due to read only locale directory
+
+Norbert Schlemmer - fix for docker health check script.
+
+
 2.5
 ---
 

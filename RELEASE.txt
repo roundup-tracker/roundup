@@ -24,10 +24,9 @@ Roundup release checklist:
 
 2.  Run unit tests! They should pass successfully. Install pytest
     using pip2/pip3 for python2 and python3. Then invoke pytest
-    using both python versions from the top of the roundup tree:
+    using both python versions from the top of the roundup tree
 
         python3 -m pytest test/
-        python2 -m pytest test/
 
 3.  Update version in:
       CHANGES.txt (set date for version as well) 
@@ -39,7 +38,7 @@ Roundup release checklist:
           org.opencontainers.image.version
 3a. Update license end date in COPYING.txt
 3b. Update doc/acknowledgements.txt (add section for
-    release, churn contributers etc.). (Use hg churn -c -r ####..####)
+    release, churn contributers etc.). (Use hg churn -c -r 2.5.0..default)
 
 4.  Update documentation
       doc/announcement.txt
@@ -130,7 +129,7 @@ Roundup release checklist:
     added and removed files. Last release e.g. 1.5.1 where tip is what would
     become 1.6) E.G.
       
-      hg status --rev 2.2.0:tip | sed -ne 's/^A //p' | while read i ; \
+      hg status --rev 2.5.0:default | sed -ne 's/^A //p' | while read i ; \
       do echo $i; grep "$i" roundup.egg-info/SOURCES.txt; done | \
       uniq -c | sort -rn
 
@@ -141,7 +140,7 @@ Roundup release checklist:
     (Note: files under website/ shouldn't be in the manifest.)
 10a: Check for removed files still in manifest:
 
-      hg status --rev 2.2.0:tip | sed -ne 's/^R //p' | while read i ; \
+      hg status --rev 2.5.0:default | sed -ne 's/^R //p' | while read i ; \
       do echo $i; grep "$i" roundup.egg-info/SOURCES.txt; done | \
       uniq -c | sort -n
 
@@ -250,10 +249,10 @@ Roundup release checklist:
 	   the latest -N release. Also roundup:latest points to the
 	   newest -N for the newest roundup version.)
 
-        docker build -t rounduptracker/roundup:2.4.0 \
+        docker build -t rounduptracker/roundup:2.6.0 \
            --build-arg="source=pypi" -f scripts/Docker/Dockerfile .
 
-     to create the docker image. *Change 2.4.0 to current version*
+     to create the docker image. *Change 2.6.0 to current version*
      Always use the exact release tag.
 17c. vulnerability scan local image using:
 

@@ -359,6 +359,48 @@ For example:
 </td></tr>
 
 
+<tr><td valign=top><strong>readline</strong></td>
+    <td><p><tt>initrc_line | 'emacs' | 'history' | 'reload' | 'vi'</tt></p>
+
+<p>
+</p><p>
+<pre>        Using 'reload' will reload the file ~/.roundup_admin_rlrc.</pre>
+<pre>        'history' will show (and number) all commands in the history.</pre>
+</p><p>
+<pre>        You can change input mode using the 'emacs' or 'vi' parameters.</pre>
+<pre>        The default is emacs. This is the same as using::</pre>
+</p><p>
+<pre>           readline set editing-mode emacs</pre>
+</p><p>
+<pre>        or::</pre>
+</p><p>
+<pre>           readline set editing-mode vi</pre>
+</p><p>
+<pre>        Any command that can be placed in a readline .inputrc file can</pre>
+<pre>        be executed using the readline command. You can assign</pre>
+<pre>        dump-variables to control O using::</pre>
+</p><p>
+<pre>           readline Control-o: dump-variables</pre>
+</p><p>
+<pre>        Assigning multi-key values also works.</pre>
+</p><p>
+<pre>        pyreadline3 support on windows:</pre>
+</p><p>
+<pre>          Mode switching doesn't work, emacs only.</pre>
+</p><p>
+<pre>          Binding single key commands works with::</pre>
+</p><p>
+<pre>            readline Control-w: history-search-backward</pre>
+</p><p>
+<pre>          Multiple key sequences don't work.</pre>
+</p><p>
+<pre>          Setting values may work. Difficult to tell because the library</pre>
+<pre>          has no way to view the live settings.</pre>
+</p><p>
+<pre>        </pre>
+</td></tr>
+
+
 <tr><td valign=top><strong>reindex</strong></td>
     <td><p><tt>[classname|classname:#-#|designator]*</tt></p>
 

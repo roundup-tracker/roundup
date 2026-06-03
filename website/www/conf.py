@@ -60,7 +60,10 @@ ogp_site_url = "https://www.roundup-tracker.org"
 ogp_image = "_images/index_logged_out.png"
 ogp_image_alt = "The front page of a tracker showing a table of issues and their properties."
 # ogp_description_length = 200
-
+ogp_social_cards = {
+    "enable": True,
+    "line_color": "#f00"
+}
 # for sitemap default: "{lang}{version}subdir/{link}"
 sitemap_url_scheme = "{link}"
 
@@ -78,7 +81,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'Roundup'
-copyright = u'2009-2025, Richard Jones, Roundup-Team'
+copyright = u'2009-2026, Roundup-Team, Richard Jones'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

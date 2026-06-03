@@ -92,7 +92,7 @@ Fixed:
 - issue2551405 - Missing locale .mo files create 500 error on uwsgi
   without further info. Added more specific ConnectionAbortedError
   and changed IOError handling. Case in issue now logs the exception
-  for diagnosis.
+  for diagnosis. (Reported by Ralf Schlatterbeck; John Rouillard)
 - Make queries selected from query edit screen include the query
   name/display name. This makes it work the same as invoking a query
   from the main "Your Queries" menu. (John Rouillard)
@@ -158,14 +158,15 @@ Features:
   plain text. Faster then beautifulsoup4 and it passes the html 5
   standard browser test suite. Beautifulsoup is still supported. (John
   Rouillard)
-- add a new detector: immutable_file_contents.py that prevents changes
-  to file contents. By default, the permissions assigned to FileClass
-  based classes (files, msgs) do not prevent editing of file contents.
-  While the usual HTML templates don't provide a way to modify files,
-  the REST interface allows changing file contents without an audit
-  trail. Manually driving the HTML interface (via curl for example)
-  also allows content changes. The new detector prevents changes to
-  file contents via Roundup even by a user with admin rights.
+- add a new detector: immutable_file_contents.py that prevents
+  changes to file contents. By default, the permissions assigned
+  to FileClass based classes (files, msgs) do not prevent editing
+  of file contents.  While the usual HTML templates don't provide
+  a way to modify files, the REST interface allows changing file
+  contents without an audit trail. Manually driving the HTML
+  interface (via curl for example) also allows content
+  changes. The new detector prevents changes to file contents via
+  Roundup even by a user with admin rights. (John Rouillard)
 - Added documentation on doing an in place database migration. This is
   faster for large databases. (John Rouillard)
 - Added installation.txt docs on setting up SCGI support with the

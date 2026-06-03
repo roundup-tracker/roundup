@@ -104,7 +104,7 @@
     </div>
     <!-- role=main is used by sphinx js in 9.x to find main rather than
          looking for `main` tag 8-(. -->
-    <main id="main" role="main" class="content">
+    <div id="main_wrapper" class="content">
 	<nav id="subnav" aria-label="sub navigation">
         {%- if prev %}
            <a title="{{ prev.title|striptags }}" href="{{ prev.link|e }}">
@@ -117,10 +117,10 @@
         <a title="{{ _('Index') }}" href="{{ pathto('genindex') }}">
 	  Index</a>
 	</nav>
-	<main id="main" role="main" tabindex="-1">
+	<main id="main" role="main" class="content" tabindex="-1">
        {% block body %} {% endblock %}
 	</main>
-    </main>
+    </div>
 {%- block footer %}
     <footer class="footer">
       <div>

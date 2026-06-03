@@ -143,9 +143,10 @@ class TruthDictTest(unittest.TestCase):
 class VersionCheck(unittest.TestCase):
     def test_Version_Check(self):
 
+        min_version = 10
         # test for valid versions
         from roundup.version_check import VERSION_NEEDED
-        self.assertEqual((3, 7), VERSION_NEEDED)
+        self.assertEqual((3, min_version), VERSION_NEEDED)
         del(sys.modules['roundup.version_check'])
 
 
@@ -163,7 +164,7 @@ class VersionCheck(unittest.TestCase):
         sys.stdout = capturedOutput
         from roundup.version_check import VERSION_NEEDED
         sys.stdout = sys.__stdout__
-        self.assertIn("Roundup requires Python 3.7", capturedOutput.getvalue())
+        self.assertIn("Roundup requires Python 3.%s" % min_version, capturedOutput.getvalue())
 
         # reset to valid values for future tests
         sys.exit = real_exit

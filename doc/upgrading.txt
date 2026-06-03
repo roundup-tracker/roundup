@@ -42,13 +42,13 @@ General steps:
 
 Repeat for each tracker instance.
 
-.. note::
-   The v1.5.x releases of Roundup were the last to support
+.. note:: The v1.5.x releases of Roundup were the last to support
    Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
    Python version 2.7 that is newer than 2.7.2 is required to run
-   Roundup.  Starting with Roundup version 2.0.0 we also support Python 3
-   versions newer than 3.6. Roundup version 2.5 supports Python
-   3.7 and newer.
+   Roundup.  Starting with Roundup version 2.0.0 we also support
+   Python 3 versions newer than 3.6. Roundup version 2.5 supports
+   Python 3.7 and newer. Roundup version 2.6 supports Python version
+   3.10 and newer.
 
 Recent release notes have the following labels:
 

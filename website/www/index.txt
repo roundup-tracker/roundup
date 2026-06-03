@@ -79,10 +79,10 @@ in the Software Carpentry “Track” design competition.
 Roundup is highly customizable, allowing users to tailor the system to
 their specific needs and preferences.
 
-The latest stable version of Roundup is 2.5.0, which includes bug
-fixes and additional features compared to the previous 2.4.0 release.
+The latest stable version of Roundup is 2.6.0, which includes bug
+fixes and additional features compared to the previous 2.5.0 release.
 
-Roundup is compatible with Python 3.7+.
+Roundup is compatible with Python 3.10+.
 
 .. admonition:: Python 2 Support
 
@@ -94,74 +94,54 @@ Roundup is compatible with Python 3.7+.
 Release Highlights
 ==================
 
-Some improvements from the 2.4.0 release are:
+Some improvements from the 2.6.0 release are:
 
-* **XSS vulnerability with devel and responsive templates fixed**
+* **Filter history entries where permissions are handled by check function**
 
-  Just before release an XSS security issue with trackers based on
-  the devel or responsive templates was discovered. The `updating
-  directions`_ include instructions on fixing this issue with the
-  html templates from earlier releases. (CVE-2025-53865)
+  When a property's permission uses a check command, the history
+  of changes for that property were shown. The permissions are now
+  properly checked using the check function.
 
-  .. _`updating directions`: docs/upgrading.html#cve-2025-53865
+  .. _`XXXFIXME`: docs/upgrading.html#cve-2025-53865
 
-* **The property/field advanced search expression feature has been
-  enhanced and documented.**
+* **Modern CSRF prevention method available**
 
-  Search expressions are usually built using the
-  expression editor on the search page. They can be built manually
-  by modifying the search URL but the RPN search expression format
-  was undocumented. Errors in expressions could return results that
-  didn't match the user's intent. This release documents the RPN
-  expression syntax, adds basic expression error detection, and
-  improves error reporting.
+  This release implements CSRF protection using `Cross-Site Request
+  Forgery by Filippo Valsorda <https://words.filippo.io/csrf/>`_.  This
+  is an effective method for CSRF protection and is much simpler as
+  well. There are no configurable options unlike the 8 options for the
+  older method.
 
-* **The default hash method for password storage is more secure.**
+* **Require reauthentication when making changes to sensitive fields**
 
-  We use PBKDF2 with SHA512 (was SHA1). With this change you can
-  lower the value of password_pbkdf2_default_rounds in your
-  tracker's config.ini. Check the upgrading documentation for more
-  info. (Note this may cause longer authentication times, the
-  upgrade doc describes how to downgrade the hash method if required.)
+  You can trigger a reauthentication when the user changes particular
+  fields. For example you can rquire a password be entered before the
+  user changes their password.
 
-* **Roundup's session token is now prefixed with the magic
-  ``__Secure__`` tag when using HTTPS.**
+* **Classic UI interface modernization.**
 
-  This adds another layer of protection in addition to the
-  existing ``Secure`` property that comes with the session cookie.
+  The classic tracker has basic responsive support for mobile.  The
+  table based layout was removed and HTML 5 landmarks (main, nav ...)
+  are used along with flex and grid layouts.  The left hand menu now
+  collapses to a grid layout in a single column when on a smaller
+  display. This can be retrofitted to existing classic trackers.
 
-* **Data authorization can be done at the database level speeding up
-  display of index pages.**
+  When you moved from one page to the next on an index, the
+  query/search name was lost. This release now preserves the search
+  name.
 
-  Roundup verifies the user's authorization for the data fetched
-  from the database after retrieving data from the database. A new
-  optional ``filter`` argument has been added to Permission
-  objects. When the administrator supplies a filter function, it
-  can boost performance with SQL server databases by pushing
-  selection criteria to the database. By offloading some
-  permission checks to the database, less data is retrieved from
-  the database. This leads to quicker display of index pages with
-  reduced CPU and network traffic.
+  Queries triggered from the query edit page now include the query
+  name in the index view.
 
-* **The REST endpoint can supply binary data (images, pdf, ...) to
-  its clients.**
+  The web UI now allows users to log in without a password. Before the
+  ``password`` field was required which prevented completing the login
+  action.
 
-  Requesting binary data from a REST endpoint has been a
-  hassle. Since JSON can't handle binary data, images (and other
-  binary data) need to be encoded. This makes them significantly
-  larger. The workaround was to use a non-REST endpoint for fetching
-  non-text attachments. This update lets the REST endpoint return
-  raw message or file content data. You can utilize the
-  ``binary_content`` endpoint along with an appropriate ``Accept``
-  header (e.g. ``image/jpeg``) in your request.
+  The user.item.html template now generates valid javascript.
 
-* **Extract translatable strings from your tracker easily.**
+  The jinja2 template got an updated copy of bootstrap.
 
-  The ``roundup-gettext`` tool has been enhanced to extract
-  translatable strings from detectors and extensions. This will
-  simplify the process of translating your trackers.
-
-More info on the 42 changes can be found in the `change notes`_.
+More info on the 48 changes can be found in the `change notes`_.
 
 Roundup Use Cases
 =================

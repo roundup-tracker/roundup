@@ -1,6 +1,8 @@
 TMP  := _tmp
 HTML := html
 
+SPHINX = sphinx-build
+
 .PHONY: help clean html linkcheck
 
 # from https://www.thapaliya.com/en/writings/well-documented-makefiles/ via
@@ -16,7 +18,7 @@ html: doc_links  ## make standalone HTML files (KEEP_HTML=1 speeds build)
 	if [ -z "${KEEP_HTML}" ]; then rm -rf html; fi
 	rm -f html/robots.txt  # otherwise sphinx errors
 	mkdir -p $(TMP)/doctrees $(HTML)
-	sphinx-build -n -W -b html -d $(TMP)/doctrees . $(HTML)
+	$(SPHINX) -n -W -b html -d $(TMP)/doctrees . $(HTML)
         # install searchtools.js into search page.
 	grep 'searchtools.js' html/search.html || sed -i -e '/language_data.js/s#</script>#</script>\n    <script type="text/javascript" src="_static/searchtools.js"></script>#' html/search.html
         # sphinx inserts \: for : in meta tags. Get rid of the \ in
@@ -39,7 +41,7 @@ clean: ## remove all produced files
 
 linkcheck: ## check external links for existence
 	mkdir -p $(TMP)/linkcheck $(TMP)/doctrees
-	sphinx-build -b linkcheck -d $(TMP)/doctrees . $(TMP)/linkcheck
+	$(SPHINX) -b linkcheck -d $(TMP)/doctrees . $(TMP)/linkcheck
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in .build/linkcheck/output.txt."
