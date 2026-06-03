@@ -109,20 +109,110 @@ your database.
 Migrating from 2.5.0 to 2.6.0
 =============================
 
+Incomplete CSRF protection fixed (required)
+--------------------------------------------
+
+This release fixes cross site request forgery (CSRF) protection for
+the PATCH method. You do not have to change anything if you are
+running release 2.6.0 or newer. This bug was introduced in version
+2.0.0 when the REST interface that implements the PATCH method was
+added.
+
+The ``PATCH`` method is used with the rest interface and allows
+partial modification of a Roundup object/document. If you have REST
+turned off for your tracker, you are not vulnerable.
+
+This release also returns a 405 Method not allowed error for all
+methods except GET, HEAD, and POST when querying the main (HTML)
+interface. Previously, other methods acted like GET was specified.
+
+.. comment: _CVE-2026-csrfL:
+
+Remediating missing PATCH CSRF protections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are using the REST API, there are two ways to fix this issue
+with releases 2.0.0 through 2.5.0:
+
+  1. if you are not using PATCH in your workflow, disable the PATCH
+     method in your tracker,
+
+  2. patch the cgi/client.py file to include the PATCH method in csrf
+     protections.
+
+Disable PATCH
+^^^^^^^^^^^^^
+
+To disable the PATCH method for your tracker add the following code to
+the file ``interfaces.py`` in your tracker's home directory::
+
+    from roundup.cgi.client import UsageError
+    from roundup.cgi.client import Client
+
+    original_handle_csrf = Client.handle_csrf
+
+    def csrf_wrapper_deny_patch(self, api=False):
+	method = self.env['REQUEST_METHOD']
+	if method == 'PATCH':
+	    raise UsageError("Blocked Request: %s" % method)
+	return original_handle_csrf(self, api)
+
+    Client.handle_csrf = csrf_wrapper_deny_patch
+
+then restart your tracker. You can test it using::
+
+    curl -u user:password -X PATCH \
+	-H "Origin: <origin>" <origin>/rest/data/issue/1
+
+and you should receive::
+
+    { "error": { "status": 400, "msg": "Blocked Request: PATCH"}}
+
+This will disable the use of PATCH in all web requests.  When you
+upgrade to release 2.6, remember to re-enable ``PATCH`` you can
+re-enable it by deleting the code above from ``interfaces.py``.
+
+Apply CSRF Protections
+^^^^^^^^^^^^^^^^^^^^^^
+
+However, if you need to use PATCH request, you can change the
+installed Roundup source and apply CSRF protections to the PATCH
+command.
+
+Make a backup copy of the file before changing it. Find the lines in
+cgi/client.py that look like::
+
+    # Assume: never allow changes via GET
+    if method not in ['POST', 'PUT', 'DELETE']:
+	if (self.form.list is not None) and ("@csrf" in self.form):
+
+Change the middle line so it looks like::
+
+    if method not in ['POST', 'PUT', 'DELETE', 'PATCH']:
+
+.. comment: end of CVE include marker
+
+
 Correct property permission check in history display (recommended)
 ------------------------------------------------------------------
 
-If you are upgrading to 2.6, you don't have to do anything and you cn
+If you are upgrading to 2.6, you don't have to do anything and you can
 skip this section.
 
 If you are running versions 1.6.0 to version 2.5 the filtering of
 history/journal items does not work correctly if the property is
 protected by a check function.
 
+.. comment: _CVE-2026-history_prop:
+
+Remediating incomplete property permission check
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 To fix this, you need to find the ``View`` and ``Edit`` checks in the
-history method in the ``roundup/hyperdb.py`` file.  (Note that the 1.6
-releases only checked for ``View`` permissions.) In the 1.6 release it
-looks something like::
+history method in the ``roundup/hyperdb.py`` file.  Make a backup copy
+of the file before making a change. (Note that the 1.6 releases only
+checked for ``View`` permissions.)  In the 1.6 release it looks
+something like::
 
       if enforceperm and not perm("View",
               self.db.getuid(),
@@ -164,6 +254,7 @@ Edit permissions and when fixed looks like::
         del args[key]
         continue
 
+.. comment: end of CVE include marker
 
 Default Logs Include Unique Request Identifier (info)
 -----------------------------------------------------
@@ -548,7 +639,7 @@ and issue you should report it on the `roundup-users mailing list
 Migrating from 2.4.0 to 2.5.0
 =============================
 
-.. _CVE-2025-53865:
+.. _CVE-2025-53865L:
 
 XSS security issue with devel and responsive templates (recommended)
 --------------------------------------------------------------------
@@ -1205,7 +1296,7 @@ This will insert the bad API login rate limiting settings.
 Also if you have ``html_version`` set to ``xhtml``, you will get
 an error.
 
-.. _CVE-2024-39124:
+.. _CVE-2024-39124L:
 
 Fix for CVE-2024-39124 in help/calendar popups (recommended)
 ------------------------------------------------------------
@@ -1397,7 +1488,7 @@ section. These fixes are already present in 2.4.0.
 This section is for people who can not upgrade yet, and want
 to fix the issues.
 
-.. _CVE-2024-39125:
+.. _CVE-2024-39125L:
 
 Referer value not escaped CVE-2024-39125
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1425,7 +1516,7 @@ to::
 This escapes the Referer value and prevents it from being
 executed.
 
-.. _CVE-2024-39126:
+.. _CVE-2024-39126L:
 
 Stop JavaScript execution from attached files CVE-2024-39126
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

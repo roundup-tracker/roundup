@@ -122,7 +122,7 @@ class RequestDispatcher(object):
                 # This I hope will result in self.form=None
                 environ['CONTENT_LENGTH'] = 0
             else:
-                code = 501
+                code = 405
                 message, explain = BaseHTTPRequestHandler.responses[code]
                 request.start_response([('Content-Type', 'text/html')],
                                        code)

@@ -1222,7 +1222,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                 "HTTP_Origin": "https://foo.bar",
                 "HTTP_Sec_Fetch_Site": "same-site",
                 "HTTP_Host": "foo.bar",
-                "Result": "Bad Request: UNLOCK",
+                "Result": "Bad method: UNLOCK",
                 "response_code": 405
             },
             {
@@ -1564,7 +1564,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         out = []
         def wh(s):
-           out.append(s)
+            out.append(s)
 
         # rest has no form content
         form = cgi.FieldStorage()
@@ -1577,7 +1577,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1589,7 +1589,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             'origin': 'http://whoami.com',
         }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         cl.handle_rest()
@@ -1628,7 +1628,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1637,7 +1637,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         h = { 'content-type': 'application/json',
               'accept': 'application/json' }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain
@@ -1656,7 +1656,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'PATH_INFO':'rest/data/issue',
                             'Access-Control-Request-Headers': 'Authorization',
                             'Access-Control-Request-Method': 'GET',
-                           }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1666,9 +1666,9 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
               'accept': 'application/json',
               'access-control-request-headers': 'Authorization',
               'access-control-request-method': 'GET',
-        }
+             }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain
@@ -1676,11 +1676,11 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.handle_rest()
         self.db = cl.db # to close new db handle from main() at tearDown
         self.assertNotIn('Access-Control-Allow-Credentials',
-                      cl.additional_headers)
+                         cl.additional_headers)
 
         self.assertNotIn('Access-Control-Allow-Origin',
-            cl.additional_headers
-        )
+                         cl.additional_headers
+                         )
 
         self.assertEqual(cl.response_code, 403)
         del(out[0])
@@ -1699,7 +1699,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://invalid.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         self.db = cl.db # to close new db handle from main() at tearDown
         cl.base = 'http://whoami.com/path/'
@@ -1712,13 +1712,13 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             'origin': 'http://invalid.com',
         }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
         cl.handle_rest()
         self.db = cl.db # to close new db handle from main() at tearDown
         self.assertEqual(json.loads(b2s(out[0])),
                          json.loads(expected)
-        )
+                         )
         self.assertNotIn('Access-Control-Allow-Credentials',
                          cl.additional_headers)
         self.assertIn('Access-Control-Allow-Origin',
@@ -1740,7 +1740,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1749,7 +1749,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         h = { 'content-type': 'application/json',
               'accept': 'application/json' }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain
@@ -1772,7 +1772,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1782,7 +1782,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
               'accept': 'application/json',
               'origin': 'null' }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain
@@ -2067,7 +2067,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         h = { 'content-type': 'application/json',
               'accept': 'application/json' }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain

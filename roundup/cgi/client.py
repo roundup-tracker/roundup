@@ -1481,7 +1481,7 @@ class Client:
         try:
             origin = self.env['HTTP_ORIGIN']
         except KeyError:
-            return self.env['REQUEST_METHOD'] == 'GET'
+            return self.env['REQUEST_METHOD'] in {"GET", "OPTIONS", "HEAD"}
 
         # note base https://host/... ends host with with a /,
         # so add it to origin.
@@ -1648,6 +1648,8 @@ class Client:
 
         method = self.env['REQUEST_METHOD']
         if method in {'GET', 'OPTIONS', 'HEAD'}:   # list item 1
+            # query arguments are mapped into form.list
+            # so ?@csrf=..... will pass this test.
             if (self.form.list is not None) and ("@csrf" in self.form):
                 self.expire_exposed_keys(method)
             # do return here. Keys have been obsoleted.
@@ -1658,7 +1660,7 @@ class Client:
         # local addition to fail fast if invalid method.
         if method not in {'POST', 'PUT', 'DELETE', 'PATCH'}:
             self.response_code = 405  # bad method
-            raise UsageError("Bad Request: %s" % method)
+            raise UsageError("Bad method: %s" % method)
 
         if 'HTTP_ORIGIN' in self.env:  # list item 2
             found_origin = True
@@ -1743,6 +1745,14 @@ class Client:
 
         '''
 
+        method = self.env['REQUEST_METHOD']
+
+        # reject api methods used with non-api endpoint.
+        if not api and method not in {"HEAD", "GET", "POST"}:
+            self.response_code = 405
+            self.additional_headers['Allow'] = "HEAD, GET, POST"
+            raise UsageError("Bad method: %s" % method)
+
         if self.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION']:
             return self.handle_csrf_tokenless()
 
@@ -1751,15 +1761,18 @@ class Client:
         # once all header checks have passed if it needs to be opened.
         otks = self.db.getOTKManager()
 
-        method = self.env['REQUEST_METHOD']
-        # Assume: never allow changes via GET
-        if method not in ['POST', 'PUT', 'DELETE']:
+        # Assume: never allow changes via GET/OPTIONS/HEAD
+        if method in {'GET', 'OPTIONS', 'HEAD'}:
             if (self.form.list is not None) and ("@csrf" in self.form):
                 self.expire_exposed_keys(method)
             # do return here. Keys have been obsoleted.
             # we didn't do a expire cycle of session keys,
             # but that's ok.
             return True
+
+        if method not in {'POST', 'PUT', 'DELETE', 'PATCH'}:
+            self.response_code = 405
+            raise UsageError("Bad method: %s" % method)
 
         config = self.instance.config
         current_user = self.db.getuid()

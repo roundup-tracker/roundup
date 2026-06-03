@@ -378,6 +378,24 @@ class BaseTestCases(WsgiSetup, ClientSetup):
        wsgi server is started with various feature flags
     """
 
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog, monkeypatch, subtests):
+        """Used to add pytest test fixtures to unittest based tests
+           because adding the name of a fixture to a method does not
+           make the method available.
+
+           So the decorator runs with autouse=True to set params on
+           the unittest "self" making the fixtures available for
+           tests.
+
+           If you need another fixture, just add it to the argument list
+           and assign it to self and pytest will make it available.
+        """
+
+        self._caplog = caplog
+        self._monkeypatch = monkeypatch
+        self._subtests = subtests
+
     def test_reauth_workflow(self):
         """as admin user:
              change reauth user realname include all fields on the form
@@ -552,6 +570,20 @@ class BaseTestCases(WsgiSetup, ClientSetup):
                       pass_reauth.content)
         self.assertIn(b'(the default is', pass_reauth.content)
         
+    def test_invalid_http_html_methods(self):
+        test_methods = [
+            ('PUT', requests.put, "Bad method: PUT"), # 
+            ('DELETE', requests.delete, "Bad method: DELETE"),
+            ('PATCH', requests.patch, "Bad method: PATCH"),
+            ('OPTIONS', requests.options, "explanation: 405 - Specified method")
+        ]
+        headers = {'Origin': self.url_base()}
+        for method, func, response in test_methods:
+            with self._subtests.test(entry=method):
+                r = func(self.url_base(), headers=headers)
+                self.assertEqual(r.status_code, 405)
+                self.assertIn(response, r.text)
+
     def test_cookie_attributes(self):
         session, _response = self.create_login_session()
 
@@ -994,8 +1026,9 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         # do not send content-type header for options
         f = requests.options(self.url_base() + '/',
                              headers = {'content-type': ""})
-        # options is not implemented for the non-rest interface.
-        self.assertEqual(f.status_code, 501)
+        # return method not allowed - options is not implemented
+        # for the non-rest interface.
+        self.assertEqual(f.status_code, 405)
 
     def test_rest_endpoint_root_options(self):
         # use basic auth for rest endpoint
