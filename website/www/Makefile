@@ -28,7 +28,6 @@ html: doc_links  ## make standalone HTML files (KEEP_HTML=1 speeds build)
 	cp robots.txt html/robots.txt
 	mkdir -p html/signatures && cp signatures/*.asc html/signatures
 	cp --no-clobber -r docs/html_extra/. html/docs/.
-	cp htaccess html/.htaccess
 	@echo; \
           l=$$(find html -name '*.orig' -o -name '*~' | tee /dev/tty | wc -l);\
          if [ $$l -ne 0 ]; then echo "Garbage files found" && false; fi
