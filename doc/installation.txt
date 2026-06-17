@@ -1315,6 +1315,12 @@ can run Roundup using SCGI or CGI.
 To run Roundup using SCGI, the flup_ package provides a translator
 between SCGI and WSGI.
 
+The configuration below assumes the web server is running on one host
+and the roundup scgi server is running on another host. If they are
+both running on the same computer, change ``0.0.0.0`` to ``127.0.0.1``
+and ``hostname`` to ``localhost`` or ``127.0.0.1`` to prevent direct
+connection to the roundup scgi server from external hosts.
+
 The following ``roundup-scgi.py`` can be run using Python to start the
 server:
 
@@ -1340,9 +1346,16 @@ server:
                      #      all ip address)
                      #  port as an integer
                      bindAddress=("0.0.0.0", 8197),
-                     scriptName="/roundup.scgi/demo").run()
+		     # Unlike config.ini, the scriptName should
+		     # not end with a /.
+                     scriptName="/roundup.scgi").run()
     sys.exit(ret and 42 or 0)
 
+which is started using ``python roundup-scgi.py``. Note this scgi
+configuration serves only one tracker at port 8197. So you run one
+scgi server process for each of your trackers. This is different from
+cgi, roundup-server or some wsgi deployments where you can access
+different trackers through the same entry point.
 
 Now you have to configure althttpd so it connects to the scgi
 server. To do this, althttpd requires a file with a ``.scgi``
@@ -1358,14 +1371,14 @@ server. You can also put in other directives including a fallback web
 page if the SCGI server is down, or a command to run to restart the
 SCGI server. See the `althttpd.c file
 <https://sqlite.org/althttpd/file?ci=tip&name=althttpd.c&ln=14>`_ on
-the main web site for details. If you have ``althttpd`` or
-``althttpsd`` installed you can just use the ``--help`` argument.
+the main web site for details. If you have already have althttpd or
+althttpsd installed you can just use the ``--help`` argument.
 
 Assuming you run:
 ``althttpd --root /var/www/htdocs -port 443 --cert certs.pem`` and you
 installed ``/var/www/htdocs/roundup.scgi``, you will be able to access
-your tracker at: ``https://web_hostname/roundup.scgi/``.
-
+your tracker at: ``https://web_hostname/roundup.scgi/`` which will
+also be the value of your ``web`` setting in the tracker's config.ini.
 
 WSGI Variations
 ---------------
