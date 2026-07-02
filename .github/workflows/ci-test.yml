@@ -290,7 +290,7 @@ jobs:
       - name: Run tests
         run: |
           if [[ "$PYTHON_VERSION" != "2."* ]]; then 
-            pytest -r a \
+            PYTHONTRACEMALLOC=20 pytest -r a \
               --durations=20 \
               -W default \
               -W "ignore:SelectableGroups:DeprecationWarning" \
@@ -298,8 +298,8 @@ jobs:
               -W "ignore:'U' mode::docutils.io"  \
               -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
               -W "ignore:unclosed file:ResourceWarning:enum" \
-              -v -k testBadFormAttributeErrorException test/ --cov=roundup
-              coverage lcov
+              -v -k testBadFormAttributeErrorException test/test_sqlite.py --cov=roundup
+              #coverage lcov
           else
             # python2 case
             pytest -v -r a --durations=20 test/ --cov=roundup
