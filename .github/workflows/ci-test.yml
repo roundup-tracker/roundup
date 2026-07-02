@@ -53,10 +53,10 @@ jobs:
         python-version:
           # - "2.7"
           - "3.14"
-          #- "3.14t"
-          #- "3.13"
-          #- "3.12"
-          #- "3.10"
+          - "3.14t"
+          - "3.13"
+          - "3.12"
+          - "3.10"
 
         # use for multiple os or ubuntu versions
         #os: [ubuntu-latest, macos-latest, windows-latest]
@@ -66,16 +66,16 @@ jobs:
         # if the ones above fail. fail the build
         experimental: [ false ]
 
-        #include:
-        #    # example: if this version fails the jobs still succeeds
-        #    # allow-prereleases in setup-python allows alpha/beta
-        #    # releases to run. Also allow free threaded python testing
-        #    - python-version: 3.15-dev
-        #      os: ubuntu-24.04
-        #      experimental: true
-        #    - python-version: 3.15t-dev
-        #      os: ubuntu-24.04
-        #      experimental: true          
+        include:
+            # example: if this version fails the jobs still succeeds
+            # allow-prereleases in setup-python allows alpha/beta
+            # releases to run. Also allow free threaded python testing
+            - python-version: 3.15-dev
+              os: ubuntu-24.04
+              experimental: true
+            - python-version: 3.15t-dev
+              os: ubuntu-24.04
+              experimental: true          
             
         #exclude:
             # skip all python versions on explicit 20.04/24.04 unless
@@ -137,7 +137,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       # note pytest-env is not required for redis password as there is
-      # no password on CI's redis. But pytst logs a warning if it's
+      # no password on CI's redis. But pytest logs a warning if it's
       # missing. pytest-subtests isn't needed with
       # pytest 9.0.0+, but 9.0 only supports 3.10+ so include for 3.7+.
       - name: Install pytest and other packages needed for running tests
@@ -299,8 +299,8 @@ jobs:
               -W "ignore:'U' mode::docutils.io"  \
               -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
               -W "ignore:unclosed file:ResourceWarning:enum" \
-              -v test/test_sqlite.py --cov=roundup
-              #coverage lcov
+              -v test/ --cov=roundup
+              coverage lcov
           else
             # python2 case
             pytest -v -r a --durations=20 test/ --cov=roundup
