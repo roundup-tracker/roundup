@@ -2322,6 +2322,7 @@ class TestCase():
         #       'Invalid self.form found (please report to the '
         #       'roundup-users mailing list): []')]
         log = self._caplog.record_tuples[:]
+        print(log)
         self.assertIn("Invalid self.form found", log[0][2])
 
     def testDispatchBadAccept(self):
