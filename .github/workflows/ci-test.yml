@@ -136,11 +136,12 @@ jobs:
       - name: Update pip
         run: python -m pip install --upgrade pip
 
-      # note pytest-env is not needed for redis password as there is
-      # no password on CI's redis. pytest-subtests isn't needed with
+      # note pytest-env is not required for redis password as there is
+      # no password on CI's redis. But pytst logs a warning if it's
+      # missing. pytest-subtests isn't needed with
       # pytest 9.0.0+, but 9.0 only supports 3.10+ so include for 3.7+.
       - name: Install pytest and other packages needed for running tests
-        run: pip install flake8 hypothesis mock pytest pytest-cov pytest-subtests requests sphinx-tabs
+        run: pip install flake8 hypothesis mock pytest pytest-cov pytest-env pytest-subtests requests sphinx-tabs
 
       # https://github.com/mxschmitt/action-tmate
       # allow remote ssh into the CI container. I need this to debug
@@ -290,7 +291,7 @@ jobs:
       - name: Run tests
         run: |
           if [[ "$PYTHON_VERSION" != "2."* ]]; then 
-            PYTHONTRACEMALLOC=20 pytest -r a \
+            pytest -r a \
               --durations=20 \
               -W default \
               -W "ignore:SelectableGroups:DeprecationWarning" \
@@ -298,7 +299,7 @@ jobs:
               -W "ignore:'U' mode::docutils.io"  \
               -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
               -W "ignore:unclosed file:ResourceWarning:enum" \
-              -v -k testBadFormAttributeErrorException test/test_sqlite.py --cov=roundup
+              -v test/test_sqlite.py --cov=roundup
               #coverage lcov
           else
             # python2 case
