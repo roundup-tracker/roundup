@@ -2308,6 +2308,10 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
 
+        # inject the caplog 'roundup' logger into client.
+        # otherwise this test fails.
+        # client logger instance was initialized without caplog
+        client.logger = logging.getLogger('roundup')
 
         with self._caplog.at_level(logging.ERROR, logger="roundup"):
             with self.assertRaises(AttributeError) as exc:
