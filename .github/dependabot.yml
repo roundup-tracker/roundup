@@ -18,6 +18,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
 #  - package-ecosystem: "docker" 
 #    directory: "/scripts/Docker" 
 #    target-branch: "master" 
