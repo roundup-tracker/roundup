@@ -38,6 +38,8 @@ jobs:
     steps:
     - name: Checkout the code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        persist-credentials: false
     - name: Build the Docker image
       run: docker pull python:3-alpine; docker build . --file scripts/Docker/Dockerfile --tag localbuild/testimage:latest
     - name: List the Docker image
@@ -55,4 +57,6 @@ jobs:
         sarif_file: ${{ steps.scan.outputs.sarif }}
     - name: Inspect action SARIF report
       if: always()
-      run: cat ${{ steps.scan.outputs.sarif }}
+      run: cat ${STEPS_SCAN_OUTPUTS_SARIF}
+      env:
+        STEPS_SCAN_OUTPUTS_SARIF: ${{ steps.scan.outputs.sarif }}
