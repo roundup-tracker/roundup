@@ -45,6 +45,12 @@ jobs:
 
     if: "!contains(github.event.head_commit.message, 'no-github-ci')"
 
+    # run the finalizer for coveralls even if one or more
+    # experimental matrix runs fail.
+    # moving it above strategy produces unexpected value false
+    # moving it below (here) produces unexpected value ''.
+    continue-on-error: ${{ matrix.experimental }}
+
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -76,7 +82,7 @@ jobs:
             - python-version: 3.15t-dev
               os: ubuntu-24.04
               experimental: true          
-            
+
         #exclude:
             # skip all python versions on explicit 20.04/24.04 unless
             # explicitly included
@@ -85,12 +91,6 @@ jobs:
             # disable when testing ubuntu-24.04 to speed up
             # runs.
             # - os: ubuntu-latest
-
-    # run the finalizer for coveralls even if one or more
-    # experimental matrix runs fail.
-    # moving it above strategy produces unexpected value false
-    # moving it below (here) produces unexpected value ''.
-    # continue-on-error: ${{ matrix.experimental }}
 
     env:
       # get colorized pytest output even without a controlling tty
