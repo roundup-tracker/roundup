@@ -106,13 +106,13 @@ jobs:
         # if: {{ false }}
           # continue running if step fails
         # continue-on-error: true
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
       # Setup version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
@@ -149,7 +149,7 @@ jobs:
       # allow remote ssh into the CI container. I need this to debug
       # some xfail cases 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@35b54afac29c97fb54faba5b513f8fbd1882f113 # v3.24
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         timeout-minutes: 10
         with:
@@ -222,7 +222,7 @@ jobs:
       # allow remote ssh into the CI container. I need this to debug
       # some xfail cases 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@35b54afac29c97fb54faba5b513f8fbd1882f113 # v3.24
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         timeout-minutes: 10
         with:
@@ -313,7 +313,7 @@ jobs:
         
       - name: Upload coverage to Codecov
         # see: https://github.com/codecov/codecov-action#usage
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
