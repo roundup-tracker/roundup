@@ -103,12 +103,13 @@ emails.
 Once you install Roundup, you can use the ``roundup-demo`` command to
 install new demo trackers.
 
-.. [1] Demo tracker is set up to be accessed by localhost browser.
-       If you run demo on a server host, please stop the demo (using
+.. [1] Demo tracker is set up to be accessed by localhost browser.  If
+       you run demo on a server host, please stop the demo (using
        Control-C) after it has shown the startup notice, open file
-       ``demo/config.ini`` with your editor, change host name in
-       the ``web`` option in section ``[tracker]``, save the file,
-       then re-run the demo.py program.
+       ``demo/config.ini`` with your editor, change host name in the
+       ``web`` option in section ``[tracker]`` from ``localhost`` to
+       your servers DNS name, save the file, then re-run the demo.py
+       program.
 
 .. _demo mode using docker:
 
@@ -588,10 +589,7 @@ responsive
    This issue tracker uses the same schema as devel.  The difference
    between devel and responsive templates is the use of Twitter
    bootstrap (https://github.com/twbs/bootstrap) in templates and
-   HTML5 markup.  Make sure the "static_files" setting in your
-   config.ini of your instance is set to the directory where the
-   static files live (the subdirectory "static" in the default of the
-   template).
+   HTML5 markup.
 
 jinja2
    This is a generic issue tracker based on classic schema.  It uses
@@ -608,11 +606,14 @@ https://wiki.roundup-tracker.org/TrackerTemplates.
 Choosing Your Backend
 ---------------------
 
-The actual storage of Roundup tracker information is handled by backends.
+The actual storage of Roundup tracker information is handled by
+database backends.  Roundup has a process to allow you to change
+backends and preserve your tracker's data. So you can upgrade from an
+embedded database to MySQL, or PostgreSQL.
 
 Roundup supports basic full text search (FTS) for all backends. Some
-backends support a faster native FTS. Also Roundup supports using
-whoosh or xapian for FTS.
+database backends support a faster native FTS. Roundup also supports
+using whoosh or xapian for FTS.
 
 There are several backends to choose from, each with benefits and
 limitations:
@@ -635,16 +636,11 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   (e.g. you are interested in adding support for MongoDB or other
   NoSQL persistence layer).
 **sqlite**
-  This uses the embedded database engine SQLite and the PySQLite_
-  driver to provide a very fast
-  backend. This is not suitable for trackers which will have many
-  simultaneous users, but requires much less installation and maintenance
-  effort than more scalable postgresql and mysql backends.
-
-  SQLite is supported via PySQLite version 2.1.0 and sqlite3 (the last
-  being bundled with Python 2.5+)
-
-  Installed SQLite should be the latest version available (3.9.0 or newer).
+  This uses the SQLite embedded database engine with the sqlite3
+  library bundled with Python. This provides a very fast backend. This
+  is not suitable for trackers which will have many (50+) users
+  simultaneous updating data. It requires no installation and less
+  maintenance effort than more scalable postgresql and mysql backends.
 
   .. _fts5-testing:
 
