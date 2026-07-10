@@ -26,7 +26,7 @@ ARG source=local
 # Note this is the index digest for the image, not the manifest digest.
 # The index digest is shared across archetectures (amd64, arm64 etc.)
 # while the manifest digest is unique per platform/arch.
-ARG SHA256=5a824eb82cc75361f98611f3cfc5091ea33f10a6ccea4d4ebdabbc523b9a1614
+ARG SHA256=26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92
 
 # Set to any non-empty value to enable shell debugging for troubleshooting
 ARG VERBOSE=
@@ -233,7 +233,7 @@ ARG pip_mod
 LABEL "org.opencontainers.image.vendor"="Roundup Issue Tracker Team" \
       "org.opencontainers.image.title"="Roundup Issue Tracker" \
       "org.opencontainers.image.description"="Roundup Issue Tracker with multi-backend support installed via $source with python version $pythonversion" \
-      "org.opencontainers.image.version"="2.6.0b1" \
+      "org.opencontainers.image.version"="2.6.0x" \
       "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net" \
       "org.opencontainers.image.licenses"="MIT AND ZPL-2.0 AND Python-2.0" \
       "org.opencontainers.image.documentation"="https://www.roundup-tracker.org/docs/installation.html" \
