@@ -1,20 +1,21 @@
-<!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Wed Jun  3 02:38:26 2026 -->
+<!-- Creator     : groff version 1.24.1 -->
+<!-- CreationDate: Sat Jul 11 13:53:47 2026 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta name="generator" content="groff -Thtml, see www.gnu.org">
-<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="Content-Style" content="text/css">
 <link rel="canonical" href="https://www.roundup-tracker.org/docs/man_pages/roundup-server.1.html">
 <style type="text/css">
-       p       { max-width: 65ch; margin-top: 0; margin-bottom: 0; vertical-align: top }
+       :root { font-size: 16pt; line-spacing: 1.5;}
+p       { max-width: 65ch; margin-top: 0; margin-bottom: 0; vertical-align: top }
        pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
        table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
        h1      { text-align: center }
 </style>
-<title>ROUNDUP-SERVER</title>
+<title>roundup-server manual page</title>
 
 </head>
 <body>
@@ -37,8 +38,8 @@
 </h2>
 
 
-<p style="margin-left:11%; margin-top: 1em">roundup-server
-- start roundup web server</p>
+<p style="margin-left:6%; margin-top: 1em">roundup-server -
+start roundup web server</p>
 
 <h2>SYNOPSIS
 <a name="SYNOPSIS"></a>
@@ -46,7 +47,7 @@
 
 
 
-<p style="margin-left:11%; margin-top: 1em"><b>roundup-server</b>
+<p style="margin-left:6%; margin-top: 1em"><b>roundup-server</b>
 [<i>options</i>] [<b>name=</b><i>tracker home</i>]*</p>
 
 <h2>OPTIONS
@@ -54,26 +55,26 @@
 </h2>
 
 
-<p style="margin-left:11%; margin-top: 1em"><b>-C</b>
+<p style="margin-left:6%; margin-top: 1em"><b>-C</b>
 <i>file</i> or <b>--config</b> <i>file</i></p>
 
-<p style="margin-left:22%;">Use options read from the
+<p style="margin-left:15%;">Use options read from the
 configuration file (see below).</p>
 
-<p style="margin-left:11%;"><b>-n</b> <i>hostname</i></p>
+<p style="margin-left:6%;"><b>-n</b> <i>hostname</i></p>
 
-<p style="margin-left:22%;">Sets the host name or IP
+<p style="margin-left:15%;">Sets the host name or IP
 address to listen on. Default is localhost (127.0.0.1). Use
 0.0.0.0 to listen on all interfaces on the system.</p>
 
-<p style="margin-left:11%;"><b>-p</b> <i>port</i></p>
+<p style="margin-left:6%;"><b>-p</b> <i>port</i></p>
 
-<p style="margin-left:22%;">Sets the port to listen on
+<p style="margin-left:15%;">Sets the port to listen on
 (default: 8080).</p>
 
-<p style="margin-left:11%;"><b>-d</b> <i>PIDfile</i></p>
+<p style="margin-left:6%;"><b>-d</b> <i>PIDfile</i></p>
 
-<p style="margin-left:22%;">Run the server in the
+<p style="margin-left:15%;">Run the server in the
 background and write the server&rsquo;s PID to the file
 indicated by PIDfile. The -l (or -L) option <b>must</b> be
 specified if -d is used.</p>
@@ -81,49 +82,51 @@ specified if -d is used.</p>
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
 <tr valign="top" align="left">
-<td width="11%"></td>
+<td width="6%"></td>
 <td width="3%">
 
 
 <p><b>-D</b></p></td>
-<td width="8%"></td>
-<td width="78%">
+<td width="6%"></td>
+<td width="65%">
 
 
-<p>Run the server in the foreground even if -d is used.</p></td></tr>
+<p>Run the server in the foreground even if -d is used.</p></td>
+<td width="20%">
+</td></tr>
 </table>
 
-<p style="margin-left:11%;"><b>-t
+<p style="margin-left:6%;"><b>-t
 fork|thread|debug|none</b></p>
 
-<p style="margin-left:22%;">Control multi-process mode.
+<p style="margin-left:15%;">Control multi-process mode.
 <b>debug</b> and <b>none</b> are always available. If an
 invalid mode is specified the server starts in <b>none</b>
 (also called single) mode. Default fork.</p>
 
-<p style="margin-left:11%;"><b>-m</b>
+<p style="margin-left:6%;"><b>-m</b>
 <i>max_children</i></p>
 
-<p style="margin-left:22%;">Set the maximum number of child
+<p style="margin-left:15%;">Set the maximum number of child
 processes (servers). This value may need to be increased on
 a heavily loaded site. Default 40.</p>
 
-<p style="margin-left:11%;"><b>-l</b> <i>file</i></p>
+<p style="margin-left:6%;"><b>-l</b> <i>file</i></p>
 
-<p style="margin-left:22%;">Sets a filename to log to
+<p style="margin-left:15%;">Sets a filename to log to
 (instead of stdout). This is required if the -d option is
 used.</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
 <tr valign="top" align="left">
-<td width="11%"></td>
+<td width="6%"></td>
 <td width="3%">
 
 
 <p><b>-P</b></p></td>
-<td width="8%"></td>
-<td width="78%">
+<td width="6%"></td>
+<td width="85%">
 
 
 <p>If a reverse proxy is used in front of the
@@ -139,22 +142,22 @@ https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
 for details and warnings about using the X-Forwarded-For
 header.</p> </td></tr>
 <tr valign="top" align="left">
-<td width="11%"></td>
+<td width="6%"></td>
 <td width="3%">
 
 
-<p><b>-L</b></p></td>
-<td width="8%"></td>
-<td width="78%">
+<p style="margin-top: 1em"><b>-L</b></p></td>
+<td width="6%"></td>
+<td width="85%">
 
 
-<p>Have the server log using the Python logger with key
-roundup.http.</p> </td></tr>
+<p style="margin-top: 1em">Have the server log using the
+Python logger with key roundup.http.</p></td></tr>
 </table>
 
-<p style="margin-left:11%;"><b>-i</b> <i>file</i></p>
+<p style="margin-left:6%;"><b>-i</b> <i>file</i></p>
 
-<p style="margin-left:22%;">Sets a filename to use as a
+<p style="margin-left:15%;">Sets a filename to use as a
 template for generating the tracker index page. The variable
 &quot;trackers&quot; is available to the template and is a
 dict of all configured trackers. If you connect to the root
@@ -162,10 +165,10 @@ of the server (without a tracker name), the default index
 page is shown. Using <b>-i</b> allows you to customize the
 index page.</p>
 
-<p style="margin-left:11%;"><b>-I</b>
+<p style="margin-left:6%;"><b>-I</b>
 <i>header1[,header2,...]</i></p>
 
-<p style="margin-left:22%;">Pass the header(s) and their
+<p style="margin-left:15%;">Pass the header(s) and their
 values to the backend. This allow-list of header variables
 can be used by custom code in the tracker or with a
 tracker&rsquo;s <b>http_auth_header</b> configuration option
@@ -175,13 +178,13 @@ the user identity to roundup.</p>
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
 <tr valign="top" align="left">
-<td width="11%"></td>
+<td width="6%"></td>
 <td width="3%">
 
 
 <p><b>-s</b></p></td>
-<td width="8%"></td>
-<td width="78%">
+<td width="6%"></td>
+<td width="85%">
 
 
 <p>Enables use of SSL. In most cases, you will want to run
@@ -190,91 +193,73 @@ roundup-server running without SSL. The real web server can
 filter/rate limit/firewall requests to roundup-server.</p></td></tr>
 </table>
 
-<p style="margin-left:11%;"><b>-e</b> <i>file</i></p>
+<p style="margin-left:6%;"><b>-e</b> <i>file</i></p>
 
-<p style="margin-left:22%;">Sets a filename containing the
+<p style="margin-left:15%;">Sets a filename containing the
 PEM file to use for SSL. The PEM file must include both the
 private key and certificate with appropriate header/trailer
 markers:</p>
 
-<p style="margin-left:22%; margin-top: 1em">-----BEGIN
+<p style="margin-left:15%; margin-top: 1em">-----BEGIN
 PRIVATE KEY----- <br>
 -----END PRIVATE KEY-----</p>
 
-<p style="margin-left:22%; margin-top: 1em">and</p>
+<p style="margin-left:15%; margin-top: 1em">and</p>
 
-<p style="margin-left:22%; margin-top: 1em">-----BEGIN
+<p style="margin-left:15%; margin-top: 1em">-----BEGIN
 CERTIFICATE----- <br>
 -----END CERTIFICATE-----</p>
 
-<p style="margin-left:22%; margin-top: 1em">If no file is
+<p style="margin-left:15%; margin-top: 1em">If no file is
 specified, a temporary self-signed certificate will be
 used.</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
 <tr valign="top" align="left">
-<td width="11%"></td>
+<td width="6%"></td>
 <td width="3%">
 
 
 <p><b>-N</b></p></td>
-<td width="8%"></td>
-<td width="78%">
+<td width="6%"></td>
+<td width="79%">
 
 
 <p>Log client machine names instead of IP addresses (much
-slower).</p> </td></tr>
+slower).</p> </td>
+<td width="6%">
+</td></tr>
 </table>
 
-<p style="margin-left:11%;"><b>-V</b> <i>HTTPVER</i></p>
+<p style="margin-left:6%;"><b>-V</b> <i>HTTPVER</i></p>
 
-<p style="margin-left:22%;">By default roundup-server uses
+<p style="margin-left:15%;">By default roundup-server uses
 HTTP/1.1 to enable keepalives for faster response. HTTPVER
 can be set to <b>HTTP/1.0</b> to disable keepalives.</p>
 
-<table width="100%" border="0" rules="none" frame="void"
-       cellspacing="0" cellpadding="0">
-<tr valign="top" align="left">
-<td width="11%"></td>
-<td width="9%">
+<p style="margin-left:6%;"><b>-u</b> <i>UID</i></p>
 
+<p style="margin-left:15%;">Runs the Roundup web server as
+this UID.</p>
 
-<p><b>-u</b> <i>UID</i></p></td>
-<td width="2%"></td>
-<td width="61%">
+<p style="margin-left:6%;"><b>-g</b> <i>GID</i></p>
 
+<p style="margin-left:15%;">Runs the Roundup web server as
+this GID.</p>
 
-<p>Runs the Roundup web server as this UID.</p></td>
-<td width="17%">
-</td></tr>
-<tr valign="top" align="left">
-<td width="11%"></td>
-<td width="9%">
-
-
-<p><b>-g</b> <i>GID</i></p></td>
-<td width="2%"></td>
-<td width="61%">
-
-
-<p>Runs the Roundup web server as this GID.</p></td>
-<td width="17%">
-</td></tr>
-</table>
-
-<p style="margin-left:11%;"><b>-v</b> or
+<p style="margin-left:6%;"><b>-v</b> or
 <b>--version</b></p>
 
-<p style="margin-left:22%;">Print version and exit.</p>
+<p style="margin-left:15%;">Print version and exit.</p>
 
-<p style="margin-left:11%;"><b>-h</b> or <b>--help</b></p>
+<p style="margin-left:6%;"><b>-h</b> or <b>--help</b></p>
 
-<p style="margin-left:22%;">Print help and exit.</p>
+<p style="margin-left:15%;">Print help and exit.</p>
 
-<p style="margin-left:11%;"><b>--save-config</b></p>
+<p style="margin-left:6%;"><b>--save-config</b></p>
 
-<p style="margin-left:22%;">Create configuration file and
+<p style="margin-left:15%;">Create configuration file and
 exit. The old config.ini will be saved to config.bak. Note
 that this command doesn&rsquo;t attempt to load or verify an
 existing config.ini. Running this in a tracker home
@@ -283,10 +268,10 @@ and replace it with the roundup-server&rsquo;s config.ini.
 This will make the tracker in the directory fail to start
 until the original config.ini is restored.</p>
 
-<p style="margin-left:11%;"><b>name=</b><i>tracker
+<p style="margin-left:6%;"><b>name=</b><i>tracker
 home</i></p>
 
-<p style="margin-left:22%;">Sets the tracker home(s) to
+<p style="margin-left:15%;">Sets the tracker home(s) to
 use. The <b>name</b> variable is how the tracker is
 identified in the URL (it&rsquo;s the first part of the URL
 path). The <i>tracker home</i> variable is the directory
@@ -298,7 +283,7 @@ Make sure the name part doesn&rsquo;t include any url-unsafe
 characters like spaces, as these confuse the cookie handling
 in browsers like IE.</p>
 
-<p style="margin-left:11%; margin-top: 1em">If you connect
+<p style="margin-left:6%; margin-top: 1em">If you connect
 to the root directory (I.E. you do not include the
 <b>name</b> component in the URL, the server will display an
 index page of trackers served by roundup-server if more than
@@ -311,14 +296,14 @@ will redirect to the tracker.</p>
 
 
 
-<p style="margin-left:11%; margin-top: 1em"><b>roundup-server
+<p style="margin-left:6%; margin-top: 1em"><b>roundup-server
 -p 9000 bugs=/var/tracker reqs=/home/roundup/group1</b></p>
 
-<p style="margin-left:22%;">Start the server on port
+<p style="margin-left:15%;">Start the server on port
 <b>9000</b> serving two trackers; one under <b>/bugs</b> and
 one under <b>/reqs</b>.</p>
 
-<p style="margin-left:11%; margin-top: 1em">If you connect
+<p style="margin-left:6%; margin-top: 1em">If you connect
 to the server at the root level (http://host:9000/) it will
 display a list of the available trackers.</p>
 
@@ -327,7 +312,7 @@ display a list of the available trackers.</p>
 </h2>
 
 
-<p style="margin-left:11%; margin-top: 1em">See the
+<p style="margin-left:6%; margin-top: 1em">See the
 &quot;admin_guide&quot; in the Roundup &quot;doc&quot;
 directory.</p>
 
@@ -337,7 +322,7 @@ directory.</p>
 
 
 
-<p style="margin-left:11%; margin-top: 1em">roundup-admin(1),
+<p style="margin-left:6%; margin-top: 1em">roundup-admin(1),
 roundup-demo(1), roundup-mailgw(1)</p>
 
 <h2>AUTHOR
@@ -345,11 +330,11 @@ roundup-demo(1), roundup-mailgw(1)</p>
 </h2>
 
 
-<p style="margin-left:11%; margin-top: 1em">This manpage
-was written by Bastian Kleineidam &lt;calvin@debian.org&gt;
-for the Debian distribution of roundup.</p>
+<p style="margin-left:6%; margin-top: 1em">This manpage was
+written by Bastian Kleineidam &lt;calvin@debian.org&gt; for
+the Debian distribution of roundup.</p>
 
-<p style="margin-left:11%; margin-top: 1em">The main author
+<p style="margin-left:6%; margin-top: 1em">The main author
 of roundup is Richard Jones
 &lt;richard@users.sourceforge.net&gt;.</p>
 <hr>

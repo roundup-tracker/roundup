@@ -22,14 +22,18 @@ MAN_HTML=$(patsubst ../share/man/man1/%.1,html_extra/man_pages/%.1.html,$(MAN_RO
 man_html: $(MAN_HTML) ## generate html versions of man pages for docs
 
 html_extra/man_pages/%.1.html: ../share/man/man1/%.1
-	man --html=cat $< > $@
-	# set max width for paragraphs
-	sed -i '/<style/,/<\/style/s/\(p\s* { \)margin/\1max-width: 65ch; margin/' $@
-	# add link rel=cannonical $@(F) takes
-	# target $@ (html_extra/man_pages/x.1.html)
-	# and returns file part (x.1.html)
+        # 'w,!break' suppress only warnings for long lines (url's) that
+        # overflow/underflow a single line.
+	man --warnings='w,!break' --html=cat $< > $@
+        # set max width for paragraphs; base font size and spacing to match site.
+	sed -i '/<style/,/<\/style/s/\(p\s* { \)margin/:root { font-size: 16pt; line-spacing: 1.5;}\n\1max-width: 65ch; margin/' $@
+        # add link rel=cannonical $@(F) takes
+        # target $@ (html_extra/man_pages/x.1.html)
+        # and returns file part (x.1.html)
 	sed -i '/<head>/,/<\/head>/s#^<style#<link rel="canonical" href="https://www.roundup-tracker.org/docs/man_pages/$(@F)">\n<style#' $@
-	#man2html $< > $@
+        # make page title lower case and add 'manual page'
+	sed -i -e 's/<title>\([A-Z_-]*\)<\/title>/<title>\L\1 manual page<\/title>/' $@
+	@#man2html $< > $@
 
 admin_help.html: ../roundup/admin.py ## generate html version of roundup-admin help (WIP)
 	python3 ../roundup/scripts/roundup_admin.py htmlhelp > admin_help.html
