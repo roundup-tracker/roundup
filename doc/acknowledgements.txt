@@ -28,7 +28,7 @@ Release Manager: John Rouillard
 
 Developer activity by changesets::
 
-  rouilj@ieee.org    258
+  rouilj@ieee.org    288
   *****************************************************
 
 Other contributers:

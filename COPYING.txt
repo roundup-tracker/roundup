@@ -1,4 +1,5 @@
-Roundup, exclusive of the Zope page templates, is `MIT licensed`_.
+Roundup, exclusive of the Zope page templates and vendored cgi.py, is
+`MIT licensed`_.
 
 .. _MIT licensed: https://opensource.org/license/mit
 

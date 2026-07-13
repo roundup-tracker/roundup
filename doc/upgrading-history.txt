@@ -45,6 +45,57 @@ Contents:
 .. contents::
    :local:
 
+.. index:: Upgrading; 1.5.0 to 1.5.1
+
+Migrating from 1.5.0 to 1.5.1
+=============================
+
+User data visibility
+--------------------
+
+For security reasons you should change the permissions on the user
+class. We previously shipped a configuration that allowed users to see
+too many of other users details, including hashed passwords under
+certain circumstances. In schema.py in your tracker, replace the line::
+
+   db.security.addPermissionToRole('User', 'View', 'user')
+
+with::
+
+   p = db.security.addPermission(name='View', klass='user',
+       properties=('id', 'organisation', 'phone', 'realname',
+       'timezone', 'username'))
+   db.security.addPermissionToRole('User', p)
+
+Note that this removes visibility of user emails, if you want emails to
+be visible you can add 'address' and 'alternate_addresses' to the list
+above.
+
+XSS protection for custom actions
+---------------------------------
+
+If you have defined your own cgi actions in your tracker instance
+(e.g. in a custom ``extensions/spambayes.py`` file) you need to modify
+all cases where client.error_message or client.ok_message are modified
+directly. Instead of::
+
+  self.client.ok_message.append(...)
+
+you need to call::
+
+  self.client.add_ok_message(...)
+
+and the same for::
+
+  self.client.error_message.append(...)
+
+vs.::
+
+  self.client.add_error_message(...)
+
+The new calls escape the passed string by default and avoid XSS security
+issues.
+
 .. index:: Upgrading; 1.4.20 to 1.4.21
 
 Migrating from 1.4.20 to 1.4.21

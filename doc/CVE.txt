@@ -92,7 +92,7 @@ upgrading doc <upgrading.html>`_ for these details.
    :local:
    :depth: 2
 
-.. _CVE-2026-csrfL:
+.. comment: _CVE-2026-csrfL:
 
 .. note::
 
@@ -101,11 +101,11 @@ upgrading doc <upgrading.html>`_ for these details.
    2.6 fixes this issue. If you are running 2.6.0 you don't have to do
    anything.
 
-.. include:: upgrading.txt
+.. comment: include:: upgrading.txt
    :start-after: .. comment: _CVE-2026-csrfL:
    :end-before: .. comment:
 
-.. _CVE-2026-history_propL:
+.. comment: _CVE-2026-history_propL:
 
 .. note::
 
@@ -114,7 +114,7 @@ upgrading doc <upgrading.html>`_ for these details.
    protected by a check function. Release 2.6.0 fixes this. If you are
    running 2.6.0, you don't have to do anything.
 
-.. include:: upgrading.txt
+.. comment: include:: upgrading.txt
    :start-after: .. comment: _CVE-2026-history_prop:
    :end-before: .. comment:
 

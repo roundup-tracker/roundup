@@ -6,14 +6,10 @@ and template changes not listed here.
 Each entry has the developer who committed the change in brackets.
 Many entries without name were done by Richard Jones.
 
-**IMPORTANT** The v1.5.x releases of Roundup were the last to support
-Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
-v2.7.2 or later are required to run newer releases of Roundup.
-Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
-python 3.6 or newer (3.4/3.5 might work, but they are not tested).
-Roundup 2.4.0 is the last release to support Python 2.
+**IMPORTANT** Roundup 2.6 supports Python 3.10 or newer.
+Roundup 2.4.0 was the last release to support Python 2.
 
-2026-XX-XX 2.6.0
+2026-07-13 2.6.0
 
 Fixed:
 
@@ -81,7 +77,7 @@ Fixed:
   if requested property is set to None. This should fix missing text
   indexing for the anydbm backend. (John Rouillard)
 - ruff driven cleanups/refactor of indexer* files. (John Rouillard)
-- remove roundup.anypy.scandir_ which was needed for python 2 support.
+- remove ``roundup.anypy.scandir_`` which was needed for python 2 support.
   (John Rouillard)
 - roundup-server no longer logs connection aborted when a client
   disconnects and is using HTTP 1.1 or newer. (John Rouillard)
@@ -173,7 +169,7 @@ Features:
   althttpd web server. (John Rouillard)
 - add support for tokenless/nonceless CSRF prevention following
   https://words.filippo.io/csrf/. (John Rouillard)
-- standardize use of roundup.anypy.urllib_. Replace urlparse() with
+- standardize use of ``roundup.anypy.urllib_``. Replace urlparse() with
   urlsplit() (recommended) for some speedup. (John Rouillard)
 - issue2551368 - version 2.0.0 of the pgp module was published by
   Bernhard Reiter.  Updated documentation and tests. (Bernhard Reiter,

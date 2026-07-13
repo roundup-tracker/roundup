@@ -96,15 +96,23 @@ Release Highlights
 
 Some improvements from the 2.6.0 release are:
 
+  .. comment: `XXXFIXME`: docs/upgrading.html#cve-2026-csrfl
+     CVE hasn't been assigned as of date of release for either
+     of the first two improvements.
+
+* **Fix for missing CSRF protection for PATCH method**
+
+  The REST interface does not apply CSRF checks when using the PATCH
+  command. See request still in progress at time of release.
+
 * **Filter history entries where permissions are handled by check function**
 
-  When a property's permission uses a check command, the history
-  of changes for that property were shown. The permissions are now
-  properly checked using the check function.
+  The history of a property change was always shown if the property
+  permissions included a check function. The permissions are now
+  properly checked using the check function. CVE request still in
+  progress at time of release.
 
-  .. _`XXXFIXME`: docs/upgrading.html#cve-2025-53865
-
-* **Modern CSRF prevention method available**
+* **Modern CSRF prevention method without CSRF tokens available**
 
   This release implements CSRF protection using `Cross-Site Request
   Forgery by Filippo Valsorda <https://words.filippo.io/csrf/>`_.  This
@@ -115,7 +123,7 @@ Some improvements from the 2.6.0 release are:
 * **Require reauthentication when making changes to sensitive fields**
 
   You can trigger a reauthentication when the user changes particular
-  fields. For example you can rquire a password be entered before the
+  fields. For example you can require a password be entered before the
   user changes their password.
 
 * **Classic UI interface modernization.**
@@ -141,7 +149,7 @@ Some improvements from the 2.6.0 release are:
 
   The jinja2 template got an updated copy of bootstrap.
 
-More info on the 48 changes can be found in the `change notes`_.
+More info on the 49 changes can be found in the `change notes`_.
 
 Roundup Use Cases
 =================
