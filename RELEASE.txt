@@ -297,8 +297,8 @@ Roundup release checklist:
      first and user must be member of rounduptracker org with ability
      to publish). Replace -N with the release number (e.g. -1, -2, -3...)
 
-	 docker tag rounduptracker/roundup:2.4.0 roundup-tracker/roundup:latest
-	 docker tag rounduptracker/roundup:2.4.0 roundup-tracker/roundup:2.4.0-N
+	 docker tag rounduptracker/roundup:2.4.0 rounduptracker/roundup:latest
+	 docker tag rounduptracker/roundup:2.4.0 rounduptracker/roundup:2.4.0-N
          docker push rounduptracker/roundup:2.4.0
          docker push rounduptracker/roundup:2.4.0-N
          docker push rounduptracker/roundup  # update roundup:latest
