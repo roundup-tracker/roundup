@@ -63,23 +63,36 @@ sourceforge_dev_sync:  ## sync html directory to sourceforce /dev_docs subdir
         #   --delete-exclude
         # IS NOT (and must not be) SET
 	read -p "sync to dev_docs y/N? " resp; echo "$$resp" | grep -i "^y"
-	rsync -av --no-times --delete --exclude 'docs_backup*' \
-              --exclude '.buildinfo' \
-              --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
+        # --mkpath doesn't work for rsync on sourceforge so use scripted sftp
+        # if it fails (directory exists), that's ok it still exits with 0
+	printf 'cd /home/project-web/roundup/htdocs\nmkdir dev_docs' | \
+              sftp rouilj@web.sourceforge.net
+	rsync -avz --no-times --delete \
+              --exclude 'docs_backup*' --exclude '.buildinfo' --backup \
+              --backup-dir docs_backup-`date --iso-8601=seconds` \
               html/. \
               web.sourceforge.net:/home/project-web/roundup/htdocs/dev_docs/.
 
 sourceforge_prod_sync: ## sync html directory to sourceforce production website
 	read -p "sync to production y/N? " resp; echo "$$resp" | grep -i "^y"
-	rsync -av --no-times --delete --exclude 'docs_backup*' \
-              --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
-              html/. \
+	rsync -avz --no-times --delete --exclude 'docs_backup*' \
+              --exclude 'ahrefs_*' --backup \
+              --backup-dir docs_backup-`date --iso-8601=seconds` \
+              --checksum html/. \
               web.sourceforge.net:/home/project-web/roundup/htdocs/.
+
+sourceforge_prod_pull: ## sync sourceforce production website to local web_html
+	read -p "pull from production y/N? " resp; echo "$$resp" | grep -i "^y"
+	test -d web_html || mkdir web_html
+	rsync -avz --no-times --delete \
+              --checksum \
+              web.sourceforge.net:/home/project-web/roundup/htdocs/. \
+              web_html/.
 
 sourceforge_home_sync:  ## sync html directory to sourceforge:~/roundup_docs
 
 	read -p "sync to home y/N? " resp; echo "$$resp" | grep -i "^y"
-	rsync -av --no-times --delete --exclude 'docs_backup*' \
+	rsync -avz --no-times --delete --exclude 'docs_backup*' \
               --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
               html/. \
               web.sourceforge.net:roundup_docs/.
