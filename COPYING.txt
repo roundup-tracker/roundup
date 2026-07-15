@@ -118,8 +118,12 @@ Note link for http://www.zope.com/Marks is dead.
 Vendored cgi.py module
 ----------------------
 
-This module is licensed under the Python Software Foundation License
-Version 2 as it was extracted from the 3.12 Python distribution.
+This module is licensed under the `Python Software Foundation License
+Version 2`_ as it was extracted from the 3.12 Python distribution.
+
+.. _Python Software Foundation License Version 2:
+   https://opensource.org/license/Python-2.0
+
 
 PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 --------------------------------------------
