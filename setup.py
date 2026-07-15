@@ -19,17 +19,24 @@
 #
 
 import os
+import setuptools
 import sys
-from glob import glob
-from sysconfig import get_path
 
+from glob import glob
 from setuptools import setup
+from sysconfig import get_path
 
 from roundup.dist.command.bdist_rpm import bdist_rpm
 from roundup.dist.command.build import build, list_message_files
 from roundup.dist.command.build_doc import build_doc
 from roundup.dist.command.install_lib import install_lib
 
+
+# verify we have a version of setuptools that implnts version 2.4 of metadata
+if not tuple(int(x) for x in setuptools.__version__.split('.')) > (77, 0, 0):
+    raise Exception('Install a version of setuptools > 77.0.0 that supports '
+           'metadata\n   version 2.4 or newer. Installed version is: %s' %
+                    setuptools.__version__ )
 
 def include(d, e):
     """Generate a pair of (directory, file-list) for installation.
