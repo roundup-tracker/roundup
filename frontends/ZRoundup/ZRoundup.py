@@ -13,7 +13,7 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
+#
 ''' ZRoundup module - exposes the roundup web interface to Zope
 
 This frontend works by providing a thin layer that sits between Zope and the
@@ -26,15 +26,15 @@ runs in the same server as all your other Zope stuff, so it does have _some_
 advantages over regular CGI :)
 '''
 
+from AccessControl import ClassSecurityInfo, ModuleSecurityInfo
+from Acquisition import Implicit
+from Globals import HTMLFile, InitializeClass
+from OFS.PropertyManager import PropertyManager
+from OFS.SimpleItem import Item
+from Persistence import Persistent
+
 from roundup.anypy import urllib_
 
-from Globals import InitializeClass, HTMLFile
-from OFS.SimpleItem import Item
-from OFS.PropertyManager import PropertyManager
-from Acquisition import Explicit, Implicit
-from Persistence import Persistent
-from AccessControl import ClassSecurityInfo
-from AccessControl import ModuleSecurityInfo
 modulesecurity = ModuleSecurityInfo()
 
 import roundup.instance
@@ -45,6 +45,8 @@ modulesecurity.declareProtected('View management screens',
 manage_addZRoundupForm = HTMLFile('dtml/manage_addZRoundupForm', globals())
 
 modulesecurity.declareProtected('Add Z Roundups', 'manage_addZRoundup')
+
+
 def manage_addZRoundup(self, id, instance_home, REQUEST):
     """Add a ZRoundup product """
     # validate the instance_home
@@ -52,24 +54,30 @@ def manage_addZRoundup(self, id, instance_home, REQUEST):
     self._setObject(id, ZRoundup(id, instance_home))
     return self.manage_main(self, REQUEST)
 
+
 class RequestWrapper:
     '''Make the Zope RESPONSE look like a BaseHTTPServer
     '''
     def __init__(self, RESPONSE):
         self.RESPONSE = RESPONSE
         self.wfile = self.RESPONSE
+
     def send_response(self, status):
         self.RESPONSE.setStatus(status)
+
     def send_header(self, header, value):
         self.RESPONSE.addHeader(header, value)
+
     def end_headers(self):
         # not needed - the RESPONSE object handles this internally on write()
         pass
+
     def start_response(self, headers, response):
         self.send_response(response)
         for key, value in headers:
             self.send_header(key, value)
         self.end_headers()
+
 
 class FormItem:
     '''Make a Zope form item look like a cgi.py one
@@ -80,11 +88,13 @@ class FormItem:
             self.filename = self.value.filename
             self.value = self.value.read()
 
+
 class FormWrapper:
     '''Make a Zope form dict look like a cgi.py one
     '''
     def __init__(self, form):
         self.__form = form
+
     def __getitem__(self, item):
         entry = self.__form[item]
         if isinstance(entry, type([])):
@@ -92,26 +102,30 @@ class FormWrapper:
         else:
             entry = FormItem(entry)
         return entry
+
     def __iter__(self):
         return iter(self.__form)
+
     def getvalue(self, key, default=None):
         if key in self.__form:
             return self.__form[key]
-        else:
-            return default
+        return default
+
     def has_key(self, item):
         return item in self.__form
+
     def keys(self):
         return list(self.__form.keys())
 
     def __repr__(self):
-        return '<ZRoundup.FormWrapper %r>'%self.__form
+        return '<ZRoundup.FormWrapper %r>' % self.__form
+
 
 class ZRoundup(Item, PropertyManager, Implicit, Persistent):
     '''An instance of this class provides an interface between Zope and
        roundup for one roundup instance
     '''
-    meta_type =  'Z Roundup'
+    meta_type = 'Z Roundup'
     security = ClassSecurityInfo()
 
     def __init__(self, id, instance_home):
@@ -120,19 +134,20 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
 
     # define the properties that define this object
     _properties = (
-        {'id':'id', 'type': 'string', 'mode': 'w'},
-        {'id':'instance_home', 'type': 'string', 'mode': 'w'},
+        {'id': 'id', 'type': 'string', 'mode': 'w'},
+        {'id': 'instance_home', 'type': 'string', 'mode': 'w'},
     )
     property_extensible_schema__ = 0
 
     # define the tabs for the management interface
-    manage_options= PropertyManager.manage_options + (
-        {'label': 'View', 'action':'index_html'},
+    manage_options = PropertyManager.manage_options + (
+        {'label': 'View', 'action': 'index_html'},
     ) + Item.manage_options
 
     icon = "misc_/ZRoundup/icon"
 
     security.declarePrivate('roundup_opendb')
+
     def roundup_opendb(self):
         '''Open the roundup instance database for a transaction.
         '''
@@ -141,17 +156,17 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         env = self.REQUEST.environ
 
         # figure out the path components to set
-        url = urllib_.urlparse( self.absolute_url() )
+        url = urllib_.urlparse(self.absolute_url())
         path = url[2]
-        path_components = path.split( '/' )
+        path_components = path.split('/')
 
         # special case when roundup is '/' in this virtual host,
-        if path == "/" :
+        if path == "/":
             env['SCRIPT_NAME'] = "/"
             env['TRACKER_NAME'] = ''
-        else :
+        else:
             # all but the last element is the path
-            env['SCRIPT_NAME'] = '/'.join( path_components[:-1] )
+            env['SCRIPT_NAME'] = '/'.join(path_components[:-1])
             # the last element is the name
             env['TRACKER_NAME'] = path_components[-1]
 
@@ -161,20 +176,21 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         return client.Client(tracker, request, env, form)
 
     security.declareProtected('View', 'index_html')
+
     def index_html(self):
         '''Alias index_html to roundup's index
         '''
         # Redirect misdirected requests -- bugs 558867 , 565992
         # PATH_INFO, as defined by the CGI spec, has the *real* request path
         orig_path = self.REQUEST.environ['PATH_INFO']
-        if orig_path[-1] != '/' : 
-            url = urllib_.urlparse( self.absolute_url() )
-            url = list( url ) # make mutable
-            url[2] = url[2]+'/' # patch
-            url = urllib_.urlunparse( url ) # reassemble
+        if orig_path[-1] != '/':
+            url = urllib_.urlparse(self.absolute_url())
+            url = list(url) # make mutable
+            url[2] = url[2] + '/' # patch
+            url = urllib_.urlunparse(url) # reassemble
             RESPONSE = self.REQUEST.RESPONSE
-            RESPONSE.setStatus( "MovedPermanently" ) # 301
-            RESPONSE.setHeader( "Location" , url )
+            RESPONSE.setStatus("MovedPermanently") # 301
+            RESPONSE.setHeader("Location", url)
             return RESPONSE
 
         client = self.roundup_opendb()
@@ -186,6 +202,7 @@ class ZRoundup(Item, PropertyManager, Implicit, Persistent):
         '''All other URL accesses are passed throuh to roundup
         '''
         return PathElement(self, item).__of__(self)
+
 
 class PathElement(Item, Implicit):
     def __init__(self, zr, path):
@@ -204,7 +221,7 @@ class PathElement(Item, Implicit):
             client = self.zr.roundup_opendb()
             # fake the path that roundup should use
             client.path = self.path
-            # and call roundup to do something 
+            # and call roundup to do something
             client.main()
             return ''
         except client.NotFound:
@@ -215,6 +232,7 @@ class PathElement(Item, Implicit):
             traceback.print_exc()
             # all other exceptions in roundup are valid
             raise
+
 
 InitializeClass(ZRoundup)
 modulesecurity.apply(globals())
