@@ -26,6 +26,8 @@ except TypeError:
                 return 1
 
             elif type(self.value) is tuple and type(other.value) is tuple:
+                # this zip should not have strict=true; length comparison
+                # used at end handles the unequal value case.
                 for lhs, rhs in zip(self.value, other.value):  # noqa: B905
                     lhsCmp = NoneAndDictComparable(lhs)
                     rhsCmp = NoneAndDictComparable(rhs)
