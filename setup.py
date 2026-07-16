@@ -19,24 +19,24 @@
 #
 
 import os
-import setuptools
 import sys
-
 from glob import glob
-from setuptools import setup
 from sysconfig import get_path
+
+import setuptools
+from setuptools import setup
 
 from roundup.dist.command.bdist_rpm import bdist_rpm
 from roundup.dist.command.build import build, list_message_files
 from roundup.dist.command.build_doc import build_doc
 from roundup.dist.command.install_lib import install_lib
 
-
 # verify we have a version of setuptools that implnts version 2.4 of metadata
 if not tuple(int(x) for x in setuptools.__version__.split('.')) > (77, 0, 0):
     raise Exception('Install a version of setuptools > 77.0.0 that supports '
            'metadata\n   version 2.4 or newer. Installed version is: %s' %
-                    setuptools.__version__ )
+                    setuptools.__version__)
+
 
 def include(d, e):
     """Generate a pair of (directory, file-list) for installation.
@@ -66,8 +66,8 @@ def make_data_files_absolute(data_files, prefix, enable=False):
        like: /usr/local/share/man, docs in /usr/local/share/doc/roundup,
        templates in /usr/local/share/roundup/templates.
     """
-    new_data_files = [ (os.path.join(prefix,df[0]),df[1])
-                       for df in data_files ]
+    new_data_files = [(os.path.join(prefix, df[0]), df[1])
+                       for df in data_files]
     if enable:
         return new_data_files
     return data_files
@@ -166,7 +166,7 @@ def main():
     templates = [t['path']
                  for t in listTemplates('share/roundup/templates').values()]
     for tdir in templates:
-        for idir in '. detectors extensions html html/layout static'.split():
+        for idir in ['.', 'detectors', 'extensions', 'html', 'html/layout', 'static']:
             data_files.append(include(os.path.join(tdir, idir), '*'))
 
     # add message files
