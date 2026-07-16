@@ -964,7 +964,7 @@ class Interval:
             asgn = a[0]
             b = other.get_tuple()
             bsgn = b[0]
-            i = [asgn*x + bsgn*y for x, y in zip(a[1:], b[1:])]
+            i = [asgn*x + bsgn*y for x, y in zip(a[1:], b[1:], strict=True)]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
             return Interval(i, translator=self.translator)
@@ -984,7 +984,7 @@ class Interval:
             asgn = a[0]
             b = other.get_tuple()
             bsgn = b[0]
-            i = [asgn*x - bsgn*y for x, y in zip(a[1:], b[1:])]
+            i = [asgn*x - bsgn*y for x, y in zip(a[1:], b[1:], strict=True)]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
             return Interval(i, translator=self.translator)
