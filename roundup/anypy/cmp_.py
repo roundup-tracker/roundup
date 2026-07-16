@@ -12,7 +12,7 @@ except TypeError:
         def __init__(self, value):
             self.value = value
 
-        def __cmp__(self, other):  # noqa: PLW3201, PLR0911
+        def __cmp__(self, other):  # noqa: PLR0911
             if not isinstance(other, self.__class__):
                 raise TypeError('not comparable')
 
@@ -26,7 +26,7 @@ except TypeError:
                 return 1
 
             elif type(self.value) is tuple and type(other.value) is tuple:
-                for lhs, rhs in zip(self.value, other.value):
+                for lhs, rhs in zip(self.value, other.value):  # noqa: B905
                     lhsCmp = NoneAndDictComparable(lhs)
                     rhsCmp = NoneAndDictComparable(rhs)
                     result = lhsCmp.__cmp__(rhsCmp)
@@ -72,7 +72,7 @@ except TypeError:
 
 
 def _test():
-    # ruff: noqa: S101, B011, PLC0415, PLR2004
+    # ruff: noqa: S101, B011, PLC0415
     import sys
     _py3 = sys.version_info[0] > 2
 
