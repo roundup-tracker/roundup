@@ -892,10 +892,8 @@ class Proptree(object):
                 curdir = sa.sort_direction
             idx += 1
         sortattr.append(val)
-        # FIXME 3.10  add strict=True parameter to zip()
-        sortattr = zip(*sortattr)
-        # FIXME 3.10  add strict=True parameter to zip()
-        for direction, i in reversed(list(zip(directions, dir_idx))):
+        sortattr = zip(*sortattr, strict=True)
+        for direction, i in reversed(list(zip(directions, dir_idx, strict=True))):
             rev = direction == '-'
             sortattr = sorted(sortattr,
                               key=lambda x: NoneAndDictComparable(x[i:idx]),
