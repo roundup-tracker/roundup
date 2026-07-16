@@ -13,10 +13,11 @@
 # FOR A PARTICULAR PURPOSE.  THE CODE PROVIDED HEREUNDER IS ON AN "AS IS"
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-# 
-__version__='1.1'
+#
+__version__ = '1.1'
 
 import os
+
 # figure where ZRoundup is installed
 here = None
 if 'INSTANCE_HOME' in os.environ:
@@ -35,20 +36,24 @@ if here is None:
             raise ValueError("Can't determine where ZRoundup is installed")
 
 # product initialisation
-from .ZRoundup import ZRoundup, manage_addZRoundupForm, manage_addZRoundup
+from .ZRoundup import ZRoundup, manage_addZRoundup, manage_addZRoundupForm
+
+
 def initialize(context):
     context.registerClass(
         ZRoundup,
-        meta_type = 'Z Roundup',
-        constructors = (
+        meta_type='Z Roundup',
+        constructors=(
             manage_addZRoundupForm, manage_addZRoundup
         )
     )
 
+
 # set up the icon
 from ImageFile import ImageFile
+
 misc_ = {
-    'icon': ImageFile('icons/tick_symbol.gif', path), 
+    'icon': ImageFile('icons/tick_symbol.gif', path),
 }
 
 
