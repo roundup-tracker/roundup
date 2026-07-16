@@ -101,7 +101,7 @@ except ImportError:
     def xor_bytes(left, right):
         "perform bitwise-xor of two byte-strings"
         return _bjoin(bchr(bord(l) ^ bord(r))
-                      for l, r in zip(left, right))  # noqa: E741
+                      for l, r in zip(left, right, strict=True))  # noqa: E741
 
     def _pbkdf2(password, salt, rounds, keylen, sha=sha1):
         if sha not in [sha1, sha512]:
