@@ -421,10 +421,15 @@ class Routing(object):
                 func = func_obj['func']
 
                 # zip the varlist into a dictionary, and pass it to the caller
-                # FIXME: 3.10 is min version- add strict=True to zip
-                # also wrap with try/except ValueError if different number of
-                # items (which should never happen).
-                args = dict(zip(list_vars, match_obj.groups()))
+                try:
+                    args = dict(zip(list_vars, match_obj.groups(), strict=True))
+                except ValueError:
+                    # Match was unable to make sense out of the path
+                    # This should never happen as a 404 should be reported
+                    # before we get here.
+                    raise Reject(
+                        _("Internal error: Unable to understand URL: %s") % path)
+                
                 args['input_payload'] = input_payload
                 return func(instance, **args)
         raise NotFound('Nothing matches the given URI')
