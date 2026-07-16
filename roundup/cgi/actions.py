@@ -564,7 +564,7 @@ class EditCSVAction(Action):
 
             # extract the new values
             d = {}
-            for name, value in zip(props_without_id, values):
+            for name, value in zip(props_without_id, values, strict=True):
                 # check permission to edit this property on this item
                 if exists and not self.hasPermission('Edit', itemid=itemid,
                                                      classname=self.classname,
