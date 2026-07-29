@@ -104,6 +104,30 @@ your database.
 
   </details>
 
+.. index:: Upgrading; 2.6.0 to 2.7.0
+
+Migrating from 2.6.0 to 2.7.0
+=============================
+
+Update classhelper.js (optional)
+--------------------------------
+
+There is a new release of ``classhelper.js`` that adds a modern
+classhelper interface (usually invoked by the ``(list)`` link in your
+issue.item.html template).
+
+This release supports the classhelper parameter ``inputtype='radio'``.
+It generates a classhelper where only one element can be selected. It
+is meant for use with link type properties. The default is the
+``checkbox`` inputtype which is used for multilink type properties.
+
+If you have already adopted the ``<roundup-classhelper>`` web
+component, you can copy the ``classhelper.js`` file from the Roundup
+classic template directory into your tracker replacing the existing
+``classhelper.js`` file. If you would like to adopt the
+``<roundup-classhelper>`` web component, see the section `Add new
+classhelper to your templates (optional)`_.
+
 .. index:: Upgrading; 2.5.0 to 2.6.0
 
 Migrating from 2.5.0 to 2.6.0

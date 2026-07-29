@@ -9,6 +9,18 @@ Many entries without name were done by Richard Jones.
 **IMPORTANT** Roundup 2.6 supports Python 3.10 or newer.
 Roundup 2.4.0 was the last release to support Python 2.
 
+2026-XX-XX 2.7.0
+
+Fixed:
+
+- issue2551420 - add radio button support to classhelper.js to handle
+  link relations. (John Rouillard)
+- issue2550580 - Missing support for radio buttons in
+  user.help.html. Superseded by fix in 2551420. (John Rouillard)
+
+
+Features:
+
 2026-07-13 2.6.0
 
 Fixed:

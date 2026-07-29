@@ -632,33 +632,47 @@ displayed (26-50) and includes two buttons to move to the previous or
 next page of search results. If there is no search pane, this will
 display a page of items from all the items in the class. Below the
 pagination component is the scrollable selection table. Each row in
-the table has a checkbox and one or more columns of data about the
-item.  Clicking on a row toggles the item's checkbox and adds or
-removes the id or name for the item in the accumulator's
-display. Arrow keys or tab/shift-tab can be used to scroll through
-each item in the selection table. The space key or enter will
-select/deselect the item. You can jump to the page controls using the
-'<' and '>' keys. Once the page control button is focused, press enter
-to trigger a page change.
+the table has a checkbox or radio button and one or more columns of
+data about the item. 
+
+If your row has a checkbox, clicking on a row toggles
+(selects/deselects) the item's checkbox and adds or removes the id or
+name for the item in the accumulator's display.
+
+If your row has a radio button, clicking on a row toggles
+(selects/deselects) the radio button, deselects any other radio button
+and puts/removes the value for that row in the accumulator.
+
+Arrow keys or tab/shift-tab can be used to
+scroll through each item in the selection table. The space key or
+enter will select/deselect the item. You can jump to the page controls
+using the '<' and '>' keys. Once the page control button is focused,
+press enter to trigger a page change.
 
 The bottom pane consists of a text input called the accumulator
-display. It lists all the items that have been selected. The first two
-items in this example were selected from the previous selection
-page. Next to the display are the apply and cancel buttons. You can
-jump to the apply button quickly by pressing Shift-Enter as long as
-you are not in a search input. Once the apply button is focused, press
-enter to copy the items in the display to the associated field on the
-parent window. If you activate the cancel button or close the window
-using the window decoration, the classhelper will close and not change
-the parent window.
+display. When checkboxes are displayed in the selection pane, it lists
+all the items that have been selected. The first two items in this
+example were selected from the previous selection page. Next to the
+display are the apply and cancel buttons. You can jump to the apply
+button quickly by pressing Shift-Enter as long as you are not in a
+search input. Once the apply button is focused, press enter to copy
+the items in the display to the associated field on the parent
+window. If you activate the cancel button or close the window using
+the window decoration, the classhelper will close and not change the
+parent window.
+
+If your selection pane contains radio buttons, only one item will be
+selected in the accumulator. If you manually enter multiple comma
+separated items, only the first will be copied to the associated field
+in the parent window.
 
 The classhelper can also be used in read-only mode. In this mode, the
-accumulator is not shown. Also the checkboxes are not displayed. To
-close the classhelper in read-only mode use the window decoration or a
-hotkey (e.g. control-w).
+accumulator is not shown. Also checkboxes/radio buttons are not
+displayed. To close the classhelper in read-only mode use the window
+decoration or a hotkey (e.g. control-w).
 
-You can have multiple classhelpers up at a time. The title on the
-window identifies the property and item the classhelper will
+You can have multiple classhelpers open at the same time. The title on
+the window identifies the property and item the classhelper will
 modify. For example the image shows the superseder for issue2.
 
 Do not refresh the classhelper window using the ``F5`` key. This will
