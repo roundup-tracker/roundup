@@ -627,21 +627,27 @@ displayed below the search pane in the selection pane. Tabbing to the
 search button and pressing enter will also trigger a search. The reset
 button will clear the search form.
 
-Below the search pane is the select pane. It lists the number of items
-displayed (26-50) and includes two buttons to move to the previous or
-next page of search results. If there is no search pane, this will
-display a page of items from all the items in the class. Below the
+Below the search pane is the select pane. It can operate in one of
+two modes:
+
+  * multiple item selection (as in the image) with checkboxes
+  * single item selection with circular radio buttons
+
+In both modes, it lists the number of items displayed (26-50) and
+includes two buttons to move to the previous or next page of search
+results (unless all items are shown). If there is no search pane, this
+will display a page with all the items in the class. Below the
 pagination component is the scrollable selection table. Each row in
 the table has a checkbox or radio button and one or more columns of
-data about the item. 
+data about the item.
 
-If your row has a checkbox, clicking on a row toggles
+If your mode is multiple item selection, clicking on a row toggles
 (selects/deselects) the item's checkbox and adds or removes the id or
 name for the item in the accumulator's display.
 
-If your row has a radio button, clicking on a row toggles
-(selects/deselects) the radio button, deselects any other radio button
-and puts/removes the value for that row in the accumulator.
+If your mode is single item selection, clicking on a row toggles
+(selects/deselects) the radio button, deselects other radio buttons
+and sets or removes the value for that row in the accumulator.
 
 Arrow keys or tab/shift-tab can be used to
 scroll through each item in the selection table. The space key or
@@ -655,16 +661,22 @@ all the items that have been selected. The first two items in this
 example were selected from the previous selection page. Next to the
 display are the apply and cancel buttons. You can jump to the apply
 button quickly by pressing Shift-Enter as long as you are not in a
-search input. Once the apply button is focused, press enter to copy
-the items in the display to the associated field on the parent
-window. If you activate the cancel button or close the window using
-the window decoration, the classhelper will close and not change the
-parent window.
+search input. Activating the apply button by clicking with the mouse,
+hitting enter or space when it is focused will:
+
+  * copy the items in the display to the associated field on the
+    parent window
+  * close the classhelper popup window
+  * focus the associated field in the parent window
+
+If you activate the cancel button or close the window using the window
+decoration, the classhelper will close and not change or focus any
+field in the parent window.
 
 If your selection pane contains radio buttons, only one item will be
-selected in the accumulator. If you manually enter multiple comma
-separated items, only the first will be copied to the associated field
-in the parent window.
+selected in the accumulator. Unless the classhelper is configured to
+allow commas in the accumulator, only the text before the first comma
+will be copied to the field in the parent window.
 
 The classhelper can also be used in read-only mode. In this mode, the
 accumulator is not shown. Also checkboxes/radio buttons are not

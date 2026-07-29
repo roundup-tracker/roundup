@@ -29,6 +29,7 @@ const CSS_STYLESHEET_FILE_NAME = "@@file/classhelper.css";
 const CLASSHELPER_TAG_NAME = "roundup-classhelper";
 const CLASSHELPER_ATTRIBUTE_SEARCH_WITH = "data-search-with";
 const CLASSHELPER_ATTRIBUTE_POPUP_TITLE = "data-popup-title";
+const CLASSHELPER_ATTRIBUTE_ALLOW_COMMA = "data-allow-comma";
 const CLASSHELPER_ATTRIBUTE_POPUP_TITLE_ITEM_CLASS_LOOKUP = "{className}";
 const CLASSHELPER_ATTRIBUTE_POPUP_TITLE_ITEM_DESIGNATOR_LOOKUP = "{itemDesignator}";
 const CLASSHELPER_POPUP_FEATURES = (width, height) => `popup=yes,width=${width},height=${height}`;
@@ -796,15 +797,6 @@ class ClassHelper extends HTMLElement {
     getTableFragment(headers, data, preSelectedValues) {
         let includeControl = !this.popupRef.document.body.classList.contains(CLASSHELPER_TABLE_SELECTION_NONE);
 
-        /* this.controlType is: null, "checkbox" or "radio" */
-        this.controlType = null
-        if (includeControl) {
-            this.controlType = this.helpurlProps.tableSelectionType;
-            if  (! ["checkbox", "radio"].includes(this.controlType)) {
-                this.controlType = "checkbox"
-            }
-        }
-
         const fragment = document.createDocumentFragment();
 
         const container = document.createElement('div');
@@ -974,11 +966,34 @@ class ClassHelper extends HTMLElement {
             nextPageURL = links.next[0].uri;
         }
 
+        /* this.controlType is: null, "checkbox" or "radio" */
+        this.controlType = null
+        this.controlType = this.helpurlProps.tableSelectionType;
+        if  (! ["checkbox", "radio"].includes(this.controlType)) {
+            this.controlType = "checkbox"
+        }
+
+        /* Allow a comma in the value put into the accumulator only
+           when we select one item using a radio button. Commas are
+           not allowed when we can select multiple items using
+           checkboxes. Set to true only for radio when
+           data-allow-comma is present, any value is ignored.
+        */
+        if (this.controlType == "radio") {
+            this.dataset.allowComma = 'allowComma' in this.dataset;
+        } else {
+            this.dataset.allowComma = False
+        }
+
         if (props.formProperty) {
             // Find preselected values
             const input = document.getElementsByName(props.formProperty).item(0);
             if (input?.value) {
-                preSelectedValues = input.value.split(',');
+                if (this.dataset.allowComma) {
+                    preSelectedValues = [input.value];
+                } else {
+                    preSelectedValues = input.value.split(',');
+                }
             }
         }
 
@@ -1229,7 +1244,7 @@ class ClassHelper extends HTMLElement {
         }
 
         const input = document.getElementsByName(props.formProperty).item(0);
-	if (controlType == "radio") {
+	if (controlType == "radio" && !this.dataset.allowComma) {
 	    /* We allow the user to edit the accumulator. For radio
 	       controlType, there should be no comma in the
 	       value. Comma indicates multiple values and a radio
@@ -1242,6 +1257,7 @@ class ClassHelper extends HTMLElement {
             input.value = value;
 	}
         this.popupRef.close();
+        input.focus()
     }
 
     /** method when search is performed within classhelper, here we need to update the classhelper table with search results

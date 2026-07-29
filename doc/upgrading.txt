@@ -121,6 +121,14 @@ It generates a classhelper where only one element can be selected. It
 is meant for use with link type properties. The default is the
 ``checkbox`` inputtype which is used for multilink type properties.
 
+Also there is an option to allow the names of linked items to include
+a comma when you are using the radio type input. E.G. if you had a
+link to customers where the names were something like ``a cust omer,
+LTD.``. Without the option, only the text before the comma would be
+sent to the parent form. Also when storing the value on the parent
+form, that changed field is focused to allow the user to verify the
+value.
+
 If you have already adopted the ``<roundup-classhelper>`` web
 component, you can copy the ``classhelper.js`` file from the Roundup
 classic template directory into your tracker replacing the existing

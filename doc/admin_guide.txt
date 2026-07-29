@@ -1263,7 +1263,7 @@ precompressed files in the :ref:`section on compression
 <roundup-classhelper> configuration
 -----------------------------------
 
-There are two attributes used to configure the classhelper.
+There are three attributes used to configure the classhelper.
 
 data-popup-title:
   * this attribute is optional. A reasonable default is
@@ -1308,6 +1308,30 @@ data-search-with:
       ``keyword[]-name`` sorts the keyword dropdown in
       descending order by name. If the sort order is not
       specified, the default order for the class is used.
+
+data-allow-comma:
+    * this attribute is optional. It is used when the classhelper is
+      used with a link (not multilink) property to select one
+      item. The classhelper link will have ``type="radio"`` in the URL
+      and can be generated using ``db.<class>.classhelp(...,
+      inputtype="radio",...)`` in the html template. (Note: ``type``
+      is a reserved keyword in Python, so the parameter is
+      ``inputtype`` which is turned into a ``type`` html attribute.)
+      It is ignored when ``type="checkbox"`` or type is not set.
+
+    * the existence of the attribute is sufficient. Any value is
+      ignored. So ``<roundup-classhelper data-allow-comma="false">``
+      preserves commas in the accumulator text.
+
+    * You could use it if the names of the linked items includes a
+      comma. For example, assume your issues have a link to a
+      customer. You may have thousands of customers. One of the
+      customer names could be ``A cust-omer, ltd.``. Adding the
+      ``data-allow-comma`` attribute to the ``<roundup-classhelper
+      data-allow-commma>`` tag, will submit the full name of the
+      company including the comma to the parent page. If it is not
+      present, just the text before the first comma is submitted.
+
 
 <roundup-classhelper> styling
 -----------------------------
