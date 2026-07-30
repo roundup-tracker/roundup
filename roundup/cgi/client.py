@@ -25,7 +25,6 @@ except ImportError:
     class SysCallError(Exception):
         pass
 
-import roundup.anypy.email_  # noqa: F401  -- patches for email library code
 from roundup import hyperdb, rest, xmlrpc
 
 # quality of random checked below

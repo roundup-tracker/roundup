@@ -26,7 +26,7 @@ except ImportError:
 import logging
 from roundup.anypy.cgi_ import cgi
 from . import gpgmelib
-from email import message_from_string
+from email import message_from_string, message_from_bytes
 
 import pytest
 
@@ -52,7 +52,6 @@ from roundup.mlink_expr import ExpressionError
 
 from roundup.anypy.strings import b2s, bs2b, s2b, u2s
 from roundup.anypy.cmp_ import NoneAndDictComparable
-from roundup.anypy.email_ import message_from_bytes
 
 from roundup.test.mocknull import MockNull
 

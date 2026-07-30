@@ -20,7 +20,6 @@ from email.mime.nonmultipart import MIMENonMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate, specialsre, escapesre
 
-from roundup.anypy import email_                # noqa: F401 defines functions
 from roundup.anypy.strings import b2s, s2u
 from roundup import __version__
 from roundup.date import get_timezone, Date

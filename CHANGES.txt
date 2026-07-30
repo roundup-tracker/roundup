@@ -17,6 +17,8 @@ Fixed:
   link relations. (John Rouillard)
 - issue2550580 - Missing support for radio buttons in
   user.help.html. Superseded by fix in 2551420. (John Rouillard)
+- issue2550879 - Cleanup/removal of roundup.anypy.email_ module
+  (jerrykan, Joseph Myers, final removal by John Rouillard)
 
 
 Features:

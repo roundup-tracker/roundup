@@ -43,7 +43,7 @@ except ImportError:
     skip_justhtml = mark_class(pytest.mark.skip(
         reason="Skipping justhtml tests: 'justhtml' not installed"))
 
-from roundup.anypy.email_ import message_from_bytes
+from email import message_from_bytes
 from roundup.anypy.strings import b2s, u2s, s2b
 from roundup.scripts.roundup_mailgw import parse_arguments
 
