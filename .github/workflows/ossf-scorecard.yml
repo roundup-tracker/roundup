@@ -15,7 +15,11 @@ on:
     branches: [ "master" ]
 
 # Declare default permissions as read only.
-permissions: read-all
+permissions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analysis:
@@ -26,9 +30,9 @@ jobs:
 
     permissions:
       # Needed to upload the results to code-scanning dashboard.
-      security-events: write
+      security-events: write # Allow results upload to code-scanning dashboard.
       # Needed to publish results and get a badge (see publish_results below).
-      id-token: write
+      id-token: write # publish results and get a badge
       # Uncomment the permissions below if installing in a private repository.
       # contents: read
       # actions: read

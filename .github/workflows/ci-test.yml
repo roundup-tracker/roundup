@@ -347,14 +347,15 @@ jobs:
       - name: run benchmarks
         if: "contains(github.event.head_commit.message, 'benchmark')"        
         run: INCI=1 python test/benchmark.py
-        
+
   # in parallel build coveralls requires a finish step
   finish:
+    name: finish coveralls step
     needs: test
     runs-on: ubuntu-latest
 
     if: "!contains(github.event.head_commit.message, 'no-github-ci')"
-    
+
     steps:
       - name: Coveralls Finished
         uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e # v2.3.7

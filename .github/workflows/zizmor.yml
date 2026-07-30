@@ -8,11 +8,16 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   zizmor:
+    name: scan github actions for issues
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
+      security-events: write  # allow creation of security events
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

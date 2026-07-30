@@ -34,10 +34,10 @@ jobs:
     runs-on: ubuntu-latest
 
     if: "!contains(github.event.head_commit.message, 'no-github-ci')"
-    
+
     permissions:
       contents: read
-      security-events: write
+      security-events: write  # write github security event
 
     strategy:
       fail-fast: false
