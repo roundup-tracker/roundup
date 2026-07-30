@@ -19,6 +19,8 @@ Fixed:
   user.help.html. Superseded by fix in 2551420. (John Rouillard)
 - issue2550879 - Cleanup/removal of roundup.anypy.email_ module
   (jerrykan, Joseph Myers, final removal by John Rouillard)
+- issue2551419 - remove trival re-def of __ne__ from security.py
+  password.py (John Rouillard)
 
 
 Features:

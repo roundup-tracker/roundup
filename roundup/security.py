@@ -223,9 +223,6 @@ class Permission:
         # match
         return True
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     def __getitem__(self, index):
         return (self.name, self.klass, self.properties, self.check,
                 self.limit_perm_to_props_only)[index]

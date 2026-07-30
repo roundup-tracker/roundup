@@ -367,9 +367,6 @@ class JournalPassword:
         return self.password == encodePassword(other, self.scheme,
                                                self.password or None)
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
 
 class Password(JournalPassword):
     """The class encapsulates a Password property type value in the database.
