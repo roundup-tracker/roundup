@@ -980,16 +980,16 @@ class ClassHelper extends HTMLElement {
            data-allow-comma is present, any value is ignored.
         */
         if (this.controlType == "radio") {
-            this.dataset.allowComma = 'allowComma' in this.dataset;
+            this.allowComma = 'allowComma' in this.dataset;
         } else {
-            this.dataset.allowComma = false
+            this.allowComma = false
         }
 
         if (props.formProperty) {
             // Find preselected values
             const input = document.getElementsByName(props.formProperty).item(0);
             if (input?.value) {
-                if (this.dataset.allowComma) {
+                if (this.allowComma) {
                     preSelectedValues = [input.value];
                 } else {
                     preSelectedValues = input.value.split(',');
@@ -1244,7 +1244,7 @@ class ClassHelper extends HTMLElement {
         }
 
         const input = document.getElementsByName(props.formProperty).item(0);
-	if (controlType == "radio" && !this.dataset.allowComma) {
+	if (controlType == "radio" && !this.allowComma) {
 	    /* We allow the user to edit the accumulator. For radio
 	       controlType, there should be no comma in the
 	       value. Comma indicates multiple values and a radio
