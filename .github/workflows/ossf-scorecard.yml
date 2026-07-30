@@ -14,8 +14,8 @@ on:
   push:
     branches: [ "master" ]
 
-# Declare default permissions as read only.
-permissions: read
+# Declare default permissions as read only. workflow fails if set to read
+permissions: read-all
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
