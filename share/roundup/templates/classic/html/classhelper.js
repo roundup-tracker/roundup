@@ -982,7 +982,7 @@ class ClassHelper extends HTMLElement {
         if (this.controlType == "radio") {
             this.dataset.allowComma = 'allowComma' in this.dataset;
         } else {
-            this.dataset.allowComma = False
+            this.dataset.allowComma = false
         }
 
         if (props.formProperty) {
