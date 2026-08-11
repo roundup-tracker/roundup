@@ -97,6 +97,8 @@ class TemplatingTestCase(unittest.TestCase):
         self.client.db = db = MockDatabase()
         db.security.hasPermission = lambda *args, **kw: True
         self.client.form = self.form
+        self.client.instance.templating_utils = {}
+        self.client.instance.templating_util_methods = {}
 
         # add client props for testing anti_csrf_nonce
         self.client.session_api = MockNull(_sid="1234567890")
