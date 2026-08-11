@@ -1373,7 +1373,8 @@ instance.
 
 * ``instance.registerUtil`` is used for adding `templating utilities`_
   (see `adding a time log to your issues
-  <customizing.html#adding-a-time-log-to-your-issues-4>`_ for an example)
+  <customizing.html#adding-a-time-log-to-your-issues-4>`_ or
+  `enhancing message display <customizing/enhance>`_ for an example)
 
 * ``instance.registerUtilMethod`` is also used for adding `templating
   utilities`_, and provides a TemplatingUtils instance by default to
@@ -1385,6 +1386,10 @@ instance.
   for details.  Generic action (used by xmlrpc or rest interfaces) can
   be added by inheriting from ``action.Action`` instead of
   ``cgi.action.Action``.
+
+Note that the names of templating utilities must be unique. If you try
+to define two utilities with the same name, an error will be reported
+when the tracker is started.
 
 .. _interfaces.py:
 .. _modifying the core of Roundup:
@@ -3802,10 +3807,9 @@ The same can be done using a path expression::
 The utils variable
 ~~~~~~~~~~~~~~~~~~
 
-This is implemented by the
-``roundup.cgi.templating.TemplatingUtils`` class. New methods can
-be added to the variable by using extensions_.
-
+This is implemented by the ``roundup.cgi.templating.TemplatingUtils``
+class. New functions and methods can be added to the variable by using
+extensions_.
 -----
 
 .. list-table:: TemplatingUtils Methods
@@ -3815,9 +3819,9 @@ be added to the variable by using extensions_.
 
    * - Method
      - Description
-   * - Batch
+   * - :meth:`Batch <roundup.cgi.templating.TemplatingUtils.Batch>`
      - return a batch object using the supplied list
-   * - anti_csrf_nonce
+   * - :meth:`anti_csrf_nonce <roundup.cgi.templating.TemplatingUtils.anti_csrf_nonce>`
      - returns the random nonce generated for this session
    * - :meth:`expandfile <roundup.cgi.templating.TemplatingUtils.expandfile>`
      - load a file into a template and expand
@@ -3829,6 +3833,12 @@ be added to the variable by using extensions_.
        method
    * - :meth:`html_quote <roundup.cgi.templating.TemplatingUtils.html_quote>`
      - quote some text as safe in HTML (ie. <, >, ...)
+   * - :meth:`local_replace <roundup.cgi.templating.TemplatingUtils.local_replace>`
+     - this function (staticmethod) is a placeholder function that
+       returns the text passed to it. It allows the default templates
+       to enhanced the display of messages by writing a new extension
+       without having to modify the templates. See :ref:`Enhancing
+       message display<customizing/enhance>` for an example.
    * - :meth:`readfile <roundup.cgi.templating.TemplatingUtils.readfile>`
      - read JavaScript or other content in an external file
        into the template.
@@ -3839,7 +3849,7 @@ be added to the variable by using extensions_.
    * - :meth:`embed_form_fields <roundup.cgi.templating.TemplatingUtils.embed_form_fields>`
      - Creates a hidden input for each of the client's form fields. It
        also embeds base64 encoded file contents into pre tags and
-       processes that informtion back into a file input control.
+       processes that information back into a file input control.
 
 
 -----

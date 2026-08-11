@@ -25,6 +25,12 @@ Fixed:
 
 Features:
 
+- issue2550930 - add support for local_replace to classic
+  template. Created placeholder implementation for
+  utils.local_replace() and add call to classic template. Change devel
+  and responsive templates to use local_replace not
+  localReplace. Add docs. (John Rouillard)
+  
 2026-07-13 2.6.0
 
 Fixed:

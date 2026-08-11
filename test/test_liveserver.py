@@ -11,6 +11,7 @@ from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
 from textwrap import dedent
 from time import sleep
+from .test_admin import replace_in_file
 from .test_postgresql import skip_postgresql
 
 from wsgiref.validate import validator
@@ -124,6 +125,57 @@ class WsgiSetup(LiveServerTestCase):
              """)
             f.write(auditor)
 
+        # add an extension that tests local_replace to turn #345 into
+        # a link and a module form that looks up username in @username
+        # and links it if name exists in db.
+        with open("%s/extensions/extension_text.py" % cls.dirname, "w") as f:
+            auditor = dedent(r"""
+              import re
+
+              substitutions = [(
+                      # compile the regular expression:
+                      #   \# - match the # sign
+                      #   (?P<ws>\s*) - match and capture, using the name ws,
+                      #                 whitespace so '#   2345' works too
+                      #   (?P<id>\d+) - match and capture, using the name id,
+                      #                 a numeric value
+                      re.compile(r'\#(?P<ws>\s*)(?P<id>\d+)'),
+                      r"LINKING:#\g<ws>\g<id>"
+                     ),
+                    ]
+
+              def local_replace(message):
+                  for cre, replacement in substitutions:
+                      message = cre.sub(replacement, message)
+                  return message
+
+              def link_username(self, message):
+                  user_db = self.client.db.user
+
+                  for name in re.findall(r'@[a-z]+', message):
+                      try:
+                          if user_db.lookup(name[1:]):
+                              message = re.sub(name, r'FOUND:%s' % name,
+                                               message)
+                      except KeyError:
+                          # no such user
+                          pass
+
+                  return message
+
+
+              def init(instance):
+                  instance.registerUtil('local_replace', local_replace)
+                  instance.registerUtilMethod('username', link_username)
+             """)
+            f.write(auditor)
+
+        # set up template file to call util.username
+        replace_in_file("%s/html/msg.item.html" % cls.dirname,
+                        "utils.local_replace(context.content.hyperlinked())",
+                        "utils.username(utils.local_replace(context.content.hyperlinked()))")
+
+
         # open the database
         cls.db = cls.instance.open('admin')
 
@@ -167,7 +219,7 @@ class WsgiSetup(LiveServerTestCase):
 
         # add a message to allow retrieval
         result = cls.db.msg.create(author = "1",
-                                   content = "a message foo bar RESULT",
+                                   content = "a message foo bar RESULT\n\n#123\n@admin\n@foo\n@fred\n",
                                    date=rdate.Date(),
                                    messageid="test-msg-id")
 
@@ -1351,6 +1403,18 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         self.assertIn(b'foo bar RESULT', f.content)
         self.assertEqual(f.status_code, 200)
 
+    def test_extensions(self):
+        f = requests.get(self.url_base() + '/msg1',
+                         headers = { 'Accept-Encoding': 'gzip',
+                                     'Accept': '*/*'})
+
+        self.assertIn(b'LINKING:#123', f.content)
+        self.assertIn(b'FOUND:@admin', f.content)
+        self.assertIn(b'FOUND:@fred', f.content)
+        self.assertIn(b'@foo', f.content)
+        self.assertNotIn(b'FOUND:@foo', f.content)
+        self.assertEqual(f.status_code, 200)
+
     def test_bad_path(self):
         f = requests.get(self.url_base() + '/_bad>',
                          headers = { 'Accept-Encoding': 'gzip, foo',
@@ -1905,6 +1969,51 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
              """)
             f.write(auditor)
 
+        # add an extension that tests local_replace to turn #345 into
+        # a link and a module form that looks up username in @username
+        # and links it if name exists in db.
+        with open("%s/extensions/extension_text.py" % cls.dirname, "w") as f:
+            auditor = dedent(r"""
+              import re
+
+              substitutions = [(
+                      # compile the regular expression:
+                      #   \# - match the # sign
+                      #   (?P<ws>\s*) - match and capture, using the name ws,
+                      #                 whitespace so '#   2345' works too
+                      #   (?P<id>\d+) - match and capture, using the name id,
+                      #                 a numeric value
+                      re.compile(r'\#(?P<ws>\s*)(?P<id>\d+)'),
+                      r"LINKING:#\g<ws>\g<id>"
+                     ),
+                    ]
+
+              def local_replace(message):
+                  for cre, replacement in substitutions:
+                      message = cre.sub(replacement, message)
+                  return message
+
+              def link_username(self, message):
+                  user_db = self.client.db.user
+
+                  for name in re.findall(r'@[a-z]+', message):
+                      try:
+                          if user_db.lookup(name[1:]):
+                              message = re.sub(name, r'FOUND:%s' % name,
+                                               message)
+                      except KeyError:
+                          # no such user
+                          pass
+
+                  return message
+
+
+              def init(instance):
+                  instance.registerUtil('local_replace', local_replace)
+                  instance.registerUtilMethod('username', link_username)
+             """)
+            f.write(auditor)
+
         # open the database
         cls.db = cls.instance.open('admin')
 
@@ -1957,7 +2066,7 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
 
         # add a message to allow retrieval
         result = cls.db.msg.create(author = "1",
-                                   content = "a message foo bar RESULT",
+                                   content = "a message foo bar RESULT\n\n#123\n@admin\n@foo\n@fred\n",
                                    date=rdate.Date(),
                                    messageid="test-msg-id")
 

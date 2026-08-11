@@ -109,6 +109,49 @@ your database.
 Migrating from 2.6.0 to 2.7.0
 =============================
 
+Replace localReplace in templates/extensions (recommended)
+----------------------------------------------------------
+
+For a long time, the devel and responsive templates (and online
+examples) have defined a ``utils.localReplace`` extension to use in
+templates.  This release will not interfere with the use of
+localReplace.
+
+However, in the future, you might want to upgrade your templates to
+match changes in the distributed templates. If you accidently replace
+``localReplace`` in the template, you would disable your extension.
+
+Release 2.7.0 added ``local_replace`` to the classic template. If an
+admin doesn't define a local_replace extension, a new
+placeholder/fallback definition for ``local_replace`` is used
+automatically. The name ``local_replace`` also matched normal Python
+naming conventions. We suggest updating from ``localReplace`` to the
+``local_replace`` in your extension definition and in your templates.
+
+To make the change, search for the string ``localReplace`` in your
+tracker's ``extensions`` and ``html`` directories. Replace
+``localReplace(`` with ``local_replace(``. As an example your
+extension file may have had::
+
+ def init(instance):
+     instance.registerUtil('localReplace', local_replace)
+
+after you will have::
+
+ def init(instance):
+     instance.registerUtil('local_replace', local_replace)
+
+Similarly you would have a template with::
+
+     <pre tal:condition="python:msg.content.is_view_ok()"
+          tal:content="structure python:utils.localReplace(msg.content.hyperlinked())">content</pre>
+
+and after you should have::
+
+     <pre tal:condition="python:msg.content.is_view_ok()"
+          tal:content="structure python:utils.local_replace(msg.content.hyperlinked())">content</pre>
+
+
 Update classhelper.js (optional)
 --------------------------------
 

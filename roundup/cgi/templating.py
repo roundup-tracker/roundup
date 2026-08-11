@@ -3602,17 +3602,64 @@ class Batch(ZTUtils.Batch):
 
 
 class TemplatingUtils:
-    """ Utilities for templating
+    """Utilities for templating
+
+        Attributes of objects of this class can be replaced by
+        calls to instance.registerUtils() and
+        instance.registerUtilMethods() in the tracker's extensions
+        directory.
+
+        The register functions will not replace attributes starting
+        with '_' or named 'client'. If you add another attribute
+        that must not be replaced, update the exclusion code in
+        both Registration methods.
+
+        Replaced functions (staticmethods) can be called from
+        templates by referencing the function from the class. If
+        local_replace() has been replaced using the extensions mechanism,
+        replacing the ``utils.local_replace()`` call in the template with::
+
+          utils.__class__.local_replace()
+
+        will access the default function. Method utils can call the
+        original methods and modify the output by using
+        self.__class__. As an example, if you replaced
+        anti_csrf_nonce(), you could call it as:
+
+          self.__class__.anti_csrf_nonce(self, lifetime=10)
+
+        to access the orginal definition.
     """
     def __init__(self, client):
+        """Dynamically register user extensions to the utils.
+        """
         self.client = client
         self._ = self.client._
 
+        # set up tracker templating utils functions defined with
+        # instance.registerUtils
+        for name, func in self.client.instance.templating_utils.items():
+            setattr(self, name, staticmethod(func))
+
+        # set up tracker defined utils methods defined with
+        # instance.registerUtilMethods
+        for name, method in \
+                self.client.instance.templating_util_methods.items():
+            setattr(self, name, method.__get__(self))
+
     def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
+        """The Zope utils (ZTUtils) Batch method."""
         return Batch(self.client, sequence, size, start, end, orphan,
                      overlap)
 
     def anti_csrf_nonce(self, lifetime=None):
+        """return nonce used to prevent csrf in data changing requests
+
+           :param lifetime:
+              token lifetime in minutes, default is set in the
+              tracker's config.ini using the csrf_token_lifetime
+              parameter in the web section.
+        """
         return anti_csrf_nonce(self.client, lifetime=lifetime)
 
     def timestamp(self):
@@ -3625,6 +3672,19 @@ class TemplatingUtils:
     def html_quote(self, html):
         """HTML-quote the supplied text."""
         return html_escape(html)
+
+    @staticmethod
+    def local_replace(message):
+        """Placeholder method to be replaced when formatting messages
+
+           :param message:
+              the text of the message
+
+           This does nothing to the message, but it allows
+           utils.local_replace() to be placed in the html templates as
+           a hook for admins to use in their trackers.
+        """
+        return message
 
     def embed_form_fields(self, excluded_fields=None):
         """Used to create a hidden input field for each client.form element
@@ -3740,15 +3800,6 @@ class TemplatingUtils:
     file_input.files = transfer.files
 
     """
-
-    def __getattr__(self, name):
-        """Try the tracker's templating_utils."""
-        if not hasattr(self.client.instance, 'templating_utils'):
-            # backwards-compatibility
-            raise AttributeError(name)
-        if name not in self.client.instance.templating_utils:
-            raise AttributeError(name)
-        return self.client.instance.templating_utils[name]
 
     def keywords_expressions(self, request):
         return render_keywords_expression_editor(request)

@@ -2063,6 +2063,69 @@ Alter the ``issue.item`` template section for messages to::
   </tr>
  </table>
 
+.. _customizing/enhance:
+ 
+Enhancing message display
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As of roundup 2.7, message displays on the issue items page include a
+call to the :meth:`local_replace <roundup.cgi.templating.TemplatingUtils.local_replace>` utility
+function. This makes enhancements to the displayed messages easier to
+do. Roundup already turns phrases like ``issue 123`` or ``msg 345``
+into hyperlinks to the referenced target.
+
+Using ``local_replace`` you can enhance more phrases. For example,
+local_replace could format text like ``python:345`` to an HTML link to
+issue 345 in the Python GitHub issue tracker. It could also replace
+``@username`` with a link to that user's profile in the tracker.
+
+Let's set up a simple replacement to change ``#345`` or ``# 345`` into
+a link to ``issue345``. To do this we create a list (called
+substitutions) of paired entries. The first item in the entry is a
+regular expression and the second is the substitution text::
+
+    import re
+
+    substitutions = [(
+                      # compile the regular expression:
+                      #   \# - match the # sign
+                      #   (?P<ws>\s*) - match and capture, using the name ws,
+                      #                 whitespace so '#   2345' works too
+                      #   (?P<id>\d+) - match and capture, using the name id,
+                      #                 a numeric value
+                      
+                      re.compile(r'\#(?P<ws>\s*)(?P<id>\d+)'),
+
+                      # if the match succeeds, replace the original string
+                      # with:
+                      #   <a href='issue2345'>#    2345</a>
+                      # preserving the whitespace and id. sub() replaces
+                      # the whole string so the replacement includes the
+                      # # character.
+                      r"<a href='issue\g<id>'>#\g<ws>\g<id></a>"
+                     ), # add more here as you need
+                    ]
+
+    def local_replace(message):
+        for cre, replacement in substitutions:
+            message = cre.sub(replacement, message)
+        return message
+
+    def init(instance):
+        instance.registerUtil('local_replace', local_replace)
+
+Copy/paste/unindent this block into a file (e.g. ``local_replace.py``)
+in your tracker's extensions directory. Then restart your tracker. You
+should see messages with text ``# 345`` turned into a hyperlink.
+
+This enhancement is a simple text replacement. So issue345 may not
+exist even though local_replace creates a link to it. You could
+enhance the code to verify the existence of issue345 before doing the
+replacement.
+
+The devel and responsive templates include example
+``local_replace.py`` files that define many different replacements.
+
 
 Enabling display of either message summaries or the entire messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

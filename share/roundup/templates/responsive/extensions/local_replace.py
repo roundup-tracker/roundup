@@ -26,7 +26,7 @@ def local_replace(message):
 
 
 def init(instance):
-    instance.registerUtil('localReplace', local_replace)
+    instance.registerUtil('local_replace', local_replace)
 
 def quicktest(msgstr, should_replace = True):
     testcount['run'] += 1
