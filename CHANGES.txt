@@ -25,6 +25,10 @@ Fixed:
   string markers for parts of replacement strings. Newer versions of
   Python raise warnings on the \g accessing named components or a
   regular expression in replacement strings. (John Rouillard)
+- issue2551342 - Upgrade jquery supplied with templates. Upgraded
+  jinja2 to jquery-1.12.4 minimized. Upgraded devel/responsive to
+  jquery-3.7.1 minimized - was not minimized in earlier
+  releases. (John Rouillard)
 
 Features:
 
