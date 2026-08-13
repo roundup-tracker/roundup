@@ -21,7 +21,10 @@ Fixed:
   (jerrykan, Joseph Myers, final removal by John Rouillard)
 - issue2551419 - remove trival re-def of __ne__ from security.py
   password.py (John Rouillard)
-
+- fix local_replace.py in devel/responsive templates. Missing raw
+  string markers for parts of replacement strings. Newer versions of
+  Python raise warnings on the \g accessing named components or a
+  regular expression in replacement strings. (John Rouillard)
 
 Features:
 

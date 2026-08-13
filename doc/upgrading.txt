@@ -151,6 +151,25 @@ and after you should have::
      <pre tal:condition="python:msg.content.is_view_ok()"
           tal:content="structure python:utils.local_replace(msg.content.hyperlinked())">content</pre>
 
+Mark replacement strings as raw strings in local_replace.py (recommended)
+-------------------------------------------------------------------------
+
+If your tracker uses local_replace, you may see warnings about ``\g``
+is an unrecognized escape character. This bug was fixed in the 2.7.0
+devel and responsive templates by prefixing the string with the ``r``
+character to mark it as a raw string.
+
+An example diff (with spacing reformatted) looks like::
+
+       # matching hg revison number or hash
+       (re.compile(r'(?P<prews>(^|\s+))(?P<revstr>(revision|rev|r)\>
+-      r'\g<prews><a href="' + hg_url_base + '\g<revision>">\g<rev>
++      r'\g<prews><a href="' + hg_url_base + r'\g<revision>">\g<re>
+
+Note the second string on the changed line is marked with an ``r``.
+These warning started showing up on newer Python versions.  It is
+possible it will be an error on future Python versions, so best check
+for and fix it now.
 
 Update classhelper.js (optional)
 --------------------------------
