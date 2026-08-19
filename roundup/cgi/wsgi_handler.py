@@ -6,7 +6,6 @@
 
 import os
 import warnings
-from contextlib import contextmanager
 
 import roundup.instance
 from roundup.anypy import http_
@@ -153,13 +152,3 @@ class RequestDispatcher(object):
 
         # all body data has been written using wfile
         return []
-
-    def preload(self):
-        """ Trigger pre-loading of imports and templates """
-        with self.get_tracker():
-            pass
-
-    @contextmanager
-    def get_tracker(self):
-        # get a new instance for each request
-        yield roundup.instance.open(self.home, not self.debug)
