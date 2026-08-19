@@ -1932,7 +1932,7 @@ attributes and installation instructions can be found in the
 `classhelper documentation`_ in the admin guide.
 
 
-:del:`Disable performance improvement for wsgi mode (optional)`
+:del:`Disable performance improvement for wsgi mode (obsolete)`
 ---------------------------------------------------------------
 
 This performance improvement is turned on always and can't be
@@ -2876,7 +2876,7 @@ default encryption method (usually pbkdf2).
   <tracker_home> pragma list`` to see if pragmas are supported.
 
 
-:del:`Enable performance improvement for wsgi mode (optional)`
+:del:`Enable performance improvement for wsgi mode (obsolete)`
 --------------------------------------------------------------
 
 This performance improvement is turned on always and can't be
