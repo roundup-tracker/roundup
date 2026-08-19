@@ -1247,7 +1247,14 @@ ERROR: -c is not available because roundup couldn't import
         httpd = config.get_server()
     except Exception as e:
         # capture all exceptions and pretty print them
-        print(e)
+        # with file name, line numbers and function
+        exception_source = traceback.extract_tb(e.__traceback__)[-1]
+        print(_("\nException: %(exception)s generated in file \n"
+                "   %(file)s\n at line %(lineno)s in function/method "
+                "%(name)s()\n") % { "exception": str(e),
+                               "file": exception_source.filename,
+                               "lineno": exception_source.lineno,
+                               "name": exception_source.name} )
         sys.exit(2)
 
     if success_message:
