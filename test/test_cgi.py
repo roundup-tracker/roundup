@@ -44,6 +44,7 @@ except ImportError:
     binary = characters = dictionaries = emails = none = one_of = sampled_from = text = noop_strategy
 
 from os.path import normpath
+from unittest.mock import patch
 
 from roundup.anypy.cgi_ import cgi
 from roundup.cgi import client, actions, exceptions
@@ -997,12 +998,13 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.determine_context = MockNull ()
         def hasPermission(s, p, classname=None, d=None, e=None, **kw):
             return True
-        actions.Action.hasPermission = hasPermission
+
         e1 = _HTMLItem.is_edit_ok
         _HTMLItem.is_edit_ok = lambda x : True
         e2 = HTMLProperty.is_edit_ok
         HTMLProperty.is_edit_ok = lambda x : True
-        cl.inner_main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.inner_main()
         # The original self.db has been changed. Assign the new
         # cl.db to self.db so it gets closed at the end of the test.
         self.db = cl.db
@@ -1356,7 +1358,6 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.determine_context = MockNull ()
         def hasPermission(s, p, classname=None, d=None, e=None, **kw):
             return True
-        actions.Action.hasPermission = hasPermission
         orig_HTMLItem_is_edit_ok = _HTMLItem.is_edit_ok
         e1 = _HTMLItem.is_edit_ok
         _HTMLItem.is_edit_ok = lambda x : True
@@ -1366,7 +1367,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         # test with no headers. Default config requires that 1 header
         # is present and passes checks.
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Unable to verify sufficient headers')
         print("result of subtest 1:", out[0])
         self.assertNotEqual(match_at, -1)
@@ -1375,7 +1377,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # all the rest of these allow at least one header to pass
         # and the edit happens with a redirect back to issue 1
         cl.env['HTTP_REFERER'] = 'http://whoami.com/path/'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 2:", out[0])
         self.assertEqual(match_at, 0)
@@ -1384,7 +1387,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         # verify that HTTP_REFERER does not result in an XSS reflection
         cl.env['HTTP_REFERER'] = '<script>alert(1)</script>'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('<script>')
         match_encoded_at=out[0].find('&lt;script&gt;')
         print("\n\nresult of subtest 2a:", out[0])
@@ -1394,7 +1398,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
 
         cl.env['HTTP_ORIGIN'] = 'http://whoami.com'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 3:", out[0])
         self.assertEqual(match_at, 0)
@@ -1408,7 +1413,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # the proxy's name for the web server and not the name
         # thatis exposed to the world.
         cl.env['HTTP_HOST'] = 'frontend1.whoami.net'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 4:", out[0])
         self.assertNotEqual(match_at, -1)
@@ -1417,7 +1423,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
 
         cl.env['HTTP_HOST'] = 'whoami.com'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 5:", out[0])
         self.assertEqual(match_at, 0)
@@ -1428,7 +1435,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.env['HTTP_X_FORWARDED_HOST'] = 'whoami.net'
         # this raises an error as the header check passes and 
         # it did the edit and tries to send mail.
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Invalid X-FORWARDED-HOST whoami.net')
         print("result of subtest 6:", out[0])
         self.assertNotEqual(match_at, -1)
@@ -1441,7 +1449,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         # roundup will report a missing token.
         cl.db.config['WEB_CSRF_ENFORCE_TOKEN'] = 'required'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find("<p>We can't validate your session (csrf failure). Re-enter any unsaved data and try again.</p>")
         print("result of subtest 6a:", out[0], match_at)
         self.assertEqual(match_at, 33)
@@ -1453,7 +1462,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # add a bogus csrf field to the form and rerun main
         cl.form = db_test_base.makeForm(form2)
 
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find("We can't validate your session (csrf failure). Re-enter any unsaved data and try again.")
         print("result of subtest 7:", out[0])
         self.assertEqual(match_at, 36)
@@ -1472,7 +1482,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         form2.update({'@csrf': nonce})
         # add a real csrf field to the form and rerun main
         cl.form = db_test_base.makeForm(form2)
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         # csrf passes and redirects to the new issue.
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 9:", out[0])
@@ -1480,7 +1491,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
 
         # try a replay attack
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         # This should fail as token was wiped by last run.
         match_at=out[0].find("We can't validate your session (csrf failure). Re-enter any unsaved data and try again.")
         print("replay of csrf after post use", out[0])
@@ -1496,13 +1508,14 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         form2.update({'@csrf': nonce})
         # add a real csrf field to the form and rerun main
         cl.form = db_test_base.makeForm(form2)
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         # csrf passes but fail creating new issue because not a post
         match_at=out[0].find('<p>Invalid request</p>')
         print("result of subtest 11:", out[0])
         self.assertEqual(match_at, 33)
         del(out[0])
-        
+
         # the token should be gone
         isitthere = otks.exists(nonce)
         print("result of subtest 12:", isitthere)
@@ -1512,7 +1525,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # since get deleted the token.
         cl.env.update({'REQUEST_METHOD': 'POST'})
         print(cl.env)
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find("We can't validate your session (csrf failure). Re-enter any unsaved data and try again.")
         print("post failure after get", out[0])
         print("result of subtest 13:", out[0])
@@ -1525,7 +1539,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # this should not redirect as it is not an API call.
         cl.db.config.WEB_ALLOWED_API_ORIGINS = "  *  "
         cl.env['HTTP_ORIGIN'] = 'https://baz.edu'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Invalid Origin https://baz.edu')
         print("result of subtest invalid origin:", out[0])
         self.assertEqual(match_at, 36)
@@ -1538,7 +1553,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.db.config.WEB_ALLOWED_API_ORIGINS = "  *  "
         cl.env['HTTP_ORIGIN'] = 'http://whoami.com'
         cl.env['HTTP_REFERER'] = 'https://baz.edu/path/'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Invalid Referer: https://baz.edu/path/')
         print("result of subtest invalid referer:", out[0])
         self.assertEqual(match_at, 36)
@@ -1546,7 +1562,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(cl.env['HTTP_REFERER'])
         cl.db.config.WEB_ALLOWED_API_ORIGINS = ""
         del(out[0])
-        
+
         # clean up from email log
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
