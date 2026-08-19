@@ -37,7 +37,12 @@ Features:
   utils.local_replace() and add call to classic template. Change devel
   and responsive templates to use local_replace not
   localReplace. Add docs. (John Rouillard)
-  
+- issue2551327 - Track removal of non-caching code path through
+  wsgi.py. The performance improvement for wsgi mode that always uses
+  a cached tracker is on and unable to be disabled. The improvement
+  has been available since 2022 and has been the default since
+  2024. (John Rouillard)
+
 2026-07-13 2.6.0
 
 Fixed:

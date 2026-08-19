@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import shutil, errno, pytest, json, gzip, mimetypes, os, re
+import shutil, errno, pytest, json, gzip, mimetypes, os, re, warnings
 
 from roundup import date as rdate
 from roundup import i18n
@@ -1917,20 +1917,73 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.get(self.url_base() + "?@search_text=RESULT")
         self.assertIn("foo bar", f.text)
 
-@skip_requests
-class TestFeatureFlagCacheTrackerOff(BaseTestCases, WsgiSetup):
-    """Class to run all test in BaseTestCases with the cache_tracker
-       feature flag disabled when starting the wsgi server
+'''
+class TestFeatureFlag(BaseTestCases, WsgiSetup):
+    """Class to run all tests in BaseTestCases with a 
+       feature flag. Use it when testing a feature flag.
     """
     def create_app(self):
-        '''The wsgi app to start with feature flag disabled'''
+        """The wsgi app to start with feature flags"""
+        if True:
+            raise NotImplementedError("Remove this to enable.")
+
+        # change out for supported feature flag
+        ff = {"cache_tracker": False }
+        return validator(RequestDispatcher(self.dirname, feature_flags=ff))
+'''
+
+@skip_requests
+class TestFeatureFlagCacheTrackerFutureWarning(WsgiSetup):
+    """Class to run all one test with the cache_tracker
+       feature flag set when starting the wsgi server
+       to get a FutureWarning.
+    """
+    def create_app(self):
+        '''The wsgi app to start with feature flag cache_tracker'''
         ff = { "cache_tracker": False }
-        if _py3:
-            return validator(RequestDispatcher(self.dirname, feature_flags=ff))
-        else:
-            # wsgiref/validator.py InputWrapper::readline is broke and
-            # doesn't support the max bytes to read argument.
-            return RequestDispatcher(self.dirname, feature_flags=ff)
+
+        # Cause all warnings to always be triggered
+        warnings.simplefilter("always")
+
+        with warnings.catch_warnings(record=True) as w:
+            disp = validator(RequestDispatcher(self.dirname, feature_flags=ff))
+
+        assert len(w) == 1
+        assert issubclass(w[-1].category, FutureWarning)
+        assert "cache_tracker" in str(w[-1].message)
+
+        return disp
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog, monkeypatch, subtests):
+        """Used to add pytest test fixtures to unittest based tests
+           because adding the name of a fixture to a method does not
+           make the method available.
+
+           So the decorator runs with autouse=True to set params on
+           the unittest "self" making the fixtures available for
+           tests.
+
+           If you need another fixture, just add it to the argument list
+           and assign it to self and pytest will make it available.
+        """
+
+        self._caplog = caplog
+        self._monkeypatch = monkeypatch
+        self._subtests = subtests
+
+    def test_start_page(self):
+        """ simple test that verifies that the server can serve a
+            start page.
+
+            This will fail if create_app fails. Without this, no tests
+            are run and the class passes.
+        """
+        f = requests.get(self.url_base())
+
+        self.assertEqual(f.status_code, 200)
+        self.assertTrue(b'Roundup' in f.content)
+        self.assertTrue(b'Creator' in f.content)
 
 @skip_postgresql
 @skip_requests

@@ -5,6 +5,7 @@
 #
 
 import os
+import warnings
 from contextlib import contextmanager
 
 import roundup.instance
@@ -89,6 +90,13 @@ class RequestDispatcher(object):
         self.debug = debug
         self.timing = timing
         self.feature_flags = feature_flags or {}
+
+        if "cache_tracker" in self.feature_flags:
+            warnings.warn(("The 'cache_tracker' feature flag is "
+                           "ignored. Please remove it from your "
+                           "RequestDispatcher call."),
+                           FutureWarning)
+
         self.tracker = None
         if lang:
             self.translator = TranslationService.get_translation(
@@ -97,15 +105,7 @@ class RequestDispatcher(object):
         else:
             self.translator = None
 
-        if self.use_cached_tracker():
-            self.tracker = roundup.instance.open(self.home, not self.debug)
-        else:
-            self.preload()
-
-    def use_cached_tracker(self):
-        return (
-            "cache_tracker" not in self.feature_flags or
-            self.feature_flags["cache_tracker"] is not False)
+        self.tracker = roundup.instance.open(self.home, not self.debug)
 
     # Client entry point strips initial / from PATH_INFO so
     # We need to do it here as well to prevent mismatch.
@@ -142,25 +142,14 @@ class RequestDispatcher(object):
         else:
             form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-        if self.use_cached_tracker():
-            client = self.tracker.Client(self.tracker, request, environ, form,
-                                         self.translator)
-            try:
-                client.main()
-            except roundup.cgi.client.NotFound:
-                request.start_response([('Content-Type', 'text/html')], 404)
-                request.wfile.write(s2b('Not found: %s' %
-                                        html_escape(client.path)))
-        else:
-            with self.get_tracker() as tracker:
-                client = tracker.Client(tracker, request, environ, form,
-                                        self.translator)
-                try:
-                    client.main()
-                except roundup.cgi.client.NotFound:
-                    request.start_response([('Content-Type', 'text/html')], 404)
-                    request.wfile.write(s2b('Not found: %s' %
-                                            html_escape(client.path)))
+        client = self.tracker.Client(self.tracker, request, environ, form,
+                                     self.translator)
+        try:
+            client.main()
+        except roundup.cgi.client.NotFound:
+            request.start_response([('Content-Type', 'text/html')], 404)
+            request.wfile.write(s2b('Not found: %s' %
+                                    html_escape(client.path)))
 
         # all body data has been written using wfile
         return []

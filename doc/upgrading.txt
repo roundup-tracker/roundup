@@ -6,6 +6,12 @@
 
 .. index:: Upgrading
 
+.. comment:
+   add del role to mark obsolete entries with del in block mode
+   and span.del in inline mode. span.del css adds strikethrough.
+
+.. role:: del
+
 ======================================
 Upgrading to newer versions of Roundup
 ======================================
@@ -1926,30 +1932,35 @@ attributes and installation instructions can be found in the
 `classhelper documentation`_ in the admin guide.
 
 
-Disable performance improvement for wsgi mode (optional)
---------------------------------------------------------
+:del:`Disable performance improvement for wsgi mode (optional)`
+---------------------------------------------------------------
 
-In Roundup version 2.2.0, an experimental feature was introduced to
-enhance performance while operating in wsgi mode. Initially, this
-feature was disabled. Over the past two years, it has been used at a
-few sites without any reported problems.
+This performance improvement is turned on always and can't be
+disabled as of Roundup 2.7.0.
 
-As a result, the default setting now enables this performance
-improvement, encouraging a wider adoption of the feature. In the
-event that an undiscovered bug arises, it can still be disabled
-if you experience problems. To disable it, modify your wsgi
-startup script and add the feature_flags to the RequestDispatcher
-as below::
+.. container:: del
 
-   feature_flags = { "cache_tracker": False }
-   app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+    In Roundup version 2.2.0, an experimental feature was introduced to
+    enhance performance while operating in wsgi mode. Initially, this
+    feature was disabled. Over the past two years, it has been used at a
+    few sites without any reported problems.
 
-Then restart your wsgi instance. If you have to disable this
-feature, send email to the roundup-users mailing list
-(roundup-users at lists.sourceforge.net) so we can help you
-diagnose the cause and fix it for everybody.
+    As a result, the default setting now enables this performance
+    improvement, encouraging a wider adoption of the feature. In the
+    event that an undiscovered bug arises, it can still be disabled
+    if you experience problems. To disable it, modify your wsgi
+    startup script and add the feature_flags to the RequestDispatcher
+    as below::
 
-In the future, support for disabling this improvement will be removed.
+       feature_flags = { "cache_tracker": False }
+       app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+
+    Then restart your wsgi instance. If you have to disable this
+    feature, send email to the roundup-users mailing list
+    (roundup-users at lists.sourceforge.net) so we can help you
+    diagnose the cause and fix it for everybody.
+
+    In the future, support for disabling this improvement will be removed.
 
 Fix duplicate id for confirm password in user.item.html (optional)
 ------------------------------------------------------------------
@@ -2864,25 +2875,30 @@ default encryption method (usually pbkdf2).
   your user's home directory.  You can use ``roundup-admin -i
   <tracker_home> pragma list`` to see if pragmas are supported.
 
-Enable performance improvement for wsgi mode (optional)
--------------------------------------------------------
 
-There is an experimental wsgi performance improvement mode that caches
-the loaded roundup instance. This eliminates disk reads that are
-incurred on each connection. In one report it improves speed by a
-factor of 2 to 3 times. To enable this you should add a feature flag
-to your Roundup wsgi wrapper (see the file
-``.../share/frontends/wsgi.py``) so it looks like::
+:del:`Enable performance improvement for wsgi mode (optional)`
+--------------------------------------------------------------
 
-   feature_flags = { "cache_tracker": "" }
-   app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+This performance improvement is turned on always and can't be
+disabled as of Roundup 2.7.0.
 
-to enable this mode. Note that this is experimental and was added
-during the 2.2.0 beta period, so it is enabled using a feature flag.
-If you use this and it works for you please followup with an email to
-the roundup-users at lists.sourceforge.net mailing list so we can
-enable it by default in a future release.
+.. container:: del
 
+    There is an experimental wsgi performance improvement mode that caches
+    the loaded roundup instance. This eliminates disk reads that are
+    incurred on each connection. In one report it improves speed by a
+    factor of 2 to 3 times. To enable this you should add a feature flag
+    to your Roundup wsgi wrapper (see the file
+    ``.../share/frontends/wsgi.py``) so it looks like::
+
+       feature_flags = { "cache_tracker": "" }
+       app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+
+    to enable this mode. Note that this is experimental and was added
+    during the 2.2.0 beta period, so it is enabled using a feature flag.
+    If you use this and it works for you please followup with an email to
+    the roundup-users at lists.sourceforge.net mailing list so we can
+    enable it by default in a future release.
 
 Hide submit button during readonly use of _generic.item.html (optional)
 -----------------------------------------------------------------------

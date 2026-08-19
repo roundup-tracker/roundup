@@ -533,6 +533,10 @@ div.card {
     padding: 1em;
 }
 
+span.del { /* strikethrough/del effect for headers */
+    text-decoration: line-through;
+}
+
 /* website only */
 /* assume desktop reader for local html files, also no contact
    page for local doc files */
