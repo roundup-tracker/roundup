@@ -1393,28 +1393,30 @@ You can find an example in :ref:`dynamic_csp`.
 
 .. _gpginstall:
 
-Directions for installing gpg (obsolete)
-----------------------------------------
+:del:`Directions for installing gpg (obsolete)`
+-----------------------------------------------
 
 .. note::
    issue2551368 was closed in May 2026. Running ``pip install
    gpg`` will install gpg 2.0.0 on all versions of Python supported by
    Roundup. If you installed the test version use ``pip install -U
    gpg`` to upgrade.
-   
-In this release a new version of the gpg module was needed for Ubuntu
-24.04 and python 3.13. Paul Schwabauer produced a new version of the
-gpg module. However it is only on the test instance of pypi. If you
-run into issues installing gpg with pip, you can use::
 
-    pip install --index-url https://test.pypi.org/simple/ \
-                --extra-index-url https://pypi.org/simple gpg;
+.. container:: del
 
-to installed version 2.0 of gpg from test.pypi.org obtaining it's
-requirements from pypi.org.
+    In this release a new version of the gpg module was needed for Ubuntu
+    24.04 and python 3.13. Paul Schwabauer produced a new version of the
+    gpg module. However it is only on the test instance of pypi. If you
+    run into issues installing gpg with pip, you can use::
 
-When `issue2551368 <https://issues.roundup-tracker.org/issue2551368>`_
-is closed, you should be able to use ``pip install gpg`` again.   
+	pip install --index-url https://test.pypi.org/simple/ \
+		    --extra-index-url https://pypi.org/simple gpg;
+
+    to installed version 2.0 of gpg from test.pypi.org obtaining it's
+    requirements from pypi.org.
+
+    When `issue2551368 <https://issues.roundup-tracker.org/issue2551368>`_
+    is closed, you should be able to use ``pip install gpg`` again.   
 
 .. index:: Upgrading; 2.3.0 to 2.4.0
 
