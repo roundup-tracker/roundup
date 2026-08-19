@@ -118,9 +118,19 @@ class Tracker:
             self.templating_utils = {}
             self.templating_util_methods = {}
             # reload extensions and detectors
-            for extension in self.get_extensions('extensions'):
-                extension(self)
+            try:
+                for extension in self.get_extensions('extensions'):
+                    extension(self)
+            except ValueError:
+                # We have duplicate TemplatingUtils extensions
+                # defined. Using anydbm backend locks the Database
+                # when opening. Close/unlock the db to allow testing
+                # duplicate utilities to continue.
+                env['db'].close()
+                raise
+
             detectors = self.get_extensions('detectors')
+
         db = env['db']
         db.tx_Source = None
         # Useful for script when multiple open calls happen. Scripts have
@@ -331,8 +341,18 @@ class Tracker:
                 % {**register_location, "name": name, **conflict_loc})
 
         self.templating_utils[name] = function
-        self.templating_utils[name]._registered_at = (
-            register_location['filename'], register_location['lineno'])
+        if hasattr(function, "__self__"):
+            # Handle case where function is an instance method.  Which
+            # is a R/O bound method of a class. Can't attach attribute
+            # to the method, so attach to underlying function.
+            #
+            # This will also be executed for a classmethod, don't know
+            # if classmethod will work properly as templateutil or not.
+            self.templating_utils[name].__func__._registered_at = (
+                register_location['filename'], register_location['lineno'])
+        else:
+            self.templating_utils[name]._registered_at = (
+                register_location['filename'], register_location['lineno'])
 
     def registerUtilMethod(self, name: str, function: Callable):
         """Register a method that cal be called as:
