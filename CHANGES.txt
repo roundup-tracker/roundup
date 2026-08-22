@@ -32,6 +32,12 @@ Fixed:
 - issue2551161 - fix ResourceWarnings open logging files when
   configuring logging from an invalid .ini or .json file. Possible
   leak under a running wsgi or other framework. (John Rouillard)
+- issue2551161 - fix ResourceWarnings from open read-only references
+  to dbm databases. This affects core and session databases using dbm
+  back end (which is really dbm.sqlite3 in python > 3.13). The
+  references were local to a function, read only, and did not trigger
+  a long running transaction. Most likely this was just a file handle
+  and memory leak, (John Rouillard)
 
 Features:
 

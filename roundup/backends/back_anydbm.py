@@ -405,31 +405,42 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             logging.getLogger('roundup.hyperdb.backend').debug(
                 'get %s%s' % (classname, nodeid))
 
+        # close db if opened locally before returning without error
+        must_close = False
         # get from the database and save in the cache
         if db is None:
             db = self.getclassdb(classname)
-        if nodeid not in db:
-            db.close()
-            raise IndexError("no such %s %s" % (classname, nodeid))
+            must_close = True  # clean up after ourselves
 
-        # check the uncommitted, destroyed nodes
-        if (classname in self.destroyednodes and
-                nodeid in self.destroyednodes[classname]):
-            db.close()
-            raise IndexError("no such %s %s" % (classname, nodeid))
+        try:
+            if nodeid not in db:
+                db.close()
+                must_close = False
+                raise IndexError("no such %s %s" % (classname, nodeid))
 
-        # decode
-        res = marshal.loads(db[nodeid])
+            # check the uncommitted, destroyed nodes
+            if (classname in self.destroyednodes and
+                    nodeid in self.destroyednodes[classname]):
+                db.close()
+                must_close = False
+                raise IndexError("no such %s %s" % (classname, nodeid))
 
-        # reverse the serialisation
-        res = self.unserialise(classname, res)
+            # decode
+            res = marshal.loads(db[nodeid])
 
-        # store off in the cache dict
-        if cache:
-            cache_dict[nodeid] = res
+            # reverse the serialisation
+            res = self.unserialise(classname, res)
 
-        if __debug__:
-            self.stats['get_items'] += (time.time() - start_t)
+            # store off in the cache dict
+            if cache:
+                cache_dict[nodeid] = res
+
+            if __debug__:
+                self.stats['get_items'] += (time.time() - start_t)
+
+        finally:
+            if must_close:
+                db.close()
 
         return res
 
@@ -511,17 +522,20 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 d[k] = v
         return d
 
-    def hasnode(self, classname, nodeid, db=None):
+    def hasnode(self, classname, nodeid, db=None) -> bool:
         """ determine if the database has a given node
         """
         # try the cache
         cache = self.cache.setdefault(classname, {})
         if nodeid in cache:
-            return 1
+            return True
 
         # not in the cache - check the database
         if db is None:
             db = self.getclassdb(classname)
+            is_in_db = nodeid in db
+            db.close()
+            return is_in_db
         return nodeid in db
 
     def countnodes(self, classname, db=None):
@@ -536,6 +550,9 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         # and count those in the DB
         if db is None:
             db = self.getclassdb(classname)
+            c = count + len(db)
+            db.close()
+            return c
         return count + len(db)
 
     #
