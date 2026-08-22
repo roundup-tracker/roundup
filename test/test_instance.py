@@ -153,7 +153,7 @@ class InstanceTest(unittest.TestCase):
           [
             "'dummy_util_func' already exists",
             "base_extension.py:19",
-            "_test_instance/extensions/bad.py:6"
+            str(Path("_test_instance/extensions/bad.py:6"))
           ],
         ),
         ( "bad_instance_method",
@@ -161,7 +161,7 @@ class InstanceTest(unittest.TestCase):
           [
             "'util_instance_method' already exists",
             "base_extension.py:21",
-            "_test_instance/extensions/bad.py:14"
+            str(Path("_test_instance/extensions/bad.py:14"))
           ]
         ),
         ( "bad_classmethod",
@@ -169,7 +169,7 @@ class InstanceTest(unittest.TestCase):
           [
             "'util_classmethod' already exists",
             "base_extension.py:24",
-            "_test_instance/extensions/bad.py:13"
+            str(Path("_test_instance/extensions/bad.py:13"))
           ]
          ),
         ( "bad_util_method",
@@ -177,7 +177,7 @@ class InstanceTest(unittest.TestCase):
           [
             "'dummy_util_method' already exists",
             "base_extension.py:27",
-            "_test_instance/extensions/bad.py:5"
+            str(Path("_test_instance/extensions/bad.py:5"))
           ]
          )
       ]
