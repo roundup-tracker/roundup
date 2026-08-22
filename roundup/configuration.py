@@ -2647,6 +2647,10 @@ class CoreConfig(Config):
                             "LOGGING_DISABLE_LOGGERS"])
                 except (ValueError, RuntimeError, configparser.ParsingError,
                         KeyError, NameError, ModuleNotFoundError) as e:
+
+                    # close logging before exit.
+                    logging.shutdown()
+                    
                     # configparser.DuplicateOptionError includes
                     # filename, line number and a useful error.
                     # so we don't have to augment it.
@@ -2675,6 +2679,10 @@ class CoreConfig(Config):
                 try:
                     logging.config.dictConfig(config_dict)
                 except ValueError as e:
+
+                    # close logging before exit.
+                    logging.shutdown()
+
                     # docs say these exceptions:
                     #    ValueError, TypeError, AttributeError, ImportError
                     # could be raised, but

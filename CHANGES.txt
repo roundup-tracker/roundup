@@ -29,6 +29,9 @@ Fixed:
   jinja2 to jquery-1.12.4 minimized. Upgraded devel/responsive to
   jquery-3.7.1 minimized - was not minimized in earlier
   releases. (John Rouillard)
+- issue2551161 - fix ResourceWarnings open logging files when
+  configuring logging from an invalid .ini or .json file. Possible
+  leak under a running wsgi or other framework. (John Rouillard)
 
 Features:
 
