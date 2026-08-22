@@ -306,81 +306,60 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
     # 10 seconds.
     fuzz_deadline = int(os.environ.get('pytest_fuzz_timeout', 0)) or 10000
 
+    def basetest_url_param_accepting_integer_values(self, target,
+                                                    param, value):
+        """Tests args accepting int for rest url.
+        """
+        session, _response = self.create_login_session()
+        url = '%s%s' % (self.url_base(), target)
+
+        # test case '0#' '12345#stuff', '12345&stuff', '&=0'
+        # Normalize like a server does by breaking value at
+        # # or & as these mark a fragment or subsequent
+        # query arg and are not part of the value.
+        # use *? to make match non-greedy.
+        match = re.match(r'(.*?)[#&]', value)
+        if match is not None:
+            value = match[1]
+        
+        query = '%s=%s'  % (param, value)
+        f = session.get(url, params=query)
+
+        try:
+            if value != "" and int(value) >= 0:
+                self.assertEqual(f.status_code, 200)
+        except ValueError:
+            # test case '#' '#0', '&', '&anything here really'
+            if value[0] in ('#', '&') and int(value[1:]):
+                self.assertEqual(f.status_code, 200)
+            else:
+                # invalid value for param
+                self.assertEqual(f.status_code, 400)
+        
     @given(sampled_from(['@verbose', '@page_size', '@page_index']),
            text(min_size=1))
     @example("@verbose", "0\r#")
     @example("@verbose", "1#")
     @example("@verbose", "#1stuff")
     @example("@verbose", "0 #stuff")
+    @example("@verbose", "&=0")
     @settings(max_examples=_max_examples,
               deadline=fuzz_deadline) # in ms
     def test_class_url_param_accepting_integer_values(self, param, value):
-        """Tests all integer args for rest url. @page_* is the
-           same code for all *.
-        """
-        session, _response = self.create_login_session()
-        url = '%s/rest/data/status' % (self.url_base())
-        query = '%s=%s'  % (param, value)
-        f = session.get(url, params=query)
-        try:
-            # test case '0 #', '0#', '12345#stuff' '12345&stuff'
-            # Normalize like a server does by breaking value at
-            # # or & as these mark a fragment or subsequent
-            # query arg and are not part of the value.
-            match = re.match(r'^(.*)[#&]', value)
-            if match is not None:
-                value = match[1]
-                # parameter is ignored by server if empty.
-                # so set it to 0 to force 200 status code.
-                if value == "":
-                    value = "0"
-
-            if int(value) >= 0:
-                self.assertEqual(f.status_code, 200)
-        except ValueError:
-            # test case '#' '#0', '&', '&anything here really'
-            if value[0] in ('#', '&'):
-                self.assertEqual(f.status_code, 200)
-            else:
-                # invalid value for param
-                self.assertEqual(f.status_code, 400)
-
+        self.basetest_url_param_accepting_integer_values(
+            "/rest/data/status", param, value)
+    
     @given(sampled_from(['@verbose']), text(min_size=1))
     @example("@verbose", "0\r#")
     @example("@verbose", "10#")
     @example("@verbose", u'Ø\U000dd990')
+    @example("@verbose", "&=0")
     @settings(max_examples=_max_examples,
               deadline=fuzz_deadline) # in ms
     def test_element_url_param_accepting_integer_values(self, param, value):
-        """Tests args accepting int for rest url.
-        """
-        session, _response = self.create_login_session()
-        url = '%s/rest/data/status/1' % (self.url_base())
-        query = '%s=%s'  % (param, value)
-        f = session.get(url, params=query)
-        try:
-            # test case '0#' '12345#stuff' '12345&stuff'
-            # Normalize like a server does by breaking value at
-            # # or & as these mark a fragment or subsequent
-            # query arg and are not part of the value.
-            match = re.match(r'^(.*)[#&]', value)
-            if match is not None:
-                value = match[1]
-                # parameter is ignored by server if empty.
-                # so set it to 0 to force 200 status code.
-                if value == "":
-                    value = "0"
-
-            if int(value) >= 0:
-                self.assertEqual(f.status_code, 200)
-        except ValueError:
-            # test case '#' '#0', '&', '&anything here really'
-            if value[0] in ('#', '&'):
-                self.assertEqual(f.status_code, 200)
-            else:
-                # invalid value for param
-                self.assertEqual(f.status_code, 400)
-
+        self.basetest_url_param_accepting_integer_values(
+            "/rest/data/status/1", param, value)
+        
 @skip_hypothesis
 class FuzzTestSettingData(WsgiSetup, ClientSetup):
 
@@ -1943,9 +1922,10 @@ class TestFeatureFlagCacheTrackerFutureWarning(WsgiSetup):
         ff = { "cache_tracker": False }
 
         # Cause all warnings to always be triggered
-        warnings.simplefilter("always")
+        #warnings.simplefilter("always")
 
         with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("ignore", category=ResourceWarning)
             disp = validator(RequestDispatcher(self.dirname, feature_flags=ff))
 
         assert len(w) == 1
