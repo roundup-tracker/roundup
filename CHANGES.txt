@@ -38,6 +38,9 @@ Fixed:
   references were local to a function, read only, and did not trigger
   a long running transaction. Most likely this was just a file handle
   and memory leak, (John Rouillard)
+- issue2551332 - roundup-admin updateconfig does not preserve DEFAULT
+  section or interpolation tokens. Documented how to use DEFAULT
+  section and interpolation on reference page. (John Rouillard)
 
 Features:
 

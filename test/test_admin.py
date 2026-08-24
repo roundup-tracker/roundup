@@ -16,6 +16,8 @@ import shutil
 import sys
 import unittest
 
+from pathlib import Path
+
 from roundup.admin import AdminTool
 
 from .test_mysql import skip_mysql
@@ -58,8 +60,8 @@ def replace_in_file(filename, original, replacement):
     """replace text in a file. All occurances of original
        will be replaced by replacement"""
 
-    for line in fileinput.input(filename, inplace = 1): 
-        print(line.replace(original, replacement))
+    for line in fileinput.input(filename, inplace = 1):
+        print(line.replace(original, replacement), end="")
 
     fileinput.close()
 
@@ -91,8 +93,9 @@ class AdminTest(object):
         self.dirname = '_test_admin'
 
     @pytest.fixture(autouse=True)
-    def inject_fixtures(self, monkeypatch):
+    def inject_fixtures(self, monkeypatch, subtests):
         self._monkeypatch = monkeypatch
+        self._subtests = subtests
 
     def tearDown(self):
         try:
@@ -794,6 +797,71 @@ class AdminTest(object):
                                      "^password_.*= 2000001$"),
                          "password_pbkdf2_default_rounds = 2000001")
 
+
+    def testUpdateDefaultPreserved(self):
+        ''' Note the tests will fail if you run this under pdb.
+            the context managers capture the pdb prompts and this screws
+            up the stdout strings with (pdb) prefixed to the line.
+        '''
+
+        oldconfig = Path(self.dirname) / 'config.ini'
+        newconfig = Path(self.dirname) / 'config.new'
+
+        self.install_init()
+        ### set up DEFAULT section
+        replace_in_file(oldconfig,
+                        "elsewhere in the file.",
+                        "elsewhere in the file.\nyes = True\n\n")
+        # use replacement token.
+        replace_in_file(oldconfig,
+                        "instant_registration = no",
+                        "instant_registration = %(yes)s")
+
+        self.admin=AdminTool()
+        with self._subtests.test(entry="initial state"):
+            with captured_output() as (out, err):
+                sys.argv=['main', '-i', self.dirname, 'display', 'user1']
+                ret = self.admin.main()
+
+            out = out.getvalue().strip()
+            print(out)
+            expected = "address: roundup-admin@example.com"
+            self.assertIn(expected, out)
+        
+        # Reopen the db closed by previous call
+        self.admin=AdminTool()
+        with self._subtests.test(entry="updateconfig"):
+            with captured_output() as (out, err):
+                sys.argv=['main', '-i', self.dirname, 'updateconfig',
+                          newconfig]
+                ret = self.admin.main()
+
+            out = out.getvalue().strip()
+            print(out)
+            
+            with open(newconfig) as new:
+                newconfig = new.read()
+
+            self.assertIn("[DEFAULT]", newconfig)
+            self.assertIn("yes = True", newconfig)
+            self.assertIn("instant_registration = %(yes)s", newconfig)
+
+
+        replace_in_file(oldconfig, "yes = True", "yes = Fred")
+
+        self.admin=AdminTool()
+        with self._subtests.test(entry="bad interpolation"):
+            with captured_output() as (out, err):
+                sys.argv=['main', '-i', self.dirname, 'display', 'user1']
+                ret = self.admin.main()
+
+            self.assertEqual(ret, 1)
+
+            out = out.getvalue().strip()
+            print(out)
+
+            expected = "Invalid value for INSTANT_REGISTRATION: 'Fred'"
+            self.assertIn(expected, out)
 
     def testCliParse(self):
         ''' Note the tests will fail if you run this under pdb.

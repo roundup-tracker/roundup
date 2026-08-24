@@ -38,6 +38,7 @@ from roundup.anypy.strings import repr_export
 from roundup.configuration import (
     ConfigurationError,
     CoreConfig,
+    DuplicateOptionError,
     NoConfigError,
     Option,
     OptionUnsetError,
@@ -50,9 +51,9 @@ from roundup.i18n import _, get_translation
 from roundup.logcontext import gen_trace_id, set_processName, store_trace_reason
 
 try:
-    from UserDict import UserDict
-except ImportError:
     from collections import UserDict
+except ImportError:
+    from UserDict import UserDict
 
 
 def _safe_os_getlogin():
@@ -891,43 +892,51 @@ Command help:
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
 
-        if update:
-            # load current config for writing
-            config = CoreConfig(self.tracker_home)
-
-            # change config to update settings to new defaults
-            # where prior defaults were chosen
-            default_ppdr = config._get_option(
-                'PASSWORD_PBKDF2_DEFAULT_ROUNDS')._default_value
-
-            print("")  # put a blank line before feedback
-            if config.PASSWORD_PBKDF2_DEFAULT_ROUNDS in [10000]:
-                print(_("Changing option\n"
-                        "   'password_pbkdf2_default_rounds'\n"
-                        "from old default of %(old_number)s to new "
-                        "default of %(new_number)s.") % {
-                            "old_number":
-                            config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
-                            "new_number": default_ppdr,
-                        })
-                config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = default_ppdr
-
-            if default_ppdr > config.PASSWORD_PBKDF2_DEFAULT_ROUNDS:
-                print(_("Update "
-                        "'password_pbkdf2_default_rounds' "
-                        "to a number equal to or larger\n  than %s.\n") %
-                      default_ppdr)
-
-            if not config.RDBMS_MYSQL_COLLATION.startswith(
-                    config.RDBMS_MYSQL_CHARSET + "_"):
-                print(_("Check the rdbms mysql_* settings. Your charset and "
-                        "collations may need\n"
-                        "  to be changed. See upgrading instructions.\n"))
-        else:
+        if not update:
             # generate default config
             config = CoreConfig()
 
-        config.save(args[0])
+            config.save(args[0])
+            return
+
+        # load current config for writing
+        config = CoreConfig(self.tracker_home)
+
+        # change config to update settings to new defaults
+        # where prior defaults were chosen
+        default_ppdr = config._get_option(
+            'PASSWORD_PBKDF2_DEFAULT_ROUNDS')._default_value
+
+        print("")  # put a blank line before feedback
+        if config.PASSWORD_PBKDF2_DEFAULT_ROUNDS in [10000]:
+            print(_("Changing option\n"
+                    "   'password_pbkdf2_default_rounds'\n"
+                    "from old default of %(old_number)s to new "
+                    "default of %(new_number)s.") % {
+                        "old_number":
+                        config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
+                        "new_number": default_ppdr,
+                    })
+            # set the raw value as a string because that's what
+            # is written to the new file. Overwrite the old value,
+            # it's unlikley somebody parameterized this using a DEFAULT
+            # section name = value.
+            ppdr_option = config._get_option('PASSWORD_PBKDF2_DEFAULT_ROUNDS')
+            ppdr_option.set_raw(str(default_ppdr))
+
+        if default_ppdr > config.PASSWORD_PBKDF2_DEFAULT_ROUNDS:
+            print(_("Update "
+                    "'password_pbkdf2_default_rounds' "
+                    "to a number equal to or larger\n  than %s.\n") %
+                  default_ppdr)
+
+        if not config.RDBMS_MYSQL_COLLATION.startswith(
+                config.RDBMS_MYSQL_CHARSET + "_"):
+            print(_("Check the rdbms mysql_* settings. Your charset and "
+                    "collations may need\n"
+                    "  to be changed. See upgrading instructions.\n"))
+
+        config.save(args[0], raw=True)
 
     def do_get(self, args):
         ''"""Usage: get property designator[,designator]*
@@ -2441,10 +2450,6 @@ Desc: %(description)s
                 self.tracker = tracker
                 self.settings['indexer_backend'] = self.tracker.config['INDEXER']
 
-        except ValueError as message:  # noqa: F841  -- used from locals
-            self.tracker_home = ''
-            print(_("Error: Couldn't open tracker: %(message)s") % locals())
-            return 1
         except NoConfigError as message:  # noqa: F841  -- used from locals
             self.tracker_home = ''
             print(_("Error: Couldn't open tracker: %(message)s") % locals())
@@ -2453,10 +2458,19 @@ Desc: %(description)s
         except ParsingOptionError as message:  # noqa: F841 -- used from locals
             print("%(message)s" % locals())
             return 1
+        except (ConfigurationError, DuplicateOptionError,  # noqa: F841
+                ValueError) as message:
+            print(_("\nError: Couldn't open tracker: %(message)s") % locals())
+            return 1            
 
         # only open the database once!
         if not self.db:
-            self.db = tracker.open(self.name)
+            try:
+                self.db = tracker.open(self.name)
+            except OptionValueError as message:
+                print("\n%s\n" % message)
+                return 1
+                
             # don't use tracker.config["TRACKER_LANGUAGE"] here as the
             # cli operator likely wants to have i18n as set in the
             # environment.

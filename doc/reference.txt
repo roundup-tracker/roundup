@@ -78,14 +78,14 @@ Trackers have the following structure:
 Tracker Configuration
 =====================
 
-The ``config.ini`` located in your tracker home contains the basic
-configuration for the web and e-mail components of Roundup's interfaces.
-
 The `tracker schema`_ defines the data captured by your tracker. It
 also defines the permissions used when accessing the data: see the
 `security / access controls`_ section. For example, you must grant the
 "Anonymous" Role the "Email Access" Permission to allow users to
 automatically register through the email interface,.
+
+The ``config.ini`` located in your tracker home contains the basic
+configuration for the web and e-mail components of Roundup's interfaces.
 
 .. index::
    single: config.ini; sections
@@ -95,8 +95,8 @@ The following is taken from the `Python Library Reference`__ (July 18, 2018)
 section "ConfigParser -- Configuration file parser":
 
  The configuration file consists of sections, led by a [section] header
- and followed by name: value entries, with continuations in the style
- of RFC 822 (see section 3.1.1, “LONG HEADER FIELDS”); name=value is
+ and followed by ``name: value`` entries, with continuations in the style
+ of RFC 822 (see section 3.1.1, “LONG HEADER FIELDS”); ``name=value`` is
  also accepted. Note that leading whitespace is removed from
  values. The optional values can contain format strings which refer to
  other values in the same section, or values in a special DEFAULT
@@ -113,8 +113,9 @@ section "ConfigParser -- Configuration file parser":
  would resolve the "%(dir)s" to the value of "dir" ("frob" in this case)
  resulting in "foodir" being "frob/whatever".
 
-The reference above discusses using the ``[DEFAULT]`` section and
-interpolation. For example::
+The Python reference above discusses defining names in the
+``[DEFAULT]`` section to provide tokens to substitute
+(interpolate) in values of other sections. For example::
 
    [DEFAULT]
    local_admin_email = admin@example.com
@@ -122,12 +123,13 @@ interpolation. For example::
    [main]
    admin_email = %(local_admin_email)s
 
-will set the admin_email setting. This works when running the
-tracker. When upgrading Roundup using ``updateconfig`` to create
-a new ``config.ini``, the ``DEFAULT`` section is not preserved
-and interpolation tokens (e.g. ``%(local_admin_email)s`` are
-replaced with their values (``admin@example.com``). This may be
-fixed in a future release of Roundup.
+will set the admin_email setting.  Roundup's ``config.ini``
+structure is predefined, While you can add undefined
+``name=value`` pairs, they are not preserved across config file
+upgrades. As of Roundup 2.7, the ``DEFAULT`` section and
+interpolation tokens (e.g. ``%(local_admin_email)s`` **are**
+preserved on update. Only the ``DEFAULT`` section can define
+arbitrary names that survive a version upgrade.
 
 Note that you can not reference settings in the ``DEFAULT``
 section from Roundup. They are only useful when interpolated into
