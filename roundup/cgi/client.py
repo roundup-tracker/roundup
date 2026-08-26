@@ -1830,7 +1830,7 @@ class Client:
                         'userid': current_user, 'origin': origin}
                 if enforce in ('required', 'yes'):
                     logger.error(logmsg)
-                    raise Unauthorised(self._("Invalid Origin %s" % origin))
+                    raise Unauthorised(self._("Invalid Origin %s") % origin)
                 if enforce == 'logfailure':
                     logger.warning(logmsg)
             else:
@@ -3085,9 +3085,9 @@ class Client:
                                 "Cache failure: "
                                 "compressed file %(compressed)s is "
                                 "older than its source file "
-                                "%(filename)s" % {
+                                "%(filename)s") % {
                                     'filename': filename,
-                                    'compressed': trial_filename}))
+                                    'compressed': trial_filename})
 
                             continue
                         filename = trial_filename

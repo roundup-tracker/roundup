@@ -3710,7 +3710,7 @@ class TemplatingUtils:
             pass
         else:
             raise ValueError(self._(
-                'The excluded_fields parameter is invalid.'
+                'The excluded_fields parameter is invalid. '
                 'It must have a __contains__ method.')
             )
 

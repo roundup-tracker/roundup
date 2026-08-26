@@ -2104,7 +2104,7 @@ Erase it? Y/N: """) % locals())
                 if permission.klass:
                     if permission.properties:
                         sys.stdout.write(_(
-                            ' %(description)s (%(name)s for "%(klass)s"' +
+                            ' %(description)s (%(name)s for "%(klass)s"'
                             ': %(properties)s only)\n') % d)
                         # verify that properties exist; report bad props
                         bad_props = []

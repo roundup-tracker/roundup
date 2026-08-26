@@ -401,7 +401,7 @@ class Date:
         if m is None:
             raise ValueError(self._('Not a date spec: %r '
                 '("yyyy-mm-dd", "mm-dd", "HH:MM", "HH:MM:SS" or '
-                '"yyyy-mm-dd.HH:MM:SS.SSS")' % spec))
+                '"yyyy-mm-dd.HH:MM:SS.SSS")') % spec)
 
         info = m.groupdict()
 
@@ -847,8 +847,8 @@ class Interval:
             m = interval_re.match(spec)
             if not m:
                 raise ValueError(self._('Not an interval spec: "%s"'
-                    ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec])'
-                    % spec))
+                    ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec])')
+                    % spec)
         else:
             allowdate = 0
 
@@ -870,8 +870,8 @@ class Interval:
         # make sure it's valid
         if not valid and not info['D']:
             raise ValueError(self._('Not an interval spec: "%s"'
-                ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS])'
-                % spec))
+                ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS])')
+                % spec)
 
         if self.week:
             self.day = self.day + self.week*7
