@@ -54,6 +54,10 @@ Features:
   a cached tracker is on and unable to be disabled. The improvement
   has been available since 2022 and has been the default since
   2024. (John Rouillard)
+- update pygettext.py to: extract implicit string concatenation where
+  first string is empty; include comment extraction for translator
+  hints; support testing and add tests. Module used by
+  roundup-gettext. (John Rouillard)
 
 2026-07-13 2.6.0
 

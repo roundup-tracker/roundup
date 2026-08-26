@@ -14,6 +14,13 @@
 #
 # 2024-07-13 John Rouillard (rouilj@users.sourceforge.net)
 #   Converted from python 2.
+#
+# 2026-08-26 John Rouillard (rouilj@users.sourceforge.net)
+#   Added support for testing.
+#   Added support for marking comments for translator hints.
+#   Added support for extracting strings that are implicitly
+#   concatenated where the first string is empty. E.G.
+#     ""'''I will be extracted'''
 
 # for selftesting
 try:
@@ -84,6 +91,12 @@ Options:
     --extract-all
         Extract all strings.
 
+    -c TAG
+    --add-comments=TAG
+        Extract translator comments.  Comments must start with TAG and
+        must precede the gettext call.  Multiple -c TAG options are allowed.
+        In that case, any comment matching any of the TAGs will be extracted.
+
     -d name
     --default-domain=name
         Rename the default output file from messages.pot to name.pot.
@@ -91,6 +104,11 @@ Options:
     -E
     --escape
         Replace non-ASCII characters with octal escape sequences.
+
+    --no-extract-concat
+        By default implict string concatenation of two strings where the
+        first is empty ("" or '') will extract the second string. Used
+        to mark docstrings for extraction in admin.py and elsewhere.
 
     -D
     --docstrings
@@ -323,6 +341,7 @@ class TokenEater:
         self.__messages = {}
         self.__state = self.__waiting
         self.__data = []
+        self.__hints = []
         self.__lineno = -1
         self.__freshmodule = 1
         self.__curfile = None
@@ -332,7 +351,24 @@ class TokenEater:
 ##        import token
 ##        print(('ttype:', token.tok_name[ttype], \
 ##              'tstring:', tstring), file=sys.stderr)
-        self.__state(ttype, tstring, stup[0])
+        if ttype == tokenize.COMMENT:
+            position_at_tag = tstring[1:].lstrip()
+            tag = position_at_tag.split(maxsplit=1)
+            if tag and tag[0] in self.__options.tags:
+                self.__hints.append(position_at_tag[len(tag[0]):].lstrip())
+
+        # add check against __openseen to handle case:
+        # _( ''"string 1" ""' string 2' should be one
+        # extracted string. Note the above is bad form concated
+        # strings should not be used. If they need to separate:
+        # _("string1") + _(" string 2").
+        if (tstring in ["''", '""'] and
+            self.__state != self.__openseen and
+            self.__options.extract_concat):
+            self.__state=self.__emptystringseen
+        else:
+            self.__state(ttype, tstring, stup[0])
+        #self.__state(ttype, tstring, stup[0])
 
     def __waiting(self, ttype, tstring, lineno):
         opts = self.__options
@@ -368,6 +404,18 @@ class TokenEater:
             # there was no class docstring
             self.__state = self.__waiting
 
+    def __emptystringseen(self, ttype, tstring, lineno):
+        """implement token extraction for empty string followed
+           by non-empty string:
+            ''"dddd"
+            ""'dddd'
+            ""'''foo multiline'''
+            or ''"" " multiline "" "  (space added to not terminate docstring)
+        """
+        if ttype == token.STRING:  # we extract this string
+            self.__addentry(safe_eval(tstring), lineno)
+        self.__state = self.__waiting
+            
     def __keywordseen(self, ttype, tstring, lineno):
         if ttype == tokenize.OP and tstring == '(':
             self.__data = []
@@ -402,9 +450,13 @@ class TokenEater:
     def __addentry(self, msg, lineno=None, isdocstring=0):
         if lineno is None:
             lineno = self.__lineno
+        hints = self.__hints if self.__hints else None
         if msg not in self.__options.toexclude:
             entry = (self.__curfile, lineno)
-            self.__messages.setdefault(msg, {})[entry] = isdocstring
+            self.__messages.setdefault(msg, {})[entry] = {
+                "isdocstring": isdocstring, "hints": hints
+            }
+        self.__hints = []
 
     def set_filename(self, filename):
         self.__curfile = filename
@@ -433,8 +485,14 @@ class TokenEater:
                 # If the entry was gleaned out of a docstring, then add a
                 # comment stating so.  This is to aid translators who may wish
                 # to skip translating some unimportant docstrings.
-                if reduce(operator.__add__, v.values()):
+                if reduce(operator.__add__,
+                          [d['isdocstring'] for d in v.values()]):
                     isdocstring = 1
+                hints = []
+                for d in v.values():
+                    h_list = d['hints']
+                    if h_list:
+                        hints += h_list
                 # k is the message string, v is a dictionary-set of (filename,
                 # lineno) tuples.  We want to sort the entries in v first by
                 # file name and then by line number.
@@ -454,7 +512,7 @@ class TokenEater:
                     locline = '#:'
                     for filename, lineno in v:
                         d = {'filename': filename, 'lineno': lineno}
-                        s = _(' %(filename)s:%(lineno)d') % d
+                        s = ' %(filename)s:%(lineno)d' % d
                         if len(locline) + len(s) <= options.width:
                             locline = locline + s
                         else:
@@ -464,18 +522,24 @@ class TokenEater:
                         print(locline, file=fp)
                 if isdocstring:
                     print('#, docstring', file=fp)
+                if hints:
+                    print("#, ", file=fp, end="")
+                    print('\n#, '.join(hints), file=fp)
                 print('msgid', normalize(k), file=fp)
                 print('msgstr ""\n', file=fp)
 
 
-def main():
+def main(argv = None):
     global default_keywords
+    if argv is None:
+        argv = sys.argv[1:]
     try:
         opts, args = getopt.getopt(
-            sys.argv[1:],
-            'ad:DEhk:Kno:p:S:Vvw:x:X:',
-            ['extract-all', 'default-domain=', 'escape', 'help',
-             'keyword=', 'no-default-keywords',
+            argv,
+            'ac:d:DEhk:Kno:p:S:Vvw:x:X:',
+            ['extract-all', 'add-comments=', 'default-domain=', 'escape',
+             'help',
+             'keyword=', 'no-default-keywords', 'no-extract-concat',
              'add-location', 'no-location', 'output=', 'output-dir=',
              'style=', 'verbose', 'version', 'width=', 'exclude-file=',
              'docstrings', 'no-docstrings',
@@ -491,11 +555,13 @@ def main():
         # defaults
         extractall = 0 # FIXME: currently this option has no effect at all.
         escape = 0
+        extract_concat = 1
         keywords = []
         outpath = ''
         outfile = 'messages.pot'
         writelocations = 1
         locationstyle = GNU
+        tags = []
         verbose = 0
         width = 78
         excludefilename = ''
@@ -513,10 +579,14 @@ def main():
             usage(0)
         elif opt in ('-a', '--extract-all'):
             options.extractall = 1
+        elif opt in ('-c', '--add-comments'):
+            options.tags.append(arg)
         elif opt in ('-d', '--default-domain'):
             options.outfile = arg + '.pot'
         elif opt in ('-E', '--escape'):
             options.escape = 1
+        elif opt in ('--no-extract-concat'):
+            options.extract_concat = 0
         elif opt in ('-D', '--docstrings'):
             options.docstrings = 1
         elif opt in ('-k', '--keyword'):
@@ -626,7 +696,38 @@ def main():
 if __name__ == '__main__':
     main()
     # some more test strings
-    _(u'a unicode string')
+    # mark with ### to allow removal from roundup.pot via:
+    #  	msggrep -v -K -e '###'
+    # so translators don't get the junk.
+    
+    _(u'### a unicode string')
     # this one creates a warning
-    _('*** Seen unexpected token "%(token)s"') % {'token': 'test'}
-    _('more' 'than' 'one' 'string')
+    _('### Seen unexpected token "%(token)s"' % {'token': 'test'})
+    _('###' 'more' 'than' 'one' 'string')
+
+    # test for -k foo
+    foo = lambda s: None
+    foo("### " "a" "list" "of" "words")
+
+
+class AdminMock:
+    """Exists to test the string extraction done in admin.py"""
+    
+    def extract_docstring_by_quotes():
+        ''"""###
+        docstring by quotes
+        """
+        pass
+
+    def extract_nondocstring_by_quotes():
+        """ """
+        pass
+        # .hint extract non docstring
+        ''"""###
+        non docstring by quotes
+        """
+        pass
+
+    def bad_use_of_concat():
+        # .hint hint don't do this
+        _(''"### concat " ""'me only')

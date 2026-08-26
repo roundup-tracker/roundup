@@ -9,6 +9,7 @@ import time
 import unittest
 
 import roundup.anypy.cmp_
+import roundup.pygettext
 
 from roundup import install_util
 from roundup.anypy.strings import StringIO  # define StringIO
@@ -45,6 +46,71 @@ class CmpTest(unittest.TestCase):
     def testCmp(self):
         roundup.anypy.cmp_._test()
 
+class PyGetText(unittest.TestCase):
+    """Warning capsys is used for these tests, print()
+       can break the tests.
+
+       clear print() output by readouterr() after any screen output.
+    """
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, capsys):
+        self._capsys = capsys
+
+    def test_main(self):
+        """print without _capsys.disabled() will break tests"""
+
+
+        with self.assertRaises(SystemExit) as e:
+            roundup.pygettext.main(["--version"])
+
+        out, err = self._capsys.readouterr()
+        self.assertEqual("pygettext.py (xgettext for Python) 1.5\n", out)
+
+        ## error run
+        with self.assertRaises(SystemExit) as e:
+            roundup.pygettext.main(["-x" "excludes.txt",
+                                    "roundup/pygettext.py"])
+            out, err = self._capsys.readouterr()
+            self.assertIn("Can't read --exclude-file", err)
+
+
+        ##### normal run with foo() as alternate name for _
+        roundup.pygettext.main(["--output", "-", "-k", "foo",
+                                "roundup/pygettext.py"])
+
+        out, err = self._capsys.readouterr()
+        #with self._capsys.disabled():
+        #    print(f'{out}\n\n{err=}\n')
+        self.assertIn('unexpected token "%"', err)
+        self.assertIn(r"MIME-Version: 1.0\n", out)
+        
+        # all test strings not for production
+        self.assertIn(r'"###morethanonestring"', out)
+        self.assertIn(r"a unicode string", out)
+        self.assertIn("alistofwords", out)
+        self.assertIn("docstring by quotes", out)
+        self.assertIn("non docstring by quotes", out)
+        self.assertIn("concat me only", out)
+        # not running with -c .hint
+        self.assertNotIn("#, don't do this", out)
+
+        ##### normal run with hint and not foo()
+        roundup.pygettext.main(["--output", "-", "-c", ".hint",
+                                "roundup/pygettext.py"])
+
+        out, err = self._capsys.readouterr()
+        self.assertIn("unexpected token \"%\"", err)
+        self.assertIn(r"MIME-Version: 1.0\n", out)
+
+        # all test strings not for production
+        self.assertIn('"###morethanonestring"', out)
+        self.assertIn("a unicode string", out)
+        self.assertNotIn("alistofwords", out)
+        self.assertIn("docstring by quotes", out)
+        self.assertIn("non docstring by quotes", out)
+        self.assertIn("concat me only", out)
+        self.assertIn("#, extract non docstring", out)
+        self.assertIn("#, hint don't do this", out)
 
 class InstallUtils(unittest.TestCase):
     @classmethod
