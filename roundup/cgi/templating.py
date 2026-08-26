@@ -1407,7 +1407,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                     # unknown event!!
                     comments['unknown'] = self._(
                         "<strong><em>This event %s is not handled"
-                        " by the history display!</em></strong>" % action)
+                        " by the history display!</em></strong>") % action
                     arg_s = '<strong><em>' + str(args) + '</em></strong>'
 
             date_s = date_s.replace(' ', '&nbsp;')
