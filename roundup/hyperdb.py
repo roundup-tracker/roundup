@@ -1379,6 +1379,8 @@ class Class:
             else:
                 j_repr = ''
             if args and isinstance(args, dict):
+                # must create copy of args.keys() using list
+                # we modify args inside loop.
                 for key in list(args.keys()):
                     if key not in self.properties:
                         if enforceperm and not allow_obsolete:
