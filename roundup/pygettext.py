@@ -229,10 +229,8 @@ def make_escapes(pass_iso8859):
 
 
 def escape(s):
-    s = list(s)
-    for i in range(len(s)):
-        s[i] = escapes[ord(s[i])]
-    return EMPTYSTRING.join(s)
+    newlist = [escapes[ord(c)] for c in s]
+    return EMPTYSTRING.join(newlist)
 
 
 def safe_eval(s):
@@ -250,12 +248,10 @@ def normalize(s):
         if not lines[-1]:
             del lines[-1]
             lines[-1] = lines[-1] + '\n'
-        for i in range(len(lines)):
-            lines[i] = escape(lines[i])
+        escaped_list = [escape(l) for l in lines]
         lineterm = '\\n"\n"'
-        s = '""\n"' + lineterm.join(lines) + '"'
+        s = '""\n"' + lineterm.join(escaped_list) + '"'
     return s
-
 
 def containsAny(string, inset):
     """Check whether 'str' contains ANY of the chars in 'set'"""
