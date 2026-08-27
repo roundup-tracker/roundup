@@ -41,11 +41,13 @@ class Options:
     # defaults
     extractall = 0 # FIXME: currently this option has no effect at all.
     escape = 0
+    extract_concat = 1
     keywords = ["_", "gettext", "ngettext", "ugettext"]
     outpath = ''
     outfile = ''
     writelocations = 1
     locationstyle = GNU
+    tags = [".hint"]
     verbose = 0
     width = 10
     excludefilename = ''

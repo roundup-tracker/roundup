@@ -526,9 +526,8 @@ These message catalogs are searched prior to system-wide translations
 kept in the ``share`` directory.
 
 Note that ``roundup-gettext`` only works with trackers using TAL based
-templates. Also it does not support the markup used for deferred
-translations. Deferred translation strings have to be manually added
-to messages.pot.  It also does not support hint comments.
+templates. It supports the markup used for deferred translations and
+supports hint comments by starting the comment with ``.hint``.
 
 If you are using a jinja2 based template, it looks like the
 `jinja-i18n-tools`_ package might be helpful. It can be installed
