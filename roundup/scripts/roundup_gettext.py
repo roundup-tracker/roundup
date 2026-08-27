@@ -112,7 +112,7 @@ def run():
     make_escapes(not tokeneater_options.escape)
 
     pyfiles = []
-    for source in ["detectors", "extensions"]:
+    for source in ["detectors", "extensions", "lib"]:
         for root, _dirs, files in os.walk(os.path.join("..", source)):
             pyfiles.extend([os.path.join(root, f) for f in files if f.endswith(".py")])
 
