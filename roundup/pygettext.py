@@ -243,7 +243,7 @@ def make_escapes(pass_iso8859):
     escapes[ord('\t')] = '\\t'
     escapes[ord('\r')] = '\\r'
     escapes[ord('\n')] = '\\n'
-    escapes[ord('\"')] = '\\"'
+    escapes[ord('"')] = '\\"'
 
 
 def escape(s):
@@ -270,6 +270,7 @@ def normalize(s):
         lineterm = '\\n"\n"'
         s = '""\n"' + lineterm.join(escaped_list) + '"'
     return s
+
 
 def containsAny(string, inset):
     """Check whether 'str' contains ANY of the chars in 'set'"""
@@ -328,7 +329,7 @@ def getFilesForName(name):
                  if os.path.splitext(file)[1] == _py_ext]
                 )
         return lst
-    elif os.path.exists(name):
+    if os.path.exists(name):
         # a single file
         return [name]
 
@@ -365,7 +366,7 @@ class TokenEater:
         if (tstring in ["''", '""'] and
             self.__state != self.__openseen and
             self.__options.extract_concat):
-            self.__state=self.__emptystringseen
+            self.__state = self.__emptystringseen
         else:
             self.__state(ttype, tstring, stup[0])
         #self.__state(ttype, tstring, stup[0])
@@ -415,7 +416,7 @@ class TokenEater:
         if ttype == token.STRING:  # we extract this string
             self.__addentry(safe_eval(tstring), lineno)
         self.__state = self.__waiting
-            
+
     def __keywordseen(self, ttype, tstring, lineno):
         if ttype == tokenize.OP and tstring == '(':
             self.__data = []
@@ -529,7 +530,7 @@ class TokenEater:
                 print('msgstr ""\n', file=fp)
 
 
-def main(argv = None):
+def main(argv=None):
     global default_keywords
     if argv is None:
         argv = sys.argv[1:]
@@ -699,7 +700,7 @@ if __name__ == '__main__':
     # mark with ### to allow removal from roundup.pot via:
     #  	msggrep -v -K -e '###'
     # so translators don't get the junk.
-    
+
     _(u'### a unicode string')
     # this one creates a warning
     _('### Seen unexpected token "%(token)s"' % {'token': 'test'})
@@ -712,7 +713,7 @@ if __name__ == '__main__':
 
 class AdminMock:
     """Exists to test the string extraction done in admin.py"""
-    
+
     def extract_docstring_by_quotes():
         ''"""###
         docstring by quotes
