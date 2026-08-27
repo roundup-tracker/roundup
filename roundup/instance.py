@@ -208,7 +208,11 @@ class Tracker:
                         raise TrackerError(
                             "%(exception)s found when loading tracker extension: %(name)s" % {
                                 "exception": e, "name": os.path.join(dirname, name)})
-                    extensions.append(env['init'])
+                    try:
+                        extensions.append(env['init'])
+                    except KeyError:
+                        raise TrackerError("Missing init() function in "
+                                           f"{os.path.join(dirpath, name)}.")
             sys.path.remove(dirpath)
         return extensions
 
