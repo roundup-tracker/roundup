@@ -64,8 +64,9 @@ TEMPLATE_FILE = "messages.pot"
 
 
 def run():
+    right_arg_count = 2
     # return unless command line arguments contain single directory path
-    if (len(sys.argv) != 2) or (sys.argv[1] in ("-h", "--help")):
+    if (len(sys.argv) != right_arg_count) or (sys.argv[1] in ("-h", "--help")):
         print(_("Usage: %(program)s <tracker home>") %
               {"program": sys.argv[0]})
         return
