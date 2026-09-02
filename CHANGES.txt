@@ -44,6 +44,10 @@ Fixed:
 - issue2551425 - userauditor rejects valid alternate_addresses that
   are substrings of existing ones. (Mattias Reuterskiöld (matre),
   w/doc by John Rouillard).
+- fractional simple timezone offsets like "3.5" are now supported.
+  Fixed timezones like Tehran Iran is 3.5 hours off from GMT.
+  If you need this, you should probably be using named timezones
+  with pytz. (John Rouillard)
 
 Features:
 

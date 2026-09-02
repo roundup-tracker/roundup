@@ -43,9 +43,10 @@ class UserAuditorTest(unittest.TestCase):
 
         userid = self.db.user.lookup('kyle')
 
-        # TODO: roundup should accept non-integer offsets since those are valid
-        # this is the offset for Tehran, Iran
-        #self.db.user.set(userid, timezone='3.5')
+        # Check non-integer offsets since those are valid
+        # +3.5 is the offset for Tehran, Iran
+        self.db.user.set(userid, timezone='3.5')
+        self.db.user.set(userid, timezone='-3.5')
 
         self.db.user.set(userid, timezone='-23')
         self.db.user.set(userid, timezone='23')

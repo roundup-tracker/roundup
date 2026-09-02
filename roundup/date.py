@@ -106,7 +106,10 @@ class SimpleTimezone(datetime.tzinfo):
             self.name = "Etc/GMT%+d" % self.offset
 
     def utcoffset(self, dt):
-        return datetime.timedelta(hours=self.offset)
+        offset = self.offset
+        # preserve sign. -3.5 should provide -3 hours and -30 minutes
+        minutes = int((offset - int(offset)) * 60) if int(offset) != offset else 0
+        return datetime.timedelta(hours=int(self.offset), minutes=minutes)
 
     def tzname(self, dt):
         return self.name
@@ -135,9 +138,10 @@ def get_timezone(tz):
     # XXX should we return UTC for None?
     if tz is None:
         return None
-    # try integer offset first for backward compatibility
+
+    # try integer/float offset first for backward compatibility
     try:
-        utcoffset = int(tz)
+        utcoffset = float(tz)
     except (TypeError, ValueError):
         pass
     else:
