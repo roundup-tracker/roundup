@@ -82,6 +82,10 @@ class UserAuditorTest(unittest.TestCase):
         self.assertRaises(ValueError, self.db.user.set, uid, address='sp_ken@example.com')
         self.assertRaises(ValueError, self.db.user.set, uid, alternate_addresses='kenny@example.com')
 
+        # substrings of existing alternates should be allowed, but not exact matches
+        self.db.user.set(uid, alternate_addresses='p_ken@example.com')
+        self.assertRaises(ValueError, self.db.user.set, uid, alternate_addresses='sp_ken@example.com')
+
     def testBadRoles(self):
         userid = self.db.user.lookup('kyle')
         self.assertRaises(ValueError, self.db.user.set, userid, roles='BadRole')

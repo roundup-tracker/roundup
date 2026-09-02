@@ -222,6 +222,40 @@ These warning started showing up on newer Python versions.  It is
 possible it will be an error on future Python versions, so best check
 for and fix it now.
 
+Update userauditor to ignore substring matches (recommended)
+------------------------------------------------------------
+
+In Roundup, users are linked to one primary address and can be linked
+to one or more secondary addresses. If any address changes, the
+userauditor verifies that the changed address is not used by another
+user. Mattias Reuterskiöld (matre) fixed a bug in the userauditor that
+caused incorrect address matching when one address was a substring of
+another. For example, the address ``ed@example.org`` would wrongly
+match ``fred@example.or``.
+
+The simplest way to fix this in your trackers is to copy and replace
+``detectors/userauditor.py`` in your tracker's home directory with an
+updated ``userauditor.py`` from a 2.7 tracker template.
+
+If you have changed your userauditor you can apply the following
+change to your current userauditor. In ``detectors/userauditor.py``
+find the following code::
+
+     # make sure none of the alts are owned by anyone other than us (x!=nodeid)
+     check_alts = [x for x in db.user.filter(None, {'alternate_addresses' : address}) if x != nodeid]
+
+and replace it with this::
+
+     # make sure none of the alts are owned by anyone other than us (x!=nodeid)     check_alts = [
+         x for x in db.user.filter(None, {'alternate_addresses': address})
+         if x != nodeid
+         and address in db.user.get(x, 'alternate_addresses').split('\n')
+     ]
+
+(make sure to match the indentation of the existing code). This adds
+an extra check to the list comprehension. The extra check compares the
+new address against each full address in the alternate_addresses list.
+
 Update classhelper.js (optional)
 --------------------------------
 

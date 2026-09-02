@@ -73,7 +73,11 @@ def audit_user_fields(db, cl, nodeid, newvalues):
             check_main = nodeid not in check_main
 
         # make sure none of the alts are owned by anyone other than us (x!=nodeid)
-        check_alts = [x for x in db.user.filter(None, {'alternate_addresses' : address}) if x != nodeid]
+        check_alts = [
+            x for x in db.user.filter(None, {'alternate_addresses': address})
+            if x != nodeid
+            and address in db.user.get(x, 'alternate_addresses').split('\n')
+        ]
         if check_main or check_alts:
             raise ValueError('Email address %s already in use' % address)
 

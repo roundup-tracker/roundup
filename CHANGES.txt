@@ -41,6 +41,9 @@ Fixed:
 - issue2551332 - roundup-admin updateconfig does not preserve DEFAULT
   section or interpolation tokens. Documented how to use DEFAULT
   section and interpolation on reference page. (John Rouillard)
+- issue2551425 - userauditor rejects valid alternate_addresses that
+  are substrings of existing ones. (Mattias Reuterskiöld (matre),
+  w/doc by John Rouillard).
 
 Features:
 
