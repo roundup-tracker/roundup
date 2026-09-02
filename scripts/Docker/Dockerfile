@@ -26,8 +26,8 @@ ARG source=local
 # Note this is the index digest for the image, not the manifest digest.
 # The index digest is shared across archetectures (amd64, arm64 etc.)
 # while the manifest digest is unique per platform/arch.
-# 3-alpine is alias for 3.14-alpine3.24
-ARG SHA256=05b2b8b732ecd268fee8727a369f936f022d1321b59befd13c30ede22769dcdc
+# 3-alpine is alias for 3.14.7-alpine3.24
+ARG SHA256=c6ead215bfd31f1e433d968853b7a769989117115b728874824e6c0a27cb96fc
 
 # Set to any non-empty value to enable shell debugging for troubleshooting
 ARG VERBOSE=
