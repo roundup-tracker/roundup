@@ -207,26 +207,6 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             return self.classes[classname]
         raise AttributeError(classname)
 
-    def addclass(self, cl):
-        cn = cl.classname
-        if cn in self.classes:
-            raise ValueError(_('Class "%s" already defined.') % cn)
-        self.classes[cn] = cl
-
-        # add default Edit and View permissions
-        self.security.addPermission(
-            name="Create", klass=cn,
-            description="User is allowed to create "+cn)
-        self.security.addPermission(
-            name="Edit", klass=cn,
-            description="User is allowed to edit "+cn)
-        self.security.addPermission(
-            name="View", klass=cn,
-            description="User is allowed to access "+cn)
-        self.security.addPermission(
-            name="Retire", klass=cn,
-            description="User is allowed to retire "+cn)
-
     def getclasses(self):
         """Return a list of the names of all existing classes."""
         return sorted(self.classes.keys())
