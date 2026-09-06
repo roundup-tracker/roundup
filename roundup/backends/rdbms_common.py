@@ -75,12 +75,6 @@ from roundup.mlink_expr import compile_expression, ExpressionError
 # dummy value meaning "argument not passed"
 _marker = []
 
-# python 3 doesn't have a unicode type
-try:
-    unicode  # noqa: F821
-except NameError:
-    unicode = str
-
 
 def _num_cvt(num):
     num = str(num)
@@ -1789,7 +1783,7 @@ class Class(hyperdb.Class):
                                            (self.classname, newid, key))
 
             elif isinstance(prop, String):
-                if not isinstance(value, (str, unicode)):
+                if not isinstance(value, str):
                     raise TypeError('new property "%s" not a string' % key)
                 if prop.indexme:
                     self.db.indexer.add_text((self.classname, newid, key),
@@ -2101,7 +2095,7 @@ class Class(hyperdb.Class):
                     journalvalues[propname] = tuple(l)
 
             elif isinstance(prop, String):
-                if value is not None and not isinstance(value, (str, unicode)):
+                if value is not None and not isinstance(value, str):
                     raise TypeError(
                         'new property "%s" not a string' % propname)
                 if prop.indexme:

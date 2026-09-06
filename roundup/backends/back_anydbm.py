@@ -61,13 +61,6 @@ def db_nuke(config):
     shutil.rmtree(config.DATABASE)
 
 
-# python 3 doesn't have a unicode type
-try:
-    unicode  # noqa: F821
-except NameError:
-    unicode = str
-
-
 # marker used for an unspecified keyword argument
 _marker = []
 
@@ -974,7 +967,7 @@ class Class(hyperdb.Class):
                                            (self.classname, newid, key))
 
             elif isinstance(prop, hyperdb.String):
-                if not isinstance(value, (str, unicode)):
+                if not isinstance(value, str):
                     raise TypeError('new property "%s" not a string' % key)
                 if prop.indexme:
                     self.db.indexer.add_text(
@@ -1332,7 +1325,7 @@ class Class(hyperdb.Class):
                     journalvalues[propname] = tuple(l)
 
             elif isinstance(prop, hyperdb.String):
-                if value is not None and not isinstance(value, (str, unicode)):
+                if value is not None and not isinstance(value, str):
                     raise TypeError('new property "%s" not a '
                                     'string' % propname)
                 if prop.indexme:
