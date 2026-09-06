@@ -299,7 +299,7 @@ class ClientSetup():
 @skip_hypothesis
 class FuzzGetUrls(WsgiSetup, ClientSetup):
 
-    _max_examples = 100
+    _max_examples = int(os.environ.get('pytest_fuzz_max_examples', 0)) or 100
 
     # Timeout for each fuzz test in ms. Use env variable in local
     # pytest.ini if your dev environment can't complete in the default
@@ -363,7 +363,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
 @skip_hypothesis
 class FuzzTestSettingData(WsgiSetup, ClientSetup):
 
-    _max_examples = 100
+    _max_examples = int(os.environ.get('pytest_fuzz_max_examples', 0)) or 100
 
     # Timeout for each fuzz test in ms. Use env variable in local
     # pytest.ini if your dev environment can't complete in the default
