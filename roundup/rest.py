@@ -56,7 +56,6 @@ try:
     basestring  # noqa: B018
 except NameError:
     basestring = str
-    unicode = str
 
 
 def _data_decorator(func):
@@ -553,7 +552,8 @@ class RestfulInstance(object):
 
         """
         prop = None
-        if isinstance(key, unicode):
+        # note 'str' was 'unicode'. Is this check needed?        
+        if isinstance(key, str): 
             try:
                 key.encode('ascii')  # Check to see if it can be encoded
             except UnicodeEncodeError:
@@ -2731,7 +2731,7 @@ class RestfulInstance(object):
                 import numbers
                 for key, val in output['error'].items():
                     if (isinstance(val, numbers.Number) or
-                       isinstance(val, (str, unicode))):  # noqa: SIM114
+                       isinstance(val, str)):  # noqa: SIM114
                         pass
                     elif hasattr(val, 'isoformat'):  # datetime # noqa: SIM114
                         pass
