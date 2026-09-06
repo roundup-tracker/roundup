@@ -297,7 +297,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     #
     # Node IDs
     #
-    def newid(self, classname):
+    def newid(self, classname: str) -> str:
         """ Generate a new id for the given class
         """
         # open the ids DB - create if if doesn't exist

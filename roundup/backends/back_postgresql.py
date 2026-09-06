@@ -542,7 +542,7 @@ class Database(rdbms_common.Database):
         sql = 'drop sequence _%s_ids' % cn
         self.sql(sql)
 
-    def newid(self, classname):
+    def newid(self, classname: str) -> str:
         sql = "select nextval('_%s_ids') from dual" % classname
         self.sql(sql)
         return str(self.cursor.fetchone()[0])

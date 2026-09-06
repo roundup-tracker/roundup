@@ -450,7 +450,7 @@ class Database(rdbms_common.Database):
         return 0
 
     # old-skool id generation
-    def newid(self, classname):
+    def newid(self, classname: str) -> str:
         """ Generate a new id for the given class
         """
 

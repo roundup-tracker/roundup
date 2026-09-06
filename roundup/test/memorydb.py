@@ -411,7 +411,7 @@ class Database(back_anydbm.Database):
     #
     # Node IDs
     #
-    def newid(self, classname):
+    def newid(self, classname: str) -> str:
         self.ids[classname] += 1
         return str(self.ids[classname])
 
