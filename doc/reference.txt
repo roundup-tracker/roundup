@@ -481,8 +481,24 @@ Properties have attributes to change the default behaviour:
 
   - ``required``: see `design documentation`_. Adds the property to
     the list returned by calling get_required_props for the class.
-  - ``default_value``: see `design documentation`_ Sets the default
-    value if the property is not set.
+  - ``default_value``: see `design documentation`_ if the property
+    is not set, the default value is used when creating the entry
+    and it will be displayed as the default value in the web
+    interface if the value is not set.
+
+    For all types, you have to use a value that matches
+    the type. E.G. ``Integer(default_value=1)``,
+    ``String(default_value="not set")``,
+    ``Date(default_value=date.Date("1970-01-01T12:00:00")`` (where
+    date is imported with ``from roundup import date``).
+
+    For a Link property type, you must use an item id. For example
+    if the priority named "bug" is at id 3, you must use:
+    ``default_value="3"`` rather than using the key name
+    ``default_value="bug"``. Both will work correctly in the HTML
+    interface, but only the id value will work for other means of
+    creating an item. Multilink items do not support
+    default_value.
   - ``quiet``: see `design documentation`_. Suppresses reporting user
     visible changes to this property. The property change is not reported:
 

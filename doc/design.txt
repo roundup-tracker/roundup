@@ -281,19 +281,27 @@ required=False:
         if set to True, the property name is returned when calling
         get_required_props(self, propnames = []). Any additional props
         specified in propnames is merged with the required props.
+        An auditor is required to reject the submission if it is
+        unset/empty.
 
 default_value=None or [] depending on object type:
         this sets the default value if none is specified. The default
         value can be retrieved by calling the get_default_value()
-        method on the property object.
- 
-E.G. assuming title is part of an Issue::
+        method on the property object. On creation, the default_value
+        is assigned to the property if the user does not assign one.
+        If the user tries to unset the value, an auditor can be used
+        to set it back to the default value using get_default_value().
 
-    title=String(required=True, default_value="not set",quiet=True)
+E.G. assuming summary is part of an Issue::
 
-will create a property called ``title`` that will be included in the
+    summary=String(required=True, default_value="not set", quiet=True)
+
+will create a property called ``summary`` that will be included in the
 get_required_props() output. Calling
-db.issue.properties['title'].get_default_value() will return "not set".
+db.issue.properties['summary'].get_default_value() will return "not
+set". If ``summary`` was not set on creation, it will have the value
+``not set``.
+
 Changes to the property will not be displayed in:
 
    - emailed change notes,
