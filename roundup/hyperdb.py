@@ -2091,7 +2091,7 @@ class Class:
         """Add (or refresh) the node to search indexes"""
         # find all the String properties that have indexme
         for prop, propclass in self.getprops().items():
-            if isinstance(propclass, hyperdb.String) and propclass.indexme:
+            if isinstance(propclass, String) and propclass.indexme:
                 # index them under (classname, nodeid, property)
                 self.db.indexer.add_text((self.classname, nodeid, prop),
                                          str(self.get(nodeid, prop)))
