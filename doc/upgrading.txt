@@ -246,7 +246,8 @@ find the following code::
 
 and replace it with this::
 
-     # make sure none of the alts are owned by anyone other than us (x!=nodeid)     check_alts = [
+     # make sure none of the alts are owned by anyone other than us (x!=nodeid)
+     check_alts = [
          x for x in db.user.filter(None, {'alternate_addresses': address})
          if x != nodeid
          and address in db.user.get(x, 'alternate_addresses').split('\n')
