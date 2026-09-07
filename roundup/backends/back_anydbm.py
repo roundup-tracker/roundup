@@ -1902,28 +1902,6 @@ class Class(hyperdb.Class):
             d['actor'] = hyperdb.Link('user')
         return d
 
-    def addprop(self, **properties):
-        """Add properties to this class.
-
-        The keyword arguments in 'properties' must map names to property
-        objects, or a TypeError is raised.  None of the keys in 'properties'
-        may collide with the names of existing properties, or a ValueError
-        is raised before any properties have been added.
-        """
-        for key in properties:
-            if key in self.properties:
-                raise ValueError(key)
-        self.properties.update(properties)
-
-    def index(self, nodeid):
-        """ Add (or refresh) the node to search indexes """
-        # find all the String properties that have indexme
-        for prop, propclass in self.getprops().items():
-            if isinstance(propclass, hyperdb.String) and propclass.indexme:
-                # index them under (classname, nodeid, property)
-                self.db.indexer.add_text((self.classname, nodeid, prop),
-                                         str(self.get(nodeid, prop)))
-
     #
     # import / export support
     #
