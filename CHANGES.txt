@@ -48,10 +48,6 @@ Fixed:
   Fixed timezones like Tehran Iran is 3.5 hours off from GMT.
   If you need this, you should probably be using named timezones
   with pytz. (John Rouillard)
-- issue2550911 - make default_value in hyperdb work or at least
-  document its use. Default value is used on creation if no value is
-  set. Doc added on using an auditor to stop edits clearing the value
-  as default is set only on create. (John Rouillard)
 - removing more python2 compatability, refactoring some methods,
   remove/reduce divergence of duplicate code in different code
   paths. (John Rouillard)

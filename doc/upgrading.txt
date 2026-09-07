@@ -283,28 +283,6 @@ classic template directory into your tracker replacing the existing
 ``<roundup-classhelper>`` web component, see the section `Add new
 classhelper to your templates (optional)`_.
 
-
-The default_value is used when creating entries (info)
-------------------------------------------------------
-
-The documentation for creating a new class has documented the
-``default_value`` setting for properties of a hyperdb object. It used
-to be displayed as the default value for a field in the web interface,
-but was not used for items created via other methods (rest, email).
-The ``default_value`` was accessible using the ``get_default_value()``
-method. You could write an auditor to set the default value for the
-property if it was not set on creation.
-
-With this release, the value of the ``default_value`` is used when
-creating the property via any method. If the user tries to erase/unset
-the value after creation, an auditor should be used to set the
-property to the default value.
-
-Without an auditor, it is possible to have the value be unset in the
-database, but display the default value in the web interface. This can
-be confusing. So it is suggested to add an auditor to enforce a
-default value.
-
 .. index:: Upgrading; 2.5.0 to 2.6.0
 
 Migrating from 2.5.0 to 2.6.0

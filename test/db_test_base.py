@@ -1108,7 +1108,7 @@ class DBTest(commonDBTest):
         result=self.db.issue.get(new_issue, 'foo')
         # When the default is automatically set by the hyperdb, change this to
         # match the Interval test below.
-        self.assertEqual(result, date.Interval('-7d'))
+        self.assertEqual(result, None)
 
         # but verify that the default value is retreivable
         result=self.db.issue.properties['foo'].get_default_value()
@@ -2670,10 +2670,7 @@ class DBTest(commonDBTest):
             ae(filt(None, {'foo': 'from 0:50 to 2:00'}), ['1'])
             ae(filt(None, {'foo': 'from 0:50 to 1d 2:00'}), ['1', '2'])
             ae(filt(None, {'foo': 'from 5:50'}), ['2'])
-            # default interval for foo (used by issue3) is -7d
-            ae(filt(None, {'foo': 'to 0:05'}), ['3'])
-            ae(filt(None, {'foo': 'from -1d to 0:05'}), [])
-            ae(filt(None, {'foo': 'from -1d to 0:12'}), ['4'])
+            ae(filt(None, {'foo': 'to 0:05'}), [])
 
     def testFilteringRangeGeekInterval(self):
         ae, iiter = self.filteringSetup()
@@ -4209,8 +4206,7 @@ class FilterCacheTest(commonDBTest):
             , '5' : {'title': 'ts6', 'status': '2', 'assignedto': '9',
                      'priority': '3', 'messages' : ['7']}
             , '6' : {'title': 'ts7', 'status': '1', 'assignedto': '10',
-                     'priority': '3', 'messages' : ['8'],
-                     'foo' : date.Interval('-7d')}
+                     'priority': '3', 'messages' : ['8'], 'foo' : None}
             , '7' : {'title': 'ts8', 'status': '2', 'assignedto': '10',
                      'priority': '3', 'messages' : ['8'], 'foo' : foo}
             , '8' : {'title': 'ts9', 'status': '1', 'assignedto': '10',

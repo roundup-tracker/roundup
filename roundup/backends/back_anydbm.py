@@ -839,8 +839,160 @@ class Class(hyperdb.Class):
         self.do_journal = 0
 
     # Editing nodes:
-    # create() and create_inner() defined by hyperdb.Class
-    
+    # create() inherited from hyperdb.
+
+    def create_inner(self, **propvalues):
+        """ Called by create, in-between the audit and react calls.
+        """
+        if 'id' in propvalues:
+            raise KeyError('"id" is reserved')
+
+        if self.db.journaltag is None:
+            raise hyperdb.DatabaseError(_('Database open read-only'))
+
+        if ('creator' in propvalues or 'actor' in propvalues or
+                'creation' in propvalues or 'activity' in propvalues):
+            raise KeyError('"creator", "actor", "creation" and '
+                           '"activity" are reserved')
+
+        for p in propvalues:
+            prop = self.properties[p]
+            if prop.computed:
+                raise KeyError('"%s" is a computed property' % p)
+
+        # new node's id
+        newid = self.db.newid(self.classname)
+
+        # validate propvalues
+        num_re = re.compile(r'^\d+$')
+        for key, value in propvalues.items():
+            if key == self.key:
+                try:
+                    self.lookup(value)
+                except KeyError:
+                    pass
+                else:
+                    raise ValueError('node with key "%s" exists' % value)
+
+            # try to handle this property
+            try:
+                prop = self.properties[key]
+            except KeyError:
+                raise KeyError('"%s" has no property "%s"' % (
+                    self.classname, key))
+
+            if value is not None and isinstance(prop, hyperdb.Link):
+                if not isinstance(value, str):
+                    raise ValueError('link value must be String')
+                link_class = self.properties[key].classname
+                # if it isn't a number, it's a key
+                if not num_re.match(value):
+                    try:
+                        value = self.db.classes[link_class].lookup(value)
+                    except (TypeError, KeyError):
+                        raise IndexError('new property "%s": %s not a %s' % (
+                            key, value, link_class))
+                elif not self.db.getclass(link_class).hasnode(value):
+                    raise IndexError('%s has no node %s' % (link_class, value))
+
+                # save off the value
+                propvalues[key] = value
+
+                # register the link with the newly linked node
+                if self.do_journal and self.properties[key].do_journal:
+                    self.db.addjournal(link_class, value, 'link',
+                                       (self.classname, newid, key))
+
+            elif isinstance(prop, hyperdb.Multilink):
+                if value is None:
+                    value = []
+                if not hasattr(value, '__iter__') or isinstance(value, str):
+                    raise TypeError(
+                        'new property "%s" not an iterable of ids' % key)
+
+                # clean up and validate the list of links
+                link_class = self.properties[key].classname
+                l = []
+                for entry in value:
+                    if not isinstance(entry, str):
+                        raise ValueError('"%s" multilink value (%r) '
+                                         'must contain Strings' % (key, value))
+                    # if it isn't a number, it's a key
+                    if not num_re.match(entry):
+                        try:
+                            entry = self.db.classes[link_class].lookup(entry)
+                        except (TypeError, KeyError):
+                            raise IndexError(
+                                'new property "%s": %s not a %s' % (
+                                    key, entry,
+                                    self.properties[key].classname))
+                    l.append(entry)
+                value = l
+                propvalues[key] = value
+
+                # handle additions
+                for nodeid in value:
+                    if not self.db.getclass(link_class).hasnode(nodeid):
+                        raise IndexError('%s has no node %s' % (
+                            link_class, nodeid))
+                    # register the link with the newly linked node
+                    if self.do_journal and self.properties[key].do_journal:
+                        self.db.addjournal(link_class, nodeid, 'link',
+                                           (self.classname, newid, key))
+
+            elif isinstance(prop, hyperdb.String):
+                if not isinstance(value, str):
+                    raise TypeError('new property "%s" not a string' % key)
+                if prop.indexme:
+                    self.db.indexer.add_text(
+                        (self.classname, newid, key), value)
+
+            elif isinstance(prop, hyperdb.Password):
+                if value is not None and not isinstance(value, password.Password):
+                    raise TypeError('new property "%s" not a Password' % key)
+
+            elif isinstance(prop, hyperdb.Date):
+                if value is not None and not isinstance(value, date.Date):
+                    raise TypeError('new property "%s" not a Date' % key)
+
+            elif isinstance(prop, hyperdb.Interval):
+                if value is not None and not isinstance(value, date.Interval):
+                    raise TypeError('new property "%s" not an Interval' % key)
+
+            elif value is not None and isinstance(prop, hyperdb.Number):
+                try:
+                    float(value)
+                except ValueError:
+                    raise TypeError('new property "%s" not numeric' % key)
+
+            elif value is not None and isinstance(prop, hyperdb.Integer):
+                try:
+                    int(value)
+                except ValueError:
+                    raise TypeError('new property "%s" not an integer' % key)
+
+            elif value is not None and isinstance(prop, hyperdb.Boolean):
+                try:
+                    int(value)
+                except ValueError:
+                    raise TypeError('new property "%s" not boolean' % key)
+
+        # make sure there's data where there needs to be
+        for key, prop in self.properties.items():
+            if key in propvalues:
+                continue
+            if key == self.key:
+                raise ValueError('key property "%s" is required' % key)
+            if isinstance(prop, hyperdb.Multilink):
+                propvalues[key] = []
+
+        # done
+        self.db.addnode(self.classname, newid, propvalues)
+        if self.do_journal:
+            self.db.addjournal(self.classname, newid, 'create', {})
+
+        return newid
+
     def get(self, nodeid, propname, default=_marker, cache=1, allow_abort=True):
         """Get the value of a property on an existing node of this class.
 
@@ -1043,7 +1195,13 @@ class Class(hyperdb.Class):
                 raise KeyError('"%s" has no writable property named "%s"' % (
                     self.classname, propname))
 
+            # if the value's the same as the existing value, no sense in
+            # doing anything
             current = node.get(propname, None)
+            if value == current:
+                del propvalues[propname]
+                continue
+            journalvalues[propname] = current
 
             # do stuff based on the prop type
             if isinstance(prop, hyperdb.Link):
@@ -1200,14 +1358,6 @@ class Class(hyperdb.Class):
                 except ValueError:
                     raise TypeError('new property "%s" not '
                                     'boolean' % propname)
-
-            # if the value's the same as the existing value, no sense in
-            # doing anything. Moved to end of loop so value is properly
-            # converted to a hyperdb type before comparison.
-            if value == current:
-                del propvalues[propname]
-                continue
-            journalvalues[propname] = current
 
             node[propname] = value
 
