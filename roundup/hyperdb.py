@@ -1283,23 +1283,78 @@ class Class:
         """
         raise NotImplementedError
 
+    def initialize_missing_props(self, oldvalues):
+        """If backend doesn't have a schema to intialize props, do it here.
+        """
+        for name, prop in self.getprops(protected=0).items():
+            if name in oldvalues:
+                continue
+            if isinstance(prop, Multilink):
+                oldvalues[name] = []
+            else:
+                oldvalues[name] = None
+
     def set(self, nodeid, **propvalues):
         """Modify a property on an existing node of this class.
 
-        'nodeid' must be the id of an existing node of this class or an
-        IndexError is raised.
+        The set operation triggers detectors and can be vetoed.
 
-        Each key in 'propvalues' must be the name of a property of this
-        class or a KeyError is raised.
+        self.set_inner() is called between auditors and reactors and
+        requires:
 
-        All values in 'propvalues' must be acceptable types for their
-        corresponding properties or a TypeError is raised.
+          'nodeid' must be the id of an existing node of this class or
+          an IndexError is raised.
 
-        If the value of the key property is set, it must not collide with
-        other key strings or a ValueError is raised.
+          Each key in 'propvalues' must be the name of a property of
+          this class or a KeyError is raised.  Attempts to modify
+          restricted properties like "creation", "activity", ...
+          cause a KeyError.
 
-        If the value of a Link or Multilink property contains an invalid
-        node id, a ValueError is raised.
+          All values in 'propvalues' must be acceptable types for
+          their corresponding properties or a TypeError is raised.
+
+          If the value of the key property is set, it must not collide
+          with other key strings or a ValueError is raised.
+
+          If the value of a Link or Multilink property contains an
+          invalid node id, a ValueError is raised.
+
+        """
+        if self.db.journaltag is None:
+            raise DatabaseError(_('Database open read-only'))
+
+        self.fireAuditors('set', nodeid, propvalues)
+        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
+
+        # fill in any missing values - method can be replaced if
+        # backend has a schema that fills in missing values.
+        self.initialize_missing_props(oldvalues)
+
+        propvalues = self.set_inner(nodeid, **propvalues)
+        self.fireReactors('set', nodeid, oldvalues)
+        return propvalues
+
+    def set_inner(self, nodeid, **propvalues):
+        """Change the database values for an existing node of this class.
+
+        Database must be in read write mode before calling set_inner().
+
+        'nodeid' must be the id of an existing node of this class or
+        an IndexError is raised.
+
+        Each key in 'propvalues' must be the name of a property of
+        this class or a KeyError is raised.  Attempts to modify
+        restricted properties like "creation", "activity", ...
+        cause a KeyError.
+
+        All values in 'propvalues' must be acceptable types for
+        their corresponding properties or a TypeError is raised.
+
+        If the value of the key property is set, it must not collide
+        with other key strings or a ValueError is raised.
+
+        If the value of a Link or Multilink property contains an
+        invalid node id, a ValueError is raised.
         """
         raise NotImplementedError
 

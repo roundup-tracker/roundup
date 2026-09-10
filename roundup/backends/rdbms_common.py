@@ -1877,32 +1877,14 @@ class Class(hyperdb.Class):
 
         return d[propname]
 
-    def set(self, nodeid, **propvalues):
-        """Modify a property on an existing node of this class.
-
-        'nodeid' must be the id of an existing node of this class or an
-        IndexError is raised.
-
-        Each key in 'propvalues' must be the name of a property of this
-        class or a KeyError is raised.
-
-        All values in 'propvalues' must be acceptable types for their
-        corresponding properties or a TypeError is raised.
-
-        If the value of the key property is set, it must not collide with
-        other key strings or a ValueError is raised.
-
-        If the value of a Link or Multilink property contains an invalid
-        node id, a ValueError is raised.
-        """
-        self.fireAuditors('set', nodeid, propvalues)
-        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
-        propvalues = self.set_inner(nodeid, **propvalues)
-        self.fireReactors('set', nodeid, oldvalues)
-        return propvalues
+    def initialize_missing_props(self, oldvalues):
+        """Not needed for rdbms as the schema handles initialization"""
+        pass
 
     def set_inner(self, nodeid, **propvalues):
         """ Called by set, in-between the audit and react calls.
+
+            Database must be in read write mode.
         """
         if not propvalues:
             return propvalues
@@ -1919,9 +1901,6 @@ class Class(hyperdb.Class):
             prop = self.properties[p]
             if prop.computed:
                 raise KeyError('"%s" is a computed property' % p)
-
-        if self.db.journaltag is None:
-            raise DatabaseError(_('Database open read-only'))
 
         node = self.db.getnode(self.classname, nodeid)
         if self.is_retired(nodeid):

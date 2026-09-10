@@ -1102,45 +1102,10 @@ class Class(hyperdb.Class):
 
         return d[propname]
 
-    def set(self, nodeid, **propvalues):
-        """Modify a property on an existing node of this class.
-
-        'nodeid' must be the id of an existing node of this class or an
-        IndexError is raised.
-
-        Each key in 'propvalues' must be the name of a property of this
-        class or a KeyError is raised.
-
-        All values in 'propvalues' must be acceptable types for their
-        corresponding properties or a TypeError is raised.
-
-        If the value of the key property is set, it must not collide with
-        other key strings or a ValueError is raised.
-
-        If the value of a Link or Multilink property contains an invalid
-        node id, a ValueError is raised.
-
-        These operations trigger detectors and can be vetoed.  Attempts
-        to modify the "creation" or "activity" properties cause a KeyError.
-        """
-        if self.db.journaltag is None:
-            raise hyperdb.DatabaseError(_('Database open read-only'))
-
-        self.fireAuditors('set', nodeid, propvalues)
-        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
-        for name, prop in self.getprops(protected=0).items():
-            if name in oldvalues:
-                continue
-            if isinstance(prop, hyperdb.Multilink):
-                oldvalues[name] = []
-            else:
-                oldvalues[name] = None
-        propvalues = self.set_inner(nodeid, **propvalues)
-        self.fireReactors('set', nodeid, oldvalues)
-        return propvalues
-
     def set_inner(self, nodeid, **propvalues):
         """ Called by set, in-between the audit and react calls.
+
+            Database must be in read write mode.
         """
         if not propvalues:
             return propvalues
@@ -1157,9 +1122,6 @@ class Class(hyperdb.Class):
             prop = self.properties[p]
             if prop.computed:
                 raise KeyError('"%s" is a computed property' % p)
-
-        if self.db.journaltag is None:
-            raise hyperdb.DatabaseError(_('Database open read-only'))
 
         node = self.db.getnode(self.classname, nodeid)
         if self.db.RETIRED_FLAG in node:
