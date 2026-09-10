@@ -15,6 +15,8 @@ from roundup.test.tx_Source_detector import init as tx_Source_init
 default_prefix = '../../share/roundup/templates/classic'
 
 
+# ruff: noqa: ARG002  don't report unused method args.
+
 def new_config(debug=False, prefix=default_prefix):
     if not prefix.startswith('/'):
         prefix = os.path.join(os.path.dirname(__file__), prefix)
@@ -51,13 +53,15 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
     hyperdb_vars['db'] = db
 
     with open(schema) as fd:
-        exec(compile(fd.read(), schema, 'exec'), hyperdb_vars)
+        # exec ok
+        exec(compile(fd.read(), schema, 'exec'), hyperdb_vars)  # noqa: S102
 
     initial_data = os.path.join(prefix, 'initial_data.py')
     admin_vars = {"db": db, "admin_email": "admin@test.com",
                   "adminpw": password.Password('sekrit', config=db.config)}
     with open(initial_data) as fd:
-        exec(compile(fd.read(), initial_data, 'exec'), admin_vars)
+        # exec ok
+        exec(compile(fd.read(), initial_data, 'exec'), admin_vars)  # noqa: S102
 
     # load standard detectors
     dirname = os.path.join(prefix, 'detectors')
@@ -65,8 +69,10 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
         if not fn.endswith('.py'): continue                       # noqa: E701
         exec_vars = {}
         with open(os.path.join(dirname, fn)) as fd:
-            exec(compile(fd.read(),
-                         os.path.join(dirname, fn), 'exec'), exec_vars)
+            # exec ok
+            exec(compile(fd.read(),   # noqa: S102
+                         os.path.join(dirname, fn), 'exec'),
+                         exec_vars)
         exec_vars['init'](db)
 
     tx_Source_init(db)
@@ -177,8 +183,7 @@ class BasicDatabase(dict):
         if infoid not in self:
             if default is self._marker:
                 raise KeyError
-            else:
-                return default
+            return default
         return self[infoid].get(value, default)
 
     def getall(self, infoid):
@@ -370,13 +375,13 @@ class Database(back_anydbm.Database):
 
         # add default Edit and View permissions
         self.security.addPermission(name="Create", klass=cn,
-            description="User is allowed to create "+cn)
+            description="User is allowed to create " + cn)
         self.security.addPermission(name="Edit", klass=cn,
-            description="User is allowed to edit "+cn)
+            description="User is allowed to edit " + cn)
         self.security.addPermission(name="View", klass=cn,
-            description="User is allowed to access "+cn)
+            description="User is allowed to access " + cn)
         self.security.addPermission(name="Retire", klass=cn,
-            description="User is allowed to retire "+cn)
+            description="User is allowed to retire " + cn)
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
@@ -541,11 +546,11 @@ class IssueClass(Class, roundupdb.IssueClass):
 # We don't support multiple named databases
 
 
-def db_exists(name):
+def db_exists(name):   # noqa: ARG001 - name unused/unsupported
     return bool(Database.memdb)
 
 
-def db_nuke(name):
+def db_nuke(name):     # noqa: ARG001  - name unused/unsupported
     Database.memdb = {}
 
 # vim: set et sts=4 sw=4 :
