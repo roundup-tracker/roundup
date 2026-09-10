@@ -793,9 +793,17 @@ class DBTest(commonDBTest):
         self.db.user.set(nid, assignable=None)
         self.assertEqual(self.db.user.get(nid, "assignable"), None)
 
-    # key value
+    @pytest.mark.xfail(reason="Create class w/o key field and no properties is undefined.")
+    def testEmptyCreate(self):
+        # Create a class with no arguments and no key property.
+        # What should hyperdb::Class.create do here?
+        self.assertRaises(ValueError, self.db.stuff.create)
+
     def testKeyValue(self):
-        self.assertRaises(ValueError, self.db.user.create)
+        # Test with key value not set, but another prop set.  This
+        # test gets a ValueError because user class has username as
+        # key prop and that's required.
+        self.assertRaises(ValueError, self.db.user.create, age=33)
 
         newid = self.db.user.create(username="spam")
         self.assertEqual(self.db.user.lookup('spam'), newid)

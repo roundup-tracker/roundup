@@ -1666,17 +1666,6 @@ class Class(hyperdb.Class):
     def create_inner(self, **propvalues):
         """ Called by create, in-between the audit and react calls.
         """
-        if 'id' in propvalues:
-            raise KeyError('"id" is reserved')
-
-        if self.db.journaltag is None:
-            raise DatabaseError(_('Database open read-only'))
-
-        if ('creator' in propvalues or 'actor' in propvalues or
-                'creation' in propvalues or 'activity' in propvalues):
-            raise KeyError('"creator", "actor", "creation" and '
-                           '"activity" are reserved')
-
         for p in propvalues:
             prop = self.properties[p]
             if prop.computed:

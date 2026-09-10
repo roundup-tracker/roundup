@@ -1259,9 +1259,26 @@ class Class:
         If an id in a link or multilink property does not refer to a valid
         node, an IndexError is raised.
         """
+        # This is first since r/o database is a bigger issue
         if self.db.journaltag is None:
             raise DatabaseError(_('Database open read-only'))
+
         self.fireAuditors('create', None, propvalues)
+
+        # sanity checks on propvalues, include mods by auditors.
+        #   FIXME: Unlike set() we don't check to see if propvalues is
+        #          empty why? Need to define what happens when no
+        #          propvalues. If class has key prop, ValueError is
+        #          raised.
+
+        if 'id' in propvalues:
+            raise KeyError('"id" is reserved')
+
+        if ('creator' in propvalues or 'actor' in propvalues or
+                'creation' in propvalues or 'activity' in propvalues):
+            raise KeyError('"creator", "actor", "creation" and '
+                           '"activity" are reserved')
+
         newid = self.create_inner(**propvalues)
         self.fireReactors('create', newid, None)
         return newid
