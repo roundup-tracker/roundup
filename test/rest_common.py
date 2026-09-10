@@ -4161,6 +4161,27 @@ class TestCase():
                          str(expected['error']['msg']))
         self.assertEqual(self.dummy_client.response_code, 400)
 
+        # try to set a id prop. It should fail.
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'replace'),
+            cgi.MiniFieldStorage('id', '99'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        expected= {'error': {'status': 400,
+                             'msg': KeyError('"id" is reserved',)}}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(str(results['error']['msg']),
+                         str(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
+
         # try to set a protected prop using patch_attribute. It should
         # fail with a 405 bad/unsupported method.
         etag = calculate_etag(self.db.issue.getnode(issue_id),

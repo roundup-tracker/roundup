@@ -1886,17 +1886,6 @@ class Class(hyperdb.Class):
 
             Database must be in read write mode.
         """
-        if not propvalues:
-            return propvalues
-
-        if ('creator' in propvalues or 'actor' in propvalues or
-                'creation' in propvalues or 'activity' in propvalues):
-            raise KeyError('"creator", "actor", "creation" and '
-                           '"activity" are reserved')
-
-        if 'id' in propvalues:
-            raise KeyError('"id" is reserved')
-
         for p in propvalues:
             prop = self.properties[p]
             if prop.computed:

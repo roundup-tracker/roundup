@@ -1332,10 +1332,24 @@ class Class:
           invalid node id, a ValueError is raised.
 
         """
+        # This is first since r/o database is a bigger issue
         if self.db.journaltag is None:
             raise DatabaseError(_('Database open read-only'))
 
         self.fireAuditors('set', nodeid, propvalues)
+
+        # sanity checks on propvalues, include mods by auditors.
+        if not propvalues:
+            return propvalues
+
+        if 'id' in propvalues:
+            raise KeyError('"id" is reserved')
+
+        if ('creator' in propvalues or 'actor' in propvalues or
+                'creation' in propvalues or 'activity' in propvalues):
+            raise KeyError('"creator", "actor", "creation" and '
+                           '"activity" are reserved')
+
         oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
 
         # fill in any missing values - method can be replaced if
