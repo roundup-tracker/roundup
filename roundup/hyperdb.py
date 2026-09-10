@@ -17,6 +17,7 @@
 #
 
 # ruff: noqa: ARG002  don't report unused args.
+# ruff: noqa: B011, S101  don't report use of assert or assert False
 
 """Hyperdatabase implementation, especially field types.
 """
@@ -47,6 +48,17 @@ logger = logging.getLogger('roundup.hyperdb')
 
 # marker used for an unspecified keyword argument
 _marker = []
+
+
+# We use assert internally. Exit if assert is disabled with -O.
+# Use RuntimeError to indicate it's a runtime configuration
+# setting that is wrong.
+try:
+    assert False
+except AssertionError:
+    pass
+else:
+    raise RuntimeError("Assert is disabled. Remove -O flag from python command.")
 
 
 #
@@ -142,7 +154,9 @@ class Date(_Type):
        field method of the DateHTMLProperty (for rendering html).
     """
     def __init__(self, offset=None, required=False, default_value=None,
-                 quiet=False, display_time='yes', format=None):
+                 quiet=False, display_time='yes', format=None): # noqa: A002
+        # ^^ ignore format argument shadowing format(). It's part of API
+        # and format() unlikely to be used in this method.
         super(Date, self).__init__(required=required,
                                    default_value=default_value,
                                    quiet=quiet)
@@ -351,8 +365,8 @@ class Multilink(_Pointer):
         # list with A,B)
         do_set = 1
         newvalue = []
-        for item in value:
-            item = item.strip()
+        for value_item in value:
+            item = value_item.strip()
 
             # skip blanks
             if not item: continue                                # noqa: E701
@@ -390,17 +404,13 @@ class Multilink(_Pointer):
 
         # that's it, set the new Multilink property value,
         # or overwrite it completely
-        if do_set:
-            value = newvalue
-        else:
-            value = curvalue
+        value = newvalue if do_set else curvalue
 
         # TODO: one day, we'll switch to numeric ids and this will be
         # unnecessary :(
         value = [int(x) for x in value]
         value.sort()
-        value = [str(x) for x in value]
-        return value
+        return [str(x) for x in value]
 
     def register(self, cls, propname):
         super(Multilink, self).register(cls, propname)
@@ -421,8 +431,7 @@ class Boolean(_Type):
     def from_raw(self, value, **kw):
         value = value.strip()
         # checked is a common HTML checkbox value
-        value = value.lower() in ('checked', 'yes', 'true', 'on', '1')
-        return value
+        return value.lower() in ('checked', 'yes', 'true', 'on', '1')
 
 
 class Number(_Type):
@@ -698,8 +707,7 @@ class Proptree(object):
                             # it doesn't make sense to search further.
                             self.set_val([], force=True)
                             return self.val
-                        else:
-                            filterspec[p.name] = ['-1']  # no match was found
+                        filterspec[p.name] = ['-1']  # no match was found
                 else:
                     assert not isinstance(p.val, Exact_Match)
                     filterspec[p.name] = p.val
@@ -890,7 +898,9 @@ class Proptree(object):
                 dir_idx.append(idx)
                 directions.append(sa.sort_direction)
                 curdir = sa.sort_direction
-            idx += 1
+            # Using timeit, increment is faster for list < 20 items
+            # so don't use enumerate().
+            idx += 1  # noqa: SIM113
         sortattr.append(val)
         sortattr = zip(*sortattr, strict=True)
         for direction, i in reversed(list(zip(directions, dir_idx, strict=True))):
@@ -915,8 +925,7 @@ class Proptree(object):
 
     def __repr__(self):
         r = ["proptree:" + self.name]
-        for n in self:
-            r.append("proptree:" + "    " * n.depth + n.name)
+        r.extend("proptree:" + "    " * n.depth + n.name for n in self)
         return '\n'.join(r)
     __str__ = __repr__
 
@@ -1026,13 +1035,13 @@ All methods except __repr__ must be implemented by a concrete backend Database.
 
         # add default Edit and View permissions
         self.security.addPermission(name="Create", klass=cn,
-            description="User is allowed to create "+cn)
+            description="User is allowed to create " + cn)
         self.security.addPermission(name="Edit", klass=cn,
-            description="User is allowed to edit "+cn)
+            description="User is allowed to edit " + cn)
         self.security.addPermission(name="View", klass=cn,
-            description="User is allowed to access "+cn)
+            description="User is allowed to access " + cn)
         self.security.addPermission(name="Retire", klass=cn,
-            description="User is allowed to retire "+cn)
+            description="User is allowed to retire " + cn)
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
@@ -1203,8 +1212,8 @@ class Class:
         self.classname = classname
         self.properties = properties
         # Make the class and property name known to the property
-        for prop_name in properties:
-            properties[prop_name].register(self, prop_name)
+        for prop_name, prop_class in properties.items():
+            prop_class.register(self, prop_name)
         self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
         self.key = ''
 
@@ -1215,6 +1224,9 @@ class Class:
         db.addclass(self)
 
         actions = ['create', 'set', 'retire', 'restore']
+        # format of items in priolist:
+        # tuple(priority: int, detector_name: str, detector: callable)
+        # so [:2] is (priority, detector_name)
         skey = lambda x: x[:2]
         self.auditors = {a: PrioList(key=skey) for a in actions}
         self.reactors = {a: PrioList(key=skey) for a in actions}
@@ -1504,66 +1516,67 @@ class Class:
                 #      (viewable or editable) to user be included?? ]
                 #   linkee object (linkcl, linkid) is not
                 #       (viewable or editable) to user
-                if len(args) == 3:
-                    # e.g. for issue3 blockedby adds link to issue5 with:
-                    # j = id, evt_date, user, action, args
-                    # 3|20170528045201.484|5|link|('issue', '5', 'blockedby')
-                    linkcl, linkid, key = args
-                    cls = None
-                    try:
-                        cls = self.db.getclass(linkcl)
-                    except KeyError:
-                        pass
-                    # obsolete property or class
-                    if not cls or key not in cls.properties:
-                        if not enforceperm or allow_obsolete:
-                            journal.append(j)
-                        continue
-                    # obsolete linked-to item
-                    try:
-                        cls.get(linkid, key)  # does linkid exist
-                    except IndexError:
-                        if not enforceperm or allow_obsolete:
-                            journal.append(j)
-                        continue
-                    # is the updated property quiet?
-                    if skipquiet and cls.properties[key].quiet:
-                        logger.debug("skipping quiet property: "
-                                     "%s %sed %s%s",
-                                     j_repr, action, self.classname, nodeid)
-                        continue
-                    # can user view the property in linkee class
-                    if enforceperm and not (perm("View",
-                                                 uid,
-                                                 linkcl,
-                                                 property=key) or
-                                            perm("Edit",
-                                                 uid,
-                                                 linkcl,
-                                                 property=key)):
-                        logger.debug("skipping unaccessible property: "
-                                     "%s with uid %s %sed %s%s",
-                                     j_repr, uid, action,
-                                     self.classname, nodeid)
-                        continue
-                    # check access to linkee object
-                    if enforceperm and not (perm("View",
-                                                 uid,
-                                                 cls.classname,
-                                                 itemid=linkid) or
-                                            perm("Edit",
-                                                 uid,
-                                                 cls.classname,
-                                                 itemid=linkid)):
-                        logger.debug("skipping unaccessible object: "
-                                     "%s uid %s %sed %s%s",
-                                     j_repr, uid, action,
-                                     self.classname, nodeid)
-                        continue
-                    journal.append(j)
-                else:
+                if len(args) != 3:
                     logger.error("Invalid %s journal entry for %s%s: %s",
                                  action, self.classname, nodeid, j)
+                    continue
+
+                # e.g. for issue3 blockedby adds link to issue5 with:
+                # j = id, evt_date, user, action, args
+                # 3|20170528045201.484|5|link|('issue', '5', 'blockedby')
+                linkcl, linkid, key = args
+                cls = None
+                try:
+                    cls = self.db.getclass(linkcl)
+                except KeyError:
+                    pass
+                # obsolete property or class
+                if not cls or key not in cls.properties:
+                    if not enforceperm or allow_obsolete:
+                        journal.append(j)
+                    continue
+                # obsolete linked-to item
+                try:
+                    cls.get(linkid, key)  # does linkid exist
+                except IndexError:
+                    if not enforceperm or allow_obsolete:
+                        journal.append(j)
+                    continue
+                # is the updated property quiet?
+                if skipquiet and cls.properties[key].quiet:
+                    logger.debug("skipping quiet property: "
+                                 "%s %sed %s%s",
+                                 j_repr, action, self.classname, nodeid)
+                    continue
+                # can user view the property in linkee class
+                if enforceperm and not (perm("View",
+                                             uid,
+                                             linkcl,
+                                             property=key) or
+                                        perm("Edit",
+                                             uid,
+                                             linkcl,
+                                             property=key)):
+                    logger.debug("skipping unaccessible property: "
+                                 "%s with uid %s %sed %s%s",
+                                 j_repr, uid, action,
+                                 self.classname, nodeid)
+                    continue
+                # check access to linkee object
+                if enforceperm and not (perm("View",
+                                             uid,
+                                             cls.classname,
+                                             itemid=linkid) or
+                                        perm("Edit",
+                                             uid,
+                                             cls.classname,
+                                             itemid=linkid)):
+                    logger.debug("skipping unaccessible object: "
+                                 "%s uid %s %sed %s%s",
+                                 j_repr, uid, action,
+                                 self.classname, nodeid)
+                    continue
+                journal.append(j)
             elif action in ['create', 'retired', 'restored']:
                 journal.append(j)
             else:
@@ -1626,7 +1639,7 @@ class Class:
         props = self.getprops()
         if 'name' in props:
             return 'name'
-        elif 'title' in props:
+        if 'title' in props:
             return 'title'
         if default_to_id:
             return 'id'
@@ -1772,6 +1785,8 @@ class Class:
         """Build a single list of sort attributes in the correct order
         with sanity checks (no duplicate properties) included. Always
         sort last by id -- if id is not already in sortattr.
+
+        return: list(tuple(sort_direction_char, prop_name), ...)
         """
         if sort is None:
             sort = [(None, None)]
@@ -1876,10 +1891,9 @@ class Class:
             items = proptree.sort()
             if limit and offset:
                 return items[offset:offset + limit]
-            elif offset is not None:
+            if offset is not None:
                 return items[offset:]
-            else:
-                return items[:limit]
+            return items[:limit]
         return proptree.sort()
 
     # non-optimized filter_iter, a backend may chose to implement a
@@ -2050,23 +2064,29 @@ class Class:
         initial implementation which stored everything in a big hash by
         id and then proceeded to import journals for each id."""
         properties = self.getprops()
-        a = []
-        for entry in entries:
-            # first element in sorted list is the (numeric) id
-            # in python2.4 and up we would use sorted with a key...
-            a.append((int(entry[0].strip("'")), entry))
-        a.sort()
 
-        last = 0
-        r = []
-        for n, l in a:
-            nodeid, jdate, user, action, params = map(eval_import, l)
-            assert (str(n) == nodeid)
-            if n != last:
-                if r:
-                    self.db.setjournal(self.classname, str(last), r)
-                last = n
-                r = []
+        # entries is an iterator (csv reader() of journal item that look
+        # like:
+        # ["'2'", '(2026, 9, 9, 1, 54, 33.957, 0, 0, 0)', "'1'",
+        #    "'create'", '{}'])
+        # sort by first element as an int. Since int is a native type
+        # it speeds up sort operations and sorts in proper numeric order.
+        all_journals = list(entries)
+        all_journals.sort(key=lambda x: int(x[0].strip("'")))
+
+        last = ""
+        journals = []
+
+        for journal_data in all_journals:
+            nodeid, jdate, user, action, params = map(eval_import, journal_data)
+            clean_nodeid = nodeid.strip("'")
+            if clean_nodeid != last:
+                # we are done with all journal entries for nodeid
+                # flush them
+                if journals:
+                    self.db.setjournal(self.classname, last, journals)
+                last = clean_nodeid
+                journals = []
 
             if action == 'set':
                 for propname, value in params.items():
@@ -2083,9 +2103,10 @@ class Class:
             elif action == 'create' and params:
                 # old tracker with data stored in the create!
                 params = {}
-            r.append((nodeid, date.Date(jdate), user, action, params))
-        if r:
-            self.db.setjournal(self.classname, nodeid, r)
+            journals.append((nodeid, date.Date(jdate), user, action, params))
+        # reached end of journals flush anything pending.
+        if journals:
+            self.db.setjournal(self.classname, clean_nodeid, journals)
 
     #
     # convenience methods
@@ -2111,7 +2132,7 @@ class Class:
            In standard schemas only a user has a roles property but
            this may be different in customized schemas.
         '''
-        roles = dict.fromkeys([r.strip().lower() for r in roles])
+        roles = {r.strip().lower() for r in roles}
         for role in self.get_roles(nodeid):
             if role in roles:
                 return True
@@ -2307,9 +2328,9 @@ class FileClass:
         if default is not _marker:
             return self.subclass.get(self, nodeid, propname, default,
                                      allow_abort=allow_abort)
-        else:
-            return self.subclass.get(self, nodeid, propname,
-                                     allow_abort=allow_abort)
+
+        return self.subclass.get(self, nodeid, propname,
+                                 allow_abort=allow_abort)
 
     def import_files(self, dirname, nodeid):
         """ Import the "content" property as a file
@@ -2415,16 +2436,12 @@ class Node:
         return list(self.cl.getprops(protected=protected).keys())
 
     def values(self, protected=1):
-        value_list = []
-        for name in self.cl.getprops(protected=protected):
-            value_list.append(self.cl.get(self.nodeid, name))
-        return value_list
+        return [self.cl.get(self.nodeid, name)
+                for name in self.cl.getprops(protected=protected)]
 
     def items(self, protected=1):
-        item_list = []
-        for name in self.cl.getprops(protected=protected):
-            item_list.append((name, self.cl.get(self.nodeid, name)))
-        return item_list
+        return [(name, self.cl.get(self.nodeid, name))
+                for name in self.cl.getprops(protected=protected)]
 
     def has_key(self, name):
         return name in self.cl.getprops()
@@ -2432,8 +2449,7 @@ class Node:
     def get(self, name, default=None):
         if name in self:
             return self[name]
-        else:
-            return default
+        return default
 
     def __getattr__(self, name):
         if name in self.__dict__:
@@ -2472,6 +2488,6 @@ def Choice(name, db, *options):
     """Quick helper to create a simple class with choices
     """
     cl = Class(db, name, name=String(), order=String())
-    for i in range(len(options)):
-        cl.create(name=options[i], order=i)
+    for i, option in enumerate(options):
+        cl.create(name=option, order=i)
     return Link(name)
