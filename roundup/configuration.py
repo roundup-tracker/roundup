@@ -1087,6 +1087,18 @@ class LogLevelOption(Option):
         else:
             raise OptionValueError(self, value, self.class_description)
 
+class LogDefaultLevelOption(Option):
+    """A log level, one of DEBUG, INFO, WARNING, ERROR, CRITICAL"""
+
+    values = "DEBUG INFO WARNING ERROR CRITICAL".split()
+    class_description = "Allowed values: %s" % (', '.join(values))
+
+    def str2value(self, value):
+        _val = value.upper()
+        if _val in self.values:
+            return _val
+        else:
+            raise OptionValueError(self, value, self.class_description)
 
 try:
     import jinja2  # noqa: F401
@@ -1680,10 +1692,10 @@ always passes, so setting it less than 1 is not recommended."""),
             "Log file name for minimal logging facility built into Roundup.\n"
             "If no file name specified, log messages are written on stderr.\n"
             "If above 'config' option is set, this option has no effect."),
-        (Option, "level", "ERROR",
+        (LogDefaultLevelOption, "level", "ERROR",
             "Minimal severity level of messages written to log file.\n"
             "If above 'config' option is set, this option has no effect.\n"
-            "Allowed values: DEBUG, INFO, WARNING, ERROR"),
+            "Allowed values: DEBUG, INFO, WARNING, ERROR, CRITICAL"),
         (LoggingFormatOption, "format",
             "%(asctime)s %(trace_id)s %(levelname)s %(message)s",
             "Format of the logging messages with all '%' signs\n"
