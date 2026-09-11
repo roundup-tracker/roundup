@@ -389,7 +389,7 @@ class DatabaseBackend(Option):
 
     def str2value(self, value):
         _val = value.lower()
-        if _val in values:
+        if _val in self.values:
             return _val
         raise OptionValueError(self, value, self.class_description)
 
