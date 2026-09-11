@@ -18,9 +18,7 @@ import smtplib
 import sys
 import time
 import traceback
-
-from configparser import DuplicateOptionError
-from textwrap import dedent, wrap
+from textwrap import dedent, fill, wrap
 
 import roundup.date
 from roundup.anypy import random_
@@ -217,8 +215,7 @@ class Option:
             value = self._value
         if value is NODEFAULT:
             return str(value)
-        else:
-            return self._value2str(value)
+        return self._value2str(value)
 
     def get(self):
         """Return current option value"""
@@ -305,6 +302,7 @@ class Option:
     def rformat(self):
         return self.format(raw=True)
 
+
 class BooleanOption(Option):
 
     """Boolean option: yes or no"""
@@ -314,8 +312,7 @@ class BooleanOption(Option):
     def _value2str(self, value):
         if value:
             return "yes"
-        else:
-            return "no"
+        return "no"
 
     def str2value(self, value):
         if isinstance(value, str):
@@ -328,7 +325,7 @@ class BooleanOption(Option):
                 raise OptionValueError(self, value, self.class_description,
                                        "In file: '%s'" % self.config.filepath)
         else:
-            _val = value and 1 or 0
+            _val = (value and 1) or 0
         return _val
 
 
@@ -355,8 +352,7 @@ class RunDetectorOption(Option):
         _val = value.lower()
         if _val in ("yes", "no", "new"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class CsrfSettingOption(Option):
@@ -369,8 +365,7 @@ class CsrfSettingOption(Option):
         _val = value.lower()
         if _val in ("required", "yes", "logfailure", "no"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class SameSiteSettingOption(Option):
@@ -384,20 +379,19 @@ or should it not be added (none)"""
         _val = value.lower()
         if _val in ("strict", "lax", "none"):
             return _val.capitalize()
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class DatabaseBackend(Option):
     """handle exact text of backend and make sure it's available"""
-    class_description = "Available backends: %s" % ", ".join(list_backends())
+    values = list_backends()
+    class_description = "Available backends: %s" % ", ".join(values)
 
     def str2value(self, value):
         _val = value.lower()
-        if _val in list_backends():
+        if _val in values:
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class HtmlToTextOption(Option):
@@ -416,8 +410,7 @@ class HtmlToTextOption(Option):
         _val = value.lower()
         if _val in ("beautifulsoup", "justhtml", "dehtml", "none"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class HtmlVersionOption(Option):
@@ -430,8 +423,8 @@ class HtmlVersionOption(Option):
         _val = value.lower()
         if _val in ("html4"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
+
 
 class EmailBodyOption(Option):
 
@@ -444,8 +437,7 @@ class EmailBodyOption(Option):
         _val = value.lower()
         if _val in ("yes", "no", "new"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class IsolationOption(Option):
@@ -529,21 +521,19 @@ class IndexerOption(Option):
                     lang = options["INDEXER_LANGUAGE"]._value
                     xapian.Stem(lang)
                 except xapian.InvalidArgumentError:
-                    import textwrap
                     lang_avail = b2s(xapian.Stem.get_available_languages())
-                    languages = textwrap.fill(_("Valid languages: ") +
-                                              lang_avail, 75,
-                                              subsequent_indent="   ")
+                    languages = fill(_("Valid languages: ") +
+                                     lang_avail, 75,
+                                     subsequent_indent="   ")
                     raise OptionValueError(options["INDEXER_LANGUAGE"],
                                            lang, languages)
 
         if self._value == "native-fts":
             lang = options["INDEXER_LANGUAGE"]._value
             if lang not in self.valid_langs:
-                import textwrap
-                languages = textwrap.fill(_("Expected languages: ") +
-                                          " ".join(self.valid_langs), 75,
-                                          subsequent_indent="   ")
+                languages = fill(_("Expected languages: ") +
+                                 " ".join(self.valid_langs), 75,
+                                 subsequent_indent="   ")
                 raise OptionValueError(options["INDEXER_LANGUAGE"],
                                        lang, languages)
 
@@ -594,8 +584,7 @@ class SpaceSeparatedListOption(Option):
         pathlist = list(_val.split())
         if pathlist:
             return pathlist
-        else:
-            return None
+        return None
 
 
 class LoggingFormatOption(Option):
@@ -685,8 +674,7 @@ class MultiFilePathOption(Option):
                 pathlist.append(os.path.normpath(elem))
         if pathlist:
             return pathlist
-        else:
-            return None
+        return None
 
 
 class FloatNumberOption(Option):
@@ -773,8 +761,7 @@ class MandatoryOption(Option):
     def str2value(self, value):
         if not value:
             raise OptionValueError(self, value, "Value must not be empty.")
-        else:
-            return value
+        return value
 
 
 class SecretOption(Option):
@@ -847,8 +834,7 @@ class WebUrlOption(Option):
 
         if error_msg:
             raise OptionValueError(self, value, error_msg)
-        else:
-            return value
+        return value
 
 
 class NullableOption(Option):
@@ -875,14 +861,12 @@ class NullableOption(Option):
     def str2value(self, value):
         if value in self.null_strings:
             return None
-        else:
-            return value
+        return value
 
     def _value2str(self, value):
         if value is None:
             return self.null_strings[0]
-        else:
-            return value
+        return value
 
 
 class NullableFilePathOption(NullableOption, FilePathOption):
@@ -915,8 +899,9 @@ class ListSecretOption(SecretOption):
 
     def validate(self, options):  # noqa: ARG002  --  options unused
         if self.name == "WEB_JWT_SECRET":
+            min_jwt_length = 32
             secrets = self.get()
-            invalid_secrets = [x for x in secrets[1:] if len(x) < 32]
+            invalid_secrets = [x for x in secrets[1:] if len(x) < min_jwt_length]
             if invalid_secrets:
                 raise OptionValueError(
                     self, ", ".join(secrets),
@@ -1077,28 +1062,28 @@ class RegExpOption(Option):
 class LogLevelOption(Option):
     """A log level, one of none, debug, info, warning, error, critical"""
 
-    values = "none debug info warning error critical".split()
+    values = ("none", "debug", "info", "warning", "error", "critical")
     class_description = "Allowed values: %s" % (', '.join(values))
 
     def str2value(self, value):
         _val = value.lower()
         if _val in self.values:
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
+
 
 class LogDefaultLevelOption(Option):
     """A log level, one of DEBUG, INFO, WARNING, ERROR, CRITICAL"""
 
-    values = "DEBUG INFO WARNING ERROR CRITICAL".split()
+    values = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
     class_description = "Allowed values: %s" % (', '.join(values))
 
     def str2value(self, value):
         _val = value.upper()
         if _val in self.values:
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
+
 
 try:
     import jinja2  # noqa: F401
@@ -1570,7 +1555,7 @@ always passes, so setting it less than 1 is not recommended."""),
         (DatabaseBackend, 'backend', NODEFAULT,
             "Database backend."),
         (BooleanOption, "debug_filter", "no",
-	    "Filter debugging: Permissions can define additional filter\n"
+            "Filter debugging: Permissions can define additional filter\n"
             "functions that are used when checking permissions on results\n"
             "returned by the database. This is done to improve\n"
             "performance since the filtering is done in the database\n"
@@ -1965,7 +1950,7 @@ class Config:
 
     # a dict of key/values of the DEFAULT section of the ini file.
     ini_DEFAULT = None
-    
+
     # List of option names that need additional validation after
     # all options are loaded.
     option_validators = None
@@ -2252,9 +2237,9 @@ class Config:
         # default parameter to this method or the home value. We are
         # left with only the keys/values defined in the DEFAULT
         # section of the ini file.
-        self.ini_DEFAULT = { k: v for k,v in config.defaults().items()
-                             if k not in [ "home" ] +
-                             [ k.lower() for k in config_defaults.keys()]}
+        self.ini_DEFAULT = {k: v for k, v in config.defaults().items()
+                            if k not in ["home"] +
+                            [k.lower() for k in config_defaults]}
 
         for option in self.items():
             option.load_ini(config, validate_keys=self.validate_keys)
@@ -2270,16 +2255,17 @@ class Config:
         # find typos.
         if self.validate_keys:
             unknown_config_options = []
+            default_options = [x.lower() for x in
+                               {**config_defaults, **self.ini_DEFAULT}]
             for sec in config.sections():
-                for opt in config.options(sec):
-                    if opt.lower() not in [x.lower() for x in
-                                {**config_defaults, **self.ini_DEFAULT}]:
-                        unknown_config_options.append(sec + ":" + opt)
+                unknown_config_options.extend([
+                    f"{sec}:{opt}" for opt in config.options(sec)
+                    if opt.lower() not in default_options])
             if unknown_config_options:
                 raise UnknownOptionsError(
                     "Unknown options (section:option) found in "
-                    "%(filepath)s: "% self.__dict__ + \
-                    ", ".join(unknown_config_options) )
+                    "%(filepath)s: " % self.__dict__ + \
+                    ", ".join(unknown_config_options))
 
     def load(self, home_dir):
         """Load configuration settings from home_dir"""
@@ -2322,12 +2308,12 @@ class Config:
                     subsequent_indent="# "
                 )
             )
-                              
+
             _fp.write("\n[%s]\n\n%s" % (configparser.DEFAULTSECT, blurb))
-                
+
             if self.ini_DEFAULT:
                 for k, v in self.ini_DEFAULT.items():
-                    _fp.write("\n%s = %s\n" % (k,v))
+                    _fp.write("\n%s = %s\n" % (k, v))
                 _fp.write("\n")
 
             for section in self.sections:
@@ -2358,8 +2344,7 @@ class Config:
     def __getitem__(self, name):
         if name == "HOME":
             return self.HOME
-        else:
-            return self._get_option(name).get()
+        return self._get_option(name).get()
 
     def __setitem__(self, name, value):
         if name == "HOME":
@@ -2749,7 +2734,7 @@ class CoreConfig(Config):
 
                     # close logging before exit.
                     logging.shutdown()
-                    
+
                     # configparser.DuplicateOptionError includes
                     # filename, line number and a useful error.
                     # so we don't have to augment it.
@@ -2885,8 +2870,7 @@ class CoreConfig(Config):
     def __getitem__(self, name):
         if name == "TRACKER_HOME":
             return self.HOME
-        else:
-            return Config.__getitem__(self, name)
+        return Config.__getitem__(self, name)
 
     def __setitem__(self, name, value):
         if name == "TRACKER_HOME":

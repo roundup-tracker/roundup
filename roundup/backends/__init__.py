@@ -76,7 +76,7 @@ def list_backends():
     because we do not need to monkey-patch list_backends.
 
     '''
-    all_backends = ('anydbm', 'mysql', 'sqlite', 'postgresql', 'memorydb')
+    all_backends = ('anydbm', 'mysql', 'postgresql', 'sqlite', 'memorydb')
     return [name for name in all_backends if have_backend(name)]
 
 # vim: set filetype=python sts=4 sw=4 et si :

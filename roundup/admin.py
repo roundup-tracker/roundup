@@ -30,6 +30,7 @@ import re
 import shutil
 import sys
 import textwrap
+from configparser import DuplicateOptionError
 
 import roundup.instance
 from roundup import __version__ as roundup_version
@@ -39,7 +40,6 @@ from roundup.anypy.strings import repr_export
 from roundup.configuration import (
     ConfigurationError,
     CoreConfig,
-    DuplicateOptionError,
     NoConfigError,
     Option,
     OptionUnsetError,
