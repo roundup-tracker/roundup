@@ -136,7 +136,7 @@ jobs:
       # from:
       # https://hugovk.dev/blog/2025/free-threaded-python-on-github-actions/
       - name: Set PYTHON_GIL when freethreaded
-        if: endsWith(matrix.python-version, 't')
+        if: contains(matrix.python-version, 't')
         run: |
           echo "PYTHON_GIL=0" >> "$GITHUB_ENV"
       - name: Update pip
@@ -238,7 +238,7 @@ jobs:
           # pygments for markdown2 to highlight code blocks
           pip install markdown2 pygments
           # docutils for ReStructuredText
-          pip install beautifulsoup4 brotli docutils gpg jinja2 \
+          pip install beautifulsoup4 docutils gpg jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
 
       - name: Install aux packages that need versions differences
@@ -253,6 +253,9 @@ jobs:
               pip install justhtml || true; fi
           if [[ "$PYTHON_VERSION" != "2."* ]]; then 
               pip install Markdown; fi
+          # brotli is not free threading safe.
+          if ! echo "$PYTHON_VERSION" | grep '3.15t' > /dev/null; then
+              pip install brotli; fi
 
       - name: Install xapian
         run: |
