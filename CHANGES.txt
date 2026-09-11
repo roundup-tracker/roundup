@@ -68,7 +68,10 @@ Features:
   first string is empty; include comment extraction for translator
   hints; support testing and add tests. Module used by
   roundup-gettext. (John Rouillard)
-
+- added 'checkconfig' command to roundup-admin to find settings
+  in the main config.ini that are typed incorrectly or in the wrong
+  section. (John Rouillard)
+  
 2026-07-13 2.6.0
 
 Fixed:

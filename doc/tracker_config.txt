@@ -3,6 +3,10 @@
 .. _`config-ini-section-main`:
 .. code:: ini
 
+  
+  # Values set here can be substituted using '%(name)s' markers
+  # elsewhere in the file.
+
   [main]
 
   # Database directory path.

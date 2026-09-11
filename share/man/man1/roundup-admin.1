@@ -59,6 +59,17 @@ Print command-specific help
 \fBhelp all\fP
 Print available help for all commands.
 .TP
+\fBcheckconfig\fP
+Checks the main config.ini for incorrect option names. It reports the
+section and option name of any unrecognized config options.
+
+This identifies typos in the option names, or options placed in the
+wrong section which are not normally checked.
+
+This command can check option values for correctness. However this is
+the default and Roundup will generate an error if invalid values are
+assigned to options.
+.TP
 \fBcommit\fP
 Commit changes made to the database during an interactive session.
 

@@ -29,6 +29,7 @@ import os
 import re
 import shutil
 import sys
+import textwrap
 
 import roundup.instance
 from roundup import __version__ as roundup_version
@@ -44,6 +45,7 @@ from roundup.configuration import (
     OptionUnsetError,
     OptionValueError,
     ParsingOptionError,
+    UnknownOptionsError,
     UserConfig,
 )
 from roundup.exceptions import UsageError
@@ -511,6 +513,12 @@ Command help:
         self.db_uncommitted = False
         return 0
 
+    def do_checkconfig(self, args):
+        ''"""Usage: configcheck
+             Look for incorrect options (keys) in main config.ini file.
+        """
+        self.do_genconfig(args, validate_keys=True)
+
     def do_create(self, args):
         ''"""Usage: create classname property=value ...
         Create a new entry of a given class.
@@ -884,11 +892,22 @@ Command help:
             raise UsageError(message)
         return 0
 
-    def do_genconfig(self, args, update=False):
+    def do_genconfig(self, args, update=False, validate_keys=False):
         ''"""Usage: genconfig filename
         Create a new tracker config file with default values in filename.
-        See also updateconfig.
+        See also updateconfig and checkconfig.
         """
+        if validate_keys:
+            try:
+                config = CoreConfig(self.tracker_home,
+                                    validate_keys=validate_keys)
+            except UnknownOptionsError as e:
+                print(textwrap.fill(str(e), 70, subsequent_indent="   "))
+            else:
+                print(_("No unknown options were found in config.ini."))
+            finally:
+                return
+
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
 
@@ -2333,8 +2352,6 @@ Erase it? Y/N: """) % locals())
         With trace_search also list all directories that are
         searched for templates.
         """
-        import textwrap
-
         trace_search = False
         if args and args[0] == "trace_search":
             trace_search = True

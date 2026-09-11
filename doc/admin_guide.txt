@@ -2462,6 +2462,7 @@ The basic usage is:
   roundup-admin help all                   -- all available help
 
  Commands:
+  checkconfig
   commit
   create classname property=value ...
   display designator[,designator]*

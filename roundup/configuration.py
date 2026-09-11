@@ -37,6 +37,9 @@ from roundup.logcontext import gen_trace_id, get_context_info
 class ConfigurationError(RoundupException):
     pass
 
+class UnknownOptionsError(ConfigurationError):
+    def __str__(self):
+        return self.args[0]
 
 class ParsingOptionError(ConfigurationError):
     def __str__(self):
@@ -276,12 +279,14 @@ class Option:
             }
         return _rv
 
-    def load_ini(self, config):
+    def load_ini(self, config, validate_keys=False):
         """Load value from ConfigParser object"""
         try:
             if config.has_option(self.section, self.setting):
                 self.set(config.get(self.section, self.setting))
                 self.set_raw(config.get(self.section, self.setting, raw=True))
+                if validate_keys:
+                    config.remove_option(self.section, self.setting)
         except (configparser.InterpolationSyntaxError,
                 configparser.InterpolationMissingOptionError) as e:
             raise ParsingOptionError(
@@ -1948,7 +1953,13 @@ class Config:
     # all options are loaded.
     option_validators = None
 
-    def __init__(self, config_path=None, layout=None, settings=None):
+    # If True, check to make sure that all settings were parsed in the
+    # main config.ini file. If any were left over report an error.
+    # Used by roundup-admin checkconfig command.
+    validate_keys = False
+
+    def __init__(self, config_path=None, layout=None, settings=None,
+                 validate_keys=False):
         """Initialize confing instance
 
         Parameters:
@@ -1973,6 +1984,7 @@ class Config:
         self.section_options = {}
         self.options = {}
         self.option_validators = []
+        self.validate_keys = validate_keys
         # add options from the layout structure
         if layout:
             for section in layout:
@@ -2228,7 +2240,29 @@ class Config:
                              [ k.lower() for k in config_defaults.keys()]}
 
         for option in self.items():
-            option.load_ini(config)
+            option.load_ini(config, validate_keys=self.validate_keys)
+
+        # As CoreConfig lods the SETTINGS from config.ini, the config
+        # file version of the setting is removed.  Report any options
+        # left in the parsed config file. They are possible typos.
+        # config_defaults and self.ini_DEFAULTS are added to every
+        # section, ignore them.
+        #
+        # A UserConfig consumes all config file settings, so
+        # unknown_config_options will always be empty. No way to
+        # find typos.
+        if self.validate_keys:
+            unknown_config_options = []
+            for sec in config.sections():
+                for opt in config.options(sec):
+                    if opt.lower() not in [x.lower() for x in
+                                {**config_defaults, **self.ini_DEFAULT}]:
+                        unknown_config_options.append(sec + ":" + opt)
+            if unknown_config_options:
+                raise UnknownOptionsError(
+                    "Unknown options (section:option) found in "
+                    "%(filepath)s: "% self.__dict__ + \
+                    ", ".join(unknown_config_options) )
 
     def load(self, home_dir):
         """Load configuration settings from home_dir"""
@@ -2402,10 +2436,11 @@ class CoreConfig(Config):
     ext = None
     detectors = None
 
-    def __init__(self, home_dir=None, settings=None):
+    def __init__(self, home_dir=None, settings=None, validate_keys=False):
         if settings is None:
             settings = {}
-        Config.__init__(self, home_dir, layout=SETTINGS, settings=settings)
+        Config.__init__(self, home_dir, layout=SETTINGS,
+                        settings=settings, validate_keys=validate_keys)
         # load the config if home_dir given
         if home_dir is None:
             self.init_logging()
