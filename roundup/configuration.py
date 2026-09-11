@@ -32,41 +32,9 @@ from roundup.logcontext import gen_trace_id, get_context_info
 
 
 # Exceptions
-
-
 class ConfigurationError(RoundupException):
-    pass
-
-class UnknownOptionsError(ConfigurationError):
     def __str__(self):
         return self.args[0]
-
-class ParsingOptionError(ConfigurationError):
-    def __str__(self):
-        return self.args[0]
-
-
-class LoggingConfigError(ConfigurationError):
-    def __init__(self, message, **attrs):
-        super().__init__(message)
-        for key, value in attrs.items():
-            self.__setattr__(key, value)
-
-    def __str__(self):
-        return self.args[0]
-
-
-class NoConfigError(ConfigurationError):
-
-    """Raised when configuration loading fails
-
-    Constructor parameters: path to the directory that was used as HOME
-
-    """
-
-    def __str__(self):
-        return "No valid configuration files found in directory %s" \
-            % self.args[0]
 
 
 class InvalidOptionError(ConfigurationError, KeyError, AttributeError):
@@ -84,6 +52,29 @@ class InvalidOptionError(ConfigurationError, KeyError, AttributeError):
 
     def __str__(self):
         return "Unsupported configuration option: %s" % self.args[0]
+
+
+class LoggingConfigError(ConfigurationError):
+
+    """Raised when an error occurs trying to load a .ini or json logging config"""
+
+    def __init__(self, message, **attrs):
+        super().__init__(message)
+        for key, value in attrs.items():
+            self.__setattr__(key, value)
+
+
+class NoConfigError(ConfigurationError):
+
+    """Raised when configuration loading fails
+
+    Constructor parameters: path to the directory that was used as HOME
+
+    """
+
+    def __str__(self):
+        return "No valid configuration files found in directory %s" \
+            % self.args[0]
 
 
 class OptionValueError(ConfigurationError, ValueError):
@@ -114,6 +105,20 @@ class OptionUnsetError(ConfigurationError):
 
     def __str__(self):
         return "%s is not set and has no default" % self.args[0].name
+
+
+class ParsingOptionError(ConfigurationError):
+
+    """Raised for interpolation or other error during config file load"""
+
+    pass
+
+
+class UnknownOptionsError(ConfigurationError):
+
+    """Returned when an option name is not recognized during config check"""
+
+    pass
 
 
 class UnsetDefaultValue:
