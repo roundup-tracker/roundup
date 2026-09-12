@@ -1281,6 +1281,33 @@ class TestCase():
                          results['data']['collection'])
         self.assertEqual(len(results['data']['collection']), 2)
 
+    def testBrokenPaginationParam(self):
+        """
+        Test error if @page... is not @page_size or @page_index.
+        """
+        # create sample data
+        for i in range(0, random.randint(8,15)):
+            self.db.issue.create(title='foo' + str(i))
+
+        base_url="http://tracker.example/cgi-bin/roundup.cgi/" \
+                 "bugs/rest/data/issue"
+
+        # Get error retrieving page 1 using @page_foo
+        form = cgi.FieldStorage()
+
+        # Make sure we accept good params. Keep good params first.
+        form.list = [
+            cgi.MiniFieldStorage('@page_size', '10'),
+            cgi.MiniFieldStorage('@page_index', '1'),
+            cgi.MiniFieldStorage('@page_foo', '1')
+        ]
+        results = self.server.get_collection('issue', form)
+        print(results)
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertIn('Invalid query parameter @page_foo.',
+                      results['error']['msg'].args[0])
+
+        
     def testPagination(self):
         """
         Test pagination. page_size is required and is an integer
@@ -1318,8 +1345,8 @@ class TestCase():
         # Retrieve page 1
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@page_size', page_size),
-            cgi.MiniFieldStorage('@page_index', 1)
+            cgi.MiniFieldStorage('@page_size', str(page_size)),
+            cgi.MiniFieldStorage('@page_index', '1')
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -1339,8 +1366,8 @@ class TestCase():
         # Retrieve page 2
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@page_size', page_size),
-            cgi.MiniFieldStorage('@page_index', 2)
+            cgi.MiniFieldStorage('@page_size', str(page_size)),
+            cgi.MiniFieldStorage('@page_index', '2')
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -1365,8 +1392,8 @@ class TestCase():
         # Retrieve page 3
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@page_size', page_size),
-            cgi.MiniFieldStorage('@page_index', 3)
+            cgi.MiniFieldStorage('@page_size', str(page_size)),
+            cgi.MiniFieldStorage('@page_index', '3')
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -1384,7 +1411,7 @@ class TestCase():
         # Should start at page 1
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@page_size', page_size),
+            cgi.MiniFieldStorage('@page_size', str(page_size)),
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)

@@ -827,14 +827,22 @@ class RestfulInstance(object):
             value = form_field.value
             if key.startswith("@page_"):  # serve the paging purpose
                 key = key[6:]
+                if key not in ("size", "index"):
+                    raise UsageError(_("Invalid query parameter %s.") %
+                                       form_field.name)
                 try:
-                    value = int(value)
+                    # don't accept "0 ", "-0" for example
+                    if not value.isnumeric():
+                        raise ValueError(_("value is not numeric: %s") % value)
+                    page[key] = int(value)
                 except ValueError as e:
                     raise UsageError("When using @page_%s: %s" %
                                      (key, e.args[0]))
-                page[key] = value
             elif key == "@verbose":
                 try:
+                    # don't accept "0 ", "-0" for example
+                    if not value.isnumeric():
+                        raise ValueError(_("value is not numeric: %s") % value)
                     verbose = int(value)
                 except ValueError as e:
                     raise UsageError("When using @verbose: %s" %

@@ -53,7 +53,10 @@ Fixed:
   paths. (John Rouillard)
 - remove Internet Explorer specific html meta tag and conditional
   comments from templates. (John Rouillard)
-  
+- use .isnumeric() rather than int() when checking values for
+  @verbose, @page_* in rest interface. Verify @page param name is
+  valid. (John Rouillard)
+
 Features:
 
 - issue2550930 - add support for local_replace to classic
