@@ -321,12 +321,12 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
         match = re.match(r'(.*?)[#&]', value)
         if match is not None:
             value = match[1]
-        
+
         query = '%s=%s'  % (param, value)
         f = session.get(url, params=query)
 
         try:
-            if value != "" and value.isnumeric():
+            if value != "" and value.isdecimal():
                 self.assertEqual(f.status_code, 200)
         except ValueError:
             # invalid value for param
@@ -340,6 +340,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
     @example("@verbose", "0 #stuff")
     @example("@verbose", "&=0")
     @example("@verbose", "0+")
+    @example("@page_size", '\u00bc')  # character 1/4
     @settings(max_examples=_max_examples,
               deadline=fuzz_deadline) # in ms
     def test_class_url_param_accepting_integer_values(self, param, value):

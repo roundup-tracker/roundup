@@ -832,7 +832,7 @@ class RestfulInstance(object):
                                        form_field.name)
                 try:
                     # don't accept "0 ", "-0" for example
-                    if not value.isnumeric():
+                    if not value.isdecimal():
                         raise ValueError(_("value is not numeric: %s") % value)
                     page[key] = int(value)
                 except ValueError as e:
@@ -841,7 +841,7 @@ class RestfulInstance(object):
             elif key == "@verbose":
                 try:
                     # don't accept "0 ", "-0" for example
-                    if not value.isnumeric():
+                    if not value.isdecimal():
                         raise ValueError(_("value is not numeric: %s") % value)
                     verbose = int(value)
                 except ValueError as e:
