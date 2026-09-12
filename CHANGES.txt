@@ -51,7 +51,9 @@ Fixed:
 - removing more python2 compatability, refactoring some methods,
   remove/reduce divergence of duplicate code in different code
   paths. (John Rouillard)
-
+- remove Internet Explorer specific html meta tag and conditional
+  comments from templates. (John Rouillard)
+  
 Features:
 
 - issue2550930 - add support for local_replace to classic
