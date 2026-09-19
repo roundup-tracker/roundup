@@ -352,6 +352,7 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
     @example("@verbose", "10#")
     @example("@verbose", u'Ø\U000dd990')
     @example("@verbose", "&=0")
+    @example("@verbose", "0+")
     @settings(max_examples=_max_examples,
               deadline=fuzz_deadline) # in ms
     def test_element_url_param_accepting_integer_values(self, param, value):
