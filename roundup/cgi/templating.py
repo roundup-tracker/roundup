@@ -3442,14 +3442,22 @@ env: %(env)s
         return """
 <script nonce="%s" type="text/javascript">
 submitted = false;
+submit_overlay = document.createElement("div");
+submit_overlay.style.cssText = "display:none; position:fixed; top:0; left:0; width:100%%; height:100%%; background-color:rgba(0,0,0,0.5); z-index:9999; vertical-align:middle; text-align:center; font-size:200%%; font-weight:bold; color:white; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 0 #000;";
+submit_overlay.innerHTML = "&#9203; Submission in progress...";
+window.onload = function() {
+    document.body.appendChild(submit_overlay);
+}
+
 function submit_once() {
     if (submitted) {
         alert("Your request is being processed.\\nPlease be patient.");
         return false;
     }
 
-    window.setTimeout("submitted = false;", 5000)
+    window.setTimeout("submitted = false; submit_overlay.style.display = 'none';", 5000);
 
+    submit_overlay.style.display = "block";
     submitted = true;
     return true;
 }
@@ -3782,7 +3790,7 @@ class TemplatingUtils:
 
     const transfer = new DataTransfer();
     file_list = document.querySelectorAll('pre[data-mimetype]');
-    file_list.forEach( file => 
+    file_list.forEach( file =>
         transfer.items.add(
            new File([window.atob(file.textContent)],
            file.dataset.filename,
