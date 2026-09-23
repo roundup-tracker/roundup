@@ -53,7 +53,8 @@ def build_message_files(command):
         command.mkpath(os.path.dirname(_build_dst))
         command.announce("Compiling %s -> %s" % (_src, _build_dst))
         mo = msgfmt.Msgfmt(_src).get()
-        open(_build_dst, 'wb').write(mo)
+        with open(_build_dst, 'wb') as f:
+            f.write(mo)
 
 
 class build(base):
