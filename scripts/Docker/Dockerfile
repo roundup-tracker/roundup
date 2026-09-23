@@ -128,7 +128,9 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
 #   modules not installed in the base library.
 # ignore warnings from pip to use virtualenv
 COPY scripts/Docker/requirements.txt .
+# requirements.txt include setuptools needed for gpg build
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir gpg --no-build-isolation
 
 # copy the elements of the release directory to the docker image
 COPY setup.py install/

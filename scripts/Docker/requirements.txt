@@ -14,7 +14,9 @@ psycopg2
 mysqlclient
 redis >= 4.5.4
 # encryption
-gpg
+# needs --no-build-isolation to install
+# done in separate pip command in Dockerfile after installing this file
+# gpg >= 2.0.0
 # java web tokens
 PyJWT >= 2.12.0
 # extra HTTP compression methods
