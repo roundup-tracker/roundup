@@ -3442,23 +3442,32 @@ env: %(env)s
         return """
 <script nonce="%s" type="text/javascript">
 submitted = false;
-submit_overlay = document.createElement("div");
-submit_overlay.style.cssText = "display:none; position:fixed; top:0; left:0; width:100%%; height:100%%; background-color:rgba(0,0,0,0.5); z-index:9999; vertical-align:middle; text-align:center; font-size:200%%; font-weight:bold; color:white; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 0 #000;";
-submit_overlay.innerHTML = "&#9203; Submission in progress...";
-window.onload = function() {
-    document.body.appendChild(submit_overlay);
+submitted_restore = "";
+
+function submit_reset() {
+    $("#submit_overlay").hide();
+    if (typeof(submitted)!=typeof(true)) {
+        submitted.value = submitted.textContent = submitted_restore;
+        submitted.disabled = false;
+    }
+    submitted = false;
 }
 
-function submit_once() {
+function submit_once(e) {
     if (submitted) {
         alert("Your request is being processed.\\nPlease be patient.");
         return false;
     }
 
-    window.setTimeout("submitted = false; submit_overlay.style.display = 'none';", 5000);
+    window.setTimeout(submit_reset, 5000);
 
-    submit_overlay.style.display = "block";
-    submitted = true;
+    if (e) {
+        submitted = e;
+        submitted_restore = e.value ? e.value : e.textContent;
+        e.value = e.textContent = "Submitting...";
+        e.disabled = true;
+    } else submitted = true;
+    $("#submit_overlay").show();
     return true;
 }
 

@@ -13,6 +13,9 @@
     {%- block extracss %} {% endblock %}
   </head>
   <body>
+    <div id="submit_overlay">
+      <div id="status_overlay_content">&#9203; Please wait...</div>
+    </div>
     {% block navbar %}
       {% include 'layout/banner.html' %}
     {% endblock %}
