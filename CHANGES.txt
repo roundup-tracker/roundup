@@ -56,6 +56,12 @@ Fixed:
 - use .isnumeric() rather than int() when checking values for
   @verbose, @page_* in rest interface. Verify @page param name is
   valid. (John Rouillard)
+- use hmac.compare_digest() to make timing attacks on passwords more
+  difficult. This is only a problem when the password is stored with
+  plaintext "hashing". To my best knowledge when the equality
+  operation is done between hashed salted secrets (the normal case),
+  deriving the original secret requires effort similar to brute
+  force. (John Rouillard)
 
 Features:
 

@@ -19,6 +19,7 @@
 """
 __docformat__ = 'restructuredtext'
 
+import hmac
 import os
 import re
 import string
@@ -359,13 +360,15 @@ class JournalPassword:
         if isinstance(other, self.__class__):
             if self.scheme != other.scheme:
                 return False
-            return self.password == other.password
+            return hmac.compare_digest(self.password,other.password)
 
         # assume password is plaintext
         if self.password is None:
             raise ValueError('Password not set')
-        return self.password == encodePassword(other, self.scheme,
-                                               self.password or None)
+        return hmac.compare_digest(self.password,
+                                   encodePassword(other, self.scheme,
+                                                  self.password or None)
+                                   )
 
 
 class Password(JournalPassword):

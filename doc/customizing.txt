@@ -831,7 +831,7 @@ need to override the standard ``verifyPassword`` method defined in
 following is added as ``externalpassword.py`` in the tracker ``extensions``
 directory::
 
-    import os, crypt
+    import os, crypt, hmac
     from roundup.cgi.actions import LoginAction    
 
     class ExternalPasswordLoginAction(LoginAction):
@@ -850,7 +850,11 @@ directory::
             for ent in [line.strip().split(':') for line in
                                                 open(file).readlines()]:
                 if ent[0] == username:
-                    return crypt.crypt(password, ent[1][:2]) == ent[1]
+		    # use hmac.compare_digest to foil timing attacks
+	            # with python 3.7+
+                    return hmac.compare_digest(
+		        crypt.crypt(password, ent[1][:2]),
+			ent[1])
 
             # user doesn't exist in the file
             return 0
