@@ -115,6 +115,111 @@ your database.
 Migrating from 2.6.0 to 2.7.0
 =============================
 
+Check oldvalues/olddata for property in reactors (required)
+-----------------------------------------------------------
+
+A reactor is a type of detector that runs after a database change. For
+example Roundup sends an email after an issue changes using the
+nosyreactor. Reactors are called with these arguments:
+
+   a_reactor(db, cl, itemid, oldvalues)
+
+In Roundup 2.7, the data included in ``oldvalues`` (also called
+``olddata`` in some documentation) is changing. The specification says
+``oldvalues`` should only contain data for properties that actually
+changed. Before 2.7, ``oldvalues`` had an entry for every property,
+even properties that didn't change. Now you must check that your
+property exists in ``oldvalues`` before you try to access it using
+``oldvalues['property']``.
+
+Checking your code to verify this can take time. However, this change
+has several benefits:
+
+  * the code matches the spec
+  * makes a reactor operate like an auditor so both detectors types
+    behave the same
+  * makes writing reactors faster and less complex
+
+This example assumes your reactor sends an update when the issue
+status changes. You can skip the reactor if the status has not
+changed. Do this by adding an early return at the top of the reactor
+that looks like::
+
+   if 'status' not in oldvalues:
+       # status has not changed
+       return
+
+   # any code down here that accesses oldvalues['status']
+   # will work since we know status is a valid key.
+
+This replaces the longer and more expensive::
+
+    oldstatus = oldvalues.get('status')
+    newstatus = db.issue.get(nodeid, 'status')
+    if oldstatus == newstatus:
+        return
+
+which needs an expensive database lookup just to find out that you
+don't need to do anything.
+
+Sometimes you can't use an early return . You can change your code to
+use the ``get()`` method instead of brackets. Before::
+
+   old_status = oldvalues['status']
+
+after::
+
+   old_status = oldvalues.get('status')
+
+``old_status`` is set to the prior status value or ``None`` if
+``status`` is not in oldvalues.
+   
+Another option is to check if the key exists in oldvalues before using
+it. For example::
+
+   if 'status' in oldvalues:
+      old_status = oldvalues['status']
+   else:
+      old_status = 'new'
+
+This is similar to the early return but is more localized and does an
+action beside returning.
+
+A last option is to use try/except to catch the ``KeyError`` that is
+generated when the key is missing from oldvalues. Here is an example::
+
+   try:
+      old_status = oldvalues['status']
+   except KeyError:
+      old_status = 'new'
+
+The preferred methods are to use the early return pattern or ``get()``
+methods.
+
+To find all your reactors, go to the ``detectors`` directory of your
+tracker. Search all the files for ``.react``. You should find lines
+like::
+
+    db.issue.react('create', nosyreaction)
+    db.issue.react('set', nosyreaction)
+
+(this example comes from the default nosyreaction.py supplied with
+your trackers). Then you can look at the referenced function
+(``nosyreaction`` in this example) and see how oldvalues is used.
+
+Trackers can be set up without reactors, so it's possible you won't
+find calls to react, but it is unusual.
+
+Besides reactors, ``oldvalues`` is passed to the function set to the
+``note_filter`` argument to ``nosymessage()``. The ``note_filter``
+function gets called with::
+
+    note_filter(original_note, issueid, newvalues, oldvalues)
+
+and can change the message that is sent to users. If you use a
+nosy_filter, make sure the function uses ``oldvalues`` the right way.
+
+
 jQuery updated for jinja2, devel, responsive templates (recommended)
 --------------------------------------------------------------------
 

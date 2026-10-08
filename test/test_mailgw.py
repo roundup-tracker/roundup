@@ -1958,7 +1958,7 @@ _______________________________________________________________________
 
     def testNosyMessageCcBccEtc(self):
         self.doNewIssue()
-        oldvalues = self.db.getnode('issue', '1').copy()
+        oldvalues = {}  # post roundup 2.7 oldvalues only changed props
         oldvalues['assignedto'] = None
         # reconstruct old behaviour: This would reuse the
         # database-handle from the doNewIssue above which has committed
@@ -2057,7 +2057,7 @@ _______________________________________________________________________
         def note_filter(original_note, issue_id, db, newvalues, oldvalues):
             return 'This content came from note_filter().'
         self.doNewIssue()
-        oldvalues = self.db.getnode('issue', '1').copy()
+        oldvalues = {}  # post roundup 2.7 oldvalues only changed props
         oldvalues['assignedto'] = None
         # reconstruct old behaviour: This would reuse the
         # database-handle from the doNewIssue above which has committed
@@ -2111,7 +2111,7 @@ _______________________________________________________________________
 
     def testPropertyChangeOnly(self):
         self.doNewIssue()
-        oldvalues = self.db.getnode('issue', '1').copy()
+        oldvalues = {}  # post roundup 2.7 oldvalues only changed props
         oldvalues['assignedto'] = None
         # reconstruct old behaviour: This would reuse the
         # database-handle from the doNewIssue above which has committed
@@ -2164,14 +2164,15 @@ _______________________________________________________________________
 
     def testNosyMessageSettingSubject(self):
         self.doNewIssue()
-        oldvalues = self.db.getnode('issue', '1').copy()
+        oldvalues = {}  # post roundup 2.7 oldvalues only changed props
         oldvalues['assignedto'] = None
+        oldvalues['status'] = '1'
         # reconstruct old behaviour: This would reuse the
         # database-handle from the doNewIssue above which has committed
         # as user "Chef". So we close and reopen the db as that user.
         #self.db.close() actually don't close 'cos this empties memorydb
         self.db = self.instance.open('Chef')
-        self.db.issue.set('1', assignedto=self.chef_id)
+        self.db.issue.set('1', assignedto=self.chef_id, status='2')
         self.db.commit()
         self.db.issue.nosymessage('1', None, oldvalues, subject="test")
 
@@ -2192,7 +2193,7 @@ To: chef@bork.bork.bork, richard@test.test
 From: "Bork, Chef" <issue_tracker@your.tracker.email.domain.example>
 X-Roundup-Name: Roundup issue tracker
 X-Roundup-Loop: hello
-X-Roundup-Issue-Status: unread
+X-Roundup-Issue-Status: deferred
 X-Roundup-Version: 1.3.3
 X-Roundup-Issue-Id: 1
 In-Reply-To: <dummy_test_message_id>
@@ -2207,6 +2208,7 @@ Change by Bork, Chef <chef@bork.bork.bork>:
 
 ----------
 assignedto:  -> Chef
+status: unread -> deferred
 
 _______________________________________________________________________
 Roundup issue tracker <issue_tracker@your.tracker.email.domain.example>

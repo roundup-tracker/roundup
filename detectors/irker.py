@@ -45,10 +45,9 @@ def notify_irker(db, cl, nodeid, oldvalues):
         return
     messages = list(messages)
 
-    if oldvalues:
-        oldstatus = oldvalues['status']
-    else:
-        oldstatus = None
+    # .get returns value or None if status not in oldvalues
+    oldstatus = oldvalues.get('status')
+
     newstatus = db.issue.get(nodeid, 'status')
     if oldstatus != newstatus:
         if oldvalues:

@@ -1373,7 +1373,14 @@ class Class:
         # backend has a schema that fills in missing values.
         self.initialize_missing_props(oldvalues)
 
+        # set_inner removes entries from propvalues where the value is
+        # not changed. WARN: it also removes quiet props
         propvalues = self.set_inner(nodeid, **propvalues)
+
+        # filter oldvalues to only changed values
+        oldvalues = {prop: val for prop, val in oldvalues.items() if
+                     prop in propvalues}
+        
         self.fireReactors('set', nodeid, oldvalues)
         return propvalues
 
@@ -2415,20 +2422,31 @@ class FileClass:
     def set(self, itemid, **propvalues):
         """ Snarf the "content" propvalue and update it in a file
         """
+        # This is first since r/o database is a bigger issue
+        if self.db.journaltag is None:
+            raise DatabaseError(_('Database open read-only'))
+
         self.fireAuditors('set', itemid, propvalues)
+
+        # sanity checks on propvalues, include mods by auditors.
+        if not propvalues:
+            return propvalues
+
+        if 'id' in propvalues:
+            raise KeyError('"id" is reserved')
+
+        if ('creator' in propvalues or 'actor' in propvalues or
+                'creation' in propvalues or 'activity' in propvalues):
+            raise KeyError('"creator", "actor", "creation" and '
+                           '"activity" are reserved')
 
         # create the oldvalues dict - fill in any missing values
         oldvalues = copy.deepcopy(self.db.getnode(self.classname, itemid))
-        # The following is redundant for rdbms backends but needed for anydbm
-        # the performance impact is so low we that we don't factor this.
-        for name, prop in self.getprops(protected=0).items():
-            if name in oldvalues:
-                continue
-            if isinstance(prop, Multilink):
-                oldvalues[name] = []
-            else:
-                oldvalues[name] = None
 
+        # fill in any missing values - method can be replaced if
+        # backend has a schema that fills in missing values.
+        self.initialize_missing_props(oldvalues)
+        
         # now remove the content property so it's not stored in the db
         content = None
         if 'content' in propvalues:
@@ -2436,6 +2454,8 @@ class FileClass:
             del propvalues['content']
 
         # do the database update
+        # set_inner removes entries from propvalues where the value is
+        # not changed. WARN: it also removes quiet props.
         propvalues = self.set_inner(itemid, **propvalues)
 
         # do content?
@@ -2451,9 +2471,25 @@ class FileClass:
                                          index_content, mime_type)
             propvalues['content'] = content
 
+        # filter oldvalues to only changed values including content
+        # if set.
+        oldvalues = {prop: val for prop, val in oldvalues.items() if
+                     prop in propvalues}
+        
         # fire reactors
         self.fireReactors('set', itemid, oldvalues)
         return propvalues
+
+    def initialize_missing_props(self, oldvalues):
+        """If backend doesn't have a schema to intialize props, do it here.
+        """
+        for name, prop in self.getprops(protected=0).items():
+            if name in oldvalues:
+                continue
+            if isinstance(prop, Multilink):
+                oldvalues[name] = []
+            else:
+                oldvalues[name] = None
 
 
 class Node:

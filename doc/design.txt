@@ -1085,8 +1085,11 @@ to "applied"::
     # patch.
 
     def apply_patch(db, cl, id, olddata):
+    	# With roundup version 2.7+, use olddata.get() not olddata[]
+	# Post 2.7, only changed properties are in olddata and
+	# olddata['unchanged_property'] raises a KeyError.
         if (cl.get(id, "status") == db.status.lookup("applied") and 
-            olddata["status"] == db.status.lookup("approved")):
+            olddata.get("status") == db.status.lookup("approved")):
             # ...apply the patch...
 
     def init(db):

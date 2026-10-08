@@ -843,24 +843,18 @@ class IssueClass:
         for key in oldvalues:
             if key in ['files', 'messages']:
                 continue
-            if key in ('actor', 'activity', 'creator', 'creation'):
-                continue
-            # not all keys from oldvalues might be available in database
-            # this happens when property was deleted
             try:
                 new_value = cl.get(issueid, key)
-            except KeyError:
-                continue
-            # the old value might be non existent
-            # this happens when property was added
-            try:
                 old_value = oldvalues[key]
                 if isinstance(new_value, list):
                     new_value.sort()
+                    # Possible AttributeError if oldvalue is not
+                    # sortable. Caused by changing the property type
+                    # which is not allowed.
                     old_value.sort()
                 if new_value != old_value:
                     changed[key] = old_value
-            except Exception:
+            except (KeyError, AttributeError):
                 changed[key] = new_value
 
         # list the changes

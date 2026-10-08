@@ -56,6 +56,10 @@ Fixed:
 - use .isnumeric() rather than int() when checking values for
   @verbose, @page_* in rest interface. Verify @page param name is
   valid. (John Rouillard)
+- issue2551433 - Restrict values in reactor oldvalues to changed
+  values only.  The last parameter passed to a reactor (usually named
+  oldvalues/olddata) should only have keys for properties that have
+  changed in the current transaction. (John Rouillard)
 
 Features:
 
