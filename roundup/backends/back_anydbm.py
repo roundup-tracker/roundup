@@ -1094,7 +1094,14 @@ class Class(hyperdb.Class):
     def set_inner(self, nodeid, **propvalues):
         """ Called by set, in-between the audit and react calls.
 
+            Commit the database updates for changed properties and return
+            a list of the changed properties.
+
             Database must be in read write mode.
+
+            Quiet props used to be deleted here, but deletion is now
+            done in the caller (set() method) so reactors can see
+            changed quiet props.
         """
         for p in propvalues:
             prop = self.properties[p]
@@ -1108,9 +1115,6 @@ class Class(hyperdb.Class):
 
         # if the journal value is to be different, store it in here
         journalvalues = {}
-
-        # omit quiet properties from history/changelog
-        quiet_props = []
 
         # list() propvalues 'cos it might be modified by the loop
         for propname, value in list(propvalues.items()):
@@ -1301,10 +1305,6 @@ class Class(hyperdb.Class):
 
             node[propname] = value
 
-            # record quiet properties to omit from history/changelog
-            if prop.quiet:
-                quiet_props.append(propname)
-
         # nothing to do?
         if not propvalues:
             return propvalues
@@ -1318,11 +1318,6 @@ class Class(hyperdb.Class):
 
         if self.do_journal:
             self.db.addjournal(self.classname, nodeid, 'set', journalvalues)
-
-        # remove quiet properties from output
-        for propname in quiet_props:
-            if propname in propvalues:
-                del propvalues[propname]
 
         return propvalues
 

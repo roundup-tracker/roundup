@@ -273,14 +273,21 @@ quiet=False:
       reduces confusion by the user and clutter in the display.
       The property change will not be shown in:
 
-        - the change confirmation message when a change is entered in the web interface
+        - the change confirmation message when a change is entered
+          in the web interface
         - the property change section of the change note email ("nosy email")
-        - the web history shown at the bottom of an item page
+        - the web history shown at the bottom of an item page unless the
+          history templating method is called with ``showall=True``.
+
+      When set to True, the property is a key in the dict returned
+      when calling get_quiet_props(self, propnames = []). Any
+      additional props specified in propnames are included in the
+      returned dict.
 
 required=False:
         if set to True, the property name is returned when calling
         get_required_props(self, propnames = []). Any additional props
-        specified in propnames is merged with the required props.
+        specified in propnames are merged with the required props.
         An auditor is required to reject the submission if it is
         unset/empty.
 

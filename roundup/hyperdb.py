@@ -1374,7 +1374,7 @@ class Class:
         self.initialize_missing_props(oldvalues)
 
         # set_inner removes entries from propvalues where the value is
-        # not changed. WARN: it also removes quiet props
+        # not changed.
         propvalues = self.set_inner(nodeid, **propvalues)
 
         # filter oldvalues to only changed values
@@ -1382,6 +1382,12 @@ class Class:
                      prop in propvalues}
         
         self.fireReactors('set', nodeid, oldvalues)
+
+        # filter out quiet props so they are not announced to the user
+        # in the web interface.
+        for k in self.get_quiet_props():
+            propvalues.pop(k, None)
+
         return propvalues
 
     def set_inner(self, nodeid, **propvalues):
@@ -2011,6 +2017,33 @@ class Class:
         """
         raise NotImplementedError
 
+    def get_quiet_props(self, propnames: list[str]|None =None) -> dict[str, tuple]:
+        """Return a dict of property names mapping to a tuple where
+           the first item is a property object.
+
+              dict("propname", (prop,)
+
+           All properties that have the "quiet" flag set will be
+           returned in addition to all properties in the propnames
+           parameter.
+
+           At this time quiet is a boolean. At some point it may be a
+           list/tuple of scopes where the property should be quiet.
+           For example ("web", "history") would indicate: suppress
+           announcement/display in the confirmation message on the
+           web, and in history/jounral output. It would allow the
+           property change to be sent via email/nosy list.
+
+           This may be YAGNI, but I wanted get_quiet_props() to be
+           similar to get_required_props().
+        """
+        if propnames is None:
+            propnames = []
+        props = self.getprops(protected=False)
+        pdict = {p: (props[p],) for p in propnames}
+        pdict.update([(k, (v,)) for k, v in props.items() if v.quiet])
+        return pdict
+
     def get_required_props(self, propnames=None):
         """Return a dict of property names mapping to property objects.
         All properties that have the "required" flag set will be
@@ -2455,7 +2488,7 @@ class FileClass:
 
         # do the database update
         # set_inner removes entries from propvalues where the value is
-        # not changed. WARN: it also removes quiet props.
+        # not changed.
         propvalues = self.set_inner(itemid, **propvalues)
 
         # do content?
@@ -2478,6 +2511,12 @@ class FileClass:
         
         # fire reactors
         self.fireReactors('set', itemid, oldvalues)
+
+        # filter out quiet props so they are not announced to the user
+        # in the web interface.
+        for k in self.get_quiet_props():
+            propvalues.pop(k, None)
+
         return propvalues
 
     def initialize_missing_props(self, oldvalues):

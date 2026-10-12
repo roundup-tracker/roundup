@@ -480,7 +480,7 @@ Properties have attributes to change the default behaviour:
 * All properties support the following attributes:
 
   - ``required``: see `design documentation`_. Adds the property to
-    the list returned by calling get_required_props for the class.
+    the dict returned by calling get_required_props for the class.
   - ``default_value``: see `design documentation`_ Sets the
     value returned by ``get_default_value()``. MultiLink types
     do not support ``default_value``.
@@ -499,6 +499,9 @@ Properties have attributes to change the default behaviour:
     number of times an issue is reopened or reassigned etc.) should
     not be displayed to the user as they can be confusing.
 
+    The dict returned by get_quiet_props() will include the property
+    name as a key.
+   
 .. index:: triple: schema; property attributes; indexme
 
 * String properties have an ``indexme`` attribute. The default is
