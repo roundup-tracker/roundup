@@ -756,7 +756,14 @@ IssueClass
 ~~~~~~~~~~
 
 IssueClass automatically includes the "messages", "files", "nosy", and
-"superseder" properties.
+"superseder" properties. You can override the default configuration of
+these properties by defining them in your IssueClass. For example::
+
+  issue = IssueClass(..., nosy=Multilink("user",
+                     try_id_parsing="no"), ...)
+
+would disable id parsing forcing lookup by username even if the
+username is numeric.
 
 The messages and files properties list the links to the messages and
 files related to the issue. The nosy property is a list of links to
