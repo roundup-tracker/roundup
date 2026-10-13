@@ -688,7 +688,30 @@ class BaseTestCases(WsgiSetup, ClientSetup):
                       f.text)
         self.assertEqual(f.status_code, 200)
 
-    def test_broken_multiink_query(self):
+    def test_broken_multilink_query(self):
+        # query multilink item
+        current_user_query = {
+            "@columns": "title,id,activity,status,assignedto",
+            "keyword": "-3",
+            "@sort": "-activity",
+            "@group": "priority",
+            "@pagesize": "50",
+            "@startwith": "0",
+            "@template": "index|search",
+            "@action": "search"
+        }
+        session, _response = self.create_login_session()
+        f = session.post(self.url_base()+'/issue?', data=current_user_query)
+
+        # verify the query has run by looking for the query name
+        print(f.text)
+        self.assertIn('There was an error searching issue by keyword using: '
+                      '[-3]. The operator -3 (and) at position 1 has '
+                      'too few arguments.',
+                      f.text)
+        self.assertEqual(f.status_code, 200)
+
+    def test_get_search_action(self):
         # query multilink item
         current_user_query = (
             "@columns=title,id,activity,status,assignedto"
@@ -700,9 +723,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
 
         # verify the query has run by looking for the query name
         print(f.text)
-        self.assertIn('There was an error searching issue by keyword using: '
-                      '[-3]. The operator -3 (and) at position 1 has '
-                      'too few arguments.',
+        self.assertIn('error-message">Invalid request',
                       f.text)
         self.assertEqual(f.status_code, 200)
 
