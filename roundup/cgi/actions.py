@@ -304,6 +304,10 @@ class SearchAction(Action):
         Split any String query values on whitespace and comma.
 
         """
+        # ensure modification comes via POST
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            raise Reject(self._('Invalid request'))
+
         self.fakeFilterVars()
         queryname = self.getQueryName()
 

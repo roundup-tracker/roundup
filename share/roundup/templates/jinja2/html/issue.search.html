@@ -39,7 +39,7 @@
 
 {% block content %}
 
-<form method="GET" name="itemSynopsis" action="{{ request.classname }}">
+<form method="POST" name="itemSynopsis" action="{{ request.classname }}">
 
 <table class="form">
 
@@ -189,6 +189,8 @@
   <td>
    &nbsp;
    <input type="hidden" name="@action" value="search">
+   <input name="@csrf" type="hidden"
+	  value="{{ utils.anti_csrf_nonce() }}">
   </td>
   <td><input class="btn btn-primary" type="submit" value="{% trans %}Search{% endtrans %}"></td>
 </tr>

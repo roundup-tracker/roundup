@@ -115,6 +115,58 @@ your database.
 Migrating from 2.6.0 to 2.7.0
 =============================
 
+POST method required for search action (required)
+-------------------------------------------------
+
+This change makes it more difficult for an attacker to create a forged
+request to change a stored search. It also removes a case where GET
+can change data which is against the HTTP spec.
+
+The search action form (editing/creating searches or queries) must be
+submitted using the POST HTTP method and not the GET method. To find
+the templates that are affected, search for lines where ``@action`` is
+followed by ``search``.
+
+Adding the ``@csrf`` value for the search forms is optional unless the
+tracker's config.ini has ``csrf_enforce_token = required`` set.
+However adding it is strongly encouraged for compatibility.
+
+In the files that set ``@action`` to ``search``, find the line where
+``@action`` is set and add a new hidden input that looks like::
+
+   <input name="@csrf" type="hidden"
+          tal:attributes="value python:utils.anti_csrf_nonce()">
+
+after the hidden input that defines ``@action``. Before::
+
+   <input type="hidden" name="@action" value="search">
+
+after::
+
+   <input type="hidden" name="@action" value="search">
+   <input name="@csrf" type="hidden"
+          tal:attributes="value python:utils.anti_csrf_nonce()">
+
+(Note if you are using a jinja template use::
+
+   <input name="@csrf" type="hidden"
+         value="{{ utils.anti_csrf_nonce() }}">
+
+)
+
+Then modify the ``<form>`` tag changing ``method="get"`` (or
+``method="GET"``) to ``method="POST"``. As an example if your form
+looks like::
+
+   <form method="get" name="itemSynopsis"
+
+edit it to look like::
+
+   <form method="POST" name="itemSynopsis"
+
+If you miss a form, you will see the error "Invalid request" when the
+submit is done using get.
+
 jQuery updated for jinja2, devel, responsive templates (recommended)
 --------------------------------------------------------------------
 
