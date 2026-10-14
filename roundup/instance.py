@@ -267,12 +267,15 @@ class Tracker:
         """Return location as dict if name is registered
            as a templating utility
         """
-        if name in self.templating_utils:
-            registered_at = self.templating_utils[name]._registered_at
-        elif name in self.templating_util_methods:
-            registered_at = self.templating_util_methods[name]._registered_at
-        else:
-            return {}
+        try:
+            if name in self.templating_utils:
+                registered_at = self.templating_utils[name]._registered_at
+            elif name in self.templating_util_methods:
+                registered_at = self.templating_util_methods[name]._registered_at
+            else:
+                return {}
+        except AttributeError:
+            registered_at = ("filename_not_saved", -1)
 
         # return info with unique names needed by error string.
         return {"registered_filename": registered_at[0],
@@ -354,7 +357,13 @@ class Tracker:
             # if classmethod will work properly as templateutil or not.
             self.templating_utils[name].__func__._registered_at = (
                 register_location['filename'], register_location['lineno'])
-        else:
+        elif hasattr(function, "__dict__"):
+            # If the "function" has a __dict__, it can store info
+            # about the location where it was defined. However
+            # registerUtil has been used to register strings, or other
+            # objects (int, list) etc. We don't try to store location
+            # info for plain objects, but do report an attempt to
+            # register a duplicate utility name.
             self.templating_utils[name]._registered_at = (
                 register_location['filename'], register_location['lineno'])
 

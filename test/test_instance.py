@@ -87,6 +87,8 @@ class InstanceTest(unittest.TestCase):
              instance.registerUtil("util_classmethod",
                                    UtilClass.util_classmethod)
 
+             instance.registerUtil("a_string", "string")
+
              instance.registerUtilMethod("dummy_util_method",
                                          dummy_util_method)
       """)
@@ -142,6 +144,11 @@ class InstanceTest(unittest.TestCase):
                                          dummy_util_method)
       """)
 
+      bad_a_string = dedent("""\
+         def init(instance):
+             instance.registerUtil("a_string", "string")
+      """)
+
       fn = Path(self.dirname) / "extensions" / "base_extension.py"
       with fn.open("w") as be:
         be.write(base_extension)
@@ -176,8 +183,16 @@ class InstanceTest(unittest.TestCase):
           bad_util_method,
           [
             "'dummy_util_method' already exists",
-            "base_extension.py:27",
+            "base_extension.py:29",
             str(Path("_test_instance/extensions/bad.py:5"))
+          ]
+         ),
+        ( "bad_a_string",
+          bad_a_string,
+          [
+            "'a_string' already exists",
+            "base_extension.py:27",
+            "filename_not_saved:-1"
           ]
          )
       ]
