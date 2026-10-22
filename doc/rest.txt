@@ -1585,12 +1585,12 @@ rest/data/msg/11/content to obtain::
 
   {
     "data": {
-    "id": "11",
-    "type": "<class 'str'>",
-    "link": "https://.../demo/rest/data/msg/11/content",
-    "data": "of has to who pleasure. or of account give because the
-              reprehenderit\neu to quisquam velit, passage, was or...",
-            "@etag": "\"584f82231079e349031bbb853747df1c\""
+       "id": "11",
+       "type": "<class 'str'>",
+       "link": "https://.../demo/rest/data/msg/11/content",
+       "data": "of has to who pleasure. or of account give because the
+		 reprehenderit\neu to quisquam velit, passage, was or...",
+       "@etag": "\"584f82231079e349031bbb853747df1c\""
     }
   }
 
