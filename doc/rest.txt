@@ -1403,9 +1403,11 @@ The method ``PUT`` is allowed on individual items, e.g.
 ``/data/issue/42`` On success it returns a data structure similar to
 the respective ``GET`` method. However it is only concerned with the
 changes that have occurred. Since it is not a full ``GET`` request, it
-doesn't include an etag or unchanged attributes. Note that for ``PUT``
-an Etag has to be supplied, either in the request header or as an
-@etag parameter. An example::
+doesn't include unchanged attributes. As of Roundup version 2.7 it
+includes ``@etag`` in the data element as well as an ``ETag``
+header. Note that for ``PUT`` an Etag has to be supplied, either in
+the request header (via ``If-Match``) or as an @etag
+parameter. An example::
 
   curl -u admin:admin -X PUT \
      --header 'Referer: https://example.com/demo/' \
@@ -1426,7 +1428,8 @@ an Etag has to be supplied, either in the request header or as an
           },
           "type": "issue",
           "link": "https://example.com/demo/rest/data/issue/23",
-          "id": "23"
+          "id": "23",
+          "@etag": "\"370510512b2d8fc3f98aac3d762cc7b1\""
       }
   }
 

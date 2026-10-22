@@ -2725,6 +2725,10 @@ class TestCase():
         # invalid origin, no credentials allowed.
         self.assertNotIn("Access-Control-Allow-Credentials",
                          self.server.client.additional_headers)
+        self.assertIn("ETag",
+                         self.server.client.additional_headers)
+        self.assertIn('@etag', json.loads(results)['data'])
+
         self.assertEqual(self.server.client.response_code, 200)
         results = self.server.get_element('user', self.joeid, self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)

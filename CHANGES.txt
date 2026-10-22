@@ -86,7 +86,9 @@ Features:
 - added 'checkconfig' command to roundup-admin to find settings
   in the main config.ini that are typed incorrectly or in the wrong
   section. (John Rouillard)
-  
+- Add ETag HTTP header and @etag data property to json payload
+  returned by PUT rest request. (John Rouillard)
+
 2026-07-13 2.6.0
 
 Fixed:

@@ -1445,12 +1445,19 @@ class RestfulInstance(object):
             # and changing invalid keys
             raise UsageError(message)
 
+        etag = calculate_etag(class_obj.getnode(item_id),
+                              self.db.config.WEB_SECRET_KEY,
+                              class_name, item_id, repr_format="json")
+
         result = {
             'id': item_id,
             'type': class_name,
             'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
-            'attribute': result
+            'attribute': result,
+            '@etag': etag
         }
+
+        self.client.setHeader("ETag", etag)
         return 200, result
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'PUT')
@@ -1500,13 +1507,19 @@ class RestfulInstance(object):
             # and changing invalid keys
             raise AttributeError(message)
 
+        etag = calculate_etag(class_obj.getnode(item_id),
+                              self.db.config.WEB_SECRET_KEY,
+                              class_name, item_id, repr_format="json")
+
         result = {
             'id': item_id,
             'type': class_name,
             'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
-            'attribute': result
+            'attribute': result,
+            '@etag': etag
         }
 
+        self.client.setHeader("ETag", etag)
         return 200, result
 
     @Routing.route("/data/<:class_name>", 'DELETE')
