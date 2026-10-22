@@ -6,6 +6,7 @@
 
 import logging
 from roundup import hyperdb
+from roundup.cgi.exceptions import Reauth
 from roundup.exceptions import Unauthorised, UsageError
 from roundup.date import Date, Range, Interval
 from roundup import actions
@@ -169,7 +170,7 @@ class RoundupInstance:
         try:
             result = cl.set(itemid, **props)
             self.db.commit()
-        except (TypeError, IndexError, ValueError) as message:
+        except (TypeError, IndexError, ValueError, Reauth) as message:
             # The exception we get may be a real error, log the
             # traceback if we're debugging
             logger = logging.getLogger('roundup.xmlrpc')

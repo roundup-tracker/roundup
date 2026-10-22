@@ -111,7 +111,29 @@ Roundup Glossary
       the physical location on disk of a tracker. It has the
       ``config.ini``, ``schema.py`` files for the tracker.
 
+   tx_Source
+      an attribute for the database object ``db``. It is used by
+      detectors to determine the source of a change. The detector
+      can then modify its actions. For example you can limit
+      password changes to the html/web interface or openpgp signed
+      email.
 
+      Its value is a string or the None object.  The string values are
+      one of:
+
+        * **web** - html web interface
+	* **rest** - rest via http
+	* **xmlrpc** - xmlrpc via http
+	* **cli** - command line (roundup-admin)
+	* **email** - email received by the roundup-mailgw interface
+	* **email-sig-openpgp** - email received by the roundup-mailgw
+	  interface that is signed with the user's openpgp key
+
+      It will have the value of ``None`` if you write your own Python
+      script and do not set a value for tx_Source. In this case, you
+      would run the script accessing the tracker locally on the
+      Roundup server.
+      
 -----------------
 
 Back to `Table of Contents`_

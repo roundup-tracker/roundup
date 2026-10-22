@@ -25,7 +25,7 @@ except ImportError:
 from roundup import actions, date, hyperdb
 from roundup.anypy.strings import b2s, bs2b, is_us, u2s
 from roundup.anypy.urllib_ import urlsplit
-from roundup.cgi.exceptions import NotFound, PreconditionFailed, Unauthorised
+from roundup.cgi.exceptions import NotFound, PreconditionFailed, Reauth, Unauthorised
 from roundup.exceptions import Reject, UsageError
 from roundup.i18n import _
 from roundup.rate_limit import Gcra, RateLimit
@@ -70,7 +70,7 @@ def _data_decorator(func):
         except IndexError as msg:
             code = 404
             data = msg
-        except Unauthorised as msg:
+        except (Unauthorised, Reauth) as msg:
             code = 403
             data = msg
         except (UsageError, KeyError) as msg:
