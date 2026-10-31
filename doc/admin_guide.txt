@@ -2021,6 +2021,9 @@ This means using
 A simple copy of the tracker home (and files storage area if you've configured
 it to be elsewhere) will then complete the backup.
 
+For SQLite backups use::
+
+  sqlite3 .../tracker_home/db/db ".backup /backup/file/path/tracker-backup.db"
 
 Software Upgrade
 ----------------
