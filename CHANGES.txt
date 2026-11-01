@@ -66,6 +66,12 @@ Fixed:
   method (not get) must be used with the search action and csrf
   protection should be added. See upgrading instructions for details
   on the required and recommended changes. (John Rouillard)
+- replaced 'except Exception' with 'except BaseException' in TAL and
+  PageTemplates. Turns out the exceptions generated in
+  TAL/PageTemplates inherit from BaseException not Exception. So
+  change done in 2.6.0 to replace bare except by except exception was
+  incorrect and made handling templating errors difficult and caused
+  to hanging clients on templating errors. (John Rouillard).
 
 Features:
 
@@ -86,7 +92,9 @@ Features:
 - added 'checkconfig' command to roundup-admin to find settings
   in the main config.ini that are typed incorrectly or in the wrong
   section. (John Rouillard)
-  
+- Add ETag HTTP header and @etag data property to json payload
+  returned by PUT rest request. (John Rouillard)
+
 2026-07-13 2.6.0
 
 Fixed:

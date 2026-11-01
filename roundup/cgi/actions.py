@@ -314,11 +314,11 @@ class SearchAction(Action):
         # editing existing query name?
         old_queryname = self.getFromForm('old-queryname')
 
+        # parse the environment and figure what the query _is_
+        req = templating.HTMLRequest(self.client)
+
         # handle saving the query params
         if queryname:
-            # parse the environment and figure what the query _is_
-            req = templating.HTMLRequest(self.client)
-
             url = self.getCurrentURL(req)
 
             key = self.db.query.getkey()
@@ -419,14 +419,20 @@ class SearchAction(Action):
             # commit the query change to the database
             self.db.commit()
 
-            # This redirects to the index page. Add the @dispname
-            # url param to the request so that the query name
-            # is displayed.
-            req.form.list.append(
-                cgi.MiniFieldStorage(
-                    "@dispname", queryname
-                )
-            )
+        # redirect so browser gets on a fully populated
+        # search url. Required since this now arrives via POST
+        # and not GET. Without the full search URL, javascript
+        # keying off url params won't work.
+        #
+        # Explicitly add the @dispname since getCurrentURL doesn't
+        # add it. @dispname is explicitly added (and quoted) during
+        # query list generation in page.html.
+        # getCurrentURL calls a method that url quotes all data.
+        dispname = {"@dispname": queryname} if queryname else None
+        query =  self.getCurrentURL(req, dispname)
+
+        raise exceptions.Redirect("%s%s?%s" %( self.base,
+                                               self.classname, query))
 
     def fakeFilterVars(self):
         """Add a faked :filter form variable for each filtering prop."""
@@ -473,7 +479,7 @@ class SearchAction(Action):
 
             self.form.value.append(cgi.MiniFieldStorage('@filter', key))
 
-    def getCurrentURL(self, req):
+    def getCurrentURL(self, req, addl_qargs=None):
         """Get current URL for storing as a query.
 
         Note: We are removing the first character from the current URL,
@@ -483,10 +489,13 @@ class SearchAction(Action):
         We now store the template with the query if the template name is
         different from 'index'
         """
+        if addl_qargs is None:
+            addl_qargs = {}
+
         template = self.getFromForm('template')
         if template and template not in ['index', 'index|search']:
-            return req.indexargs_url('', {'@template': template})[1:]
-        return req.indexargs_url('', {})[1:]
+            addl_qargs.update({'@template': template})
+        return req.indexargs_url('', addl_qargs)[1:]
 
     def getFromForm(self, name):
         for key in ('@' + name, ':' + name):

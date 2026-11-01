@@ -1640,10 +1640,11 @@ arrives by email. Since it runs after other auditors (due to the
 priority of 110), it will also prevent changes to the nosy field that
 are done by other auditors if triggered by an email.
 
-Note that db.tx_Source was not present in roundup versions before
-1.4.22, so you must be running a newer version to use this detector.
-Read the CHANGES.txt document in the roundup source code for further
-details on tx_Source.
+Note that ``db.tx_Source`` was not a valid attribute before
+Roundup versions 1.4.22, so you must be running a newer version to
+use this detector.  More details on :term:`tx_Source can be found in
+the glossary <tx_Source>` or in the CHANGES.txt document in the Roundup
+source code.
 
 Changes to Security and Permissions
 -----------------------------------
@@ -1899,6 +1900,14 @@ Also you could use an existing auditor and add::
 
 at the end of the auditor (after all checks are done) to force user
 verification. Just make sure you import Reauth at the top of the file.
+
+Note that reauth only works for the web interface. If you are
+changing a property that requires reauth via the rest or xmlrpc
+interfaces, you will receive an 403 HTTP response (Unauthorized)
+with the Reauth exception message. To avoid this, check the method
+used to change the property as shown above using
+:term:`tx_Source`. You can choose to allow the change without
+Reauth, or Reject the change with a different message.
 
 .. _`OWASP Authentication`:
    https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#require-re-authentication-for-sensitive-features

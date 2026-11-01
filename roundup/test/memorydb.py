@@ -280,8 +280,8 @@ class Database(back_anydbm.Database):
         self.security = security.Security(self)
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
                       'filtering': 0}
-        self.sessions = Sessions()
-        self.otks = OneTimeKeys()
+        self.Session = Sessions()
+        self.Otk = OneTimeKeys()
         self.indexer = Indexer(self)
         roundupdb.Database.__init__(self)
 
@@ -311,10 +311,10 @@ class Database(back_anydbm.Database):
         pass
 
     def getSessionManager(self):
-        return self.sessions
+        return self.Session
 
     def getOTKManager(self):
-        return self.otks
+        return self.Otk
 
     def reindex(self, classname=None, show_progress=False):
         pass
@@ -354,6 +354,31 @@ class Database(back_anydbm.Database):
         self.__class__.memdb['items'] = self.items
         self.__class__.memdb['ids'] = self.ids
         self.__class__.memdb['journals'] = self.journals
+
+    def getuid(self):
+        """Return the id of the "user" node associated with the user
+        that owns this connection to the hyperdatabase."""
+        if self.journaltag is None:
+            return None
+        if self.journaltag == 'admin':
+            # admin user may not exist, but always has ID 1
+            return '1'
+        if (self.journal_uid is None or self.journal_uid[0] !=
+                self.journaltag):
+            uid = self.user.lookup(self.journaltag)
+            self.journal_uid = (self.journaltag, uid)
+        return self.journal_uid[1]
+
+    def setCurrentUser(self, username):
+        """Set the user that is responsible for current database
+        activities.
+        """
+        self.journaltag = username
+
+    def isCurrentUser(self, username):
+        """Check if a given username equals the already active user.
+        """
+        return self.journaltag == username
 
     #
     # Classes
