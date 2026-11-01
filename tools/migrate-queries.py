@@ -7,7 +7,6 @@ removing the leading ? from their URLs. 0.6.0+ queries do not carry a
 leading ?; it is added by the 0.6.0 templating, so old queries lead
 to query URLs with a double leading ?? and a consequent 404 Not Found.
 '''
-from __future__ import print_function
 __author__ = 'James Kew <jkew@mediabright.co.uk>'
 
 import sys
@@ -22,7 +21,7 @@ for home in sys.argv[1:]:
     # Do some basic exception handling to catch bad arguments.
     try:
         instance = roundup.instance.open(home)
-    except:
+    except Exception:
         print('Cannot open instance home directory %s!' % home)
         continue
 

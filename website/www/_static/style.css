@@ -186,6 +186,8 @@ div[class^=highlight-], div[class^=highlight-] * { width:
 /* style */
 
 :link { color: rgb(220,0,0); text-decoration: none;}
+/* improve contrast to AA */
+.admonition.note :link { color: rgb(170,1,1); text-decoration: none;}
 :link:hover {
     text-decoration: underline solid clamp(1px, .3ex, 4px);
     text-underline-position: under;
@@ -438,6 +440,14 @@ dd > ul:first-child {
     white-space: break-spaces;
 }*/
 
+/* improve color contrast to AA against yellowish highlight bg */
+div.highlight .c1 {
+    color: rgb(3,114,3);
+}
+div.highlight .na {
+    color: rgb(220,2,2);
+}
+
 /* Forcing wrap in a pre leads to some confusing line breaks.
    Use a horizontal scroll. Indicate the scroll by using
    rounded scroll shadows.
@@ -517,6 +527,16 @@ aside.footnote > span + p { margin-block-start: unset; }
   scroll-margin-block-start: 2em;
 }
 
+/* Make feature blocks look like raised cards for some variety. */
+div.card {
+    box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+    padding: 1em;
+}
+
+span.del { /* strikethrough/del effect for headers */
+    text-decoration: line-through;
+}
+
 /* website only */
 /* assume desktop reader for local html files, also no contact
    page for local doc files */
@@ -594,3 +614,4 @@ div#contact table td {
   white-space: nowrap;
   padding: 1pt 1em;
 }
+

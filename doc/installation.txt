@@ -103,12 +103,13 @@ emails.
 Once you install Roundup, you can use the ``roundup-demo`` command to
 install new demo trackers.
 
-.. [1] Demo tracker is set up to be accessed by localhost browser.
-       If you run demo on a server host, please stop the demo (using
+.. [1] Demo tracker is set up to be accessed by localhost browser.  If
+       you run demo on a server host, please stop the demo (using
        Control-C) after it has shown the startup notice, open file
-       ``demo/config.ini`` with your editor, change host name in
-       the ``web`` option in section ``[tracker]``, save the file,
-       then re-run the demo.py program.
+       ``demo/config.ini`` with your editor, change host name in the
+       ``web`` option in section ``[tracker]`` from ``localhost`` to
+       your servers DNS name, save the file, then re-run the demo.py
+       program.
 
 .. _demo mode using docker:
 
@@ -178,7 +179,7 @@ can remove the tracker using ``rm -f`` on the ``demo`` directory.
 Prerequisites
 =============
 
-Roundup requires Python 3.7 or newer with a functioning anydbm
+Roundup requires Python 3.10 or newer with a functioning anydbm
 or sqlite module. The version installed by most vendors should work if
 it meets the version requirements. If necessary, you can download the
 latest version from https://www.python.org/. It is highly recommended
@@ -248,11 +249,12 @@ gpg
   If gpg_ is installed you can configure the mail gateway to perform
   verification or decryption of incoming OpenPGP MIME messages. When
   configured, you can require email to be cryptographically signed
-  before roundup will allow it to make modifications to issues. (Note
-  with python 3.13 or newer on some platforms, you may need to install
-  version 2.0 of gpg from test.pypi.org. See the `gpg install
-  directions in the upgrading document`_.
+  before Roundup will allow it to make modifications to issues.
 
+nanoid
+  If nanoid_ is installed, it is used to generate short unique
+  ids to link all logging to a single request. If not installed,
+  uuid4's from the standard library are used.
 
 jinja2
   To use the jinja2 template (may still be experimental, check out
@@ -307,6 +309,14 @@ polib
   roundup-gettext, you must install polib_. See the `developer's
   guide`_ for details on translating your tracker.
 
+beautifulsoup, justhtml
+  When HTML only email is received, Roundup can convert it into
+  plain text using the native dehtml parser. To convert HTML
+  email into plain text, beautifulsoup4_ or justhtml_ can also be
+  used. You can choose the converter in the tracker's
+  config. Note that justhtml is pure Python, fast and conforms to
+  HTML 5 standards but works only for Python 3.10 or newer.
+  
 pywin32 - Windows Service
   You can run Roundup as a Windows service if pywin32_ is installed.
   Otherwise it must be started manually.
@@ -579,10 +589,7 @@ responsive
    This issue tracker uses the same schema as devel.  The difference
    between devel and responsive templates is the use of Twitter
    bootstrap (https://github.com/twbs/bootstrap) in templates and
-   HTML5 markup.  Make sure the "static_files" setting in your
-   config.ini of your instance is set to the directory where the
-   static files live (the subdirectory "static" in the default of the
-   template).
+   HTML5 markup.
 
 jinja2
    This is a generic issue tracker based on classic schema.  It uses
@@ -599,11 +606,14 @@ https://wiki.roundup-tracker.org/TrackerTemplates.
 Choosing Your Backend
 ---------------------
 
-The actual storage of Roundup tracker information is handled by backends.
+The actual storage of Roundup tracker information is handled by
+database backends.  Roundup has a process to allow you to change
+backends and preserve your tracker's data. So you can upgrade from an
+embedded database to MySQL, or PostgreSQL.
 
 Roundup supports basic full text search (FTS) for all backends. Some
-backends support a faster native FTS. Also Roundup supports using
-whoosh or xapian for FTS.
+database backends support a faster native FTS. Roundup also supports
+using whoosh or xapian for FTS.
 
 There are several backends to choose from, each with benefits and
 limitations:
@@ -626,16 +636,11 @@ mysql      Fast        Many  Needs install/admin (MySQLdb_)
   (e.g. you are interested in adding support for MongoDB or other
   NoSQL persistence layer).
 **sqlite**
-  This uses the embedded database engine SQLite and the PySQLite_
-  driver to provide a very fast
-  backend. This is not suitable for trackers which will have many
-  simultaneous users, but requires much less installation and maintenance
-  effort than more scalable postgresql and mysql backends.
-
-  SQLite is supported via PySQLite version 2.1.0 and sqlite3 (the last
-  being bundled with Python 2.5+)
-
-  Installed SQLite should be the latest version available (3.9.0 or newer).
+  This uses the SQLite embedded database engine with the sqlite3
+  library bundled with Python. This provides a very fast backend. This
+  is not suitable for trackers which will have many (50+) users
+  simultaneous updating data. It requires no installation and less
+  maintenance effort than more scalable postgresql and mysql backends.
 
   .. _fts5-testing:
 
@@ -704,8 +709,8 @@ tracker will be heavily used and accessible from the internet, we
 suggest using Apache or Nginx in WSGI mode or as a reverse proxy
 to the stand alone web server or WSGI server like Gunicorn.
 
-A FastCGI deployment with an alternate web server is suitable for
-lower traffic sites.
+A FastCGI or SCGI deployment with an alternate web server is suitable
+for lower traffic sites.
 
 If you already run Zope, Roundup should deploy nicely in that
 framework.
@@ -717,10 +722,10 @@ Using a true HTTP server provide tools including: DOS prevention,
 throttling, web application firewalls etc. that are worth having
 in an internet facing application.
 
-If you are running on an internal intranet, you can use the
-stand alone server: roundup-server, but even in this environment,
-using a real web server to serve static files and other resources
-will perform better.
+If you are running on an internal intranet, you can use the stand
+alone server: roundup-server, but even in this environment, using a
+real web server or proxy (e.g. pound) to serve static files and other
+resources will perform better.
 
 .. contents::
    :depth: 1
@@ -1283,7 +1288,7 @@ FastCGI (Cherokee, Hiawatha, lighttpd)
 
 The Hiawatha and lighttpd web servers can run Roundup using FastCGI.
 Cherokee can run FastCGI but it also supports wsgi directly using a
-wsgi server like uWSGI, Gnuicorn etc.
+wsgi server like Waitress, Gnuicorn etc.
 
 To run Roundup using FastCGI, the flup_ package can be used under
 Python 2 and Python 3. We don't have a detailed config for this, but
@@ -1295,6 +1300,81 @@ configuration files and instructions.
 .. _can be found in the wayback machine archive:
      https://web.archive.org/web/20241010170738/https://flask.palletsprojects.com/en/2.0.x/deploying/fastcgi/
 .. _flup: https://pypi.org/project/flup/
+
+SCGI (althttpd, Cherokee, lighttpd)
+-----------------------------------
+
+The `althttpd (written by the author of SQLite)
+<https://sqlite.org/althttpd>`_ web server is a minimal server that
+can run Roundup using SCGI or CGI.
+
+To run Roundup using SCGI, the flup_ package provides a translator
+between SCGI and WSGI.
+
+The configuration below assumes the web server is running on one host
+and the roundup scgi server is running on another host. If they are
+both running on the same computer, change ``0.0.0.0`` to ``127.0.0.1``
+and ``hostname`` to ``localhost`` or ``127.0.0.1`` to prevent direct
+connection to the roundup scgi server from external hosts.
+
+The following ``roundup-scgi.py`` can be run using Python to start the
+server:
+
+.. code:: python
+
+    #!/usr/bin/env python
+    # Obtain the WSGI request dispatcher
+    from roundup.cgi.wsgi_handler import RequestDispatcher
+    from flup.server.scgi import WSGIServer
+
+    # Set the path to tracker home.
+    tracker_home = '/path/to/tracker/home'
+
+    try:
+        application = RequestDispatcher(tracker_home)
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+
+    ret = WSGIServer(application,
+                     # the tuple:
+                     #  hostname/ip address as a string (0.0.0.0 bind
+                     #      all ip address)
+                     #  port as an integer
+                     bindAddress=("0.0.0.0", 8197),
+		     # Unlike config.ini, the scriptName should
+		     # not end with a /.
+                     scriptName="/roundup.scgi").run()
+    sys.exit(ret and 42 or 0)
+
+which is started using ``python roundup-scgi.py``. Note this scgi
+configuration serves only one tracker at port 8197. So you run one
+scgi server process for each of your trackers. This is different from
+cgi, roundup-server or some wsgi deployments where you can access
+different trackers through the same entry point.
+
+Now you have to configure althttpd so it connects to the scgi
+server. To do this, althttpd requires a file with a ``.scgi``
+extension. Create the file ``roundup.scgi`` and put it in the root of
+your althttpd directory.  It should contain:
+
+.. code::
+
+   SCGI hostname 8197
+
+where hostname is a valid name for the host running the SCGI
+server. You can also put in other directives including a fallback web
+page if the SCGI server is down, or a command to run to restart the
+SCGI server. See the `althttpd.c file
+<https://sqlite.org/althttpd/file?ci=tip&name=althttpd.c&ln=14>`_ on
+the main web site for details. If you have already have althttpd or
+althttpsd installed you can just use the ``--help`` argument.
+
+Assuming you run:
+``althttpd --root /var/www/htdocs -port 443 --cert certs.pem`` and you
+installed ``/var/www/htdocs/roundup.scgi``, you will be able to access
+your tracker at: ``https://web_hostname/roundup.scgi/`` which will
+also be the value of your ``web`` setting in the tracker's config.ini.
 
 WSGI Variations
 ---------------
@@ -1498,23 +1578,6 @@ including putting it behind a proxy, IPV6 support etc.
 
 .. _`See the Waitress docs`:
    https://docs.pylonsproject.org/projects/waitress/en/stable/
-
-.. index:: pair: web interface; uWSGI
-   single: wsgi; uWSGI
-
-uWSGI Installation
-~~~~~~~~~~~~~~~~~~
-
-For a basic roundup install using uWSGI behind a front end server,
-install uwsgi and the python3 (or python) plugin. Then run::
-
-   uwsgi --http-socket 127.0.0.1:8917 \
-       --plugin python3 --mount=/tracker=wsgi.py \
-       --manage-script-name --callable app
-
-using the same wsgi.py as was used for Gunicorn. If you get path not
-found errors, check the mount option. The /tracker entry must match
-the path used for the [tracker] web value in the tracker's config.ini.
 
 Configure an Email Interface
 ============================
@@ -2375,32 +2438,29 @@ Make sure you read the instructions under `UNIX environment steps`_.
 Problems? Testing your Python...
 ================================
 
-.. note::
-   The ``run_tests.py`` script is not packaged in Roundup's source
-   distribution anymore. You should install:
+This can only be done if you `install the source`_ distribution (steps
+1-3) or from a `mercurial checkout <../code.html#get-sources>`_. It
+will not work if you used `pip install` as the test suite is not
+installed. Once you've unpacked roundup's source, you need to install
+the testing requirements. You probably want to do this in an activated
+virtual environment. This can be done with::
 
-   * pytest,
-   * requests, and
-   * mock
+      python -m pip install -r test/requirements.txt
 
-   using your distributions package manger or using pip/pip2/pip3 to
-   install pytest etc. for your Python version. See the
-   `administration guide`_ for details.
+or you can install all the packages listed in requirements.txt using
+your distribution's package manager.
 
-   Remember to have a database user 'rounduptest' prepared (with
-   password 'rounduptest'). This user
-   must have at least the rights to create and drop databases.
-   Documentation: details on `adding MySQL users`_,
-   for PostgreSQL you want to call the ``createuser`` command with the
-   ``-d`` option to allow database creation.
+If you are testing postgresql or mysql/mariadb you must have a
+database user 'rounduptest' (with password 'rounduptest'). This user
+must have at least the rights to create and drop databases.
+Documentation: details on `adding MySQL users`_, for PostgreSQL you
+want to call the ``createuser`` command with the ``-d`` option to
+allow database creation. The test suite will skip tests where the
+database driver software is missing.
 
-This can only be done if you `install the source`_ distribution
-(steps 1-3) or from a `mercurial checkout
-<../code.html#get-sources>`_. It will not work if you used `pip
-install` as the test suite is not installed. Once you've unpacked
-roundup's source, if you have pytest installed, run ``python -m
-pytest test`` in the Roundup source directory and make sure there
-are no errors. If there are errors, please let us know!
+Then run ``python -m pytest test`` in the Roundup source directory and
+make sure there are no errors. If there are errors, please let us
+know!
 
 Note that redis tests uses database 15 of the redis server running on
 localhost.The tests verify that the database is empty before the redis
@@ -2436,6 +2496,7 @@ the test.
 .. _`adding MySQL users`:
     https://dev.mysql.com/doc/refman/8.0/en/creating-accounts.html
 .. _apache: https://httpd.apache.org/
+.. _beautifulsoup4: https://pypi.org/project/beautifulsoup4/
 .. _brotli: https://pypi.org/project/Brotli/
 .. _`developer's guide`: developers.html
 .. _defusedxml: https://pypi.org/project/defusedxml/
@@ -2443,12 +2504,14 @@ the test.
 .. _flup: https://pypi.org/project/flup/
 .. _gpg: https://www.gnupg.org/software/gpgme/index.html
 .. _jinja2: https://palletsprojects.com/projects/jinja/
+.. _justhtml: https://pypi.org/project/justhtml/
 .. _markdown: https://python-markdown.github.io/
 .. _markdown2: https://github.com/trentm/python-markdown2
 .. _mistune: https://pypi.org/project/mistune/
 .. _mod_python: https://github.com/grisha/mod_python
 .. _mod_wsgi: https://pypi.org/project/mod-wsgi/
 .. _MySQLdb: https://pypi.org/project/mysqlclient/
+.. _nanoid: https://pypi.org/project/nanoid/
 .. _Olson tz database: https://www.iana.org/time-zones
 .. _polib: https://polib.readthedocs.io
 .. _Psycopg2: https://www.psycopg.org/

@@ -230,7 +230,7 @@ class Context:
         text = self.evaluate(expr)
         if text is Default or text is None:
             return text
-        if isinstance(text, type(u'')):
+        if isinstance(text, str):
             return text
         else:
             return ustr(text)

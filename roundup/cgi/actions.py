@@ -92,9 +92,9 @@ class Action:
         Finally paste the whole thing together and return the new url.
         '''
 
-        parsed_url_tuple = urllib_.urlparse(url)
+        parsed_url_tuple = urllib_.urlsplit(url)
         if self.base:
-            parsed_base_url_tuple = urllib_.urlparse(self.base)
+            parsed_base_url_tuple = urllib_.urlsplit(self.base)
         else:
             raise ValueError(self._("Base url not set. Check configuration."))
 
@@ -106,7 +106,6 @@ class Action:
                 'url_scheme': parsed_url_tuple.scheme,
                 'url_netloc': parsed_url_tuple.netloc,
                 'url_path': parsed_url_tuple.path,
-                'url_params': parsed_url_tuple.params,
                 'url_query': parsed_url_tuple.query,
                 'url_fragment': parsed_url_tuple.fragment}
 
@@ -142,16 +141,15 @@ class Action:
             raise ValueError(self._("Path component (%(url_path)s) in %(url)s "
                                     "is not properly escaped") % info)
 
-        if not allowed_pattern.match(parsed_url_tuple.params):
-            raise ValueError(self._("Params component (%(url_params)s) in %(url)s is not properly escaped") % info)
-
         if not allowed_pattern.match(parsed_url_tuple.query):
             raise ValueError(self._("Query component (%(url_query)s) in %(url)s is not properly escaped") % info)
 
         if not allowed_pattern.match(parsed_url_tuple.fragment):
             raise ValueError(self._("Fragment component (%(url_fragment)s) in %(url)s is not properly escaped") % info)
 
-        return urllib_.urlunparse(parsed_url_tuple)
+        return urllib_.urlunparse((*parsed_url_tuple[0:3],
+                                   "", # urlsplit has no .params
+                                   *parsed_url_tuple[3:]))
 
     name = ''
     permissionType = None
@@ -306,17 +304,21 @@ class SearchAction(Action):
         Split any String query values on whitespace and comma.
 
         """
+        # ensure modification comes via POST
+        if self.client.env['REQUEST_METHOD'] != 'POST':
+            raise Reject(self._('Invalid request'))
+
         self.fakeFilterVars()
         queryname = self.getQueryName()
 
         # editing existing query name?
         old_queryname = self.getFromForm('old-queryname')
 
+        # parse the environment and figure what the query _is_
+        req = templating.HTMLRequest(self.client)
+
         # handle saving the query params
         if queryname:
-            # parse the environment and figure what the query _is_
-            req = templating.HTMLRequest(self.client)
-
             url = self.getCurrentURL(req)
 
             key = self.db.query.getkey()
@@ -360,6 +362,23 @@ class SearchAction(Action):
                             "Please choose another name.") % (queryname)
 
                         self.client.add_error_message(message)
+                        # Assume we duplicate query "a".  When the
+                        # response is generated, @old-queryname is set
+                        # to 'a' in the template.  This causes the 'a'
+                        # query to be changed to the new query name
+                        # and values.
+                        
+                        # So we change @queryname by appending ' -
+                        # duplicate'. This way @old-queryname will be
+                        # 'a - duplicate' and will not overwrite the
+                        # query named 'a'. (but it will
+                        # overwrite/change a query named "a -
+                        # duplicate". Hopefully nobody uses that name
+                        # 8-).
+                        self.client.form['@queryname'].value = (
+                            # .Hint suffix added to queryname when
+                            # a new queryname is already used.
+                            queryname + _(" - duplicate"))
                         return
 
                 # edit the new way, query name not a key any more
@@ -400,14 +419,20 @@ class SearchAction(Action):
             # commit the query change to the database
             self.db.commit()
 
-            # This redirects to the index page. Add the @dispname
-            # url param to the request so that the query name
-            # is displayed.
-            req.form.list.append(
-                cgi.MiniFieldStorage(
-                    "@dispname", queryname
-                )
-            )
+        # redirect so browser gets on a fully populated
+        # search url. Required since this now arrives via POST
+        # and not GET. Without the full search URL, javascript
+        # keying off url params won't work.
+        #
+        # Explicitly add the @dispname since getCurrentURL doesn't
+        # add it. @dispname is explicitly added (and quoted) during
+        # query list generation in page.html.
+        # getCurrentURL calls a method that url quotes all data.
+        dispname = {"@dispname": queryname} if queryname else None
+        query =  self.getCurrentURL(req, dispname)
+
+        raise exceptions.Redirect("%s%s?%s" %( self.base,
+                                               self.classname, query))
 
     def fakeFilterVars(self):
         """Add a faked :filter form variable for each filtering prop."""
@@ -416,7 +441,7 @@ class SearchAction(Action):
             prop = cls.get_transitive_prop(key)
             if not prop:
                 continue
-            if isinstance(self.form[key], type([])):
+            if isinstance(self.form[key], list):
                 # search for at least one entry which is not empty
                 for minifield in self.form[key]:
                     if minifield.value:
@@ -454,7 +479,7 @@ class SearchAction(Action):
 
             self.form.value.append(cgi.MiniFieldStorage('@filter', key))
 
-    def getCurrentURL(self, req):
+    def getCurrentURL(self, req, addl_qargs=None):
         """Get current URL for storing as a query.
 
         Note: We are removing the first character from the current URL,
@@ -464,10 +489,13 @@ class SearchAction(Action):
         We now store the template with the query if the template name is
         different from 'index'
         """
+        if addl_qargs is None:
+            addl_qargs = {}
+
         template = self.getFromForm('template')
         if template and template not in ['index', 'index|search']:
-            return req.indexargs_url('', {'@template': template})[1:]
-        return req.indexargs_url('', {})[1:]
+            addl_qargs.update({'@template': template})
+        return req.indexargs_url('', addl_qargs)[1:]
 
     def getFromForm(self, name):
         for key in ('@' + name, ':' + name):
@@ -549,7 +577,7 @@ class EditCSVAction(Action):
 
             # extract the new values
             d = {}
-            for name, value in zip(props_without_id, values):
+            for name, value in zip(props_without_id, values, strict=True):
                 # check permission to edit this property on this item
                 if exists and not self.hasPermission('Edit', itemid=itemid,
                                                      classname=self.classname,
@@ -1278,7 +1306,7 @@ class LoginAction(Action):
             #      a new error message
 
             clean_url = self.examine_url(self.form['__came_from'].value)
-            redirect_url_tuple = urllib_.urlparse(clean_url)
+            redirect_url_tuple = urllib_.urlsplit(clean_url)
             # now I have a tuple form for the __came_from url
             try:
                 query = urllib_.parse_qs(redirect_url_tuple.query)
@@ -1300,7 +1328,7 @@ class LoginAction(Action):
                 (redirect_url_tuple.scheme,
                  redirect_url_tuple.netloc,
                  redirect_url_tuple.path,
-                 redirect_url_tuple.params,
+                 "",  # urlsplit() has no .params
                  urllib_.urlencode(list(sorted(query.items())), doseq=True),
                  redirect_url_tuple.fragment))
 
@@ -1318,7 +1346,7 @@ class LoginAction(Action):
                     (redirect_url_tuple.scheme,
                      redirect_url_tuple.netloc,
                      redirect_url_tuple.path,
-                     redirect_url_tuple.params,
+                     "",  # urlsplit() has no .params
                      urllib_.urlencode(list(sorted(query.items())), doseq=True),
                      redirect_url_tuple.fragment))
                 raise exceptions.Redirect(redirect_url)
@@ -1341,7 +1369,7 @@ class LoginAction(Action):
                     (redirect_url_tuple.scheme,
                      redirect_url_tuple.netloc,
                      redirect_url_tuple.path,
-                     redirect_url_tuple.params,
+                     "",  # urlsplit() has no .params
                      urllib_.urlencode(list(sorted(query.items())), doseq=True),
                      redirect_url_tuple.fragment))
                 raise exceptions.Redirect(redirect_url)
@@ -1363,7 +1391,7 @@ class LoginAction(Action):
             redirect_url = urllib_.urlunparse((redirect_url_tuple.scheme,
                                                redirect_url_tuple.netloc,
                                                redirect_url_tuple.path,
-                                               redirect_url_tuple.params,
+                                               "",  # urlsplit has no .params
                                                urllib_.urlencode(list(sorted(query.items())), doseq=True),
                                                redirect_url_tuple.fragment))
 
@@ -1688,7 +1716,9 @@ class ExportCSVAction(Action):
             if isinstance(props[col], hyperdb.Multilink):
                 cname = props[col].classname
                 cclass = self.db.getclass(cname)
-                represent[col] = repr_list(cclass, 'name')
+                # Use id by default to handle cases like messages
+                # which have no useful label field issue2551413
+                represent[col] = repr_list(cclass, 'id')
                 if not self.hasPermission(self.permissionType, classname=cname):
                     represent[col] = repr_no_right(cclass, 'name')
                 else:

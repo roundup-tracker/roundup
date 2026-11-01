@@ -1,4 +1,3 @@
-from __future__ import print_function
 import unittest
 import time
 
@@ -98,13 +97,16 @@ class TemplatingTestCase(unittest.TestCase):
         self.client.db = db = MockDatabase()
         db.security.hasPermission = lambda *args, **kw: True
         self.client.form = self.form
+        self.client.instance.templating_utils = {}
+        self.client.instance.templating_util_methods = {}
 
         # add client props for testing anti_csrf_nonce
         self.client.session_api = MockNull(_sid="1234567890")
         self.client.db.getuid = lambda : 10
         self.client.db.config = MockConfig (
             {'WEB_CSRF_TOKEN_LIFETIME': 10,
-             'MARKDOWN_BREAK_ON_NEWLINE': False })
+             'MARKDOWN_BREAK_ON_NEWLINE': False,
+             'WEB_USE_TOKENLESS_CSRF_PROTECTION': False})
 
 class HTMLDatabaseTestCase(TemplatingTestCase):
     def test_HTMLDatabase___getitem__(self):
@@ -145,9 +147,12 @@ class HTMLDatabaseTestCase(TemplatingTestCase):
         # Make db.getclass return something that has a sensible 'get' method
         def get(x, y, allow_abort=True):
             return None
-        mock = MockNull(get = get)
+        mock = MockNull(get = get, orderprop = lambda : None)
         db.issue._db.getclass = lambda x : mock
         l = db.issue.list()
+
+        self.assertEqual([d._nodeid for d in l],
+                         ['23', 'a', 'b'])
 
 class FunctionsTestCase(TemplatingTestCase):
     def test_lookupIds(self):
@@ -891,6 +896,8 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
     def test_DateHTMLWithDate(self):
         """Test methods when DateHTMLProperty._value is a hyperdb.Date()
         """
+        import sys
+        
         self.client.db.config['WEB_USE_BROWSER_DATE_INPUT'] = True
         test_datestring = self.test_datestring
         test_Date = self.client.db.issue.get("1", 'deadline')
@@ -905,7 +912,9 @@ class DateHTMLPropertyTestCase(HTMLPropertyTestClass):
                              'deadline', test_Date)
         self.assertIsInstance(d._value, date.Date)
         self.assertEqual(d.pretty(), " 1 January 2021")
-        self.assertEqual(d.pretty("%2d %B %Y"), "01 January 2021")
+        if sys.platform != "win32":  # %2d not supported on windows
+            self.assertEqual(d.pretty("%2d %B %Y"), "01 January 2021")
+        self.assertEqual(d.pretty("%d %B %Y"), " 1 January 2021")            
         self.assertEqual(d.pretty(format="%Y-%m"), "2021-01")
         self.assertEqual(d.plain(), "2021-01-01.13:22:10")
         self.assertEqual(d.local("-4").plain(), "2021-01-01.07:22:10")

@@ -3,6 +3,7 @@
 import os
 import re
 import time
+
 import xapian
 
 from roundup.anypy.strings import b2s, s2b
@@ -28,7 +29,7 @@ class Indexer(IndexerBase):
             try:
                 # if successful return
                 return xapian.WritableDatabase(index, xapian.DB_CREATE_OR_OPEN)
-            except xapian.DatabaseLockError:
+            except xapian.DatabaseLockError:  # noqa: PERF203  except in loop ok
                 # adaptive sleep. Get longer as count increases.
                 time_to_sleep = 0.01 * (2 << min(5, n))
                 time.sleep(time_to_sleep)
@@ -118,11 +119,11 @@ class Indexer(IndexerBase):
 
         enquire = xapian.Enquire(database)
         stemmer = xapian.Stem(self.language)
-        terms = []
-        for term in [word.upper() for word in wordlist
-                     if self.minlength <= len(word) <= self.maxlength]:
-            if not self.is_stopword(term):
-                terms.append(stemmer(s2b(term.lower())))
+
+        terms = [stemmer(s2b(word.lower())) for word in wordlist
+                    if (self.minlength <= len(word) <= self.maxlength) and
+                    not self.is_stopword(word.upper())]
+
         query = xapian.Query(xapian.Query.OP_AND, terms)
 
         enquire.set_query(query)

@@ -26,7 +26,9 @@ ARG source=local
 # Note this is the index digest for the image, not the manifest digest.
 # The index digest is shared across archetectures (amd64, arm64 etc.)
 # while the manifest digest is unique per platform/arch.
-ARG SHA256=9b4929a72599b6c6389ece4ecbf415fd1355129f22bb92bb137eea098f05e975
+#     xapian install fails on 3.15.1-alpine3.24 aka 3-alpine.
+# this is the SHA for 3.14.10-alpine3.24 
+ARG SHA256=eb2c62658b8d51bff0acc408504b76521d02030de56a8a3c1e830083e89b89d2
 
 # Set to any non-empty value to enable shell debugging for troubleshooting
 ARG VERBOSE=
@@ -37,7 +39,7 @@ ARG appdir=/usr/src/app
 # Python version as a.b Used as path component for 
 # installation directory and COPY from install dir
 # in second build stage.
-ARG pythonversion=3.13
+ARG pythonversion=3.14
 
 #FROM python:3-alpine via SHA256 sum
 FROM python@sha256:$SHA256 AS build 
@@ -127,7 +129,9 @@ RUN [ -z "${VERBOSE}" ] || set -xv; \
 #   modules not installed in the base library.
 # ignore warnings from pip to use virtualenv
 COPY scripts/Docker/requirements.txt .
+# requirements.txt include setuptools needed for gpg build
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir gpg --no-build-isolation
 
 # copy the elements of the release directory to the docker image
 COPY setup.py install/
@@ -233,7 +237,7 @@ ARG pip_mod
 LABEL "org.opencontainers.image.vendor"="Roundup Issue Tracker Team" \
       "org.opencontainers.image.title"="Roundup Issue Tracker" \
       "org.opencontainers.image.description"="Roundup Issue Tracker with multi-backend support installed via $source with python version $pythonversion" \
-      "org.opencontainers.image.version"="2.5.0" \
+      "org.opencontainers.image.version"="2.6.0" \
       "org.opencontainers.image.authors"="roundup-devel@lists.sourceforge.net" \
       "org.opencontainers.image.licenses"="MIT AND ZPL-2.0 AND Python-2.0" \
       "org.opencontainers.image.documentation"="https://www.roundup-tracker.org/docs/installation.html" \

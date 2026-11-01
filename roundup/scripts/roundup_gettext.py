@@ -4,15 +4,12 @@
 
 """Extract translatable strings from tracker templates and detectors/extensions"""
 
-from __future__ import print_function
-
 import os
-
-# --- patch sys.path to make sure 'import roundup' finds correct version
 import os.path as osp
 import sys
 import tempfile
 
+# --- patch sys.path to make sure 'import roundup' finds correct version
 thisdir = osp.dirname(osp.abspath(__file__))
 rootdir = osp.dirname(osp.dirname(thisdir))
 if (osp.exists(thisdir + '/__init__.py') and
@@ -21,11 +18,10 @@ if (osp.exists(thisdir + '/__init__.py') and
     sys.path.insert(0, rootdir)
 # --/
 
-from roundup.anypy import scandir_
-from roundup import configuration
-from roundup.cgi.TAL import talgettext
-from roundup.i18n import _
-from roundup.pygettext import TokenEater, make_escapes, tokenize
+from roundup import configuration  # noqa: E402
+from roundup.cgi.TAL import talgettext  # noqa: E402
+from roundup.i18n import _  # noqa: E402
+from roundup.pygettext import TokenEater, make_escapes, tokenize  # noqa: E402
 
 try:
     import polib
@@ -45,11 +41,13 @@ class Options:
     # defaults
     extractall = 0 # FIXME: currently this option has no effect at all.
     escape = 0
+    extract_concat = 1
     keywords = ["_", "gettext", "ngettext", "ugettext"]
     outpath = ''
     outfile = ''
     writelocations = 1
     locationstyle = GNU
+    tags = [".hint"]
     verbose = 0
     width = 10
     excludefilename = ''
@@ -66,8 +64,9 @@ TEMPLATE_FILE = "messages.pot"
 
 
 def run():
+    right_arg_count = 2
     # return unless command line arguments contain single directory path
-    if (len(sys.argv) != 2) or (sys.argv[1] in ("-h", "--help")):
+    if (len(sys.argv) != right_arg_count) or (sys.argv[1] in ("-h", "--help")):
         print(_("Usage: %(program)s <tracker home>") %
               {"program": sys.argv[0]})
         return
@@ -114,7 +113,7 @@ def run():
     make_escapes(not tokeneater_options.escape)
 
     pyfiles = []
-    for source in ["detectors", "extensions"]:
+    for source in ["detectors", "extensions", "lib"]:
         for root, _dirs, files in os.walk(os.path.join("..", source)):
             pyfiles.extend([os.path.join(root, f) for f in files if f.endswith(".py")])
 

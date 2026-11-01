@@ -1,6 +1,8 @@
 TMP  := _tmp
 HTML := html
 
+SPHINX = sphinx-build
+
 .PHONY: help clean html linkcheck
 
 # from https://www.thapaliya.com/en/writings/well-documented-makefiles/ via
@@ -16,7 +18,7 @@ html: doc_links  ## make standalone HTML files (KEEP_HTML=1 speeds build)
 	if [ -z "${KEEP_HTML}" ]; then rm -rf html; fi
 	rm -f html/robots.txt  # otherwise sphinx errors
 	mkdir -p $(TMP)/doctrees $(HTML)
-	sphinx-build -n -W -b html -d $(TMP)/doctrees . $(HTML)
+	$(SPHINX) -n -W -b html -d $(TMP)/doctrees . $(HTML)
         # install searchtools.js into search page.
 	grep 'searchtools.js' html/search.html || sed -i -e '/language_data.js/s#</script>#</script>\n    <script type="text/javascript" src="_static/searchtools.js"></script>#' html/search.html
         # sphinx inserts \: for : in meta tags. Get rid of the \ in
@@ -26,7 +28,6 @@ html: doc_links  ## make standalone HTML files (KEEP_HTML=1 speeds build)
 	cp robots.txt html/robots.txt
 	mkdir -p html/signatures && cp signatures/*.asc html/signatures
 	cp --no-clobber -r docs/html_extra/. html/docs/.
-	cp htaccess html/.htaccess
 	@echo; \
           l=$$(find html -name '*.orig' -o -name '*~' | tee /dev/tty | wc -l);\
          if [ $$l -ne 0 ]; then echo "Garbage files found" && false; fi
@@ -39,7 +40,7 @@ clean: ## remove all produced files
 
 linkcheck: ## check external links for existence
 	mkdir -p $(TMP)/linkcheck $(TMP)/doctrees
-	sphinx-build -b linkcheck -d $(TMP)/doctrees . $(TMP)/linkcheck
+	$(SPHINX) -b linkcheck -d $(TMP)/doctrees . $(TMP)/linkcheck
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in .build/linkcheck/output.txt."
@@ -62,23 +63,36 @@ sourceforge_dev_sync:  ## sync html directory to sourceforce /dev_docs subdir
         #   --delete-exclude
         # IS NOT (and must not be) SET
 	read -p "sync to dev_docs y/N? " resp; echo "$$resp" | grep -i "^y"
-	rsync -av --no-times --delete --exclude 'docs_backup*' \
-              --exclude '.buildinfo' \
-              --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
+        # --mkpath doesn't work for rsync on sourceforge so use scripted sftp
+        # if it fails (directory exists), that's ok it still exits with 0
+	printf 'cd /home/project-web/roundup/htdocs\nmkdir dev_docs' | \
+              sftp rouilj@web.sourceforge.net
+	rsync -avz --no-times --delete \
+              --exclude 'docs_backup*' --exclude '.buildinfo' --backup \
+              --backup-dir docs_backup-`date --iso-8601=seconds` \
               html/. \
               web.sourceforge.net:/home/project-web/roundup/htdocs/dev_docs/.
 
 sourceforge_prod_sync: ## sync html directory to sourceforce production website
 	read -p "sync to production y/N? " resp; echo "$$resp" | grep -i "^y"
-	rsync -av --no-times --delete --exclude 'docs_backup*' \
-              --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
-              html/. \
+	rsync -avz --no-times --delete --exclude 'docs_backup*' \
+              --exclude 'ahrefs_*' --backup \
+              --backup-dir docs_backup-`date --iso-8601=seconds` \
+              --checksum html/. \
               web.sourceforge.net:/home/project-web/roundup/htdocs/.
+
+sourceforge_prod_pull: ## sync sourceforce production website to local web_html
+	read -p "pull from production y/N? " resp; echo "$$resp" | grep -i "^y"
+	test -d web_html || mkdir web_html
+	rsync -avz --no-times --delete \
+              --checksum \
+              web.sourceforge.net:/home/project-web/roundup/htdocs/. \
+              web_html/.
 
 sourceforge_home_sync:  ## sync html directory to sourceforge:~/roundup_docs
 
 	read -p "sync to home y/N? " resp; echo "$$resp" | grep -i "^y"
-	rsync -av --no-times --delete --exclude 'docs_backup*' \
+	rsync -avz --no-times --delete --exclude 'docs_backup*' \
               --backup --backup-dir docs_backup-`date --iso-8601=seconds` \
               html/. \
               web.sourceforge.net:roundup_docs/.

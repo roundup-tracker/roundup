@@ -30,7 +30,6 @@ It also connects to a secure IMAP server. The main reasons for this script are:
   Add an option for changing the uid/gid of the running process.
 """
 
-from __future__ import print_function
 import getpass
 import logging
 import imaplib
@@ -225,7 +224,7 @@ class IMAPServer:
 
                             # We are done with this mailbox
                             serv.close()
-                    except:
+                    except Exception:
                         log.exception('Exception with server %s user %s',
                             server, user)
                         noErrors = False
@@ -233,7 +232,7 @@ class IMAPServer:
                     serv.logout()
                     serv.shutdown()
                     del serv
-            except:
+            except Exception:
                 log.exception('Exception while connecting to %s', server)
                 noErrors = False
         return noErrors

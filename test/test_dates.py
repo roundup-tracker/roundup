@@ -502,6 +502,22 @@ class DateTestCase(unittest.TestCase):
         date = Date(date, 2)
         ae(str(date), '2006-04-04.10:00:00')
 
+        # local to utc fractional positive Tehran
+        date = Date('2006-04-04.12:00:00', 3.5)
+        ae(str(date), '2006-04-04.08:30:00')
+        # utc to local fractional positive Tehran
+        date = Date('2006-04-04.10:00:00')
+        date = date.local(3.5)
+        ae(str(date), '2006-04-04.13:30:00')
+
+        # local to utc fractional negative
+        date = Date('2006-04-04.12:00:00', -3.5)
+        ae(str(date), '2006-04-04.15:30:00')
+        # utc to local fractional negative
+        date = Date('2006-04-04.10:00:00')
+        date = date.local(-3.5)
+        ae(str(date), '2006-04-04.06:30:00')
+
     def testTimestamp(self):
         ae = self.assertEqual
         date = Date('2038')

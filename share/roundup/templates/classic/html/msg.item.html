@@ -53,7 +53,7 @@
 <table class="messages">
  <tr><th colspan=2 class="header" i18n:translate="">Content</th></tr>
  <tr>
-  <td class="content" colspan=2><pre tal:content="structure context/content/hyperlinked"></pre></td>
+  <td class="content" colspan=2><pre tal:content="structure python:utils.local_replace(context.content.hyperlinked())"></pre></td>
  </tr>
 </table>
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import shutil, errno, pytest, json, gzip, mimetypes, os, re
+import shutil, errno, pytest, json, gzip, mimetypes, os, re, warnings
 
 from roundup import date as rdate
 from roundup import i18n
@@ -11,6 +11,7 @@ from .wsgi_liveserver import LiveServerTestCase
 from . import db_test_base
 from textwrap import dedent
 from time import sleep
+from .test_admin import replace_in_file
 from .test_postgresql import skip_postgresql
 
 from wsgiref.validate import validator
@@ -124,6 +125,57 @@ class WsgiSetup(LiveServerTestCase):
              """)
             f.write(auditor)
 
+        # add an extension that tests local_replace to turn #345 into
+        # a link and a module form that looks up username in @username
+        # and links it if name exists in db.
+        with open("%s/extensions/extension_text.py" % cls.dirname, "w") as f:
+            auditor = dedent(r"""
+              import re
+
+              substitutions = [(
+                      # compile the regular expression:
+                      #   \# - match the # sign
+                      #   (?P<ws>\s*) - match and capture, using the name ws,
+                      #                 whitespace so '#   2345' works too
+                      #   (?P<id>\d+) - match and capture, using the name id,
+                      #                 a numeric value
+                      re.compile(r'\#(?P<ws>\s*)(?P<id>\d+)'),
+                      r"LINKING:#\g<ws>\g<id>"
+                     ),
+                    ]
+
+              def local_replace(message):
+                  for cre, replacement in substitutions:
+                      message = cre.sub(replacement, message)
+                  return message
+
+              def link_username(self, message):
+                  user_db = self.client.db.user
+
+                  for name in re.findall(r'@[a-z]+', message):
+                      try:
+                          if user_db.lookup(name[1:]):
+                              message = re.sub(name, r'FOUND:%s' % name,
+                                               message)
+                      except KeyError:
+                          # no such user
+                          pass
+
+                  return message
+
+
+              def init(instance):
+                  instance.registerUtil('local_replace', local_replace)
+                  instance.registerUtilMethod('username', link_username)
+             """)
+            f.write(auditor)
+
+        # set up template file to call util.username
+        replace_in_file("%s/html/msg.item.html" % cls.dirname,
+                        "utils.local_replace(context.content.hyperlinked())",
+                        "utils.username(utils.local_replace(context.content.hyperlinked()))")
+
+
         # open the database
         cls.db = cls.instance.open('admin')
 
@@ -167,7 +219,7 @@ class WsgiSetup(LiveServerTestCase):
 
         # add a message to allow retrieval
         result = cls.db.msg.create(author = "1",
-                                   content = "a message foo bar RESULT",
+                                   content = "a message foo bar RESULT\n\n#123\n@admin\n@foo\n@fred\n",
                                    date=rdate.Date(),
                                    messageid="test-msg-id")
 
@@ -247,74 +299,70 @@ class ClientSetup():
 @skip_hypothesis
 class FuzzGetUrls(WsgiSetup, ClientSetup):
 
-    _max_examples = 100
+    _max_examples = int(os.environ.get('pytest_fuzz_max_examples', 0)) or 100
 
     # Timeout for each fuzz test in ms. Use env variable in local
     # pytest.ini if your dev environment can't complete in the default
     # 10 seconds.
     fuzz_deadline = int(os.environ.get('pytest_fuzz_timeout', 0)) or 10000
 
-    @given(sampled_from(['@verbose', '@page_size', '@page_index']),
-           text(min_size=1))
-    @example("@verbose", "1#")
-    @example("@verbose", "#1stuff")
-    @example("@verbose", "0 #stuff")
-    @settings(max_examples=_max_examples,
-              deadline=fuzz_deadline) # in ms
-    def test_class_url_param_accepting_integer_values(self, param, value):
-        """Tests all integer args for rest url. @page_* is the
-           same code for all *.
-        """
-        session, _response = self.create_login_session()
-        url = '%s/rest/data/status' % (self.url_base())
-        query = '%s=%s'  % (param, value)
-        f = session.get(url, params=query)
-        try:
-            # test case '0 #', '0#', '12345#stuff' '12345&stuff'
-            match = re.match(r'(^[0-9]*\s*)[#&]', value)
-            if match is not None:
-                value = match[1]
-            elif int(value) >= 0:
-                self.assertEqual(f.status_code, 200)
-        except ValueError:
-            # test case '#' '#0', '&', '&anything here really'
-            if value[0] in ('#', '&'):
-                self.assertEqual(f.status_code, 200)
-            else:
-                # invalid value for param
-                self.assertEqual(f.status_code, 400)
-
-    @given(sampled_from(['@verbose']), text(min_size=1))
-    @example("@verbose", "10#")
-    @example("@verbose", u'Ø\U000dd990')
-    @settings(max_examples=_max_examples,
-              deadline=fuzz_deadline) # in ms
-    def test_element_url_param_accepting_integer_values(self, param, value):
+    def basetest_url_param_accepting_integer_values(self, target,
+                                                    param, value):
         """Tests args accepting int for rest url.
         """
         session, _response = self.create_login_session()
-        url = '%s/rest/data/status/1' % (self.url_base())
+        url = '%s%s' % (self.url_base(), target)
+
+        # test case '0#' '12345#stuff', '12345&stuff', '&=0'
+        # Normalize like a server does by breaking value at
+        # # or & as these mark a fragment or subsequent
+        # query arg and are not part of the value.
+        # use *? to make match non-greedy.
+        match = re.match(r'(.*?)[#&]', value)
+        if match is not None:
+            value = match[1]
+
         query = '%s=%s'  % (param, value)
         f = session.get(url, params=query)
+
         try:
-            # test case '0#' '12345#stuff' '12345&stuff'
-            match = re.match('(^[0-9]*)[#&]', value)
-            if match is not None:
-                value = match[1]
-            elif int(value) >= 0:
+            if value != "" and value.isdecimal():
                 self.assertEqual(f.status_code, 200)
         except ValueError:
-            # test case '#' '#0', '&', '&anything here really'
-            if value[0] in ('#', '&'):
-                self.assertEqual(f.status_code, 200)
-            else:
-                # invalid value for param
-                self.assertEqual(f.status_code, 400)
+            # invalid value for param
+            self.assertEqual(f.status_code, 400)
 
+    @given(sampled_from(['@verbose', '@page_size', '@page_index']),
+           text(min_size=1))
+    @example("@verbose", "0\r#")
+    @example("@verbose", "1#")
+    @example("@verbose", "#1stuff")
+    @example("@verbose", "0 #stuff")
+    @example("@verbose", "&=0")
+    @example("@verbose", "0+")
+    @example("@page_size", '\u00bc')  # character 1/4
+    @settings(max_examples=_max_examples,
+              deadline=fuzz_deadline) # in ms
+    def test_class_url_param_accepting_integer_values(self, param, value):
+        self.basetest_url_param_accepting_integer_values(
+            "/rest/data/status", param, value)
+    
+    @given(sampled_from(['@verbose']), text(min_size=1))
+    @example("@verbose", "0\r#")
+    @example("@verbose", "10#")
+    @example("@verbose", u'Ø\U000dd990')
+    @example("@verbose", "&=0")
+    @example("@verbose", "0+")
+    @settings(max_examples=_max_examples,
+              deadline=fuzz_deadline) # in ms
+    def test_element_url_param_accepting_integer_values(self, param, value):
+        self.basetest_url_param_accepting_integer_values(
+            "/rest/data/status/1", param, value)
+        
 @skip_hypothesis
 class FuzzTestSettingData(WsgiSetup, ClientSetup):
 
-    _max_examples = 100
+    _max_examples = int(os.environ.get('pytest_fuzz_max_examples', 0)) or 100
 
     # Timeout for each fuzz test in ms. Use env variable in local
     # pytest.ini if your dev environment can't complete in the default
@@ -359,6 +407,24 @@ class BaseTestCases(WsgiSetup, ClientSetup):
     """Class with all tests to run against wsgi server. Is reused when
        wsgi server is started with various feature flags
     """
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog, monkeypatch, subtests):
+        """Used to add pytest test fixtures to unittest based tests
+           because adding the name of a fixture to a method does not
+           make the method available.
+
+           So the decorator runs with autouse=True to set params on
+           the unittest "self" making the fixtures available for
+           tests.
+
+           If you need another fixture, just add it to the argument list
+           and assign it to self and pytest will make it available.
+        """
+
+        self._caplog = caplog
+        self._monkeypatch = monkeypatch
+        self._subtests = subtests
 
     def test_reauth_workflow(self):
         """as admin user:
@@ -534,6 +600,20 @@ class BaseTestCases(WsgiSetup, ClientSetup):
                       pass_reauth.content)
         self.assertIn(b'(the default is', pass_reauth.content)
         
+    def test_invalid_http_html_methods(self):
+        test_methods = [
+            ('PUT', requests.put, "Bad method: PUT"), # 
+            ('DELETE', requests.delete, "Bad method: DELETE"),
+            ('PATCH', requests.patch, "Bad method: PATCH"),
+            ('OPTIONS', requests.options, "explanation: 405 - Specified method")
+        ]
+        headers = {'Origin': self.url_base()}
+        for method, func, response in test_methods:
+            with self._subtests.test(entry=method):
+                r = func(self.url_base(), headers=headers)
+                self.assertEqual(r.status_code, 405)
+                self.assertIn(response, r.text)
+
     def test_cookie_attributes(self):
         session, _response = self.create_login_session()
 
@@ -608,7 +688,30 @@ class BaseTestCases(WsgiSetup, ClientSetup):
                       f.text)
         self.assertEqual(f.status_code, 200)
 
-    def test_broken_multiink_query(self):
+    def test_broken_multilink_query(self):
+        # query multilink item
+        current_user_query = {
+            "@columns": "title,id,activity,status,assignedto",
+            "keyword": "-3",
+            "@sort": "-activity",
+            "@group": "priority",
+            "@pagesize": "50",
+            "@startwith": "0",
+            "@template": "index|search",
+            "@action": "search"
+        }
+        session, _response = self.create_login_session()
+        f = session.post(self.url_base()+'/issue?', data=current_user_query)
+
+        # verify the query has run by looking for the query name
+        print(f.text)
+        self.assertIn('There was an error searching issue by keyword using: '
+                      '[-3]. The operator -3 (and) at position 1 has '
+                      'too few arguments.',
+                      f.text)
+        self.assertEqual(f.status_code, 200)
+
+    def test_get_search_action(self):
         # query multilink item
         current_user_query = (
             "@columns=title,id,activity,status,assignedto"
@@ -620,9 +723,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
 
         # verify the query has run by looking for the query name
         print(f.text)
-        self.assertIn('There was an error searching issue by keyword using: '
-                      '[-3]. The operator -3 (and) at position 1 has '
-                      'too few arguments.',
+        self.assertIn('error-message">Invalid request',
                       f.text)
         self.assertEqual(f.status_code, 200)
 
@@ -726,7 +827,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         hdrs = {"Range": "bytes=0-10"}
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
-        self.assertEqual(f.content, b"/* main pag")
+        self.assertEqual(f.content, b":root {\n   ")
         # compression disabled for length < 100, so we can use 11 here
         self.assertEqual(f.headers['content-length'], '11')
         self.assertEqual(f.headers['content-range'],
@@ -736,7 +837,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         hdrs = {"Range": "bytes=10-20"}
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
-        self.assertEqual(f.content, b"ge styles *")
+        self.assertEqual(f.content, b"  /* uncomm")
         # compression disabled for length < 100, so we can use 11 here
         self.assertEqual(f.headers['content-length'], '11')
         self.assertEqual(f.headers['content-range'],
@@ -756,7 +857,7 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         hdrs['If-Range'] = etag
         f = requests.get(self.url_base() + "/@@file/style.css", headers=hdrs)
         self.assertEqual(f.status_code, 206)
-        self.assertEqual(f.content, b"/* main pag")
+        self.assertEqual(f.content, b":root {\n   ")
         # compression disabled for length < 100, so we can use 11 here
         self.assertEqual(f.headers['content-length'], '11')
         self.assertEqual(f.headers['content-range'],
@@ -976,8 +1077,9 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         # do not send content-type header for options
         f = requests.options(self.url_base() + '/',
                              headers = {'content-type': ""})
-        # options is not implemented for the non-rest interface.
-        self.assertEqual(f.status_code, 501)
+        # return method not allowed - options is not implemented
+        # for the non-rest interface.
+        self.assertEqual(f.status_code, 405)
 
     def test_rest_endpoint_root_options(self):
         # use basic auth for rest endpoint
@@ -1298,6 +1400,18 @@ class BaseTestCases(WsgiSetup, ClientSetup):
                                      'Accept': '*/*'})
 
         self.assertIn(b'foo bar RESULT', f.content)
+        self.assertEqual(f.status_code, 200)
+
+    def test_extensions(self):
+        f = requests.get(self.url_base() + '/msg1',
+                         headers = { 'Accept-Encoding': 'gzip',
+                                     'Accept': '*/*'})
+
+        self.assertIn(b'LINKING:#123', f.content)
+        self.assertIn(b'FOUND:@admin', f.content)
+        self.assertIn(b'FOUND:@fred', f.content)
+        self.assertIn(b'@foo', f.content)
+        self.assertNotIn(b'FOUND:@foo', f.content)
         self.assertEqual(f.status_code, 200)
 
     def test_bad_path(self):
@@ -1802,20 +1916,74 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         f = requests.get(self.url_base() + "?@search_text=RESULT")
         self.assertIn("foo bar", f.text)
 
-@skip_requests
-class TestFeatureFlagCacheTrackerOff(BaseTestCases, WsgiSetup):
-    """Class to run all test in BaseTestCases with the cache_tracker
-       feature flag disabled when starting the wsgi server
+'''
+class TestFeatureFlag(BaseTestCases, WsgiSetup):
+    """Class to run all tests in BaseTestCases with a 
+       feature flag. Use it when testing a feature flag.
     """
     def create_app(self):
-        '''The wsgi app to start with feature flag disabled'''
+        """The wsgi app to start with feature flags"""
+        if True:
+            raise NotImplementedError("Remove this to enable.")
+
+        # change out for supported feature flag
+        ff = {"cache_tracker": False }
+        return validator(RequestDispatcher(self.dirname, feature_flags=ff))
+'''
+
+@skip_requests
+class TestFeatureFlagCacheTrackerFutureWarning(WsgiSetup):
+    """Class to run all one test with the cache_tracker
+       feature flag set when starting the wsgi server
+       to get a FutureWarning.
+    """
+    def create_app(self):
+        '''The wsgi app to start with feature flag cache_tracker'''
         ff = { "cache_tracker": False }
-        if _py3:
-            return validator(RequestDispatcher(self.dirname, feature_flags=ff))
-        else:
-            # wsgiref/validator.py InputWrapper::readline is broke and
-            # doesn't support the max bytes to read argument.
-            return RequestDispatcher(self.dirname, feature_flags=ff)
+
+        # Cause all warnings to always be triggered
+        #warnings.simplefilter("always")
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("ignore", category=ResourceWarning)
+            disp = validator(RequestDispatcher(self.dirname, feature_flags=ff))
+
+        assert len(w) == 1
+        assert issubclass(w[-1].category, FutureWarning)
+        assert "cache_tracker" in str(w[-1].message)
+
+        return disp
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog, monkeypatch, subtests):
+        """Used to add pytest test fixtures to unittest based tests
+           because adding the name of a fixture to a method does not
+           make the method available.
+
+           So the decorator runs with autouse=True to set params on
+           the unittest "self" making the fixtures available for
+           tests.
+
+           If you need another fixture, just add it to the argument list
+           and assign it to self and pytest will make it available.
+        """
+
+        self._caplog = caplog
+        self._monkeypatch = monkeypatch
+        self._subtests = subtests
+
+    def test_start_page(self):
+        """ simple test that verifies that the server can serve a
+            start page.
+
+            This will fail if create_app fails. Without this, no tests
+            are run and the class passes.
+        """
+        f = requests.get(self.url_base())
+
+        self.assertEqual(f.status_code, 200)
+        self.assertTrue(b'Roundup' in f.content)
+        self.assertTrue(b'Creator' in f.content)
 
 @skip_postgresql
 @skip_requests
@@ -1851,6 +2019,51 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
 
               def init(db):
                   db.user.audit('set', trigger_reauth, priority=110)
+             """)
+            f.write(auditor)
+
+        # add an extension that tests local_replace to turn #345 into
+        # a link and a module form that looks up username in @username
+        # and links it if name exists in db.
+        with open("%s/extensions/extension_text.py" % cls.dirname, "w") as f:
+            auditor = dedent(r"""
+              import re
+
+              substitutions = [(
+                      # compile the regular expression:
+                      #   \# - match the # sign
+                      #   (?P<ws>\s*) - match and capture, using the name ws,
+                      #                 whitespace so '#   2345' works too
+                      #   (?P<id>\d+) - match and capture, using the name id,
+                      #                 a numeric value
+                      re.compile(r'\#(?P<ws>\s*)(?P<id>\d+)'),
+                      r"LINKING:#\g<ws>\g<id>"
+                     ),
+                    ]
+
+              def local_replace(message):
+                  for cre, replacement in substitutions:
+                      message = cre.sub(replacement, message)
+                  return message
+
+              def link_username(self, message):
+                  user_db = self.client.db.user
+
+                  for name in re.findall(r'@[a-z]+', message):
+                      try:
+                          if user_db.lookup(name[1:]):
+                              message = re.sub(name, r'FOUND:%s' % name,
+                                               message)
+                      except KeyError:
+                          # no such user
+                          pass
+
+                  return message
+
+
+              def init(instance):
+                  instance.registerUtil('local_replace', local_replace)
+                  instance.registerUtilMethod('username', link_username)
              """)
             f.write(auditor)
 
@@ -1906,7 +2119,7 @@ class TestPostgresWsgiServer(BaseTestCases, WsgiSetup):
 
         # add a message to allow retrieval
         result = cls.db.msg.create(author = "1",
-                                   content = "a message foo bar RESULT",
+                                   content = "a message foo bar RESULT\n\n#123\n@admin\n@foo\n@fred\n",
                                    date=rdate.Date(),
                                    messageid="test-msg-id")
 

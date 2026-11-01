@@ -8,7 +8,7 @@ __docformat__ = "restructuredtext"
 # where not expected by the Python code.  Thus, a version check is
 # used here instead of try/except.
 import binascii
-import errno
+import configparser
 import getopt
 import logging
 import logging.config
@@ -17,43 +17,22 @@ import re
 import smtplib
 import sys
 import time
+import traceback
+from textwrap import dedent, fill, wrap
 
 import roundup.date
 from roundup.anypy import random_
 from roundup.anypy.strings import b2s
 from roundup.backends import list_backends
-from roundup.i18n import _
-
-if sys.version_info[0] > 2:
-    import configparser  # Python 3
-else:
-    import ConfigParser as configparser  # Python 2
-
 from roundup.exceptions import RoundupException
+from roundup.i18n import _
+from roundup.logcontext import gen_trace_id, get_context_info
+
 
 # Exceptions
-
-
 class ConfigurationError(RoundupException):
-    pass
-
-
-class ParsingOptionError(ConfigurationError):
     def __str__(self):
         return self.args[0]
-
-
-class NoConfigError(ConfigurationError):
-
-    """Raised when configuration loading fails
-
-    Constructor parameters: path to the directory that was used as HOME
-
-    """
-
-    def __str__(self):
-        return "No valid configuration files found in directory %s" \
-            % self.args[0]
 
 
 class InvalidOptionError(ConfigurationError, KeyError, AttributeError):
@@ -71,6 +50,29 @@ class InvalidOptionError(ConfigurationError, KeyError, AttributeError):
 
     def __str__(self):
         return "Unsupported configuration option: %s" % self.args[0]
+
+
+class LoggingConfigError(ConfigurationError):
+
+    """Raised when an error occurs trying to load a .ini or json logging config"""
+
+    def __init__(self, message, **attrs):
+        super().__init__(message)
+        for key, value in attrs.items():
+            self.__setattr__(key, value)
+
+
+class NoConfigError(ConfigurationError):
+
+    """Raised when configuration loading fails
+
+    Constructor parameters: path to the directory that was used as HOME
+
+    """
+
+    def __str__(self):
+        return "No valid configuration files found in directory %s" \
+            % self.args[0]
 
 
 class OptionValueError(ConfigurationError, ValueError):
@@ -101,6 +103,20 @@ class OptionUnsetError(ConfigurationError):
 
     def __str__(self):
         return "%s is not set and has no default" % self.args[0].name
+
+
+class ParsingOptionError(ConfigurationError):
+
+    """Raised for interpolation or other error during config file load"""
+
+    pass
+
+
+class UnknownOptionsError(ConfigurationError):
+
+    """Returned when an option name is not recognized during config check"""
+
+    pass
 
 
 class UnsetDefaultValue:
@@ -199,8 +215,7 @@ class Option:
             value = self._value
         if value is NODEFAULT:
             return str(value)
-        else:
-            return self._value2str(value)
+        return self._value2str(value)
 
     def get(self):
         """Return current option value"""
@@ -211,6 +226,10 @@ class Option:
     def set(self, value):
         """Update the value"""
         self._value = self.str2value(value)
+
+    def set_raw(self, value):
+        """Store the raw uninterploated value for the option"""
+        self._rawvalue = value
 
     def reset(self):
         """Reset the value to default"""
@@ -239,7 +258,7 @@ class Option:
             "value": self.value2str(self._value),
         }
 
-    def format(self):
+    def format(self, raw=False):
         """Return .ini file fragment for this option"""
         _desc_lines = []
         for _description in (self.description, self.class_description):
@@ -248,22 +267,30 @@ class Option:
         # comment out the setting line if there is no value
         _is_set = "" if self.isset() else "#"
 
+        value = self.value2str(self._value)
+        if raw and hasattr(self, "_rawvalue"):
+            value = self._rawvalue
+
         _rv = "# %(description)s\n# Default: %(default)s\n" \
             "%(is_set)s%(name)s = %(value)s\n" % {
                 "description": "\n# ".join(_desc_lines),
                 "default": self.value2str(self._default_value),
                 "name": self.setting,
-                "value": self.value2str(self._value),
+                "value": value,
                 "is_set": _is_set,
             }
         return _rv
 
-    def load_ini(self, config):
+    def load_ini(self, config, validate_keys=False):
         """Load value from ConfigParser object"""
         try:
             if config.has_option(self.section, self.setting):
                 self.set(config.get(self.section, self.setting))
-        except configparser.InterpolationSyntaxError as e:
+                self.set_raw(config.get(self.section, self.setting, raw=True))
+                if validate_keys:
+                    config.remove_option(self.section, self.setting)
+        except (configparser.InterpolationSyntaxError,
+                configparser.InterpolationMissingOptionError) as e:
             raise ParsingOptionError(
                 _("Error in %(filepath)s with section [%(section)s] at "
                   "option %(option)s: %(message)s") % {
@@ -271,6 +298,9 @@ class Option:
                       "section": e.section,
                       "option": e.option,
                       "message": str(e)})
+
+    def rformat(self):
+        return self.format(raw=True)
 
 
 class BooleanOption(Option):
@@ -282,20 +312,20 @@ class BooleanOption(Option):
     def _value2str(self, value):
         if value:
             return "yes"
-        else:
-            return "no"
+        return "no"
 
     def str2value(self, value):
-        if isinstance(value, type("")):
+        if isinstance(value, str):
             _val = value.lower()
             if _val in ("yes", "true", "on", "1"):
                 _val = 1
             elif _val in ("no", "false", "off", "0"):
                 _val = 0
             else:
-                raise OptionValueError(self, value, self.class_description)
+                raise OptionValueError(self, value, self.class_description,
+                                       "In file: '%s'" % self.config.filepath)
         else:
-            _val = value and 1 or 0
+            _val = (value and 1) or 0
         return _val
 
 
@@ -322,8 +352,7 @@ class RunDetectorOption(Option):
         _val = value.lower()
         if _val in ("yes", "no", "new"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class CsrfSettingOption(Option):
@@ -336,8 +365,7 @@ class CsrfSettingOption(Option):
         _val = value.lower()
         if _val in ("required", "yes", "logfailure", "no"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class SameSiteSettingOption(Option):
@@ -351,40 +379,38 @@ or should it not be added (none)"""
         _val = value.lower()
         if _val in ("strict", "lax", "none"):
             return _val.capitalize()
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class DatabaseBackend(Option):
     """handle exact text of backend and make sure it's available"""
-    class_description = "Available backends: %s" % ", ".join(list_backends())
+    values = list_backends()
+    class_description = "Available backends: %s" % ", ".join(values)
 
     def str2value(self, value):
         _val = value.lower()
-        if _val in list_backends():
+        if _val in self.values:
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class HtmlToTextOption(Option):
 
     """What module should be used to convert emails with only text/html
     parts into text for display in roundup. Choose from beautifulsoup
-    4, dehtml - the internal code or none to disable html to text
-    conversion. If beautifulsoup chosen but not available, dehtml will
-    be used.
+    4, justhtml, dehtml - the internal code or none to disable html to
+    text conversion. If beautifulsoup or justhtml is chosen but not
+    available, dehtml will be used.
 
     """
 
-    class_description = "Allowed values: beautifulsoup, dehtml, none"
+    class_description = "Allowed values: beautifulsoup, justhtml, dehtml, none"
 
     def str2value(self, value):
         _val = value.lower()
-        if _val in ("beautifulsoup", "dehtml", "none"):
+        if _val in ("beautifulsoup", "justhtml", "dehtml", "none"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class HtmlVersionOption(Option):
@@ -397,8 +423,8 @@ class HtmlVersionOption(Option):
         _val = value.lower()
         if _val in ("html4"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
+
 
 class EmailBodyOption(Option):
 
@@ -411,8 +437,7 @@ class EmailBodyOption(Option):
         _val = value.lower()
         if _val in ("yes", "no", "new"):
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
 
 
 class IsolationOption(Option):
@@ -496,21 +521,19 @@ class IndexerOption(Option):
                     lang = options["INDEXER_LANGUAGE"]._value
                     xapian.Stem(lang)
                 except xapian.InvalidArgumentError:
-                    import textwrap
                     lang_avail = b2s(xapian.Stem.get_available_languages())
-                    languages = textwrap.fill(_("Valid languages: ") +
-                                              lang_avail, 75,
-                                              subsequent_indent="   ")
+                    languages = fill(_("Valid languages: ") +
+                                     lang_avail, 75,
+                                     subsequent_indent="   ")
                     raise OptionValueError(options["INDEXER_LANGUAGE"],
                                            lang, languages)
 
         if self._value == "native-fts":
             lang = options["INDEXER_LANGUAGE"]._value
             if lang not in self.valid_langs:
-                import textwrap
-                languages = textwrap.fill(_("Expected languages: ") +
-                                          " ".join(self.valid_langs), 75,
-                                          subsequent_indent="   ")
+                languages = fill(_("Expected languages: ") +
+                                 " ".join(self.valid_langs), 75,
+                                 subsequent_indent="   ")
                 raise OptionValueError(options["INDEXER_LANGUAGE"],
                                        lang, languages)
 
@@ -561,8 +584,53 @@ class SpaceSeparatedListOption(Option):
         pathlist = list(_val.split())
         if pathlist:
             return pathlist
-        else:
-            return None
+        return None
+
+
+class LoggingFormatOption(Option):
+    """Escape/unescape logging format string '%(' <-> '%%('
+
+       Config file parsing allows variable interpolation using
+       %(keyname)s.  However this is exactly the format that we need
+       for creating a logging format string. So we tell the user to
+       quote the string using %%(...). Then we turn %%( -> %( when
+       retrieved and turn %( into %%( when saving the file.
+    """
+
+    class_description = ("Allowed value: Python LogRecord attribute named "
+                         "formats with % *sign doubled*.\n"
+                         "Also you can include the following attributes:\n"
+                         "  %%(trace_id)s %%(trace_reason)s and %%(pct_char)s"
+                         )
+
+    def str2value(self, value):
+        """Validate and convert value of logging format string.
+
+           This does a dirty check to see if a token is missing a
+           specifier. So "%%(ascdate)s %%(level) " would fail because of
+           the 's' missing after 'level)'. But "%%(ascdate)s %%(level)s"
+           would pass.
+
+           Note that '%(foo)s' (i.e. unescaped substitution) generates
+           a error from the ini parser with a less than wonderful message.
+        """
+        unquoted_val = value.replace("%%(", "%(")
+
+        # regexp matches all current logging record object attribute names.
+        scanned_result = re.sub(r'%\([A-Za-z_]+\)\S', '', unquoted_val)
+        if scanned_result.find('%(') != -1:
+            raise OptionValueError(
+                self, unquoted_val,
+                "Check that all substitution tokens have a format "
+                "specifier after the ). Unrecognized use of %%(...) in: "
+                "%s" % scanned_result)
+
+        return str(unquoted_val)
+
+    def _value2str(self, value):
+        """Replace %( with %%( to quote the format substitution param.
+        """
+        return value.replace("%(", "%%(")
 
 
 class OriginHeadersListOption(Option):
@@ -606,8 +674,7 @@ class MultiFilePathOption(Option):
                 pathlist.append(os.path.normpath(elem))
         if pathlist:
             return pathlist
-        else:
-            return None
+        return None
 
 
 class FloatNumberOption(Option):
@@ -694,8 +761,7 @@ class MandatoryOption(Option):
     def str2value(self, value):
         if not value:
             raise OptionValueError(self, value, "Value must not be empty.")
-        else:
-            return value
+        return value
 
 
 class SecretOption(Option):
@@ -727,16 +793,11 @@ class SecretOption(Option):
             try:
                 with open(filepath) as f:
                     _val = f.readline().rstrip()
-            # except FileNotFoundError: py2/py3
-            # compatible version
-            except EnvironmentError as e:
-                if e.errno != errno.ENOENT:
-                    raise
-                else:
-                    raise OptionValueError(
-                        self, _val,
-                        "Unable to read value for %s. Error opening "
-                        "%s: %s." % (self.name, e.filename, e.args[1]))
+            except FileNotFoundError as e:
+                raise OptionValueError(
+                    self, _val,
+                    "Unable to read value for %s. Error opening "
+                    "%s: %s." % (self.name, e.filename, e.args[1]))
         return self.str2value(_val)
 
     def validate(self, options):
@@ -773,8 +834,7 @@ class WebUrlOption(Option):
 
         if error_msg:
             raise OptionValueError(self, value, error_msg)
-        else:
-            return value
+        return value
 
 
 class NullableOption(Option):
@@ -801,14 +861,12 @@ class NullableOption(Option):
     def str2value(self, value):
         if value in self.null_strings:
             return None
-        else:
-            return value
+        return value
 
     def _value2str(self, value):
         if value is None:
             return self.null_strings[0]
-        else:
-            return value
+        return value
 
 
 class NullableFilePathOption(NullableOption, FilePathOption):
@@ -841,8 +899,9 @@ class ListSecretOption(SecretOption):
 
     def validate(self, options):  # noqa: ARG002  --  options unused
         if self.name == "WEB_JWT_SECRET":
+            min_jwt_length = 32
             secrets = self.get()
-            invalid_secrets = [x for x in secrets[1:] if len(x) < 32]
+            invalid_secrets = [x for x in secrets[1:] if len(x) < min_jwt_length]
             if invalid_secrets:
                 raise OptionValueError(
                     self, ", ".join(secrets),
@@ -988,9 +1047,9 @@ class RegExpOption(Option):
         return value.pattern
 
     def str2value(self, value):
-        if not isinstance(value, type(u'')):
+        if not isinstance(value, str):
             value = str(value)
-        if not isinstance(value, type(u'')):
+        if not isinstance(value, str):
             # if it is 7-bit ascii, use it as string,
             # otherwise convert to unicode.
             try:
@@ -1003,15 +1062,27 @@ class RegExpOption(Option):
 class LogLevelOption(Option):
     """A log level, one of none, debug, info, warning, error, critical"""
 
-    values = "none debug info warning error critical".split()
+    values = ("none", "debug", "info", "warning", "error", "critical")
     class_description = "Allowed values: %s" % (', '.join(values))
 
     def str2value(self, value):
         _val = value.lower()
         if _val in self.values:
             return _val
-        else:
-            raise OptionValueError(self, value, self.class_description)
+        raise OptionValueError(self, value, self.class_description)
+
+
+class LogDefaultLevelOption(Option):
+    """A log level, one of DEBUG, INFO, WARNING, ERROR, CRITICAL"""
+
+    values = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
+    class_description = "Allowed values: %s" % (', '.join(values))
+
+    def str2value(self, value):
+        _val = value.upper()
+        if _val in self.values:
+            return _val
+        raise OptionValueError(self, value, self.class_description)
 
 
 try:
@@ -1316,6 +1387,31 @@ you want to enable translation based on browsers lang
          "Defines the interval in seconds over which api login failures\n"
          "are recorded. It allows api_failed_login_limit login failures\n"
          "in this time interval. Tune this as needed.\n"),
+        (BooleanOption, 'use_tokenless_csrf_protection', 'no',
+         "Use a more modern CSRF protection method. If enabled, the\n"
+         "other CSRF settings below are disabled and a CSRF token is\n"
+         "not needed when creating your forms.\n"),
+        (OriginHeadersListOption, 'allowed_api_origins', "",
+            """A comma separated list of additonal valid Origin header
+values used when enforcing the origin header. If token style CSRF
+protection is enabled, it is used only for the api URLs (/rest and
+/xmlrpc). It is not used for the standard html URL's. If tokenless
+style csrf protection is enabled, it is used for URLs.
+
+These strings must precisely match the value of the Origin header. For
+example, 'https://bar.edu' and 'https://Bar.edu' are two different
+Origin values. Note origin values consist of scheme://host without any
+path component. Thus 'https://bar.edu/' is not valid.  The value '*'
+can be used to match any origin when token style CSRF is enabled. It
+must be placed first in the list if used. Note that the '*' value
+allows any web page on the internet to make anonymous requests against
+your Roundup tracker.
+
+You must configure this if you have a web application on a different
+origin that accesses your Roundup instance.
+
+(The origin from the tracker.web setting in config.ini is
+always valid and does not need to be specified.)"""),
         (CsrfSettingOption, 'csrf_enforce_token', "yes",
             """How do we deal with @csrf fields in posted forms.
 Set this to 'required' to block the post and notify
@@ -1366,25 +1462,6 @@ Set this to 'logfailure' to log a notice to the roundup
     log if the header is invalid or missing, but accept
     the post.
 Set this to 'no' to ignore the header and accept the post."""),
-        (OriginHeadersListOption, 'allowed_api_origins', "",
-            """A comma separated list of additonal valid Origin header
-values used when enforcing the header origin. They are used
-only for the api URL's (/rest and /xmlrpc). They are not
-used for the usual html URL's. These strings must match the
-value of the Origin header exactly. So 'https://bar.edu' and
-'https://Bar.edu' are two different Origin values. Note that
-the origin value is scheme://host. There is no path
-component. So 'https://bar.edu/' would never be valid.
-The value '*' can be used to match any origin. It must be
-first in the list if used. Note that this value allows
-any web page on the internet to make anonymous requests
-against your Roundup tracker.
-
-You need to set these if you have a web application on a
-different origin accessing your Roundup instance.
-
-(The origin from the tracker.web setting in config.ini is
-always valid and does not need to be specified.)"""),
         (CsrfSettingOption, 'csrf_enforce_header_x-forwarded-host', "yes",
             """Verify that the X-Forwarded-Host http header matches
 the host part of the tracker.web setting in config.ini.
@@ -1478,7 +1555,7 @@ always passes, so setting it less than 1 is not recommended."""),
         (DatabaseBackend, 'backend', NODEFAULT,
             "Database backend."),
         (BooleanOption, "debug_filter", "no",
-	    "Filter debugging: Permissions can define additional filter\n"
+            "Filter debugging: Permissions can define additional filter\n"
             "functions that are used when checking permissions on results\n"
             "returned by the database. This is done to improve\n"
             "performance since the filtering is done in the database\n"
@@ -1600,10 +1677,14 @@ always passes, so setting it less than 1 is not recommended."""),
             "Log file name for minimal logging facility built into Roundup.\n"
             "If no file name specified, log messages are written on stderr.\n"
             "If above 'config' option is set, this option has no effect."),
-        (Option, "level", "ERROR",
+        (LogDefaultLevelOption, "level", "ERROR",
             "Minimal severity level of messages written to log file.\n"
             "If above 'config' option is set, this option has no effect.\n"
-            "Allowed values: DEBUG, INFO, WARNING, ERROR"),
+            "Allowed values: DEBUG, INFO, WARNING, ERROR, CRITICAL"),
+        (LoggingFormatOption, "format",
+            "%(asctime)s %(trace_id)s %(levelname)s %(message)s",
+            "Format of the logging messages with all '%' signs\n"
+            "doubled so they are not interpreted by the config file."),
         (BooleanOption, "disable_loggers", "no",
             "If set to yes, only the loggers configured in this section will\n"
             "be used. Yes will disable gunicorn's --access-logfile.\n"),
@@ -1748,11 +1829,11 @@ always passes, so setting it less than 1 is not recommended."""),
         (HtmlToTextOption, "convert_htmltotext", "none",
             "If an email has only text/html parts, use this module\n"
             "to convert the html to text. Choose from beautifulsoup 4,\n"
-            "dehtml - (internal code), or none to disable conversion.\n"
-            "If 'none' is selected, email without a text/plain part\n"
-            "will be returned to the user with a message. If\n"
-            "beautifulsoup is selected but not installed dehtml will\n"
-            "be used instead."),
+            "justhtml, dehtml - (internal code), or none to disable\n"
+            "conversion. If 'none' is selected, email without a text/plain\n"
+            "part will be returned to the user with a message. If\n"
+            "beautifulsoup or justhtml is selected but not installed\n"
+            "dehtml will be used instead."),
         (BooleanOption, "keep_real_from", "no",
             "When handling emails ignore the Resent-From:-header\n"
             "and use the original senders From:-header instead.\n"
@@ -1867,11 +1948,20 @@ class Config:
     # actual name of the config file.  set on load.
     filepath = os.path.join(HOME, INI_FILE)
 
+    # a dict of key/values of the DEFAULT section of the ini file.
+    ini_DEFAULT = None
+
     # List of option names that need additional validation after
     # all options are loaded.
     option_validators = None
 
-    def __init__(self, config_path=None, layout=None, settings=None):
+    # If True, check to make sure that all settings were parsed in the
+    # main config.ini file. If any were left over report an error.
+    # Used by roundup-admin checkconfig command.
+    validate_keys = False
+
+    def __init__(self, config_path=None, layout=None, settings=None,
+                 validate_keys=False):
         """Initialize confing instance
 
         Parameters:
@@ -1896,6 +1986,7 @@ class Config:
         self.section_options = {}
         self.options = {}
         self.option_validators = []
+        self.validate_keys = validate_keys
         # add options from the layout structure
         if layout:
             for section in layout:
@@ -2141,14 +2232,46 @@ class Config:
         self._adjust_options(config)
         # set the options, starting from HOME
         self.reset()
+
+        # Remove elements of config.defaults() that were set by the
+        # default parameter to this method or the home value. We are
+        # left with only the keys/values defined in the DEFAULT
+        # section of the ini file.
+        self.ini_DEFAULT = {k: v for k, v in config.defaults().items()
+                            if k not in ["home"] +
+                            [k.lower() for k in config_defaults]}
+
         for option in self.items():
-            option.load_ini(config)
+            option.load_ini(config, validate_keys=self.validate_keys)
+
+        # As CoreConfig lods the SETTINGS from config.ini, the config
+        # file version of the setting is removed.  Report any options
+        # left in the parsed config file. They are possible typos.
+        # config_defaults and self.ini_DEFAULTS are added to every
+        # section, ignore them.
+        #
+        # A UserConfig consumes all config file settings, so
+        # unknown_config_options will always be empty. No way to
+        # find typos.
+        if self.validate_keys:
+            unknown_config_options = []
+            default_options = [x.lower() for x in
+                               {**config_defaults, **self.ini_DEFAULT}]
+            for sec in config.sections():
+                unknown_config_options.extend([
+                    f"{sec}:{opt}" for opt in config.options(sec)
+                    if opt.lower() not in default_options])
+            if unknown_config_options:
+                raise UnknownOptionsError(
+                    "Unknown options (section:option) found in "
+                    "%(filepath)s: " % self.__dict__ + \
+                    ", ".join(unknown_config_options))
 
     def load(self, home_dir):
         """Load configuration settings from home_dir"""
         self.load_ini(home_dir)
 
-    def save(self, ini_file=None):
+    def save(self, ini_file=None, raw=False):
         """Write current configuration to .ini file
 
         'ini_file' argument, if passed, must be valid full path
@@ -2167,21 +2290,45 @@ class Config:
         with open(_tmp_file, "wt") as _fp:
             _fp.write("# %s configuration file\n" % self._get_name())
             _fp.write("# Autogenerated at %s\n" % time.asctime())
+
             need_set = self._get_unset_options()
             if need_set:
                 _fp.write("\n# WARNING! Following options need adjustments:\n")
                 for section, options in need_set.items():
                     _fp.write("#  [%s]: %s\n" % (section, ", ".join(options)))
+
+            # write DEFAULT section
+            blurb = "\n".join(
+                wrap(
+                    dedent("""\
+                    Values set here can be substituted using '%(name)s' markers
+                    elsewhere in the file.
+                    """),
+                    initial_indent="# ",
+                    subsequent_indent="# "
+                )
+            )
+
+            _fp.write("\n[%s]\n\n%s" % (configparser.DEFAULTSECT, blurb))
+
+            if self.ini_DEFAULT:
+                for k, v in self.ini_DEFAULT.items():
+                    _fp.write("\n%s = %s\n" % (k, v))
+                _fp.write("\n")
+
             for section in self.sections:
                 comment = self.section_descriptions.get(section, None)
                 if comment:
                     _fp.write("\n# ".join([""] + comment.split("\n")) + "\n")
                 else:
-                    # no section comment - just leave a blank line between sections
+                    # no section comment - leave a blank line between sections
                     _fp.write("\n")
                 _fp.write("[%s]\n" % section)
                 for option in self._get_section_options(section):
-                    _fp.write("\n" + self.options[(section, option)].format())
+                    if not raw:
+                        _fp.write("\n" + self.options[(section, option)].format())
+                    else:
+                        _fp.write("\n" + self.options[(section, option)].rformat())
 
         if os.access(ini_file, os.F_OK):
             if os.access(_bak_file, os.F_OK):
@@ -2197,8 +2344,7 @@ class Config:
     def __getitem__(self, name):
         if name == "HOME":
             return self.HOME
-        else:
-            return self._get_option(name).get()
+        return self._get_option(name).get()
 
     def __setitem__(self, name, value):
         if name == "HOME":
@@ -2265,7 +2411,7 @@ class UserConfig(Config):
     def _adjust_options(self, config):
         # config defaults appear in all sections.
         # we'll need to filter them out.
-        defaults = list(config.defaults().keys())
+        defaults = config.defaults().keys()
         # see what options are already defined and add missing ones
         preset = [(option.section, option.setting) for option in self.items()]
         for section in config.sections():
@@ -2292,10 +2438,11 @@ class CoreConfig(Config):
     ext = None
     detectors = None
 
-    def __init__(self, home_dir=None, settings=None):
+    def __init__(self, home_dir=None, settings=None, validate_keys=False):
         if settings is None:
             settings = {}
-        Config.__init__(self, home_dir, layout=SETTINGS, settings=settings)
+        Config.__init__(self, home_dir, layout=SETTINGS,
+                        settings=settings, validate_keys=validate_keys)
         # load the config if home_dir given
         if home_dir is None:
             self.init_logging()
@@ -2322,6 +2469,18 @@ class CoreConfig(Config):
     def _get_name(self):
         return self["TRACKER_NAME"]
 
+    @gen_trace_id()
+    def _logging_test(self, sinfo, msg="test %(a)s\n%(sinfo)s", args=None):
+        """Test method for logging formatting.
+
+           Not used in production.
+        """
+        logger = logging.getLogger('roundup')
+        if args:
+            logger.info(msg, *args)
+        else:
+            logger.info(msg, extra={"a": "a_var", "sinfo": sinfo})
+
     def reset(self):
         Config.reset(self)
         if self.ext:
@@ -2330,13 +2489,324 @@ class CoreConfig(Config):
             self.detectors.reset()
         self.init_logging()
 
+    def gather_callstack(self, keep_full_stack=False):
+        # Locate logging call in stack
+        stack = traceback.extract_stack()
+        if keep_full_stack:
+            last_frame_index = len(stack)
+        else:
+            for last_frame_index, frame in enumerate(stack):
+                # Walk from the top of stack looking for
+                # "logging" in filename (really
+                # filepath). Can't use /logging/ as
+                # windows uses \logging\.
+                #
+                # Filtering by looking for "logging" in
+                # the filename isn't great.
+                if "logging" in frame.filename:
+                    break
+        if not keep_full_stack:
+            stack = stack[0:last_frame_index]
+        return (stack, last_frame_index)
+
+    def context_filter(self, record):
+        """Add context to record, expand context references in record.msg
+           Define pct_char as '%'
+        """
+
+        # This method can be called multiple times on different handlers.
+        # However it modifies the record on the first call and the changes
+        # persist in the record. So we only want to be called once per
+        # record.
+        if hasattr(record, "ROUNDUP_CONTEXT_FILTER_CALLED"):
+            return True
+
+        for name, value in get_context_info():
+            if not hasattr(record, name):
+                setattr(record, name, value)
+                continue
+            if (name == "processName" and
+                isinstance(value, str) and
+                getattr(record, name) == "MainProcess"):
+                setattr(record, name, value)
+
+        record.pct_char = "%"
+        record.ROUNDUP_CONTEXT_FILTER_CALLED = True
+
+        if hasattr(record, "sinfo"):
+            # sinfo has to be set via extras argument to logging commands
+            #   to activate this.
+            #
+            # sinfo value can be:
+            #  non-integer: "", None etc. Print 5 elements of
+            #      stack before logging call
+            #  integer N > 0: print N elements of stack before
+            #      logging call
+            #  0: print whole stack before logging call
+            #  integer N < 0: undocumented print stack starting at
+            #      extract_stack() below. I.E. do not set bottom of
+            #      stack to the logging call.
+            # if |N| is greater than stack height, print whole stack.
+            stack_height = record.sinfo
+            keep_full_stack = False
+
+            if isinstance(stack_height, int):
+                if stack_height < 0:
+                    keep_full_stack = True
+                    stack_height = abs(stack_height)
+                if stack_height == 0:
+                    # None will set value to actual stack height.
+                    stack_height = None
+            else:
+                stack_height = 5
+
+            stack, last_frame_index = self.gather_callstack(keep_full_stack)
+
+            if stack_height is None:
+                stack_height = last_frame_index
+            elif stack_height > last_frame_index:
+                stack_height = last_frame_index  # start at frame 0
+
+            # report the stack info
+            record.sinfo = "".join(
+                traceback.format_list(
+                    stack[last_frame_index - stack_height:last_frame_index]
+                )
+            )
+
+        # if args are present, just return. Logging will
+        # expand the arguments.
+        if record.args:
+            return True
+
+        # Since args not present, try formatting msg using
+        # named arguments.
+        try:
+            record.msg = record.msg % record.__dict__
+        except (ValueError, TypeError):
+            # ValueError: means there is a % sign in the msg
+            # somewhere that is not meant to be a format token. So
+            # just leave msg unexpanded.
+            #
+            # TypeError - a positional format string is being
+            # handled without setting record.args. E.G.
+            #     .info("result is %f")
+            # Leave message unexpanded.
+            pass
+        return True
+
+    def add_logging_context_filter(self):
+        """Update log record with contextvar values and expand msg
+
+           The contextvar values are stored as attributes on the log
+           record object in record.__dict__. They should not exist
+           when this is called. Do not overwrite them if they do exist
+           as they can be set in a logger call using::
+
+               logging.warning("a message", extra = {"trace_id": foo})
+
+           the extra argument/parameter.
+
+           Attempt to expand msg using the variables in
+           record.__dict__. This makes::
+
+               logging.warning("the URL was: %(trace_reason)s")
+
+           work and replaces the ``%(trace_reason)s`` token with the value.
+           Note that you can't use positional params and named params
+           together.  For example::
+
+               logging.warning("user = %s and URL was: %(trace_reason)s", user)
+
+           will result in an exception in logging when it formats the
+           message.
+
+           Also ``%(pct_char)`` is defined to allow the addition of %
+           characters in the format string as bare % chars can't make
+           it past the configparser and %% encoded ones run into issue
+           with the format verifier.
+
+           Calling a logger (.warning() etc.) with the argument::
+
+                extra={"sinfo": an_int}
+
+           will result in a stack trace starting at the logger call
+           and going up the stack for `an_int` frames. Using "True"
+           in place of `an_int` will print only the call to the logger.
+
+           Note that logging untrusted strings in the msg set by user
+           (untrusted) may be an issue. So don't do something like:
+
+               .info("%s" % web_url)
+
+           as web_url could include '%(trace_id)s'. Instead use:
+
+               .info("%(url)s", extra=("url": web_url))
+
+          Even in the problem case, I think the damage is contained since:
+
+           * data doesn't leak as the log string is not exposed to the
+             user.
+
+           * the log string isn't executed or used internally.
+
+           * log formating can raise an exception. But this won't
+             affect the application as the exception is swallowed in
+             the logging package. The raw message would be printed by
+             the fallback logging handler.
+
+           but if it is a concern, make sure user data is added using
+           the extra dict when calling one of the logging functions.
+        """
+        loggers = [logging.getLogger(name) for name in
+                   logging.root.manager.loggerDict]
+        # append the root logger as it is not listed in loggerDict
+        loggers.append(logging.getLogger())
+        for logger in loggers:
+            for hdlr in logger.handlers:
+                hdlr.addFilter(self.context_filter)
+
+    def load_config_dict_from_json_file(self, filename):
+        import json
+        comment_re = re.compile(
+            r"""^\s*//#.*  # comment at beginning of line possibly indented.
+            |  # or
+            ^(.*)\s\s\s\//.*  # comment char preceeded by at least three spaces.
+            """, re.VERBOSE)
+
+        config_list = []
+        with open(filename) as config_file:
+            for line in config_file:
+                match = comment_re.search(line)
+                if match:
+                    if match.lastindex:
+                        config_list.append(match.group(1) + "\n")
+                    else:
+                        # insert blank line for comment line to
+                        # keep line numbers in sync.
+                        config_list.append("\n")
+                    continue
+                config_list.append(line)
+
+        try:
+            config_dict = json.loads("".join(config_list))
+        except json.decoder.JSONDecodeError as e:
+            error_at_doc_line = e.lineno
+            # subtract 1 - zero index on config_list
+            # remove '\n' for display
+            try:
+                line = config_list[error_at_doc_line - 1][:-1]
+            except IndexError:
+                line = _("Error found at end of file. Maybe missing a "
+                         "block closing '}'.")
+
+            hint = ""
+            if line.find('//') != -1:
+                hint = "\nMaybe bad inline comment, 3 spaces needed before //."
+
+            raise LoggingConfigError(
+                'Error parsing json logging dict (%(file)s) '
+                'near \n\n  %(line)s\n\n'
+                '%(msg)s: line %(lineno)s column %(colno)s.%(hint)s' %
+                {"file": filename,
+                 "line": line,
+                 "msg": e.msg,
+                 "lineno": error_at_doc_line,
+                 "colno": e.colno,
+                 "hint": hint},
+                config_file=self.filepath,
+                source="json.loads"
+            )
+
+        return config_dict
+
     def init_logging(self):
         _file = self["LOGGING_CONFIG"]
         if _file and os.path.isfile(_file):
-            logging.config.fileConfig(
-                _file,
-                disable_existing_loggers=self["LOGGING_DISABLE_LOGGERS"])
+            if _file.endswith(".ini"):
+                try:
+                    logging.config.fileConfig(
+                        _file,
+                        disable_existing_loggers=self[
+                            "LOGGING_DISABLE_LOGGERS"])
+                except (ValueError, RuntimeError, configparser.ParsingError,
+                        KeyError, NameError, ModuleNotFoundError) as e:
+
+                    # close logging before exit.
+                    logging.shutdown()
+
+                    # configparser.DuplicateOptionError includes
+                    # filename, line number and a useful error.
+                    # so we don't have to augment it.
+                    context = []
+                    if hasattr(e, '__context__') and e.__context__:
+                        # get additional error info.
+                        context.append(str(e.__context__))
+                    if hasattr(e, '__doc__') and e.__doc__:
+                        context.append(e.__doc__)
+
+                    if isinstance(e, KeyError):
+                        context.append("No section found with this name.")
+                    if not context:
+                        context = ["No additional information available."]
+
+                    raise LoggingConfigError(
+                        "Error loading logging config from %(file)s.\n\n"
+                        "   %(msg)s\n\n%(context)s\n" % {
+                            "file": _file,
+                            "msg":  type(e).__name__ + ": " + str(e),
+                            "context": " ".join(context),
+                        }
+                        )
+            elif _file.endswith(".json"):
+                config_dict = self.load_config_dict_from_json_file(_file)
+                try:
+                    logging.config.dictConfig(config_dict)
+                except ValueError as e:
+
+                    # close logging before exit.
+                    logging.shutdown()
+
+                    # docs say these exceptions:
+                    #    ValueError, TypeError, AttributeError, ImportError
+                    # could be raised, but
+                    # looking through the code, it looks like
+                    # configure() maps all exceptions (including
+                    # ImportError, TypeError) raised by functions to
+                    # ValueError.
+                    context = "No additional information available."
+                    if hasattr(e, '__context__') and e.__context__:
+                        # get additional error info. E.G. if INFO
+                        # is replaced by MANGO, context is:
+                        #    ValueError("Unknown level: 'MANGO'")
+                        # while str(e) is "Unable to configure handler 'access'"
+                        context = e.__context__
+
+                    raise LoggingConfigError(
+                        'Error loading logging dict from %(file)s.\n'
+                        '%(msg)s\n%(context)s\n' % {
+                            "file": _file,
+                            "msg": type(e).__name__ + ": " + str(e),
+                            "context": context
+                        },
+                        config_file=self.filepath,
+                        source="dictConfig"
+                    )
+            else:
+                raise OptionValueError(
+                    self.options['LOGGING_CONFIG'],
+                    _file,
+                    "Unable to load logging config file. "
+                    "File extension must be '.ini' or '.json'.\n"
+                    )
+
+            self.add_logging_context_filter()
             return
+
+        if _file:
+            raise OptionValueError(self.options['LOGGING_CONFIG'],
+                                   _file,
+                                   "Unable to find logging config file.")
 
         _file = self["LOGGING_FILENAME"]
         # set file & level on the roundup logger
@@ -2344,8 +2814,7 @@ class CoreConfig(Config):
         hdlr = logging.FileHandler(_file) if _file else \
             logging.StreamHandler(sys.stdout)
 
-        formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s %(message)s')
+        formatter = logging.Formatter(self["LOGGING_FORMAT"])
         hdlr.setFormatter(formatter)
         # no logging API to remove all existing handlers!?!
         for h in logger.handlers:
@@ -2353,6 +2822,15 @@ class CoreConfig(Config):
             logger.removeHandler(hdlr)
         logger.handlers = [hdlr]
         logger.setLevel(self["LOGGING_LEVEL"] or "ERROR")
+        if 'pytest' not in sys.modules:
+            # logger.propatgate is True by default. This is
+            # needed so that pytest caplog code will work. In
+            # production leaving it set to True relogs everything
+            # using the root logger with logging BASIC_FORMAT:
+            #    "%(level)s:%(name)s:%(message)s
+            logger.propagate = False
+
+        self.add_logging_context_filter()
 
     def validator(self, options):
         """ Validate options once all options are loaded.
@@ -2392,8 +2870,7 @@ class CoreConfig(Config):
     def __getitem__(self, name):
         if name == "TRACKER_HOME":
             return self.HOME
-        else:
-            return Config.__getitem__(self, name)
+        return Config.__getitem__(self, name)
 
     def __setitem__(self, name, value):
         if name == "TRACKER_HOME":

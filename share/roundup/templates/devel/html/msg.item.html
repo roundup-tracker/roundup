@@ -87,7 +87,7 @@
   <td class="content" colspan="2"
       tal:condition="python:context.content.is_view_ok()">
       <pre
-      tal:content="structure python:utils.localReplace(context.content.hyperlinked())"></pre></td>
+      tal:content="structure python:utils.local_replace(context.content.hyperlinked())"></pre></td>
   <td class="content" colspan="2"
       tal:condition="python:not context.content.is_view_ok()">
       You are not authorized to see this message.

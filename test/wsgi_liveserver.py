@@ -102,6 +102,7 @@ class LiveServerTestCase(unittest.TestCase):
             except socket.error as e:
                 if not hasattr(e, 'args') or e.args[0] != errno.ECONNREFUSED:
                     raise
+                s.close()
                 return port
             else:
                 s.close()

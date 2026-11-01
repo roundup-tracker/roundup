@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-# Roundup requires Python 2.7+ as mentioned in doc\installation.txt
-from __future__ import print_function
+# Roundup requires Python 3.10+ as mentioned in doc\installation.txt
 import sys
 
-VERSION_NEEDED = (2, 7)
+VERSION_NEEDED = (3, 10)
 
 if sys.version_info < VERSION_NEEDED:
     print("Content-Type: text/plain\n")

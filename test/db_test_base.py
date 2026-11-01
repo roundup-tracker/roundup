@@ -15,7 +15,6 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-from __future__ import print_function
 import unittest, os, shutil, errno, sys, time, pprint, os.path
 
 try:
@@ -27,7 +26,7 @@ except ImportError:
 import logging
 from roundup.anypy.cgi_ import cgi
 from . import gpgmelib
-from email import message_from_string
+from email import message_from_string, message_from_bytes
 
 import pytest
 
@@ -53,7 +52,6 @@ from roundup.mlink_expr import ExpressionError
 
 from roundup.anypy.strings import b2s, bs2b, s2b, u2s
 from roundup.anypy.cmp_ import NoneAndDictComparable
-from roundup.anypy.email_ import message_from_bytes
 
 from roundup.test.mocknull import MockNull
 
@@ -166,6 +164,22 @@ def setupSchema(db, create, module):
 
     db.security.addPermissionToRole("User", v1)
 
+    # testFilteredJournal requires this. Allow age prop access if
+    # db user is accessing own record.
+    def own_record(db, userid, itemid):
+        '''Determine whether the userid matches the item being accessed.'''
+        return userid == itemid
+    
+    v2 = db.security.addPermission(
+        name='View', klass='user', check=own_record,
+        properties=['username', 'supervisor', 'assignable', 'age'],
+        description="Allow viewing of age by own user")
+
+    db.security.addPermissionToRole("User", v2)
+
+    # update testAdminOtherCommands do_security test
+    # if you add permissions
+    
 class MyTestCase(object):
     def tearDown(self):
         if hasattr(self, 'db'):
@@ -779,9 +793,17 @@ class DBTest(commonDBTest):
         self.db.user.set(nid, assignable=None)
         self.assertEqual(self.db.user.get(nid, "assignable"), None)
 
-    # key value
+    @pytest.mark.xfail(reason="Create class w/o key field and no properties is undefined.")
+    def testEmptyCreate(self):
+        # Create a class with no arguments and no key property.
+        # What should hyperdb::Class.create do here?
+        self.assertRaises(ValueError, self.db.stuff.create)
+
     def testKeyValue(self):
-        self.assertRaises(ValueError, self.db.user.create)
+        # Test with key value not set, but another prop set.  This
+        # test gets a ValueError because user class has username as
+        # key prop and that's required.
+        self.assertRaises(ValueError, self.db.user.create, age=33)
 
         newid = self.db.user.create(username="spam")
         self.assertEqual(self.db.user.lookup('spam'), newid)
@@ -1092,7 +1114,7 @@ class DBTest(commonDBTest):
         # but the hyperdb doesn't assign the default value for missing properties in the
         # db on creation.
         result=self.db.issue.get(new_issue, 'foo')
-        # When the defaultis automatically set by the hyperdb, change this to
+        # When the default is automatically set by the hyperdb, change this to
         # match the Interval test below.
         self.assertEqual(result, None)
 
@@ -1147,8 +1169,41 @@ class DBTest(commonDBTest):
         self.db.issue.properties['nosy'].quiet=True
         self.db.issue.properties['deadline'].quiet=True
 
-    def testViewPremJournal(self):
-        pass
+    def testFilteredJournal(self):
+        """Create two new users pete, david. Permissions do not allow
+           access to the user's age prop by any user except admin and
+           the same user.  Change david's age prop. Invoke
+           history/journal as pete, david and admin. Verify age
+           changes are not shown to pete, but are shown in other two
+           cases.
+
+        """
+        
+        new_pete=self.db.user.create(username="pete",
+                                     age=10, roles="User", assignable=False)
+        new_david=self.db.user.create(username="david",
+                                      age=10, roles="User", assignable=False)
+
+        self.db.user.set(new_david, age=20)
+        self.db.commit()
+  
+        self.db.setCurrentUser("pete")
+        journal = self.db.user.history(new_david, skipquiet=False)
+        entry = journal[-1]
+        self.assertIsInstance(entry[4], dict)
+        self.assertNotIn('age', entry[4])
+
+        self.db.setCurrentUser("david")
+        journal = self.db.user.history(new_david, skipquiet=False)
+        entry = journal[-1]
+        self.assertIsInstance(entry[4], dict)
+        self.assertIn('age', entry[4])
+
+        self.db.setCurrentUser("admin") # "1" is admin
+        journal = self.db.user.history(new_david, skipquiet=False)
+        entry = journal[-1]
+        self.assertIsInstance(entry[4], dict)
+        self.assertIn('age', entry[4])
 
     def testQuietJournal(self):
         ## This is an example of how to enable logging module
@@ -3231,6 +3286,9 @@ class DBTest(commonDBTest):
                 for name in klass.getprops().keys():
                     it[name] = klass.get(id, name)
 
+        # record the newid from the original database
+        orig_newid = {cn: self.db.newid(cn) for cn in self.db.classes.keys()}
+        
         os.mkdir('_test_export')
         try:
             # grab the export
@@ -3356,6 +3414,16 @@ class DBTest(commonDBTest):
                 rj.sort(key = NoneAndDictComparable)
                 ae(oj, rj)
 
+        # compare the newid's. The new database must always have
+        # newid that is greater or equal to the old newid. Ideally
+        # they should be equal but there is a latent bug where the restored
+        # newid is 1 or 2 higher than the old one.
+        for classname, newid in orig_newid.items():
+            self.assertGreaterEqual(
+                self.db.newid(classname), newid,
+                msg="When comparing newid values for classname:old_val:"
+                " %s:%s" % (classname, newid))
+
         # make sure the retired items are actually imported
         ae(self.db.user.get('4', 'username'), 'blop')
         ae(self.db.issue.get('2', 'title'), 'issue two')
@@ -3376,6 +3444,10 @@ class DBTest(commonDBTest):
         self.db.config.CSV_FIELD_SIZE = 400
         self.db.commit()
         output = []
+
+        # record the newid from the original database
+        orig_newid = {cn: self.db.newid(cn) for cn in self.db.classes.keys()}
+
         # ugly hack to get stderr output and disable stdout output
         # during regression test. Depends on roundup.admin not using
         # anything but stdout/stderr from sys (which is currently the
@@ -3426,6 +3498,16 @@ class DBTest(commonDBTest):
 
             # verify the data is loaded.
             self.db.user.getnode("5").values()
+
+            # compare the newid's. The new database must always have
+            # newid that is greater or equal to the old newid. Ideally
+            # they should be equal but there is a latent bug where the restored
+            # newid is 1 or 2 higher than the old one.
+            for classname, newid in orig_newid.items():
+                self.assertGreaterEqual(
+                    self.db.newid(classname), newid,
+                    msg="When comparing newid values for "
+                    "classname:old_val: %s:%s" % (classname, newid))
         finally:
             roundup.admin.sys = sys
             shutil.rmtree('_test_export')
@@ -3539,7 +3621,8 @@ class DBTest(commonDBTest):
                           ' User may access the xmlrpc interface (Xmlrpc Access)\n',
                           'Role "anonymous":\n', 'Role "user":\n',
                           ' User is allowed to access msg (View for "msg" only)\n',
-                          ' Prevent users from seeing roles (View for "user": [\'username\', \'supervisor\', \'assignable\'] only)\n']
+                          ' Prevent users from seeing roles (View for "user": [\'username\', \'supervisor\', \'assignable\'] only)\n',
+                         ' Allow viewing of age by own user (View for "user": [\'username\', \'supervisor\', \'assignable\', \'age\'] only)\n']
 
             self.assertEqual(soutput, expected)
 

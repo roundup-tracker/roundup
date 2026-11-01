@@ -92,7 +92,6 @@ are calling the create() method to create a new node). If an auditor raises
 an exception, the original message is bounced back to the sender with the
 explanatory message given in the exception.
 """
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import base64
@@ -122,12 +121,13 @@ import roundup.anypy.random_ as random_
 import roundup.anypy.ssl_ as ssl_
 
 from roundup import configuration, date,  exceptions, hyperdb, i18n, password
-from roundup.anypy.email_ import decode_header, message_from_bytes, \
-    message_from_binary_file
+from email import  message_from_bytes, message_from_binary_file
+from email.header import decode_header
 from roundup.anypy.my_input import my_input
 from roundup.anypy.strings import StringIO, b2s, u2s
 from roundup.hyperdb import iter_roles
 from roundup.i18n import _
+from roundup.logcontext import gen_trace_id, store_trace_reason
 from roundup.mailer import Mailer
 from roundup.dehtml import dehtml
 
@@ -1646,6 +1646,10 @@ The mail gateway is not properly set up. Please contact
         return self.handle_Message(message_from_binary_file(fp,
                                                             RoundupMessage))
 
+    @gen_trace_id()
+    @store_trace_reason("mailgw",
+                    extract="args[1].get_header('message-id', 'no_message_id')"
+    )
     def handle_Message(self, message):
         """Handle an RFC822 Message
 

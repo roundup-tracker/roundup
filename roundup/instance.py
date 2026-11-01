@@ -28,24 +28,16 @@ described in `roundup.hyperdb.Database`.
 """
 __docformat__ = 'restructuredtext'
 
-try:
-    import builtins
-except ImportError:
-    import __builtin__ as builtins
-
-try:
-    from collections.abc import Callable
-except ImportError:
-    from collections import Callable
-
+import builtins
+import inspect
 import os
 import sys
 
-from roundup import configuration, mailgw
-from roundup import hyperdb, backends, actions
-from roundup.anypy import scandir_
-from roundup.cgi import client, templating
+from typing import Callable
+
+from roundup import actions, backends, configuration, hyperdb, mailgw
 from roundup.cgi import actions as cgi_actions
+from roundup.cgi import client, templating
 from roundup.exceptions import RoundupException
 
 
@@ -66,9 +58,10 @@ class Tracker:
         self.actions = {}
         self.cgi_actions = {}
         self.templating_utils = {}
+        self.templating_util_methods = {}
 
         libdir = os.path.join(self.tracker_home, 'lib')
-        self.libdir = os.path.isdir(libdir) and libdir or ''
+        self.libdir = (os.path.isdir(libdir) and libdir) or ''
 
         self.load_interfaces()
         self.templates = templating.get_loader(self.config["TEMPLATES"],
@@ -121,10 +114,24 @@ class Tracker:
         else:
             # execute the schema file
             self._execfile('schema.py', env)
+            # delete template util extensions prior to reload
+            # otherwise we have a conflict
+            self.templating_utils = {}
+            self.templating_util_methods = {}
             # reload extensions and detectors
-            for extension in self.get_extensions('extensions'):
-                extension(self)
+            try:
+                for extension in self.get_extensions('extensions'):
+                    extension(self)
+            except ValueError:
+                # We have duplicate TemplatingUtils extensions
+                # defined. Using anydbm backend locks the Database
+                # when opening. Close/unlock the db to allow testing
+                # duplicate utilities to continue.
+                env['db'].close()
+                raise
+
             detectors = self.get_extensions('detectors')
+
         db = env['db']
         db.tx_Source = None
         # Useful for script when multiple open calls happen. Scripts have
@@ -190,13 +197,23 @@ class Tracker:
         dirpath = os.path.join(self.tracker_home, dirname)
         if os.path.isdir(dirpath):
             sys.path.insert(1, dirpath)
-            for dir_entry in os.scandir(dirpath):
-                name = dir_entry.name
-                if not name.endswith('.py'):
-                    continue
-                env = {}
-                self._execfile(os.path.join(dirname, name), env)
-                extensions.append(env['init'])
+            with os.scandir(dirpath) as ext_dir:
+                for dir_entry in ext_dir:
+                    name = dir_entry.name
+                    if not name.endswith('.py'):
+                        continue
+                    env = {}  # reset to empty every cycle
+                    try:
+                        self._execfile(os.path.join(dirname, name), env)
+                    except ImportError as e:
+                        raise TrackerError(
+                            "%(exception)s found when loading tracker extension: %(name)s" % {
+                                "exception": e, "name": os.path.join(dirname, name)})
+                    try:
+                        extensions.append(env['init'])
+                    except KeyError:
+                        raise TrackerError("Missing init() function in "
+                                           f"{os.path.join(dirpath, name)}.")
             sys.path.remove(dirpath)
         return extensions
 
@@ -247,7 +264,38 @@ class Tracker:
         else:
             self.cgi_actions[name] = action
 
-    def registerUtil(self, name, function):
+    def _util_is_registered_at(self, name: str) -> dict:
+        """Return location as dict if name is registered
+           as a templating utility
+        """
+        if name in self.templating_utils:
+            registered_at = self.templating_utils[name]._registered_at
+        elif name in self.templating_util_methods:
+            registered_at = self.templating_util_methods[name]._registered_at
+        else:
+            return {}
+
+        # return info with unique names needed by error string.
+        return {"registered_filename": registered_at[0],
+                "registered_lineno": registered_at[1]}
+
+    @staticmethod
+    def _called_from(depth: int = 1) -> dict:
+        """Return location where caller of this function is called
+
+           Returns {"filename": str, "lineno": int}. Where location is
+           my caller's caller (stack depth 1 from caller and stack
+           depth 2 from this function).
+
+           Used to label location where utility registration is
+           triggered when reporting errors.
+        """
+
+        caller = inspect.stack()[depth + 1]
+        return {"filename": caller.filename,
+                "lineno": caller.lineno}
+
+    def registerUtil(self, name: str, function: Callable):
         """Register a function that can be called using:
            `utils.<name>(...)`.
 
@@ -255,31 +303,110 @@ class Tracker:
 
                def function(...):
 
-           If you need access to the client, database, form or other
-           item, you have to pass it explicitly::
+           The name parameter must be unique among all registered
+           utils. That is enforced when registering.
+
+           The registered function is annotated with a tuple
+           (filename, lineno) where it it was registered in case of
+           name collisions.
+
+           If your templating utility needs access to the client,
+           database, form or other item, you have to pass it
+           explicitly::
 
                utils.name(request.client, ...)
 
-           If you need client access, consider using registerUtilMethod()
-           instead.
-
+           Or you can consider using registerUtilMethod(self, ....),
+           Where self is an automatically supplied TemplatingUtils
+           instance.
         """
+
+        # get location of registration call.
+        register_location = self._called_from()
+
+        # prevent overriding of key TemplatingUtil methods/vars.
+        if name.startswith('_') or name == "client":
+            raise ValueError(
+                "Can't define template utility named '%(name)s' at:\n"
+                "   %(filename)s:%(lineno)d\n"
+                "   Utility method names must not start with '_' or "
+                " be called client.\n"
+                % {**register_location, "name": name})
+
+        # Look for name conflicts.
+        conflict_loc = self._util_is_registered_at(name)
+
+        if conflict_loc:
+            raise ValueError(
+                "A template utility named '%(name)s' already exists.\n"
+                "It was registered at:\n"
+                "     %(registered_filename)s:%(registered_lineno)d\n"
+                "Conflicting definition registered at:\n"
+                "   %(filename)s:%(lineno)d\n"
+                % {**register_location, "name": name, **conflict_loc})
+
         self.templating_utils[name] = function
+        if hasattr(function, "__self__"):
+            # Handle case where function is an instance method.  Which
+            # is a R/O bound method of a class. Can't attach attribute
+            # to the method, so attach to underlying function.
+            #
+            # This will also be executed for a classmethod, don't know
+            # if classmethod will work properly as templateutil or not.
+            self.templating_utils[name].__func__._registered_at = (
+                register_location['filename'], register_location['lineno'])
+        else:
+            self.templating_utils[name]._registered_at = (
+                register_location['filename'], register_location['lineno'])
 
-    def registerUtilMethod(self, name, function):
-        """Register a method that can be called using:
-           `utils.<name>(...)`.
+    def registerUtilMethod(self, name: str, function: Callable):
+        """Register a method that cal be called as:
+           `utils.<name>(an_arg, ...)`.
 
-           Unlike registerUtil, the method is defined as:
+           Unlike registerUtil, the method signature is defined as:
 
                def function(self, ...):
 
-           `self` is a TemplatingUtils object. You can use self.client
-           to access the client object for your request.
+           where `self` is a TemplatingUtils object. You can use
+           self.client to access the client object for your request.
+
+           The name parameter must be unique among all registered
+           utils. That is enforced when registering.
+
+           The registered function is annotated with a tuple
+           (filename, lineno) where it it was registered in case of
+           name collisions.
+
         """
-        setattr(self.TemplatingUtils,
-                name, 
-                function)
+
+        # get location of registration call.
+        register_location = self._called_from()
+
+        # prevent overriding of key TemplatingUtil methods/vars.
+        if name.startswith('_') or name == "client":
+            raise ValueError(
+                "Can't define template utility method named '%(name)s' at:\n"
+                "   %(filename)s:%(lineno)d\n"
+                "   Utility method names must not start with '_' or "
+                " be called client.\n"
+                % {**register_location, "name": name})
+
+        # Look for name conflicts.
+        conflict = self._util_is_registered_at(name)
+
+        if conflict:
+            raise ValueError(
+                "A template utility named '%(name)s' already exists.\n"
+                "It was registered at:\n"
+                "     %(registered_filename)s:%(registered_lineno)d\n"
+                "Conflicting definition registered at:\n"
+                "   %(filename)s:%(lineno)d\n"
+                % {**register_location, "name": name, **conflict})
+
+        self.templating_util_methods[name] = function
+        self.templating_util_methods[name]._registered_at = (
+            register_location['filename'], register_location['lineno'])
+
 
 class TrackerError(RoundupException):
     pass

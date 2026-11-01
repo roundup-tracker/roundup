@@ -14,7 +14,7 @@
  and request.user.hasRole('Anonymous')"
  i18n:translate="">Please login with your username and password.</span>
 
-<form tal:condition="context/is_view_ok" method="get" name="itemSynopsis"
+<form tal:condition="context/is_view_ok" method="POST" name="itemSynopsis"
       tal:attributes="action request/classname">
 
 <table class="form" tal:define="
@@ -40,6 +40,8 @@
 
 </table>
    <input type="hidden" name="@action" value="search"/>
+   <input name="@csrf" type="hidden"
+          tal:attributes="value python:utils.anti_csrf_nonce()">
 </form>
 
 <table width="100%" tal:condition="context/is_view_ok" class="list"

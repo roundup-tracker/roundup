@@ -43,9 +43,10 @@ class UserAuditorTest(unittest.TestCase):
 
         userid = self.db.user.lookup('kyle')
 
-        # TODO: roundup should accept non-integer offsets since those are valid
-        # this is the offset for Tehran, Iran
-        #self.db.user.set(userid, timezone='3.5')
+        # Check non-integer offsets since those are valid
+        # +3.5 is the offset for Tehran, Iran
+        self.db.user.set(userid, timezone='3.5')
+        self.db.user.set(userid, timezone='-3.5')
 
         self.db.user.set(userid, timezone='-23')
         self.db.user.set(userid, timezone='23')
@@ -81,6 +82,10 @@ class UserAuditorTest(unittest.TestCase):
         self.assertRaises(ValueError, self.db.user.set, uid, address='kenny@example.com')
         self.assertRaises(ValueError, self.db.user.set, uid, address='sp_ken@example.com')
         self.assertRaises(ValueError, self.db.user.set, uid, alternate_addresses='kenny@example.com')
+
+        # substrings of existing alternates should be allowed, but not exact matches
+        self.db.user.set(uid, alternate_addresses='p_ken@example.com')
+        self.assertRaises(ValueError, self.db.user.set, uid, alternate_addresses='sp_ken@example.com')
 
     def testBadRoles(self):
         userid = self.db.user.lookup('kyle')

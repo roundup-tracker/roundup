@@ -43,7 +43,17 @@ jobs:
     # use below if running on multiple OS's.
     runs-on: ${{ matrix.os }}
 
+    # job should complete end to end in under 30 minutes. Usually
+    # under 15.
+    timeout-minutes: 30
+    
     if: "!contains(github.event.head_commit.message, 'no-github-ci')"
+
+    # run the finalizer for coveralls even if one or more
+    # experimental matrix runs fail.
+    # moving it above strategy produces unexpected value false
+    # moving it below (here) produces unexpected value ''.
+    continue-on-error: ${{ matrix.experimental }}
 
     strategy:
       fail-fast: false
@@ -52,18 +62,14 @@ jobs:
         # Run in all these versions of Python
         python-version:
           # - "2.7"
+          - "3.14"
+          - "3.14t"
           - "3.13"
-          # - 3.6 run via include on ubuntu 20.04
-          # - "3.7"
-          # - "3.8" run via include for ubuntu-22.04
-          # - "3.9"
-          - "3.10"
-          # - "3.11"
           - "3.12"
+          - "3.10"
 
         # use for multiple os or ubuntu versions
         #os: [ubuntu-latest, macos-latest, windows-latest]
-        # ubuntu latest 22.04 12/2022
         # ubuntu latest 24.04 12/2024
         os: [ubuntu-latest]
 
@@ -74,33 +80,21 @@ jobs:
             # example: if this version fails the jobs still succeeds
             # allow-prereleases in setup-python allows alpha/beta
             # releases to run. Also allow free threaded python testing
-            - python-version: 3.13t
+            - python-version: 3.15-dev
               os: ubuntu-24.04
               experimental: true
-            
-            # 3.7 not available on new 22.04 runners, so run on 22.04 ubuntu
-            - python-version: 3.7
-              os: ubuntu-22.04
-
-            # 3.8 not available on new 24.04 runners, so run on 22.04 ubuntu
-            - python-version: 3.8
-              os: ubuntu-22.04
+            - python-version: 3.15t-dev
+              os: ubuntu-24.04
+              experimental: true          
 
         #exclude:
             # skip all python versions on explicit 20.04/24.04 unless
             # explicitly included
-            #- os: ubuntu-20.04
             #- os: ubuntu-24.04
 
             # disable when testing ubuntu-24.04 to speed up
             # runs.
             # - os: ubuntu-latest
-
-    # run the finalizer for coveralls even if one or more
-    # experimental matrix runs fail.
-    # moving it above strategy produces unexpected value false
-    # moving it below (here) produces unexpected value ''.
-    # continue-on-error: ${{ matrix.experimental }}
 
     env:
       # get colorized pytest output even without a controlling tty
@@ -116,11 +110,13 @@ jobs:
         # if: {{ false }}
           # continue running if step fails
         # continue-on-error: true
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Setup version of Python to use
       - name: Set Up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
@@ -140,22 +136,24 @@ jobs:
       # from:
       # https://hugovk.dev/blog/2025/free-threaded-python-on-github-actions/
       - name: Set PYTHON_GIL when freethreaded
-        if: endsWith(matrix.python-version, 't')
+        if: contains(matrix.python-version, 't')
         run: |
           echo "PYTHON_GIL=0" >> "$GITHUB_ENV"
       - name: Update pip
         run: python -m pip install --upgrade pip
 
-      # note pytest-env is not needed for redis password as there is
-      # no password on CI's redis.
+      # note pytest-env is not required for redis password as there is
+      # no password on CI's redis. But pytest logs a warning if it's
+      # missing. pytest-subtests isn't needed with
+      # pytest 9.0.0+, but 9.0 only supports 3.10+ so include for 3.7+.
       - name: Install pytest and other packages needed for running tests
-        run: pip install flake8 hypothesis mock pytest pytest-cov requests sphinx-tabs
+        run: pip install flake8 hypothesis mock pytest pytest-cov pytest-env pytest-subtests requests sphinx-tabs
 
       # https://github.com/mxschmitt/action-tmate
       # allow remote ssh into the CI container. I need this to debug
       # some xfail cases 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@35b54afac29c97fb54faba5b513f8fbd1882f113 # v3.24
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         timeout-minutes: 10
         with:
@@ -228,7 +226,7 @@ jobs:
       # allow remote ssh into the CI container. I need this to debug
       # some xfail cases 
       - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@35b54afac29c97fb54faba5b513f8fbd1882f113 # v3.24
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
         timeout-minutes: 10
         with:
@@ -240,25 +238,24 @@ jobs:
           # pygments for markdown2 to highlight code blocks
           pip install markdown2 pygments
           # docutils for ReStructuredText
-          pip install beautifulsoup4 brotli docutils jinja2 \
+          pip install beautifulsoup4 docutils gpg jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
-          # gpg on PyPi is currently broken with newer OS platform
-          #   ubuntu 24.04
-          # used for newer Python versions. Temporarily use the
-          # testing index, which contains a newer version of the
-          # bindings on 24.04 or released version for other OS
-          # versions. See issue2551368. 'pip install gpg' should work
-          # at some point when things are released to the production repo.
-          pip install --index-url https://test.pypi.org/simple/ \
-                --extra-index-url https://pypi.org/simple gpg;
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
         run: |
           set -xv
           pip install zstd || true
+          # justhtml supports python 3.10 or newer according to pypi
+          # page, but will install on 3.8 (and maybe 3.9) but formats
+          # differently. So skip install if before 3.10.
+          if echo $PYTHON_VERSION | grep '^3\...'; then
+              pip install justhtml || true; fi
           if [[ "$PYTHON_VERSION" != "2."* ]]; then 
               pip install Markdown; fi
+          # brotli is not free threading safe.
+          if ! echo "$PYTHON_VERSION" | grep '3.15t' > /dev/null; then
+              pip install brotli; fi
 
       - name: Install xapian
         run: |
@@ -311,7 +308,7 @@ jobs:
               -W "ignore:'U' mode::docutils.io"  \
               -W "ignore:unclosed:ResourceWarning:roundup.roundup.demo" \
               -W "ignore:unclosed file:ResourceWarning:enum" \
-              -v  test/ --cov=roundup
+              -v test/ --cov=roundup
               coverage lcov
           else
             # python2 case
@@ -323,7 +320,7 @@ jobs:
         
       - name: Upload coverage to Codecov
         # see: https://github.com/codecov/codecov-action#usage
-        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -331,7 +328,7 @@ jobs:
       - name: Upload coverage to Coveralls
         # python 2.7 and 3.6 versions of coverage can't produce lcov files.
         if: matrix.python-version != '2.7' && matrix.python-version != '3.6'
-        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage.lcov
@@ -357,17 +354,18 @@ jobs:
       - name: run benchmarks
         if: "contains(github.event.head_commit.message, 'benchmark')"        
         run: INCI=1 python test/benchmark.py
-        
+
   # in parallel build coveralls requires a finish step
   finish:
+    name: finish coveralls step
     needs: test
     runs-on: ubuntu-latest
 
     if: "!contains(github.event.head_commit.message, 'no-github-ci')"
-    
+
     steps:
       - name: Coveralls Finished
-        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true

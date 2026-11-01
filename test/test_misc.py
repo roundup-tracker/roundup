@@ -1,17 +1,20 @@
 # misc tests
 
+import os
 import pytest
 import re
+import shutil
 import sys
 import time
 import unittest
 
 import roundup.anypy.cmp_
+import roundup.pygettext
 
+from roundup import install_util
 from roundup.anypy.strings import StringIO  # define StringIO
 from roundup.cgi import cgitb
 from roundup.cgi.accept_language import parse
-
 from roundup.support import PrioList, Progress, TruthDict
 
 
@@ -43,6 +46,108 @@ class CmpTest(unittest.TestCase):
     def testCmp(self):
         roundup.anypy.cmp_._test()
 
+class PyGetText(unittest.TestCase):
+    """Warning capsys is used for these tests, print()
+       can break the tests.
+
+       clear print() output by readouterr() after any screen output.
+    """
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, capsys):
+        self._capsys = capsys
+
+    def test_main(self):
+        """print without _capsys.disabled() will break tests"""
+
+
+        with self.assertRaises(SystemExit) as e:
+            roundup.pygettext.main(["--version"])
+
+        out, err = self._capsys.readouterr()
+        self.assertEqual("pygettext.py (xgettext for Python) 1.5\n", out)
+
+        ## error run
+        with self.assertRaises(SystemExit) as e:
+            roundup.pygettext.main(["-x" "excludes.txt",
+                                    "roundup/pygettext.py"])
+            out, err = self._capsys.readouterr()
+            self.assertIn("Can't read --exclude-file", err)
+
+
+        ##### normal run with foo() as alternate name for _
+        roundup.pygettext.main(["--output", "-", "-k", "foo",
+                                "roundup/pygettext.py"])
+
+        out, err = self._capsys.readouterr()
+        #with self._capsys.disabled():
+        #    print(f'{out}\n\n{err=}\n')
+        self.assertIn('unexpected token "%"', err)
+        self.assertIn(r"MIME-Version: 1.0\n", out)
+        
+        # all test strings not for production
+        self.assertIn(r'"###morethanonestring"', out)
+        self.assertIn(r"a unicode string", out)
+        self.assertIn("alistofwords", out)
+        self.assertIn("docstring by quotes", out)
+        self.assertIn("non docstring by quotes", out)
+        self.assertIn("concat me only", out)
+        # not running with -c .hint
+        self.assertNotIn("#, don't do this", out)
+
+        ##### normal run with hint and not foo()
+        roundup.pygettext.main(["--output", "-", "-c", ".hint",
+                                "roundup/pygettext.py"])
+
+        out, err = self._capsys.readouterr()
+        self.assertIn("unexpected token \"%\"", err)
+        self.assertIn(r"MIME-Version: 1.0\n", out)
+
+        # all test strings not for production
+        self.assertIn('"###morethanonestring"', out)
+        self.assertIn("a unicode string", out)
+        self.assertNotIn("alistofwords", out)
+        self.assertIn("docstring by quotes", out)
+        self.assertIn("non docstring by quotes", out)
+        self.assertIn("concat me only", out)
+        self.assertIn("#, extract non docstring", out)
+        self.assertIn("#, hint don't do this", out)
+
+class InstallUtils(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        try:
+            os.mkdir("__install_util")
+        except FileExistsError as e:
+            shutil.rmtree('__install_util')
+            os.mkdir("__install_util")  # if this fails exit with exception
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree('__install_util')
+    
+    def test_install_util(self):
+        #use install_util.py for the test
+        testfile = install_util.test.__code__.co_filename
+        
+        install_util.test(testfile)
+            
+    def test_copyDigestedFile(self):
+        #use install_util.py for the test
+        testfile = install_util.test.__code__.co_filename
+        install_util.copyDigestedFile(testfile, "__install_util" )
+
+        digested_file = '__install_util/install_util.py'
+        self.assertTrue(os.path.isfile(digested_file))
+
+        with open(digested_file) as df:
+            contents = df.readlines()
+
+        last_line = contents[-1]
+        self.assertIn("#SHA:", last_line)
+
+    def test_Check_digest_file_without_digest(self):
+        testfile = install_util.test.__code__.co_filename
+        self.assertEqual(install_util.checkDigest(testfile), 0)
 
 class PrioListTest(unittest.TestCase):
     def testPL(self):
@@ -104,9 +209,10 @@ class TruthDictTest(unittest.TestCase):
 class VersionCheck(unittest.TestCase):
     def test_Version_Check(self):
 
+        min_version = 10
         # test for valid versions
         from roundup.version_check import VERSION_NEEDED
-        self.assertEqual((2, 7), VERSION_NEEDED)
+        self.assertEqual((3, min_version), VERSION_NEEDED)
         del(sys.modules['roundup.version_check'])
 
 
@@ -124,7 +230,7 @@ class VersionCheck(unittest.TestCase):
         sys.stdout = capturedOutput
         from roundup.version_check import VERSION_NEEDED
         sys.stdout = sys.__stdout__
-        self.assertIn("Roundup requires Python 2.7", capturedOutput.getvalue())
+        self.assertIn("Roundup requires Python 3.%s" % min_version, capturedOutput.getvalue())
 
         # reset to valid values for future tests
         sys.exit = real_exit

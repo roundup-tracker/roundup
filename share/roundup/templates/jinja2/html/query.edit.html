@@ -93,7 +93,7 @@ function post_to_url(path, params, method) {
 {% for query in queries %}
 <tr>
   <td>
-    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}">{{ query.name.plain() }}</a>
+    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}&@dispname={{ query.name.url_quote()|u }}">{{ query.name.plain() }}</a>
   </td>
 
   {{ include_query(query) }}

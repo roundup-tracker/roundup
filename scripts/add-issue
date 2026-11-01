@@ -8,7 +8,6 @@ created as the current user (%s) if they exist as a Roundup
 user, or "admin" otherwise.
 '''
 
-from __future__ import print_function
 import sys, os, pwd
 
 from roundup import instance, mailgw, date

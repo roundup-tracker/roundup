@@ -35,8 +35,15 @@ except ImportError:
     skip_beautifulsoup = mark_class(pytest.mark.skip(
         reason="Skipping beautifulsoup tests: 'bs4' not installed"))
 
+try:
+    import justhtml
+    skip_justhtml = lambda func, *args, **kwargs: func
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_justhtml = mark_class(pytest.mark.skip(
+        reason="Skipping justhtml tests: 'justhtml' not installed"))
 
-from roundup.anypy.email_ import message_from_bytes
+from email import message_from_bytes
 from roundup.anypy.strings import b2s, u2s, s2b
 from roundup.scripts.roundup_mailgw import parse_arguments
 
@@ -52,12 +59,6 @@ from roundup import init, instance, password, __version__
 #import db_test_base
 from roundup.test import memorydb
 from .cmp_helper import StringFragmentCmpHelper
-
-def expectedFailure(method):
-    """ For marking a failing test.
-        This will *not* run the test and return success instead.
-    """
-    return lambda x: 0
 
 
 def get_body(message):
@@ -315,6 +316,10 @@ class MailgwTestCase(MailgwTestAbstractBase, StringFragmentCmpHelper, unittest.T
     def testTextHtmlMessageBeautifulSoup(self):
         self.testTextHtmlMessage(converter='beautifulsoup')
 
+    @skip_justhtml
+    def testTextHtmlMessageJusthtml(self):
+        self.testTextHtmlMessage(converter='justhtml')
+        
     def testTextHtmlMessage(self, converter='dehtml'):
         html_message='''Content-Type: text/html;
   charset="iso-8859-1"
@@ -375,10 +380,15 @@ have to install the win32all package separately (get it from
         text_fragments['dehtml'] = ['Roundup\n        Home\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\n\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\n\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\n\nIf you', (u2s(u'\u2019'), ''), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you', (u2s(u'\u2019'), ''), 'll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).']
         text_fragments['beautifulsoup'] = ['Roundup\nHome\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from\nhttp://www.python.org/\n.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\nIf you', (u2s(u'\u2019'), "'"), 're on windows, you will either need to be using the ActiveState python\ndistribution (at\nhttp://www.activestate.com/Products/ActivePython/\n), or you’ll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/\n).']
 
+        text_fragments['justhtml'] = ['Roundup\nHome\nDownload\nDocs\nRoundup Features\nInstalling Roundup\nUpgrading to newer versions of Roundup\nRoundup FAQ\nUser Guide\nCustomising Roundup\nAdministration Guide\nPrerequisites\nRoundup requires Python 2.6 or newer (but not Python 3) with a functioning\nanydbm module. Download the latest version from http://www.python.org/.\nIt is highly recommended that users install the latest patch version\nof python as these contain many fixes to serious bugs.\nSome variants of Linux will need an additional ', ('python dev', u2s(u'\u201cpython dev\u201d')), ' package\ninstalled for Roundup installation to work. Debian and derivatives, are\nknown to require this.\nIf you', (u2s(u'\u2019'), "'"), 're on windows, you will either need to be using the ActiveState python\ndistribution (at http://www.activestate.com/Products/ActivePython/), or you’ll\nhave to install the win32all package separately (get it from\nhttp://starship.python.net/crew/mhammond/win32/).']
+        self.maxDiff = 100000
         self.db.config.MAILGW_CONVERT_HTMLTOTEXT = converter
         nodeid = self._handle_mail(html_message)
         assert not os.path.exists(SENDMAILDEBUG)
         msgid = self.db.issue.get(nodeid, 'messages')[0]
+        print(self.db.msg.get(msgid, 'content'))
+        print("\n==== fragment\n")
+        print(text_fragments[converter])
         self.compareStringFragments(self.db.msg.get(msgid, 'content'),
                                     text_fragments[converter])
 
@@ -3690,7 +3700,7 @@ sig
 
     # This fails because the sig isn't removed (we currently remove the
     # sig only if the delimiter is the first line in a section)
-    @expectedFailure
+    @pytest.mark.xfail(reason="OK: sig not removed - delim not first section line")
     def testEmailQuotingRemove3(self):
         self.instance.config.EMAIL_KEEP_QUOTED_TEXT = 'yes'
         self.innerTestQuoting(self.thirdquotingtest,

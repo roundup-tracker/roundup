@@ -7,102 +7,95 @@ Roundup has three web sites:
 www is hosted on SourceForge, issues is hosted on a python software
 foundation host and wiki is hosted at waldman-edv.
 
-updating services hosted on sf.net (www)
+Updating services hosted on sf.net (www)
 =================================================
+
 Generic SF instructions for web service recommend
 uploading files through SFTP, described here:
 http://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
 
-However, SFTP is ugly to script in non-interactive
-mode, so we use SSH access to fetch everything and
-build from server side.
+Since SFTP is ugly to script in non-interactive mode, we used to use
+SSH access to fetch everything and build from server side.
 
-Working with sf.net
--------------------
-Current docs are taken down with SourceForge Trac,
-so working instructions are available from here:
-http://web.archive.org/web/20140618231150/http://sourceforge.net/apps/trac/sourceforge/wiki/Shell%20service
+As of June 30, 2026, soureforce no longer allows interactive shell
+sessions. So you need to build locally and transfer the built files.
 
-    # log in, replace <user> with your account
-    ssh -t <user>,roundup@shell.sourceforge.net create
+I added some scripted rsync commands to www/Makefile to
+automate install of the html subdir to sourceforge.
 
-    # set project_home
-    project_home=/home/project-web/roundup
+  sourceforge_dev_sync  sync html directory to sourceforce htdocs/dev_docs
+     subdir
 
-    # pull latest Roundup source with www and wiki
-    hg pull -u --cwd ${project_home}/src/roundup
-    # see below if this fails with: not trusting file
-      # /home/project-web/roundup/src/roundup/.hg/hgrc from untrusted
-      # user 110231, group 48
+  sourceforge_prod_sync  sync html directory to sourceforce production
+     website
 
-    # read up on other people changes and add yours
-    cd ${project_home}
-    vim logbuch.txt
+  sourceforge_prod_pull  sync sourceforce production website to local
+     web_html
 
-[ Note: all the files in the project home except htdocs that make up
-  the website were gone. I created a new logbuch.txt file. We need to
-  build the docs outside the sourceforge envirnment and rsync them in
-  as there is no longer a working sphinx environment. ]
+  sourceforge_home_sync  sync html directory to
+    sourceforge:~/roundup_docs
 
-If you get a "not trusting" error the problem is that the .hg files in
-use are not owned by you and hg won't use them. Add this to your
-~/.hgrc file (create file if needed)
+These commands should preserve the file htdocs/ahref*. If you move the
+current htdocs/ directory using sftp (and then create a new empty
+htdocs), you need to copy the ahref* file from the current production
+tree to the new directory so we keep some level of analytics.
 
-[trusted]
-groups=48
-users=110231
+Note that sourceforge_prod_sync should create a backup for each
+original file in a dated docs_backup-<date>. So should be able to
+recover the website by:
 
-if the uid/gid changes you may have to change the values.
-See: https://www.mercurial-scm.org/wiki/Trust for details
+  * run `make sourceforge_prod_pull`
+  * in the web_html subdirectory, move the files from the
+    docs_backup-.... subdir to ther place in web_html
+  * replace the www/html directory with www/web_html
+  * run make sourceforge_prod_sync
 
-When done working in the sf shell, you can destroy it early
-to free resources:
+Reverting a sync over SFTP is painful, hence the workflow to copy it
+back to your local host.
 
-    shutdown
+If you need to do the changes on the sourceforge site, I suggest using
+the lftp program with the 'sftp://yourUsername@web.sourceforge.net'
+rather than the sftp program as lftp supports recursive directory
+removal and other useful features.
 
-updating www.roundup-tracker.org
----------------------------------
-Note that sourceforge still only has python2 available on it's
-systems. Doc updates probably need to be done by building on local
-machine using modern Sphinx (7.x or greater) and the generated files
-pushed to the website.
+Updating the Documentation
+--------------------------
 
-Also the files htdocs/ahref* and htdocs/google* have to be copied from
-the current production tree to the new directory so we keep some level
-of analytics.
+Site update requires rebuilding HTML files. For that `sphinx` version
+8 or newer is required. You can use the website/www/requirements.pip
+file to set up sphinx: `python -m pip install -r requirements.pip` in
+a venv. If you install sphinx into a virtual environment, use:
 
------
+  PATH=/path/to/venv/bin/sphinx-build:$PATH make
 
-Site update requires rebuilding HTML files. For that
-`sphinx` is required/
-Hopefully, it is already installed into virtualenv, so
-the whole procedure looks like so:
+when `make` is used below. Also you should run make in the doc
+directory beforehand to generate html pages used by the website build
+(e.g. man pages, config.ini documentation...).
 
-    # activate the virtualenv
-    . ${project_home}/docbuilder/bin/activate
-    # cd to website source and build it
-    cd ${project_home}/src/roundup/website/www
+The whole procedure starting from the root of a current checked out
+source tree looks like so:
+
     hg up <release tag>  # make sure you are using the released code
+    cd doc
+    make clean
+    make
+    # cd to website source and build it
+    cd ../website/www
     make clean
     make html
     # you can check which files updated (the date will change with many files)
-    #diff -ur --brief ${project_home}/htdocs/ ./html/
+    #make sourceforge_prod_pull
+    #diff -ur --brief web_html ./html/
     # copy to website dir
-    cp -r -p ./html/* ${project_home}/htdocs/
-    # copy legacy html doc to website docs/ dir
-    # (in main doc/conf.py this is done automatically)
-    cp -r -p ../../doc/html_extra/* ${project_home}/htdocs/docs/
-    # or try it with rsync (skip --dry-run when ready)
-    #rsync --dry-run -v --checksum --recursive ./html/* ${project_home}/htdocs/
+    make sourceforge_prod_sync
 
+If you are generating the docs for an alpha/beta release, use
 
-If you are releasing an alpha/beta release, don't update:
+  make sourceforge_dev_sync
 
- ${project_home}/htdocs/docs/
+instead of `make sourceforge_prod_sync` to update:
 
-instead update:
-
-  ${project_home}/htdocs/dev-docs/
+  htdocs/dev-docs/
 
 and the URL will be: https://www.roundup-tracker.org/dev-docs/docs.html
 
@@ -111,7 +104,7 @@ need to use:
 
   https://www.roundup-tracker.org/dev-docs/docs.html?foo=1
 
-to cache bust.
+to cache bust if you do multiple deploys and are seeing an older version.
 
 Updating issues.roundup-tracker.org
 ===================================
@@ -145,7 +138,8 @@ The one used by PSF infrastrcuture is:
 
    https://github.com/psf/bpo-tracker-roundup
 
-Contact ee-durbin (or psf infra) for an invite to their repo.
+Contact psf infra https://infra.psf.io/overview.html (email:
+infrastructure-staff at python dot org) for an invite to their repo.
 
 Usually testing is done with: the "website/issues" section
 of Roundup's Mercurical SCM repository and copied manually to the live
@@ -217,5 +211,5 @@ Thomas Waldman is also our DNS manager. All changes should go to him
 at email: info AT waldmann-edv DOT de.
 
 Richard Jones still owns/pays for the roundup-tracker.org domain.
-It expires on: 2026-01-06T10:49:58Z.
+It expires on: 2027-01-06T10:49:58Z.
 

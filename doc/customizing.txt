@@ -897,7 +897,7 @@ need to override the standard ``verifyPassword`` method defined in
 following is added as ``externalpassword.py`` in the tracker ``extensions``
 directory::
 
-    import os, crypt
+    import os, crypt, hmac
     from roundup.cgi.actions import LoginAction    
 
     class ExternalPasswordLoginAction(LoginAction):
@@ -916,7 +916,11 @@ directory::
             for ent in [line.strip().split(':') for line in
                                                 open(file).readlines()]:
                 if ent[0] == username:
-                    return crypt.crypt(password, ent[1][:2]) == ent[1]
+		    # use hmac.compare_digest to foil timing attacks
+	            # with python 3.7+
+                    return hmac.compare_digest(
+		        crypt.crypt(password, ent[1][:2]),
+			ent[1])
 
             # user doesn't exist in the file
             return 0
@@ -1702,10 +1706,11 @@ arrives by email. Since it runs after other auditors (due to the
 priority of 110), it will also prevent changes to the nosy field that
 are done by other auditors if triggered by an email.
 
-Note that db.tx_Source was not present in roundup versions before
-1.4.22, so you must be running a newer version to use this detector.
-Read the CHANGES.txt document in the roundup source code for further
-details on tx_Source.
+Note that ``db.tx_Source`` was not a valid attribute before
+Roundup versions 1.4.22, so you must be running a newer version to
+use this detector.  More details on :term:`tx_Source can be found in
+the glossary <tx_Source>` or in the CHANGES.txt document in the Roundup
+source code.
 
 Changes to Security and Permissions
 -----------------------------------
@@ -1895,19 +1900,48 @@ Create a file in your detectors directory with the following
 contents::
 
     from roundup.cgi.exceptions import Reauth
+    from roundup.exceptions import Reject
 
     def confirmid(db, cl, nodeid, newvalues):
 
+        sensitive_fields = ['password', 'address']
+        
         if hasattr(db, 'reauth_done'):
-           # the user has confirmed their identity
-           return
+            # the user has confirmed their identity
+            return
 
-        # if the password or email are changing, require id confirmation
+        # Uncomment to allow changes via cli
+        #if db.tx_Source in ("cli"):
+        #    return
+
+        for field in sensitive_fields:
+            if field not in newvalues:
+                # Sensitive field not found in change.
+                continue
+        
+            if db.tx_Source not in ("web"):
+                # Reject if the user is using rest, xmlrpc,
+                # command line, email which don't support
+                # interactive verification.
+                raise Reject(
+                      "You can only change field '%s' using the web." % field
+                      )
+		break  # not reached, but makes ruff etc. happy.
+		# Note: Reject() can be replaced by UsageError().
+		# Using UsageError() produces a 400 HTTP error
+		# code. Reject() produces a 405 error code. This
+		# is a bug in Roundup.
+        else:
+            # No sensitive field is changing. Allow transaction.
+            return
+           
+        # password or email address is changing, require confirmation
         if 'password' in newvalues:
-            raise Reauth('Add an optional message to the user')
+            raise Reauth('Add an optional message when user changes password.')
 
         if 'address' in newvalues:
-            raise Reauth('Add an optional message to the user')
+            raise Reauth('Add an optional message when user changes address.')
+
 
     def init(db):
         db.user.audit('set', confirmid, priority=110)
@@ -1932,6 +1966,14 @@ Also you could use an existing auditor and add::
 
 at the end of the auditor (after all checks are done) to force user
 verification. Just make sure you import Reauth at the top of the file.
+
+Note that reauth only works for the web interface. If you are
+changing a property that requires reauth via the rest or xmlrpc
+interfaces, you will receive an 403 HTTP response (Unauthorized)
+with the Reauth exception message. To avoid this, check the method
+used to change the property as shown above using
+:term:`tx_Source`. You can choose to allow the change without
+Reauth, or Reject the change with a different message.
 
 .. _`OWASP Authentication`:
    https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#require-re-authentication-for-sensitive-features
@@ -2099,6 +2141,69 @@ Alter the ``issue.item`` template section for messages to::
    </td>
   </tr>
  </table>
+
+.. _customizing/enhance:
+ 
+Enhancing message display
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As of roundup 2.7, message displays on the issue items page include a
+call to the :meth:`local_replace <roundup.cgi.templating.TemplatingUtils.local_replace>` utility
+function. This makes enhancements to the displayed messages easier to
+do. Roundup already turns phrases like ``issue 123`` or ``msg 345``
+into hyperlinks to the referenced target.
+
+Using ``local_replace`` you can enhance more phrases. For example,
+local_replace could format text like ``python:345`` to an HTML link to
+issue 345 in the Python GitHub issue tracker. It could also replace
+``@username`` with a link to that user's profile in the tracker.
+
+Let's set up a simple replacement to change ``#345`` or ``# 345`` into
+a link to ``issue345``. To do this we create a list (called
+substitutions) of paired entries. The first item in the entry is a
+regular expression and the second is the substitution text::
+
+    import re
+
+    substitutions = [(
+                      # compile the regular expression:
+                      #   \# - match the # sign
+                      #   (?P<ws>\s*) - match and capture, using the name ws,
+                      #                 whitespace so '#   2345' works too
+                      #   (?P<id>\d+) - match and capture, using the name id,
+                      #                 a numeric value
+                      
+                      re.compile(r'\#(?P<ws>\s*)(?P<id>\d+)'),
+
+                      # if the match succeeds, replace the original string
+                      # with:
+                      #   <a href='issue2345'>#    2345</a>
+                      # preserving the whitespace and id. sub() replaces
+                      # the whole string so the replacement includes the
+                      # # character.
+                      r"<a href='issue\g<id>'>#\g<ws>\g<id></a>"
+                     ), # add more here as you need
+                    ]
+
+    def local_replace(message):
+        for cre, replacement in substitutions:
+            message = cre.sub(replacement, message)
+        return message
+
+    def init(instance):
+        instance.registerUtil('local_replace', local_replace)
+
+Copy/paste/unindent this block into a file (e.g. ``local_replace.py``)
+in your tracker's extensions directory. Then restart your tracker. You
+should see messages with text ``# 345`` turned into a hyperlink.
+
+This enhancement is a simple text replacement. So issue345 may not
+exist even though local_replace creates a link to it. You could
+enhance the code to verify the existence of issue345 before doing the
+replacement.
+
+The devel and responsive templates include example
+``local_replace.py`` files that define many different replacements.
 
 
 Enabling display of either message summaries or the entire messages

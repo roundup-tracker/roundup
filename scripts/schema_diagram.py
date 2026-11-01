@@ -10,7 +10,6 @@
 # %> dot -Tps schema.dot -o schema.ps
 # %> gv schema.ps
 #
-from __future__ import print_function
 import sys
 import roundup.instance
 

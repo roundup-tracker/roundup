@@ -1,6 +1,7 @@
 '''Implement an in-memory hyperdb for testing purposes.
 '''
 
+import copy
 import os
 import shutil
 import time
@@ -13,6 +14,8 @@ from roundup.test.tx_Source_detector import init as tx_Source_init
 
 default_prefix = '../../share/roundup/templates/classic'
 
+
+# ruff: noqa: ARG002  don't report unused method args.
 
 def new_config(debug=False, prefix=default_prefix):
     if not prefix.startswith('/'):
@@ -50,13 +53,15 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
     hyperdb_vars['db'] = db
 
     with open(schema) as fd:
-        exec(compile(fd.read(), schema, 'exec'), hyperdb_vars)
+        # exec ok
+        exec(compile(fd.read(), schema, 'exec'), hyperdb_vars)  # noqa: S102
 
     initial_data = os.path.join(prefix, 'initial_data.py')
     admin_vars = {"db": db, "admin_email": "admin@test.com",
                   "adminpw": password.Password('sekrit', config=db.config)}
     with open(initial_data) as fd:
-        exec(compile(fd.read(), initial_data, 'exec'), admin_vars)
+        # exec ok
+        exec(compile(fd.read(), initial_data, 'exec'), admin_vars)  # noqa: S102
 
     # load standard detectors
     dirname = os.path.join(prefix, 'detectors')
@@ -64,8 +69,10 @@ def create(journaltag, create=True, debug=False, prefix=default_prefix):
         if not fn.endswith('.py'): continue                       # noqa: E701
         exec_vars = {}
         with open(os.path.join(dirname, fn)) as fd:
-            exec(compile(fd.read(),
-                         os.path.join(dirname, fn), 'exec'), exec_vars)
+            # exec ok
+            exec(compile(fd.read(),   # noqa: S102
+                         os.path.join(dirname, fn), 'exec'),
+                         exec_vars)
         exec_vars['init'](db)
 
     tx_Source_init(db)
@@ -176,8 +183,7 @@ class BasicDatabase(dict):
         if infoid not in self:
             if default is self._marker:
                 raise KeyError
-            else:
-                return default
+            return default
         return self[infoid].get(value, default)
 
     def getall(self, infoid):
@@ -236,7 +242,7 @@ class Indexer(indexer_dbm.Indexer):
     def load_index(self, reload=0, wordlist=None):
         # Unless reload is indicated, do not load twice
         if self.index_loaded() and not reload:
-            return 0
+            return
         self.words = {}
         self.files = {'_TOP': (0, None)}
         self.fileids = {}
@@ -274,8 +280,8 @@ class Database(back_anydbm.Database):
         self.security = security.Security(self)
         self.stats = {'cache_hits': 0, 'cache_misses': 0, 'get_items': 0,
                       'filtering': 0}
-        self.sessions = Sessions()
-        self.otks = OneTimeKeys()
+        self.Session = Sessions()
+        self.Otk = OneTimeKeys()
         self.indexer = Indexer(self)
         roundupdb.Database.__init__(self)
 
@@ -291,12 +297,12 @@ class Database(back_anydbm.Database):
         self.ids = self.__class__.memdb.get('ids', {})
         self.journals = self.__class__.memdb.get('journals', {})
 
-    def filename(self, classname, nodeid, property=None, create=0):
+    def filename(self, classname, nodeid, property_=None, create=0):
         shutil.copyfile(__file__, __file__ + '.dummy')
         return __file__ + '.dummy'
 
-    def filesize(self, classname, nodeid, property=None, create=0):
-        return len(self.getfile(classname, nodeid, property))
+    def filesize(self, classname, nodeid, property_=None, create=0):
+        return len(self.getfile(classname, nodeid, property_))
 
     def post_init(self):
         super(Database, self).post_init()
@@ -305,10 +311,10 @@ class Database(back_anydbm.Database):
         pass
 
     def getSessionManager(self):
-        return self.sessions
+        return self.Session
 
     def getOTKManager(self):
-        return self.otks
+        return self.Otk
 
     def reindex(self, classname=None, show_progress=False):
         pass
@@ -316,24 +322,24 @@ class Database(back_anydbm.Database):
     def __repr__(self):
         return '<memorydb instance at %x>' % id(self)
 
-    def storefile(self, classname, nodeid, property, content):
+    def storefile(self, classname, nodeid, property_, content):
         if isinstance(content, str):
             content = s2b(content)
-        self.tx_files[classname, nodeid, property] = content
+        self.tx_files[classname, nodeid, property_] = content
         self.transactions.append((self.doStoreFile, (classname, nodeid,
-                                                     property)))
+                                                     property_)))
 
-    def getfile(self, classname, nodeid, property):
-        if (classname, nodeid, property) in self.tx_files:
-            return self.tx_files[classname, nodeid, property]
-        return self.files[classname, nodeid, property]
+    def getfile(self, classname, nodeid, property_):
+        if (classname, nodeid, property_) in self.tx_files:
+            return self.tx_files[classname, nodeid, property_]
+        return self.files[classname, nodeid, property_]
 
-    def doStoreFile(self, classname, nodeid, property, **databases):
-        self.files[classname, nodeid, property] = self.tx_files[classname, nodeid, property]
+    def doStoreFile(self, classname, nodeid, property_, **databases):
+        self.files[classname, nodeid, property_] = self.tx_files[classname, nodeid, property_]
         return (classname, nodeid)
 
-    def rollbackStoreFile(self, classname, nodeid, property, **databases):
-        del self.tx_files[classname, nodeid, property]
+    def rollbackStoreFile(self, classname, nodeid, property_, **databases):
+        del self.tx_files[classname, nodeid, property_]
 
     def numfiles(self):
         return len(self.files) + len(self.tx_files)
@@ -348,6 +354,31 @@ class Database(back_anydbm.Database):
         self.__class__.memdb['items'] = self.items
         self.__class__.memdb['ids'] = self.ids
         self.__class__.memdb['journals'] = self.journals
+
+    def getuid(self):
+        """Return the id of the "user" node associated with the user
+        that owns this connection to the hyperdatabase."""
+        if self.journaltag is None:
+            return None
+        if self.journaltag == 'admin':
+            # admin user may not exist, but always has ID 1
+            return '1'
+        if (self.journal_uid is None or self.journal_uid[0] !=
+                self.journaltag):
+            uid = self.user.lookup(self.journaltag)
+            self.journal_uid = (self.journaltag, uid)
+        return self.journal_uid[1]
+
+    def setCurrentUser(self, username):
+        """Set the user that is responsible for current database
+        activities.
+        """
+        self.journaltag = username
+
+    def isCurrentUser(self, username):
+        """Check if a given username equals the already active user.
+        """
+        return self.journaltag == username
 
     #
     # Classes
@@ -369,14 +400,13 @@ class Database(back_anydbm.Database):
 
         # add default Edit and View permissions
         self.security.addPermission(name="Create", klass=cn,
-                                    description="User is allowed to create " +
-                                    cn)
+            description="User is allowed to create " + cn)
         self.security.addPermission(name="Edit", klass=cn,
-                                    description="User is allowed to edit " +
-                                    cn)
+            description="User is allowed to edit " + cn)
         self.security.addPermission(name="View", klass=cn,
-                                    description="User is allowed to access " +
-                                    cn)
+            description="User is allowed to access " + cn)
+        self.security.addPermission(name="Retire", klass=cn,
+            description="User is allowed to retire " + cn)
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
@@ -410,7 +440,7 @@ class Database(back_anydbm.Database):
     #
     # Node IDs
     #
-    def newid(self, classname):
+    def newid(self, classname: str) -> str:
         self.ids[classname] += 1
         return str(self.ids[classname])
 
@@ -439,7 +469,7 @@ class Database(back_anydbm.Database):
         # add any journal entries for transactions not committed to the
         # database
         for method, args in self.transactions:
-            if method != self.doSaveJournal:
+            if method not in (self.doSaveJournal, self.doSetJournal):
                 continue
             (cache_classname, cache_nodeid, cache_action, cache_params,
                 cache_creator, cache_creation) = args
@@ -455,7 +485,10 @@ class Database(back_anydbm.Database):
         except KeyError:
             if res: return res                                     # noqa: E701
             raise IndexError(nodeid)
-        return res
+        # use copy otherwise we are returning the actual in memory
+        # database entry. Hence changes to the journal (e.g. remove quiet
+        # properties) changes the actual database.
+        return copy.deepcopy(res)
 
     def pack(self, pack_before):
         """ Delete all journal entries except "create" before 'pack_before'.
@@ -538,11 +571,11 @@ class IssueClass(Class, roundupdb.IssueClass):
 # We don't support multiple named databases
 
 
-def db_exists(name):
+def db_exists(name):   # noqa: ARG001 - name unused/unsupported
     return bool(Database.memdb)
 
 
-def db_nuke(name):
+def db_nuke(name):     # noqa: ARG001  - name unused/unsupported
     Database.memdb = {}
 
 # vim: set et sts=4 sw=4 :

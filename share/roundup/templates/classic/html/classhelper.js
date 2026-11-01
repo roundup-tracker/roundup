@@ -29,6 +29,7 @@ const CSS_STYLESHEET_FILE_NAME = "@@file/classhelper.css";
 const CLASSHELPER_TAG_NAME = "roundup-classhelper";
 const CLASSHELPER_ATTRIBUTE_SEARCH_WITH = "data-search-with";
 const CLASSHELPER_ATTRIBUTE_POPUP_TITLE = "data-popup-title";
+const CLASSHELPER_ATTRIBUTE_ALLOW_COMMA = "data-allow-comma";
 const CLASSHELPER_ATTRIBUTE_POPUP_TITLE_ITEM_CLASS_LOOKUP = "{className}";
 const CLASSHELPER_ATTRIBUTE_POPUP_TITLE_ITEM_DESIGNATOR_LOOKUP = "{itemDesignator}";
 const CLASSHELPER_POPUP_FEATURES = (width, height) => `popup=yes,width=${width},height=${height}`;
@@ -226,7 +227,8 @@ class ClassHelper extends HTMLElement {
 
         const handleValueSelectedEvent = (event) => {
             // does not throw error
-            this.valueSelected(this.helpurlProps, event.detail.value);
+            this.valueSelected(this.helpurlProps, event.detail.value,
+			       event.detail.controlType);
         }
 
         const handleSearchEvent = (event) => {
@@ -247,7 +249,7 @@ class ClassHelper extends HTMLElement {
 
         const handleSelectionEvent = (event) => {
             // does not throw error
-            this.selectionEvent(event.detail.value);
+            this.selectionEvent(event.detail.value, event.detail.controlType);
         }
 
         this.addEventListener("click", handleClickEvent);
@@ -773,7 +775,8 @@ class ClassHelper extends HTMLElement {
         apply.addEventListener("click", () => {
             this.dispatchEvent(new CustomEvent("valueSelected", {
                 detail: {
-                    value: preview.value
+                    value: preview.value,
+		    controlType: this.controlType
                 }
             }))
         })
@@ -792,7 +795,7 @@ class ClassHelper extends HTMLElement {
      * @returns 
      */
     getTableFragment(headers, data, preSelectedValues) {
-        let includeCheckbox = !this.popupRef.document.body.classList.contains(CLASSHELPER_TABLE_SELECTION_NONE);
+        let includeControl = !this.popupRef.document.body.classList.contains(CLASSHELPER_TABLE_SELECTION_NONE);
 
         const fragment = document.createDocumentFragment();
 
@@ -809,7 +812,7 @@ class ClassHelper extends HTMLElement {
         // Create table headers
         const headerRow = document.createElement('tr');
 
-        if (includeCheckbox) {
+        if (includeControl) {
             let thx = document.createElement("th");
             thx.textContent = "X";
             thx.classList.add("table-header");
@@ -830,16 +833,22 @@ class ClassHelper extends HTMLElement {
             row.setAttribute("tabindex", 0);
             row.classList.add("row-style");
 
-            if (includeCheckbox) {
+            if (includeControl) {
                 const td = document.createElement('td');
-                const checkbox = document.createElement("input");
-                checkbox.setAttribute("type", "checkbox");
-                checkbox.checked = false;
-                checkbox.setAttribute("tabindex", -1);
-                td.appendChild(checkbox)
+                const inputControl = document.createElement("input");
+                inputControl.setAttribute("type", this.controlType);
+                /* name assigned to allow radiobuttons to be cleared
+                   automatically by browser rather than adding javascript
+                   to do the work. Make name unlikley to conflict with
+                   other name values.
+                */
+                inputControl.setAttribute("name", "inputSelectionControl");
+                inputControl.checked = false;
+                inputControl.setAttribute("tabindex", -1);
+                td.appendChild(inputControl)
                 row.appendChild(td);
                 if (preSelectedValues.includes(entry[headers[0]])) {
-                    checkbox.checked = true;
+                    inputControl.checked = true;
                 }
             }
 
@@ -851,7 +860,7 @@ class ClassHelper extends HTMLElement {
             tbody.appendChild(row);
         });
 
-        if (includeCheckbox) {
+        if (includeControl) {
             tbody.addEventListener("click", (e) => {
                 let id, tr;
                 if (e.target.tagName === "INPUT" ) {
@@ -866,14 +875,15 @@ class ClassHelper extends HTMLElement {
                 }
 
               if (e.target.tagName !== "INPUT") {
-		/* checkbox is only child of the first td of the table row */
-		let checkbox = tr.children.item(0).children.item(0);
-		checkbox.checked = !checkbox.checked;
+		/* inputControl is only child of the first td of the table row */
+		let inputControl = tr.children.item(0).children.item(0);
+		inputControl.checked = !inputControl.checked;
                 }
 
                 this.dispatchEvent(new CustomEvent("selection", {
                     detail: {
-                        value: id
+                        value: id,
+                        controlType: this.controlType
                     }
                 }));
             });
@@ -956,11 +966,34 @@ class ClassHelper extends HTMLElement {
             nextPageURL = links.next[0].uri;
         }
 
+        /* this.controlType is: null, "checkbox" or "radio" */
+        this.controlType = null
+        this.controlType = this.helpurlProps.tableSelectionType;
+        if  (! ["checkbox", "radio"].includes(this.controlType)) {
+            this.controlType = "checkbox"
+        }
+
+        /* Allow a comma in the value put into the accumulator only
+           when we select one item using a radio button. Commas are
+           not allowed when we can select multiple items using
+           checkboxes. Set to true only for radio when
+           data-allow-comma is present, any value is ignored.
+        */
+        if (this.controlType == "radio") {
+            this.allowComma = 'allowComma' in this.dataset;
+        } else {
+            this.allowComma = false
+        }
+
         if (props.formProperty) {
             // Find preselected values
             const input = document.getElementsByName(props.formProperty).item(0);
             if (input?.value) {
-                preSelectedValues = input.value.split(',');
+                if (this.allowComma) {
+                    preSelectedValues = [input.value];
+                } else {
+                    preSelectedValues = input.value.split(',');
+                }
             }
         }
 
@@ -1093,11 +1126,12 @@ class ClassHelper extends HTMLElement {
                 if (e.target.tagName == "TR" && e.shiftKey == false) {
                     e.preventDefault();
                     let tr = e.target;
-                    let checkbox = tr.children.item(0).children.item(0)
-                    checkbox.checked = !checkbox.checked;
+                    let inputControl = tr.children.item(0).children.item(0)
+                    inputControl.checked = !inputControl.checked;
                     this.dispatchEvent(new CustomEvent("selection", {
                         detail: {
-                            value: tr.dataset.id
+                            value: tr.dataset.id,
+                            controlType: this.controlType
                         }
                     }));
                 } else if (e.shiftKey) {
@@ -1111,11 +1145,12 @@ class ClassHelper extends HTMLElement {
                 if (e.target.tagName == "TR" && e.shiftKey == false) {
                     e.preventDefault();
                     let tr = e.target;
-                    let checkbox = tr.children.item(0).children.item(0)
-                    checkbox.checked = !checkbox.checked;
+                    let inputControl = tr.children.item(0).children.item(0)
+                    inputControl.checked = !inputControl.checked;
                     this.dispatchEvent(new CustomEvent("selection", {
                         detail: {
-                            value: tr.dataset.id
+                            value: tr.dataset.id,
+                            controlType: this.controlType
                         }
                     }));
                 }
@@ -1201,15 +1236,28 @@ class ClassHelper extends HTMLElement {
     /** method when a value is selected in 
      * @param {HelpUrlProps} props
      * @param {string} value
+     * @param {'checkbox' | 'radio'} controlType
      */
-    valueSelected(props, value) {
+    valueSelected(props, value, controlType) {
         if (!props.formProperty) {
             return;
         }
 
         const input = document.getElementsByName(props.formProperty).item(0);
-        input.value = value;
+	if (controlType == "radio" && !this.allowComma) {
+	    /* We allow the user to edit the accumulator. For radio
+	       controlType, there should be no comma in the
+	       value. Comma indicates multiple values and a radio
+	       style selector doesn't allow that. Return the first
+	       value assuming it is the one selected from the menu.
+            */
+	    const values = value.split(',');
+	    input.value = values[0]
+	} else {
+            input.value = value;
+	}
         this.popupRef.close();
+        input.focus()
     }
 
     /** method when search is performed within classhelper, here we need to update the classhelper table with search results
@@ -1333,8 +1381,9 @@ class ClassHelper extends HTMLElement {
 
     /** method when an entry in classhelper table is selected
      * @param {string} value
+     * @param {'checkbox' | 'radio'} controlType
      */
-    selectionEvent(value) {
+    selectionEvent(value, controlType) {
         const preview = this.popupRef.document.getElementById("popup-preview");
         if (!preview) {
             return;
@@ -1350,7 +1399,11 @@ class ClassHelper extends HTMLElement {
                 values.splice(exists, 1);
                 preview.value = values.join(',');
             } else {
-                preview.value += ',' + value;
+                if (controlType != "radio") {
+                    preview.value += ',' + value;
+                } else {
+                    preview.value = value
+                }
             }
         }
     }

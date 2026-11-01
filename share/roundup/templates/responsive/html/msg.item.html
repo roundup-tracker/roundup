@@ -46,7 +46,7 @@
     </dl>
 
     <div class='row-fluid' tal:condition="python:context.content.is_view_ok()">
-      <pre tal:content="structure python:utils.localReplace(context.content.hyperlinked())"></pre>
+      <pre tal:content="structure python:utils.local_replace(context.content.hyperlinked())"></pre>
       <div class='text-error' tal:condition="python:not context.content.is_view_ok()">
           You are not authorized to see this message.
       </div> 

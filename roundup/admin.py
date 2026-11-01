@@ -20,8 +20,6 @@
 
 """Administration commands for maintaining Roundup trackers.
 """
-from __future__ import print_function
-
 __docformat__ = 'restructuredtext'
 import csv
 import getopt
@@ -31,30 +29,45 @@ import os
 import re
 import shutil
 import sys
+import textwrap
+from configparser import DuplicateOptionError
 
 import roundup.instance
 from roundup import __version__ as roundup_version
-from roundup import date, hyperdb, init, password, token_r
-from roundup.anypy import scandir_
+from roundup import date, hyperdb, init, password, support, token_r
 from roundup.anypy.my_input import my_input
 from roundup.anypy.strings import repr_export
 from roundup.configuration import (
+    ConfigurationError,
     CoreConfig,
     NoConfigError,
     Option,
     OptionUnsetError,
     OptionValueError,
     ParsingOptionError,
+    UnknownOptionsError,
     UserConfig,
 )
 from roundup.exceptions import UsageError
 from roundup.i18n import _, get_translation
-from roundup import support
+from roundup.logcontext import gen_trace_id, set_processName, store_trace_reason
 
 try:
-    from UserDict import UserDict
-except ImportError:
     from collections import UserDict
+except ImportError:
+    from UserDict import UserDict
+
+
+def _safe_os_getlogin():
+    """Run os.getlogin handling OSError exception.
+
+       Used when calling @store_trace_reason to add username to string.
+    """
+    
+    try:
+        return os.getlogin()
+    except OSError:
+        return "--unknown--"
 
 
 class CommandDict(UserDict):
@@ -92,6 +105,13 @@ class AdminTool:
 
         Additional help may be supplied by help_*() methods.
     """
+
+    # import here to make AdminTool.readline accessible or
+    # mockable from tests.
+    try:
+        import readline   # noqa: I001, PLC0415
+    except ImportError:
+        readline = None
 
     # Make my_input a property to allow overriding in testing.
     # my_input is imported in other places, so just set it from
@@ -243,7 +263,7 @@ Help:
                 if seq in h:
                     commands.append(' ' + h.split(seq, 1)[1].lstrip())
                     break
-                    
+
         commands.sort()
         commands.append(_(
 """Commands may be abbreviated as long as the abbreviation
@@ -492,6 +512,12 @@ Command help:
         self.db.commit()
         self.db_uncommitted = False
         return 0
+
+    def do_checkconfig(self, args):
+        ''"""Usage: configcheck
+             Look for incorrect options (keys) in main config.ini file.
+        """
+        self.do_genconfig(args, validate_keys=True)
 
     def do_create(self, args):
         ''"""Usage: create classname property=value ...
@@ -866,51 +892,70 @@ Command help:
             raise UsageError(message)
         return 0
 
-    def do_genconfig(self, args, update=False):
+    def do_genconfig(self, args, update=False, validate_keys=False):
         ''"""Usage: genconfig filename
         Create a new tracker config file with default values in filename.
-        See also updateconfig.
+        See also updateconfig and checkconfig.
         """
+        if validate_keys:
+            try:
+                config = CoreConfig(self.tracker_home,
+                                    validate_keys=validate_keys)
+            except UnknownOptionsError as e:
+                print(textwrap.fill(str(e), 70, subsequent_indent="   "))
+            else:
+                print(_("No unknown options were found in config.ini."))
+            finally:
+                return
+
         if len(args) < 1:
             raise UsageError(_('Not enough arguments supplied'))
 
-        if update:
-            # load current config for writing
-            config = CoreConfig(self.tracker_home)
-
-            # change config to update settings to new defaults
-            # where prior defaults were chosen
-            default_ppdr = config._get_option(
-                'PASSWORD_PBKDF2_DEFAULT_ROUNDS')._default_value
-
-            print("")  # put a blank line before feedback
-            if config.PASSWORD_PBKDF2_DEFAULT_ROUNDS in [10000]:
-                print(_("Changing option\n"
-                        "   'password_pbkdf2_default_rounds'\n"
-                        "from old default of %(old_number)s to new "
-                        "default of %(new_number)s.") % {
-                            "old_number":
-                            config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
-                            "new_number": default_ppdr,
-                        })
-                config.PASSWORD_PBKDF2_DEFAULT_ROUNDS = default_ppdr
-
-            if default_ppdr > config.PASSWORD_PBKDF2_DEFAULT_ROUNDS:
-                print(_("Update "
-                        "'password_pbkdf2_default_rounds' "
-                        "to a number equal to or larger\n  than %s.\n") %
-                      default_ppdr)
-
-            if not config.RDBMS_MYSQL_COLLATION.startswith(
-                    config.RDBMS_MYSQL_CHARSET + "_"):
-                print(_("Check the rdbms mysql_* settings. Your charset and "
-                        "collations may need\n"
-                        "  to be changed. See upgrading instructions.\n"))
-        else:
+        if not update:
             # generate default config
             config = CoreConfig()
 
-        config.save(args[0])
+            config.save(args[0])
+            return
+
+        # load current config for writing
+        config = CoreConfig(self.tracker_home)
+
+        # change config to update settings to new defaults
+        # where prior defaults were chosen
+        default_ppdr = config._get_option(
+            'PASSWORD_PBKDF2_DEFAULT_ROUNDS')._default_value
+
+        print("")  # put a blank line before feedback
+        if config.PASSWORD_PBKDF2_DEFAULT_ROUNDS in [10000]:
+            print(_("Changing option\n"
+                    "   'password_pbkdf2_default_rounds'\n"
+                    "from old default of %(old_number)s to new "
+                    "default of %(new_number)s.") % {
+                        "old_number":
+                        config.PASSWORD_PBKDF2_DEFAULT_ROUNDS,
+                        "new_number": default_ppdr,
+                    })
+            # set the raw value as a string because that's what
+            # is written to the new file. Overwrite the old value,
+            # it's unlikley somebody parameterized this using a DEFAULT
+            # section name = value.
+            ppdr_option = config._get_option('PASSWORD_PBKDF2_DEFAULT_ROUNDS')
+            ppdr_option.set_raw(str(default_ppdr))
+
+        if default_ppdr > config.PASSWORD_PBKDF2_DEFAULT_ROUNDS:
+            print(_("Update "
+                    "'password_pbkdf2_default_rounds' "
+                    "to a number equal to or larger\n  than %s.\n") %
+                  default_ppdr)
+
+        if not config.RDBMS_MYSQL_COLLATION.startswith(
+                config.RDBMS_MYSQL_CHARSET + "_"):
+            print(_("Check the rdbms mysql_* settings. Your charset and "
+                    "collations may need\n"
+                    "  to be changed. See upgrading instructions.\n"))
+
+        config.save(args[0], raw=True)
 
     def do_get(self, args):
         ''"""Usage: get property designator[,designator]*
@@ -1263,28 +1308,29 @@ Command help:
             delimiter = ':'
 
         # import all the files
-        for dir_entry in os.scandir(import_dir):
-            filename = dir_entry.name
-            classname, ext = os.path.splitext(filename)
-            # we only care about CSV files
-            if ext != '.csv' or classname.endswith('-journals'):
-                continue
+        with os.scandir(import_dir) as dirs:
+            for dir_entry in dirs:
+                filename = dir_entry.name
+                classname, ext = os.path.splitext(filename)
+                # we only care about CSV files
+                if ext != '.csv' or classname.endswith('-journals'):
+                    continue
 
-            cl = self.get_class(classname)
+                cl = self.get_class(classname)
 
-            maxid = self.import_class(dir_entry.path, colon_separated, cl,
-                         import_dir, import_files)
+                maxid = self.import_class(dir_entry.path, colon_separated, cl,
+                             import_dir, import_files)
 
-            # import the journals
-            with open(os.path.join(import_dir, classname + '-journals.csv'), 'r') as f:
-                reader = csv.reader(f, colon_separated, lineterminator='\n')
-                cl.import_journals(reader)
+                # import the journals
+                with open(os.path.join(import_dir, classname + '-journals.csv'), 'r') as f:
+                    reader = csv.reader(f, colon_separated, lineterminator='\n')
+                    cl.import_journals(reader)
 
-            # (print to sys.stdout here to allow tests to squash it .. ugh)
-            print('setting', classname, maxid + 1, file=sys.stdout)
+                # (print to sys.stdout here to allow tests to squash it .. ugh)
+                print('setting', classname, maxid + 1, file=sys.stdout)
 
-            # set the id counter
-            self.db.setid(classname, str(maxid + 1))
+                # set the id counter
+                self.db.setid(classname, str(maxid + 1))
 
         self.db_uncommitted = True
         return 0
@@ -1309,6 +1355,7 @@ Command help:
             file_props = None
             # loop through the file and create a node for each entry
             for n, r in enumerate(reader):
+                # read the file header
                 if file_props is None:
                     file_props = r
                     continue
@@ -1322,10 +1369,11 @@ Command help:
                 nodeid = hyperdb_class.import_list(file_props, r)
                 if hasattr(hyperdb_class, 'import_files') and import_files:
                     hyperdb_class.import_files(import_dir, nodeid)
-                    maxid = max(maxid, int(nodeid))
+                
+                maxid = max(maxid, int(nodeid))
 
-                # (print to sys.stdout here to allow tests to squash it .. ugh)
-                print(file=sys.stdout)
+            # (print to sys.stdout here to allow tests to squash it .. ugh)
+            print(file=sys.stdout)
 
         return maxid
 
@@ -1481,18 +1529,10 @@ Erase it? Y/N: """) % locals())
             defns[k] = template_config[k]
 
         # install!
-        init.install(tracker_home, templates[template]['path'], settings=defns)
-
-        # Remove config_ini.ini file from tracker_home (not template dir).
-        # Ignore file not found - not all templates have
-        #   config_ini.ini files.
         try:
-            os.remove(tracker_home + "/config_ini.ini")
-        except OSError as e:  # FileNotFound exception under py3
-            if e.errno == 2:
-                pass
-            else:
-                raise
+            init.install(tracker_home, templates[template]['path'], settings=defns)
+        except ConfigurationError as e:
+            raise UsageError(e)
 
         print(_("""
 ---------------------------------------------------------------------------
@@ -1815,6 +1855,115 @@ Erase it? Y/N: """) % locals())
                              type(self.settings[setting]).__name__)
         self.settings[setting] = value
 
+        # history_length has to be pushed to readline to have any effect.
+        if setting == "history_length":
+            self.readline.set_history_length(
+                self.settings['history_length'])
+
+    def do_readline(self, args):
+        ''"""Usage: readline initrc_line | 'emacs' | 'history' | 'reload' | 'vi'
+
+        Using 'reload' will reload the file ~/.roundup_admin_rlrc.
+        'history' will show (and number) all commands in the history.
+
+        You can change input mode using the 'emacs' or 'vi' parameters.
+        The default is emacs. This is the same as using::
+
+           readline set editing-mode emacs
+
+        or::
+
+           readline set editing-mode vi
+
+        Any command that can be placed in a readline .inputrc file can
+        be executed using the readline command. You can assign
+        dump-variables to control O using::
+
+           readline Control-o: dump-variables
+
+        Assigning multi-key values also works.
+
+        pyreadline3 support on windows:
+
+          Mode switching doesn't work, emacs only.
+
+          Binding single key commands works with::
+
+            readline Control-w: history-search-backward
+
+          Multiple key sequences don't work.
+
+          Setting values may work. Difficult to tell because the library
+          has no way to view the live settings.
+
+        """
+
+        # TODO: allow history 20 # most recent 20 commands
+        #    history 100-200 # show commands 100-200
+
+        if not self.readline:
+            print(_("Readline support is not available."))
+            return
+        # The if test allows pyreadline3 settings like:
+        #   bind_exit_key("Control-z") get through to
+        #   parse_and_bind(). It is not obvious that this form of
+        #   command is supported. Pyreadline3 is supposed to parse
+        #   readline style commands, so we use those for emacs/vi.
+        #   Trying set-mode(...) as in the pyreadline3 init file
+        #   didn't work in testing.
+
+        if len(args) == 1 and args[0].find('(') == -1:
+            if args[0] == "vi":
+                self.readline.parse_and_bind("set editing-mode vi")
+                print(_("Enabled vi mode."))
+            elif args[0] == "emacs":
+                self.readline.parse_and_bind("set editing-mode emacs")
+                print(_("Enabled emacs mode."))
+            elif args[0] == "history":
+                history_size = self.readline.get_current_history_length()
+                print("history size", history_size)
+                print('\n'.join([
+                    "%3d %s" % ((i + 1),
+                        self.readline.get_history_item(i + 1))
+                    for i in range(history_size)
+                ]))
+            elif args[0] == "reload":
+                try:
+                    # readline is a singleton. In testing previous
+                    # tests using read_init_file are loading from ~
+                    # not the test directory because it doesn't
+                    # matter.  But for reload we want to test with the
+                    # init file under the test directory. Calling
+                    # read_init_file() calls with the ~/.. init
+                    # location and I can't seem to reset it
+                    # or the readline state.
+                    # So call with explicit file here.
+                    self.readline.read_init_file(
+                        self.get_readline_init_file())
+                except FileNotFoundError as e:
+                    # If user invoked reload explicitly, report
+                    # if file not found.
+                    #
+                    # DOES NOT WORK with pyreadline3. Exception
+                    # is not raised if file is missing.
+                    #
+                    # Also e.filename is None under cygwin. A
+                    # simple test case does set e.filename
+                    # correctly?? sigh.  So I just call
+                    # get_readline_init_file again to get
+                    # filename.
+                    fn = e.filename or self.get_readline_init_file()
+                    print(_("Init file %s not found.") % fn)
+                else:
+                    print(_("File %s reloaded.") %
+                          self.get_readline_init_file())
+            else:
+                print(_("Unknown readline parameter %s") % args[0])
+            return
+
+        self.readline.parse_and_bind(" ".join(args))
+        return
+
     designator_re = re.compile('([A-Za-z]+)([0-9]+)$')
     designator_rng = re.compile('([A-Za-z]+):([0-9]+)-([0-9]+)$')
 
@@ -1968,13 +2117,13 @@ Erase it? Y/N: """) % locals())
                 sys.stdout.write(_('New Email users get the Role "%(role)s"\n') % locals())
         roles.sort()
         for _rolename, role in roles:
-            sys.stdout.write(_('Role "%(name)s":\n') % role.__dict__)
+            sys.stdout.write(_('Role "%(name)s":\n') % role.props_dict())
             for permission in role.permission_list():
-                d = permission.__dict__
+                d = permission.props_dict()
                 if permission.klass:
                     if permission.properties:
                         sys.stdout.write(_(
-                            ' %(description)s (%(name)s for "%(klass)s"' +
+                            ' %(description)s (%(name)s for "%(klass)s"'
                             ': %(properties)s only)\n') % d)
                         # verify that properties exist; report bad props
                         bad_props = []
@@ -2203,8 +2352,6 @@ Erase it? Y/N: """) % locals())
         With trace_search also list all directories that are
         searched for templates.
         """
-        import textwrap
-
         trace_search = False
         if args and args[0] == "trace_search":
             trace_search = True
@@ -2234,11 +2381,17 @@ Desc: %(description)s
         self.do_genconfig(args, update=True)
 
     def usageError_feedback(self, message, function):
-        print(_('Error: %s') % message)
+        print(_('\nError: %s') % message)
         print()
         print(function.__doc__)
         return 1
 
+    @set_processName("roundup-admin")
+    @gen_trace_id()
+    @store_trace_reason("admin", extract=(
+        '"roundup-admin(%s): "' % _safe_os_getlogin() +
+        "'%s' % args[1][:2]"
+    ))
     def run_command(self, args):
         """Run a single command
         """
@@ -2314,10 +2467,6 @@ Desc: %(description)s
                 self.tracker = tracker
                 self.settings['indexer_backend'] = self.tracker.config['INDEXER']
 
-        except ValueError as message:  # noqa: F841  -- used from locals
-            self.tracker_home = ''
-            print(_("Error: Couldn't open tracker: %(message)s") % locals())
-            return 1
         except NoConfigError as message:  # noqa: F841  -- used from locals
             self.tracker_home = ''
             print(_("Error: Couldn't open tracker: %(message)s") % locals())
@@ -2326,10 +2475,19 @@ Desc: %(description)s
         except ParsingOptionError as message:  # noqa: F841 -- used from locals
             print("%(message)s" % locals())
             return 1
+        except (ConfigurationError, DuplicateOptionError,  # noqa: F841
+                ValueError) as message:
+            print(_("\nError: Couldn't open tracker: %(message)s") % locals())
+            return 1            
 
         # only open the database once!
         if not self.db:
-            self.db = tracker.open(self.name)
+            try:
+                self.db = tracker.open(self.name)
+            except OptionValueError as message:
+                print("\n%s\n" % message)
+                return 1
+                
             # don't use tracker.config["TRACKER_LANGUAGE"] here as the
             # cli operator likely wants to have i18n as set in the
             # environment.
@@ -2365,29 +2523,34 @@ Desc: %(description)s
         # setting the bit disables the feature, so use not.
         return not self.settings['history_features'] & features[feature]
 
+    def get_readline_init_file(self):
+        return os.path.join(os.path.expanduser("~"),
+                                ".roundup_admin_rlrc")
+
     def interactive(self):
         """Run in an interactive mode
         """
         print(_('Roundup %s ready for input.\nType "help" for help.')
                 % roundup_version)
 
-        initfile = os.path.join(os.path.expanduser("~"),
-                                ".roundup_admin_rlrc")
+        initfile = self.get_readline_init_file()
         histfile = os.path.join(os.path.expanduser("~"),
                                 ".roundup_admin_history")
 
-        try:
-            import readline
+        if self.readline:
+            # clear any history that might be left over from caller
+            # when reusing AdminTool from tests or program.
+            self.readline.clear_history()
             try:
                 if self.history_features('load_rc'):
-                    readline.read_init_file(initfile)
-            except IOError: # FileNotFoundError under python3
+                    self.readline.read_init_file(initfile)
+            except FileNotFoundError:
                 # file is optional
                 pass
 
             try:
                 if self.history_features('load_history'):
-                    readline.read_history_file(histfile)
+                    self.readline.read_history_file(histfile)
             except IOError:  # FileNotFoundError under python3
                 # no history file yet
                 pass
@@ -2397,36 +2560,94 @@ Desc: %(description)s
             # Pragma history_length allows setting on a per
             #   invocation basis at startup
             if self.settings['history_length'] != -1:
-                readline.set_history_length(
+                self.readline.set_history_length(
                     self.settings['history_length'])
-        except ImportError:
-            readline = None
-            print(_('Note: command history and editing not available'))
 
+            if hasattr(self.readline, 'backend'):
+                # FIXME after min 3.13 version; no backend prints pyreadline3
+                print(_("Readline enabled using %s.") % self.readline.backend)
+            else:
+                print(_("Readline enabled using unknown library."))
+                      
+        else:
+            print(_('Command history and line editing not available'))
+
+        autosave_enabled = sys.stdin.isatty() and sys.stdout.isatty()
         while 1:
             try:
                 command = self.my_input('roundup> ')
+                # clear an input hook in case it was used to prefill
+                # buffer.
+                self.readline.set_pre_input_hook()
             except EOFError:
                 print(_('exit...'))
                 break
             if not command: continue  # noqa: E701
+            if command.startswith('!'):  # Pull numbered command from history
+                print_only = command.endswith(":p")
+                try:
+                    hist_num = int(command[1:]) \
+                        if not print_only else int(command[1:-2])
+                    command = self.readline.get_history_item(hist_num)
+                except ValueError:
+                    # pass the unknown command
+                    pass
+                else:
+                    if autosave_enabled and \
+                       hasattr(self.readline, "replace_history_item"):
+                        # history has the !23 input. Replace it if possible.
+                        # replace_history_item not supported by pyreadline3
+                        # so !23 will show up in history not the command.
+                        self.readline.replace_history_item(
+                            self.readline.get_current_history_length() - 1,
+                            command)
+
+                    if print_only:
+                        # fill the edit buffer with the command
+                        # the user selected.
+
+                        # from https://stackoverflow.com/questions/8505163/is-it-possible-to-prefill-a-input-in-python-3s-command-line-interface
+                        # This triggers:
+                        #   B023 Function definition does not bind loop variable
+                        #   `command`
+                        # in ruff. command will be the value of the command
+                        # variable at the time the function is run.
+                        # Not the value at define time. This is ok since
+                        # hook is run before command is changed by the
+                        # return from (readline) input.
+                        def hook():
+                            self.readline.insert_text(command)  # noqa: B023
+                            self.readline.redisplay()
+                        self.readline.set_pre_input_hook(hook)
+                        # we clear the hook after the next line is read.
+                        continue
+
+            if not autosave_enabled:
+                # needed to make testing work and also capture
+                # commands received on stdin from file/other command
+                # output. Disable saving with pragma on command line:
+                #    -P history_features=2.
+                self.readline.add_history(command)
+
             try:
                 args = token_r.token_split(command)
             except ValueError:
                 continue        # Ignore invalid quoted token
             if not args: continue  # noqa: E701
-            if args[0] in ('quit', 'exit'): break   # noqa: E701
+            if args[0] in ('q', 'quit', 'exit') and len(args) == 1:
+                break   # noqa: E701
             self.run_command(args)
 
         # exit.. check for transactions
         if self.db and self.db_uncommitted:
             commit = self.my_input(_('There are unsaved changes. Commit them (y/N)? '))
             if commit and commit[0].lower() == 'y':
-                self.db.commit()
+                self.run_command(["commit"])
 
         # looks like histfile is saved with mode 600
-        if readline and self.history_features('save_history'):
-                readline.write_history_file(histfile)
+        if self.readline and self.history_features('save_history'):
+                self.readline.write_history_file(histfile)
+
         return 0
 
     def main(self):  # noqa: PLR0912, PLR0911
@@ -2496,7 +2717,7 @@ Desc: %(description)s
                 self.interactive()
             else:
                 ret = self.run_command(args)
-                if self.db: self.db.commit()  # noqa: E701
+                if self.db: self.run_command(["commit"])  # noqa: E701
             return ret
         finally:
             if self.db:

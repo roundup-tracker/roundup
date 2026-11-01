@@ -5,7 +5,7 @@
 #
 
 import os
-from contextlib import contextmanager
+import warnings
 
 import roundup.instance
 from roundup.anypy import http_
@@ -13,6 +13,7 @@ from roundup.anypy.html import html_escape
 from roundup.anypy.strings import s2b
 from roundup.cgi import TranslationService
 from roundup.cgi.client import BinaryFieldStorage
+from roundup.logcontext import gen_trace_id, set_processName, store_trace_reason
 
 BaseHTTPRequestHandler = http_.server.BaseHTTPRequestHandler
 DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
@@ -88,6 +89,13 @@ class RequestDispatcher(object):
         self.debug = debug
         self.timing = timing
         self.feature_flags = feature_flags or {}
+
+        if "cache_tracker" in self.feature_flags:
+            warnings.warn(("The 'cache_tracker' feature flag is "
+                           "ignored. Please remove it from your "
+                           "RequestDispatcher call."),
+                           FutureWarning)
+
         self.tracker = None
         if lang:
             self.translator = TranslationService.get_translation(
@@ -96,12 +104,13 @@ class RequestDispatcher(object):
         else:
             self.translator = None
 
-        if "cache_tracker" not in self.feature_flags or \
-           self.feature_flags["cache_tracker"] is not False:
-            self.tracker = roundup.instance.open(self.home, not self.debug)
-        else:
-            self.preload()
+        self.tracker = roundup.instance.open(self.home, not self.debug)
 
+    # Client entry point strips initial / from PATH_INFO so
+    # We need to do it here as well to prevent mismatch.
+    @set_processName("wsgi_handler")
+    @gen_trace_id()
+    @store_trace_reason("wsgi", extract="args[1]['PATH_INFO'][1:]")
     def __call__(self, environ, start_response):
         """Initialize with `apache.Request` object"""
         request = RequestHandler(environ, start_response)
@@ -112,7 +121,7 @@ class RequestDispatcher(object):
                 # This I hope will result in self.form=None
                 environ['CONTENT_LENGTH'] = 0
             else:
-                code = 501
+                code = 405
                 message, explain = BaseHTTPRequestHandler.responses[code]
                 request.start_response([('Content-Type', 'text/html')],
                                        code)
@@ -132,36 +141,14 @@ class RequestDispatcher(object):
         else:
             form = BinaryFieldStorage(fp=environ['wsgi.input'], environ=environ)
 
-        if "cache_tracker" not in self.feature_flags or \
-           self.feature_flags["cache_tracker"] is not False:
-            client = self.tracker.Client(self.tracker, request, environ, form,
-                                         self.translator)
-            try:
-                client.main()
-            except roundup.cgi.client.NotFound:
-                request.start_response([('Content-Type', 'text/html')], 404)
-                request.wfile.write(s2b('Not found: %s' %
-                                        html_escape(client.path)))
-        else:
-            with self.get_tracker() as tracker:
-                client = tracker.Client(tracker, request, environ, form,
-                                        self.translator)
-                try:
-                    client.main()
-                except roundup.cgi.client.NotFound:
-                    request.start_response([('Content-Type', 'text/html')], 404)
-                    request.wfile.write(s2b('Not found: %s' %
-                                            html_escape(client.path)))
+        client = self.tracker.Client(self.tracker, request, environ, form,
+                                     self.translator)
+        try:
+            client.main()
+        except roundup.cgi.client.NotFound:
+            request.start_response([('Content-Type', 'text/html')], 404)
+            request.wfile.write(s2b('Not found: %s' %
+                                    html_escape(client.path)))
 
         # all body data has been written using wfile
         return []
-
-    def preload(self):
-        """ Trigger pre-loading of imports and templates """
-        with self.get_tracker():
-            pass
-
-    @contextmanager
-    def get_tracker(self):
-        # get a new instance for each request
-        yield roundup.instance.open(self.home, not self.debug)

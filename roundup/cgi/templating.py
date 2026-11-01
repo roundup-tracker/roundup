@@ -27,7 +27,6 @@ import re
 import textwrap
 
 from roundup import date, hyperdb, support
-from roundup.anypy import scandir_
 from roundup.anypy import urllib_
 from roundup.anypy.cgi_ import cgi
 from roundup.anypy.html import html_escape
@@ -40,6 +39,7 @@ from .KeywordsExpr import render_keywords_expression_editor
 
 try:
     from docutils.core import publish_parts as ReStructuredText
+    from docutils.writers.html4css1 import Writer as html_writer
 except ImportError:
     ReStructuredText = None
 try:
@@ -240,11 +240,19 @@ markdown = _import_markdown2() or _import_markdown() or _import_mistune()
 def anti_csrf_nonce(client, lifetime=None):
     ''' Create a nonce for defending against CSRF attack.
 
-        Then it stores the nonce, the session id for the user
-        and the user id in the one time key database for use
-        by the csrf validator that runs in the client::inner_main
+        If tokenless/nonceless CSRF is activated, return 0 and
+        continue. 0 should never be a value in the otks db, but even
+        if it is, it will never be checked if tokenless csrf is used.
+
+        If the nonce is used, store the nonce, the session id for the
+        user and the user id in the one time key database for use by
+        the csrf validator that runs in the client::inner_main
         module/function.
+
     '''
+    if client.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION']:
+        return "0"
+
     otks = client.db.getOTKManager()
     key = otks.getUniqueKey()
     # lifetime is in minutes.
@@ -776,7 +784,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         """ Get an item of this class by its item id.
         """
         # make sure we're looking at an itemid
-        if not isinstance(itemid, type(1)) and not num_re.match(itemid):
+        if not isinstance(itemid, int) and not num_re.match(itemid):
             itemid = self._klass.lookup(itemid)
 
         return HTMLItem(self._client, self.classname, itemid)
@@ -846,7 +854,7 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
                 value = self._klass.get(nodeid, name)
                 if value is None:
                     l.append('')
-                elif isinstance(value, type([])):
+                elif isinstance(value, list):
                     l.append(':'.join(map(str, value)))
                 else:
                     l.append(str(self._klass.get(nodeid, name)))
@@ -1265,7 +1273,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                     if isinstance(prop, hyperdb.Multilink) and args[k]:
                         ml = []
                         for linkid in args[k]:
-                            if isinstance(linkid, type(())):
+                            if isinstance(linkid, tuple):
                                 sublabel = linkid[0] + ' '
                                 linkids = linkid[1]
                             else:
@@ -1399,7 +1407,7 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
                     # unknown event!!
                     comments['unknown'] = self._(
                         "<strong><em>This event %s is not handled"
-                        " by the history display!</em></strong>" % action)
+                        " by the history display!</em></strong>") % action
                     arg_s = '<strong><em>' + str(args) + '</em></strong>'
 
             date_s = date_s.replace(' ', '&nbsp;')
@@ -1887,7 +1895,7 @@ class StringHTMLProperty(HTMLProperty):
                     raise
 
         return u2s(ReStructuredText(
-            s, writer_name="html",
+            s, writer=html_writer(),
             settings_overrides=self.rst_defaults)["html_body"])
 
     def markdown(self, hyperlink=1):
@@ -2743,7 +2751,7 @@ class MultilinkHTMLProperty(HTMLProperty):
             # ignore these errors to preserve user input
             try:
                 display_value.sort(key=keyfun)
-            except:
+            except Exception:
                 pass
             self._value = display_value
 
@@ -3061,7 +3069,7 @@ def handleListCGIValue(value):
     """ Value is either a single item or a list of items. Each item has a
         .value that we're actually interested in.
     """
-    if isinstance(value, type([])):
+    if isinstance(value, list):
         return [value.value for value in value]
     else:
         value = value.value.strip()
@@ -3227,7 +3235,7 @@ class HTMLRequest(HTMLInputMixin):
                     self.filterspec[name] = lookupIds(db, prop,
                                                       handleListCGIValue(fv))
                 else:
-                    if isinstance(fv, type([])):
+                    if isinstance(fv, list):
                         self.filterspec[name] = [v.value for v in fv]
                     elif name == 'id':
                         # special case "id" property
@@ -3466,6 +3474,9 @@ function submit_once() {
         alert("Your request is being processed.\\nPlease be patient.");
         return false;
     }
+
+    window.setTimeout("submitted = false;", 5000)
+
     submitted = true;
     return true;
 }
@@ -3618,17 +3629,64 @@ class Batch(ZTUtils.Batch):
 
 
 class TemplatingUtils:
-    """ Utilities for templating
+    """Utilities for templating
+
+        Attributes of objects of this class can be replaced by
+        calls to instance.registerUtils() and
+        instance.registerUtilMethods() in the tracker's extensions
+        directory.
+
+        The register functions will not replace attributes starting
+        with '_' or named 'client'. If you add another attribute
+        that must not be replaced, update the exclusion code in
+        both Registration methods.
+
+        Replaced functions (staticmethods) can be called from
+        templates by referencing the function from the class. If
+        local_replace() has been replaced using the extensions mechanism,
+        replacing the ``utils.local_replace()`` call in the template with::
+
+          utils.__class__.local_replace()
+
+        will access the default function. Method utils can call the
+        original methods and modify the output by using
+        self.__class__. As an example, if you replaced
+        anti_csrf_nonce(), you could call it as:
+
+          self.__class__.anti_csrf_nonce(self, lifetime=10)
+
+        to access the orginal definition.
     """
     def __init__(self, client):
+        """Dynamically register user extensions to the utils.
+        """
         self.client = client
         self._ = self.client._
 
+        # set up tracker templating utils functions defined with
+        # instance.registerUtils
+        for name, func in self.client.instance.templating_utils.items():
+            setattr(self, name, staticmethod(func))
+
+        # set up tracker defined utils methods defined with
+        # instance.registerUtilMethods
+        for name, method in \
+                self.client.instance.templating_util_methods.items():
+            setattr(self, name, method.__get__(self))
+
     def Batch(self, sequence, size, start, end=0, orphan=0, overlap=0):
+        """The Zope utils (ZTUtils) Batch method."""
         return Batch(self.client, sequence, size, start, end, orphan,
                      overlap)
 
     def anti_csrf_nonce(self, lifetime=None):
+        """return nonce used to prevent csrf in data changing requests
+
+           :param lifetime:
+              token lifetime in minutes, default is set in the
+              tracker's config.ini using the csrf_token_lifetime
+              parameter in the web section.
+        """
         return anti_csrf_nonce(self.client, lifetime=lifetime)
 
     def timestamp(self):
@@ -3641,6 +3699,19 @@ class TemplatingUtils:
     def html_quote(self, html):
         """HTML-quote the supplied text."""
         return html_escape(html)
+
+    @staticmethod
+    def local_replace(message):
+        """Placeholder method to be replaced when formatting messages
+
+           :param message:
+              the text of the message
+
+           This does nothing to the message, but it allows
+           utils.local_replace() to be placed in the html templates as
+           a hook for admins to use in their trackers.
+        """
+        return message
 
     def embed_form_fields(self, excluded_fields=None):
         """Used to create a hidden input field for each client.form element
@@ -3666,7 +3737,7 @@ class TemplatingUtils:
             pass
         else:
             raise ValueError(self._(
-                'The excluded_fields parameter is invalid.'
+                'The excluded_fields parameter is invalid. '
                 'It must have a __contains__ method.')
             )
 
@@ -3756,15 +3827,6 @@ class TemplatingUtils:
     file_input.files = transfer.files
 
     """
-
-    def __getattr__(self, name):
-        """Try the tracker's templating_utils."""
-        if not hasattr(self.client.instance, 'templating_utils'):
-            # backwards-compatibility
-            raise AttributeError(name)
-        if name not in self.client.instance.templating_utils:
-            raise AttributeError(name)
-        return self.client.instance.templating_utils[name]
 
     def keywords_expressions(self, request):
         return render_keywords_expression_editor(request)

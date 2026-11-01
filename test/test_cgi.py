@@ -8,13 +8,43 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-from __future__ import print_function
 import unittest, os, shutil, errno, sys, difflib, re, io
 
 import pytest
 import copy
 
+try:
+    import hypothesis
+    skip_hypothesis = lambda func, *args, **kwargs: func
+
+    # ruff: noqa: E402
+    from hypothesis import example, given, reproduce_failure, settings
+    from hypothesis.strategies import binary, dictionaries, characters, emails, none, one_of, sampled_from, text
+
+except ImportError:
+    from .pytest_patcher import mark_class
+    skip_hypothesis = mark_class(pytest.mark.skip(
+        reason='Skipping hypothesis based test: hypothesis library not available'))
+
+    # define a dummy decorator that can take args
+    def noop_decorators_with_args(*args, **kwargs):
+        def noop_decorators(func):
+            def internal():
+                pass
+            return func
+        return noop_decorators
+
+    # define a dummy strategy
+    def noop_strategy(*args, **kwargs):
+        pass
+
+    # define the decorator functions
+    example = given = reproduce_failure = settings = noop_decorators_with_args
+    # and strategies using in decorators
+    binary = characters = dictionaries = emails = none = one_of = sampled_from = text = noop_strategy
+
 from os.path import normpath
+from unittest.mock import patch
 
 from roundup.anypy.cgi_ import cgi
 from roundup.cgi import client, actions, exceptions
@@ -108,8 +138,12 @@ class MessageTestCase(unittest.TestCase):
 class testCsvExport(object):
 
     def testCSVExportBase(self):
+        if 'SENDMAILDEBUG' not in os.environ:
+            os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
+        SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
+
         cl = self._make_client(
-            {'@columns': 'id,title,status,keyword,assignedto,nosy,creation'},
+            {'@columns': 'id,title,status,keyword,assignedto,nosy,creation,messages'},
             nodeid=None, userid='1')
         cl.classname = 'issue'
 
@@ -127,19 +161,26 @@ class testCsvExport(object):
             return dummyClosure
         date.Date = dummyDate()
 
+        a_msg = self.db.msg.create(content="23a", author="4",
+                                   messageid="xyzzy@there",
+                                   recipients=['3'])
+        b_msg = self.db.msg.create(content="23b", author="3",
+                                   messageid="xyzzy@here",
+                                   recipients=['4'])
+        
         self.db.issue.create(title='foo1', status='2', assignedto='4', nosy=['3',demo_id])
         self.db.issue.create(title='bar2', status='1', assignedto='3', keyword=[key_id1,key_id2])
-        self.db.issue.create(title='baz32', status='4')
+        self.db.issue.create(title='baz32', status='4', messages=[a_msg, b_msg])
+        
         output = io.BytesIO()
         cl.request = MockNull()
         cl.request.wfile = output
         # call export version that outputs names
         actions.ExportCSVAction(cl).handle()
-        should_be=(s2b('"id","title","status","keyword","assignedto","nosy","creation"\r\n'
-                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo","2000-06-26 00:34"\r\n'
-                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef","2000-06-26 00:34"\r\n'
-                       '"3","baz32","need-eg","","","","2000-06-26 00:34"\r\n'))
-
+        should_be=(s2b('"id","title","status","keyword","assignedto","nosy","creation","messages"\r\n'
+                       '"1","foo1","deferred","","Contrary, Mary","Bork, Chef;Contrary, Mary;demo","2000-06-26 00:34",""\r\n'
+                       '"2","bar2","unread","keyword1;keyword2","Bork, Chef","Bork, Chef","2000-06-26 00:34",""\r\n'
+                       '"3","baz32","need-eg","","","Bork, Chef;Contrary, Mary","2000-06-26 00:34","1;2"\r\n'))
 
         #print(should_be)
         #print(output.getvalue())
@@ -149,10 +190,10 @@ class testCsvExport(object):
         cl.request.wfile = output
         # call export version that outputs id numbers
         actions.ExportCSVWithIdAction(cl).handle()
-        should_be = s2b('"id","title","status","keyword","assignedto","nosy","creation"\r\n'
-                        '''"1","foo1","2","[]","4","['3', '4', '5']","2000-06-26.00:34:02"\r\n'''
-                        '''"2","bar2","1","['1', '2']","3","['3']","2000-06-26.00:34:02"\r\n'''
-                        '''"3","baz32","4","[]","None","[]","2000-06-26.00:34:02"\r\n''')
+        should_be = s2b('"id","title","status","keyword","assignedto","nosy","creation","messages"\r\n'
+                        '''"1","foo1","2","[]","4","['3', '4', '5']","2000-06-26.00:34:02","[]"\r\n'''
+                        '''"2","bar2","1","['1', '2']","3","['3']","2000-06-26.00:34:02","[]"\r\n'''
+                        '''"3","baz32","4","[]","None","['3', '4']","2000-06-26.00:34:02","['1', '2']"\r\n''')
         #print(should_be)
         #print(output.getvalue())
         self.assertEqual(output.getvalue(), should_be)
@@ -184,7 +225,17 @@ class testCsvExport(object):
                         "\"2\",\"bar2\",\"1\",\"['1', '2']\",\"3\",\"['3']\"\r\n")
         self.assertEqual(output.getvalue(), should_be)
 
+        # clean up from email log
+        if os.path.exists(SENDMAILDEBUG):
+            os.remove(SENDMAILDEBUG)
+
+
 class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unittest.TestCase):
+
+    # Timeout for each fuzz test in ms. Use env variable in local
+    # pytest.ini if your dev environment can't complete in the default
+    # 10 seconds.
+    fuzz_deadline = int(os.environ.get('pytest_fuzz_timeout', 0)) or 10000
 
     def setUp(self):
         FormTestParent.setUp(self)
@@ -202,6 +253,24 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         classes = '|'.join(self.db.classes.keys())
         self.FV_SPECIAL = re.compile(FormParser.FV_LABELS%classes,
             re.VERBOSE)
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog, monkeypatch, subtests):
+        """Used to add pytest test fixtures to unittest based tests
+           because adding the name of a fixture to a method does not
+           make the method available.
+
+           So the decrorator runs with autouse=True to set params on
+           the unittest "self" making the fixtures available for
+           tests.
+
+           If you need another fixture, just add it to the argument list
+           and assign it to self and pytest will make it available.
+        """
+        
+        self._caplog = caplog
+        self._monkeypatch = monkeypatch
+        self._subtests = subtests
 
     #
     # form label extraction
@@ -929,12 +998,13 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.determine_context = MockNull ()
         def hasPermission(s, p, classname=None, d=None, e=None, **kw):
             return True
-        actions.Action.hasPermission = hasPermission
+
         e1 = _HTMLItem.is_edit_ok
         _HTMLItem.is_edit_ok = lambda x : True
         e2 = HTMLProperty.is_edit_ok
         HTMLProperty.is_edit_ok = lambda x : True
-        cl.inner_main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.inner_main()
         # The original self.db has been changed. Assign the new
         # cl.db to self.db so it gets closed at the end of the test.
         self.db = cl.db
@@ -977,6 +1047,260 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         self.db = cl.db # to close new db handle from main() at tearDown
         self.assertFalse('HTTP_PROXY' in cl.env)
         self.assertFalse('HTTP_PROXY' in os.environ)
+
+    def testTokenlessCsrfProtection(self):
+        # need to set SENDMAILDEBUG to prevent
+        # downstream issue when email is sent on successful
+        # issue creation. Also delete the file afterwards
+        # just to make sure that some other test looking for
+        # SENDMAILDEBUG won't trip over ours.
+        if 'SENDMAILDEBUG' not in os.environ:
+            os.environ['SENDMAILDEBUG'] = 'mail-test1.log'
+        SENDMAILDEBUG = os.environ['SENDMAILDEBUG']
+
+        page_template = """
+        <html>
+         <body>
+          <p tal:condition="options/error_message|nothing"
+             tal:repeat="m options/error_message"
+             tal:content="structure m"/>
+          <p tal:content="context/title/plain"/>
+          <p tal:content="context/priority/plain"/>
+          <p tal:content="context/status/plain"/>
+          <p tal:content="context/nosy/plain"/>
+          <p tal:content="context/keyword/plain"/>
+          <p tal:content="structure context/superseder/field"/>
+         </body>
+        </html>
+        """.strip ()
+        self.db.keyword.create (name = 'key1')
+        self.db.keyword.create (name = 'key2')
+        nodeid = self.db.issue.create (title = 'Title', priority = '1',
+            status = '1', nosy = ['1'], keyword = ['1'])
+        self.db.commit ()
+        form = {':note': 'msg-content', 'title': 'New title',
+            'priority': '2', 'status': '2', 'nosy': '1,2', 'keyword': '',
+            ':action': 'edit'}
+
+        pt = RoundupPageTemplate()
+        pt.pt_edit(page_template, 'text/html')
+        out = []
+        def wh(s):
+            out.append(s)
+
+        cl = self.setupClient(form, 'issue', '1')
+        cl.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION'] = 'yes'
+        cl.write_html = wh
+
+        # Enable the following if we get a templating error:
+        #def send_error (*args, **kw):
+        #    import pdb; pdb.set_trace()
+        #cl.send_error_to_admin = send_error
+        # Need to rollback the database on error -- this usually happens
+        # in web-interface (and for other databases) anyway, need it for
+        # testing that the form values are really used, not the database!
+        # We do this together with the setup of the easy template above
+        def load_template(x):
+            cl.db.rollback()
+            return pt
+        cl.instance.templates.load = load_template
+        cl.selectTemplate = MockNull()
+        cl.determine_context = MockNull ()
+        def hasPermission(s, p, classname=None, d=None, e=None, **kw):
+            return True
+        self._monkeypatch.setattr(actions.Action, "hasPermission",
+                                  hasPermission)
+        self._monkeypatch.setattr(_HTMLItem, "is_edit_ok",lambda x : True)
+        self._monkeypatch.setattr(HTMLProperty, "is_edit_ok",lambda x : True)
+
+        # If Result is not "Unable to authorize request", the CSRF check
+        # passed. Since we are using a form that specified the edit action,
+        # GET, HEAD, OPTIONS should all fail with invalid request as edit
+        # action requires POST.
+        test_table = [
+            { 
+                # Case 1: test with no security headers.
+                # Should get a redirect and create an issue since
+                # browsers will set either Origin or Sec-Fetch-Site. So
+                # request not from a browser and we allow it.
+                "Request_Method": "POST",
+                "HTTP_Origin": None,
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": None,
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+            },
+            {
+                # Case 2: POST should succeed with base origin.
+                "Request_Method": "POST",
+                "HTTP_Origin": "http://tracker.example",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20')
+            },
+            {
+                # Case 3: POST should fail due to bad origin.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": "Unable to authorize request"
+            },
+            {
+                # Case 4: POST should succeed with added origin.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+                'allowed_api_origins': "* https://whatRU.com https://foo.bar" 
+            },
+            {
+                # Case 5: GET should get to action and be rejected
+                #   for editing with a GET.
+                "Request_Method": "GET",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": 'Invalid request',
+            },
+            {
+                # Case 6: HEAD should get to action and be rejected
+                #   for editing with a GET.
+                "Request_Method": "HEAD",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "whoami.com",
+                "Result": 'Invalid request',
+            },
+            {
+                # Case 7: POST should succeed due to fetch same-origin.
+                #  this combination should never be sent by a browser.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": "same-origin",
+                "HTTP_Host": "whoami.com",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+            },
+            {
+                # Case 8: POST should fail due to fetch same-site.
+                #  this combination should never be sent by a browser.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": "same-site",
+                "HTTP_Host": "whoami.com",
+                "Result": "Unable to authorize request",
+            },
+            {
+                # Case 9: POST should suceed due to fetch none.
+                #  (user triggered browser bookmark)
+                "Request_Method": "POST",
+                "HTTP_Origin": None,
+                "HTTP_Sec_Fetch_Site": "none",
+                "HTTP_Host": "whoami.com",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+            },
+            {
+                # Case 10: POST should fail due to fetch same-site.
+                #  this combination should never be sent by a browser.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": "same-site",
+                "HTTP_Host": "foo.bar",
+                "Result": "Unable to authorize request",
+            },
+            {
+                # Case 11: UNLOCK should fail, unsupported method
+                "Request_Method": "UNLOCK",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": "same-site",
+                "HTTP_Host": "foo.bar",
+                "Result": "Bad method: UNLOCK",
+                "response_code": 405
+            },
+            {
+                # Case 12: POST should pass csrf because origin's host
+                # component and HOST match.
+                "Request_Method": "POST",
+                "HTTP_Origin": "https://foo.bar",
+                "HTTP_Sec_Fetch_Site": None,
+                "HTTP_Host": "foo.bar",
+                "Result": ('Redirecting to '
+                           '<a href="http://whoami.com/path/issue1'
+                           '?@ok_message=msg%20'),
+            },
+        ]
+
+        for entry, test in enumerate(test_table):
+            print("Running test", entry)
+            if 'PATH_INFO' in test:
+                cl.env = {"PATH_INFO": test['PATH_INFO']}
+            else:
+                cl.env = {"PATH_INFO": "/"}
+            for header in ["Request_Method", "HTTP_Origin",
+                           "HTTP_Sec_Fetch_Site", "HTTP_Host"]:
+                if test[header]:
+                    cl.env[header.upper()] = test[header]
+            if 'allowed_api_origins' in test:
+                cl.db.config['WEB_ALLOWED_API_ORIGINS'] = test[
+                    'allowed_api_origins']
+            else:
+                cl.db.config['WEB_ALLOWED_API_ORIGINS'] = ""
+
+            cl.main()
+
+            # make each case above a subtest
+            with self._subtests.test(entry=entry):
+                self.assertIn(test['Result'], out[0])
+
+                if "response_code" in test:
+                    self.assertEqual(test['response_code'], cl.response_code)
+
+            del(out[0])
+
+        # get request with nonce
+        cl.env = {"PATH_INFO": "/"}
+        # make sure that a get deletes the csrf.
+        cl.env['REQUEST_METHOD'] = 'GET'
+        cl.env['HTTP_REFERER'] = "test routine"
+
+        # used to test deletion of exposed nonces.
+        # must reset tokenless setting so we get a real nonce and not 0.
+        cl.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION'] = 'no'
+        real_nonce = anti_csrf_nonce(cl)
+        cl.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION'] = 'yes'
+
+        form2 = copy.copy(form)
+        form2.update({'@csrf': real_nonce})
+
+        # add a real csrf field to the form and rerun main
+        cl.form = db_test_base.makeForm(form2)
+        cl.main()
+
+        # csrf passes but fail creating new issue because not a post
+        match_at=out[0].find('<p>Invalid request</p>')
+        self.assertEqual(match_at, 33)
+
+        # verify record was logged.
+        self.assertEqual( 'csrf key used with method GET from: '
+                          'Referer(test routine)',
+                          self._caplog.messages[0])
+
+        # verify nonce is 0 when tokenless protection enabled.
+        self.assertEqual("0", anti_csrf_nonce(cl))
+        
+        # clean up from email log
+        if os.path.exists(SENDMAILDEBUG):
+            os.remove(SENDMAILDEBUG)
 
     def testCsrfProtectionHtml(self):
         # need to set SENDMAILDEBUG to prevent
@@ -1034,7 +1358,6 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.determine_context = MockNull ()
         def hasPermission(s, p, classname=None, d=None, e=None, **kw):
             return True
-        actions.Action.hasPermission = hasPermission
         orig_HTMLItem_is_edit_ok = _HTMLItem.is_edit_ok
         e1 = _HTMLItem.is_edit_ok
         _HTMLItem.is_edit_ok = lambda x : True
@@ -1044,7 +1367,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         # test with no headers. Default config requires that 1 header
         # is present and passes checks.
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Unable to verify sufficient headers')
         print("result of subtest 1:", out[0])
         self.assertNotEqual(match_at, -1)
@@ -1053,7 +1377,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # all the rest of these allow at least one header to pass
         # and the edit happens with a redirect back to issue 1
         cl.env['HTTP_REFERER'] = 'http://whoami.com/path/'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 2:", out[0])
         self.assertEqual(match_at, 0)
@@ -1062,7 +1387,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         # verify that HTTP_REFERER does not result in an XSS reflection
         cl.env['HTTP_REFERER'] = '<script>alert(1)</script>'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('<script>')
         match_encoded_at=out[0].find('&lt;script&gt;')
         print("\n\nresult of subtest 2a:", out[0])
@@ -1072,7 +1398,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
 
         cl.env['HTTP_ORIGIN'] = 'http://whoami.com'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 3:", out[0])
         self.assertEqual(match_at, 0)
@@ -1086,7 +1413,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # the proxy's name for the web server and not the name
         # thatis exposed to the world.
         cl.env['HTTP_HOST'] = 'frontend1.whoami.net'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 4:", out[0])
         self.assertNotEqual(match_at, -1)
@@ -1095,7 +1423,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
 
         cl.env['HTTP_HOST'] = 'whoami.com'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 5:", out[0])
         self.assertEqual(match_at, 0)
@@ -1106,7 +1435,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.env['HTTP_X_FORWARDED_HOST'] = 'whoami.net'
         # this raises an error as the header check passes and 
         # it did the edit and tries to send mail.
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Invalid X-FORWARDED-HOST whoami.net')
         print("result of subtest 6:", out[0])
         self.assertNotEqual(match_at, -1)
@@ -1119,7 +1449,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         # roundup will report a missing token.
         cl.db.config['WEB_CSRF_ENFORCE_TOKEN'] = 'required'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find("<p>We can't validate your session (csrf failure). Re-enter any unsaved data and try again.</p>")
         print("result of subtest 6a:", out[0], match_at)
         self.assertEqual(match_at, 33)
@@ -1131,7 +1462,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # add a bogus csrf field to the form and rerun main
         cl.form = db_test_base.makeForm(form2)
 
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find("We can't validate your session (csrf failure). Re-enter any unsaved data and try again.")
         print("result of subtest 7:", out[0])
         self.assertEqual(match_at, 36)
@@ -1150,7 +1482,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         form2.update({'@csrf': nonce})
         # add a real csrf field to the form and rerun main
         cl.form = db_test_base.makeForm(form2)
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         # csrf passes and redirects to the new issue.
         match_at=out[0].find('Redirecting to <a href="http://whoami.com/path/issue1?@ok_message')
         print("result of subtest 9:", out[0])
@@ -1158,7 +1491,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(out[0])
 
         # try a replay attack
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         # This should fail as token was wiped by last run.
         match_at=out[0].find("We can't validate your session (csrf failure). Re-enter any unsaved data and try again.")
         print("replay of csrf after post use", out[0])
@@ -1174,13 +1508,14 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         form2.update({'@csrf': nonce})
         # add a real csrf field to the form and rerun main
         cl.form = db_test_base.makeForm(form2)
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         # csrf passes but fail creating new issue because not a post
         match_at=out[0].find('<p>Invalid request</p>')
         print("result of subtest 11:", out[0])
         self.assertEqual(match_at, 33)
         del(out[0])
-        
+
         # the token should be gone
         isitthere = otks.exists(nonce)
         print("result of subtest 12:", isitthere)
@@ -1190,7 +1525,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # since get deleted the token.
         cl.env.update({'REQUEST_METHOD': 'POST'})
         print(cl.env)
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find("We can't validate your session (csrf failure). Re-enter any unsaved data and try again.")
         print("post failure after get", out[0])
         print("result of subtest 13:", out[0])
@@ -1203,7 +1539,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         # this should not redirect as it is not an API call.
         cl.db.config.WEB_ALLOWED_API_ORIGINS = "  *  "
         cl.env['HTTP_ORIGIN'] = 'https://baz.edu'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Invalid Origin https://baz.edu')
         print("result of subtest invalid origin:", out[0])
         self.assertEqual(match_at, 36)
@@ -1216,7 +1553,8 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.db.config.WEB_ALLOWED_API_ORIGINS = "  *  "
         cl.env['HTTP_ORIGIN'] = 'http://whoami.com'
         cl.env['HTTP_REFERER'] = 'https://baz.edu/path/'
-        cl.main()
+        with patch.object(actions.Action, "hasPermission", hasPermission):
+            cl.main()
         match_at=out[0].find('Invalid Referer: https://baz.edu/path/')
         print("result of subtest invalid referer:", out[0])
         self.assertEqual(match_at, 36)
@@ -1224,7 +1562,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         del(cl.env['HTTP_REFERER'])
         cl.db.config.WEB_ALLOWED_API_ORIGINS = ""
         del(out[0])
-        
+
         # clean up from email log
         if os.path.exists(SENDMAILDEBUG):
             os.remove(SENDMAILDEBUG)
@@ -1242,7 +1580,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
         out = []
         def wh(s):
-           out.append(s)
+            out.append(s)
 
         # rest has no form content
         form = cgi.FieldStorage()
@@ -1255,7 +1593,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1267,7 +1605,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             'origin': 'http://whoami.com',
         }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         cl.handle_rest()
@@ -1306,7 +1644,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1315,7 +1653,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         h = { 'content-type': 'application/json',
               'accept': 'application/json' }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain
@@ -1334,7 +1672,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'PATH_INFO':'rest/data/issue',
                             'Access-Control-Request-Headers': 'Authorization',
                             'Access-Control-Request-Method': 'GET',
-                           }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1344,9 +1682,9 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
               'accept': 'application/json',
               'access-control-request-headers': 'Authorization',
               'access-control-request-method': 'GET',
-        }
+             }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain
@@ -1354,11 +1692,11 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         cl.handle_rest()
         self.db = cl.db # to close new db handle from main() at tearDown
         self.assertNotIn('Access-Control-Allow-Credentials',
-                      cl.additional_headers)
+                         cl.additional_headers)
 
         self.assertNotIn('Access-Control-Allow-Origin',
-            cl.additional_headers
-        )
+                         cl.additional_headers
+                         )
 
         self.assertEqual(cl.response_code, 403)
         del(out[0])
@@ -1377,7 +1715,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://invalid.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         self.db = cl.db # to close new db handle from main() at tearDown
         cl.base = 'http://whoami.com/path/'
@@ -1390,13 +1728,13 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             'origin': 'http://invalid.com',
         }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
         cl.handle_rest()
         self.db = cl.db # to close new db handle from main() at tearDown
         self.assertEqual(json.loads(b2s(out[0])),
                          json.loads(expected)
-        )
+                         )
         self.assertNotIn('Access-Control-Allow-Credentials',
                          cl.additional_headers)
         self.assertIn('Access-Control-Allow-Origin',
@@ -1418,7 +1756,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1427,7 +1765,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         h = { 'content-type': 'application/json',
               'accept': 'application/json' }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain
@@ -1450,7 +1788,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
                             'HTTP_REFERER': 'http://whoami.com/path/',
                             'HTTP_ACCEPT': "application/json;version=1",
                             'HTTP_X_REQUESTED_WITH': 'rest',
-                        }, form)
+                            }, form)
         cl.db = self.db
         cl.base = 'http://whoami.com/path/'
         cl._socket_op = lambda *x : True
@@ -1460,7 +1798,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
               'accept': 'application/json',
               'origin': 'null' }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain
@@ -1472,6 +1810,19 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         self.assertEqual(json.loads(b2s(out[0])),json.loads(expected))
         del(out[0])
 
+    _safe_char_set = {chr(x) for x in range(32,127)}        
+    @skip_hypothesis
+    @given(dictionaries(
+        text(alphabet=characters(codec='utf-8', include_characters=_safe_char_set),
+             min_size=1,max_size=10),
+        text(alphabet=characters(exclude_characters=_safe_char_set),
+             min_size=1, max_size=10),
+        min_size=1, max_size=2))
+    @example({"safe": "myheader%$#", "unsafe": "value\r\nNew-Header"})    
+    @settings(max_examples=50, deadline=fuzz_deadline)
+    def testHeaderRejection(self, headers):
+        v = client.are_header_values_safe(headers)
+        self.assertIsNot(v, None)
 
     def testRestOptionsBadAttribute(self):
         import json
@@ -1732,7 +2083,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
         h = { 'content-type': 'application/json',
               'accept': 'application/json' }
         cl.request.headers = MockNull(**h)
-                                      
+
         cl.write = wh # capture output
 
         # Should return explanation because content type is text/plain
@@ -1973,7 +2324,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
             actions.EditItemAction(cl).handle)
 
     def testCheckAndPropertyPermission(self):
-        self.db.security.permissions = {}
+        self.db.security.permission = {}
         def own_record(db, userid, itemid):
             return userid == itemid
         p = self.db.security.addPermission(name='Edit', klass='user',
@@ -2004,7 +2355,7 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
     def testCreatePermission(self):
         # this checks if we properly differentiate between create and
         # edit permissions
-        self.db.security.permissions = {}
+        self.db.security.permission = {}
         self.db.security.addRole(name='UserAdd')
         # Don't allow roles
         p = self.db.security.addPermission(name='Create', klass='user',
@@ -2061,7 +2412,6 @@ class FormTestCase(FormTestParent, StringFragmentCmpHelper, testCsvExport, unitt
 
     def testSearchPermission(self):
         # this checks if we properly check for search permissions
-        self.db.security.permissions = {}
         self.db.security.addRole(name='User')
         self.db.security.addRole(name='Project')
         self.db.security.addPermissionToRole('User', 'Web Access')
@@ -3047,10 +3397,10 @@ class TemplateHtmlRendering(unittest.TestCase, testFtsQuery):
         #
         # break components with unescaped character '<'
         # path component
-        te("http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue", 'Path component (/cgi-bin/roundup.cgi/bugs/<user3) in http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue is not properly escaped')
+        te("http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue", 'Path component (/cgi-bin/roundup.cgi/bugs/<user3;parm=bar) in http://tracker.example/cgi-bin/roundup.cgi/bugs/<user3;parm=bar?@template=foo&parm=(zot)#issue is not properly escaped')
 
         # params component
-        te("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue", 'Params component (parm=b<ar) in http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue is not properly escaped')
+        te("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue", 'Path component (/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar) in http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=b<ar?@template=foo&parm=(zot)#issue is not properly escaped')
 
         # query component
         te("http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=<foo>&parm=(zot)#issue", 'Query component (@template=<foo>&parm=(zot)) in http://tracker.example/cgi-bin/roundup.cgi/bugs/user3;parm=bar?@template=<foo>&parm=(zot)#issue is not properly escaped')
@@ -3380,8 +3730,7 @@ class TemplateUtilsTestCase(unittest.TestCase):
             r"^Found an incorrect token when expandfile applied "
             r"string subsitution on "
             r"'[^']*[\\/]_test_template[\\/]html[\\/]file_with_broken_expand_type.js'. "
-            r"ValueError\('incomplete format'\) was raised. Check the format "
-            r"of your named conversion specifiers."))
+            r"ValueError"))
         self._caplog.clear()
         r = None
 
@@ -3458,10 +3807,7 @@ class TemplateUtilsTestCase(unittest.TestCase):
             r"^Found an incorrect token when expandfile applied "
             r"string subsitution on "
             r"'[^']*[\\/]_test_template[\\/]html[\\/]file_with_bare_%.js'. "
-            r"ValueError\("
-            r"'unsupported format character ' ' \(0x20\) at index 12'\) was "
-            r"raised. Check the format "
-            r"of your named conversion specifiers."))
+            r"ValueError\("))
         self._caplog.clear()
         r = None
 

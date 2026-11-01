@@ -32,18 +32,13 @@ if (osp.exists(thisdir + '/__init__.py') and
 
 
 # python version check - import exits if version invalid
-from roundup import version_check  # noqa: F401
+from roundup import version_check  # noqa: E402 F401
 
 # import the admin tool guts and make it go
-from roundup.admin import AdminTool
-from roundup.i18n import _
+from roundup.admin import AdminTool  # noqa: E402
 
 
 def run():
-    # time out after a minute if we can
-    import socket
-    if hasattr(socket, 'setdefaulttimeout'):
-        socket.setdefaulttimeout(60)
     tool = AdminTool()
     sys.exit(tool.main())
 

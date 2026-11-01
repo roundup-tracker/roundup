@@ -99,7 +99,9 @@ class Msgfmt:
                 return output.readlines()
             if first.startswith(codecs.BOM_UTF8):
                 first = first.lstrip(codecs.BOM_UTF8)
-            return [first] + output.readlines()
+            contents = [first] + output.readlines()
+            output.close()
+            return contents
         return output
 
     def add(self, context, label, string, fuzzy):

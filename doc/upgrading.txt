@@ -6,6 +6,12 @@
 
 .. index:: Upgrading
 
+.. comment:
+   add del role to mark obsolete entries with del in block mode
+   and span.del in inline mode. span.del css adds strikethrough.
+
+.. role:: del
+
 ======================================
 Upgrading to newer versions of Roundup
 ======================================
@@ -42,13 +48,13 @@ General steps:
 
 Repeat for each tracker instance.
 
-.. note::
-   The v1.5.x releases of Roundup were the last to support
+.. note:: The v1.5.x releases of Roundup were the last to support
    Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
    Python version 2.7 that is newer than 2.7.2 is required to run
-   Roundup.  Starting with Roundup version 2.0.0 we also support Python 3
-   versions newer than 3.6. Roundup version 2.5 supports Python
-   3.7 and newer.
+   Roundup.  Starting with Roundup version 2.0.0 we also support
+   Python 3 versions newer than 3.6. Roundup version 2.5 supports
+   Python 3.7 and newer. Roundup version 2.6 supports Python version
+   3.10 and newer.
 
 Recent release notes have the following labels:
 
@@ -58,6 +64,7 @@ Recent release notes have the following labels:
 * **optional** - new features or changes to existing features you might
   want to use
 * **info** - important possibly visible changes in how things operate
+* **obsolete** - ignore these entries. They are no longer required.
 
 If you use virtual environments for your installation, you
 can run trackers with different versions of Roundup. So you
@@ -103,10 +110,452 @@ your database.
 
   </details>
 
+.. index:: Upgrading; 2.6.0 to 2.7.0
+
+Migrating from 2.6.0 to 2.7.0
+=============================
+
+POST method required for search action (required)
+-------------------------------------------------
+
+This change makes it more difficult for an attacker to create a forged
+request to change a stored search. It also removes a case where GET
+can change data which is against the HTTP spec.
+
+The search action form (editing/creating searches or queries) must be
+submitted using the POST HTTP method and not the GET method. To find
+the templates that are affected, search for lines where ``@action`` is
+followed by ``search``.
+
+Adding the ``@csrf`` value for the search forms is optional unless the
+tracker's config.ini has ``csrf_enforce_token = required`` set.
+However adding it is strongly encouraged for compatibility.
+
+In the files that set ``@action`` to ``search``, find the line where
+``@action`` is set and add a new hidden input that looks like::
+
+   <input name="@csrf" type="hidden"
+          tal:attributes="value python:utils.anti_csrf_nonce()">
+
+after the hidden input that defines ``@action``. Before::
+
+   <input type="hidden" name="@action" value="search">
+
+after::
+
+   <input type="hidden" name="@action" value="search">
+   <input name="@csrf" type="hidden"
+          tal:attributes="value python:utils.anti_csrf_nonce()">
+
+(Note if you are using a jinja template use::
+
+   <input name="@csrf" type="hidden"
+         value="{{ utils.anti_csrf_nonce() }}">
+
+)
+
+Then modify the ``<form>`` tag changing ``method="get"`` (or
+``method="GET"``) to ``method="POST"``. As an example if your form
+looks like::
+
+   <form method="get" name="itemSynopsis"
+
+edit it to look like::
+
+   <form method="POST" name="itemSynopsis"
+
+If you miss a form, you will see the error "Invalid request" when the
+submit is done using get.
+
+jQuery updated for jinja2, devel, responsive templates (recommended)
+--------------------------------------------------------------------
+
+The jinja2, devel, and responsive templates have their jquery updated.
+
+The jinja2 template is now using version ``jquery-1.12.4.min.js``.
+The devel and responsive templates are using ``jquery-3.7.1.min.js`` -
+note that the prior devel and responsive jquery versions were not
+minimized. The minimized versions are 1/3 the size and load faster.
+
+As far as we know, there are no additional security issues with the
+older versions (e.g. 1.12.4 has the same issues as 1.9.0). However, we
+recommend you upgrade your trackers to use the newer versions.  You
+can copy the new jquery versions from the installed templates, or
+download from https://releases.jquery.com/.
+
+To use the new versions, you have to change the templates.
+
+If your tracker is based on the jinja2 template, change
+``html/layout/page.html`` in your tracker's home directory by applying
+the following diff::
+
+	   {% include 'layout/footer.html' %}
+	 {% endblock %}
+
+    -    <script src='@@file/jquery-1.9.0.min.js'></script>
+    +    <script src='@@file/jquery-1.12.4.min.js'></script>
+	 <script src='@@file/bootstrap.min.js'></script>
+	 <script src='@@file/datecopy.min.js'></script>
+	 {% block extrajs %} {% endblock %}
+
+
+For a devel or responsive based tracker change ``html/user.help.html``
+in your tracker's home directory using the following diff::
+
+	     return bol
+	   }
+	 </script>
+    -    <script src="@@file/jquery-3.6.3.js" type="text/javascript"></script>
+    +    <script src="@@file/jquery-3.7.1.min.js" type="text/javascript"></script>
+	 <script src="@@file/query.js" type="text/javascript"></script>
+       </tal:block>
+       <tal:block metal:fill-slot="content">
+
+
+Replace localReplace in templates/extensions (recommended)
+----------------------------------------------------------
+
+For a long time, the devel and responsive templates (and online
+examples) have defined a ``utils.localReplace`` extension to use in
+templates.  This release will not interfere with the use of
+localReplace.
+
+However, in the future, you might want to upgrade your templates to
+match changes in the distributed templates. If you accidently replace
+``localReplace`` in the template, you would disable your extension.
+
+Release 2.7.0 added ``local_replace`` to the classic template. If an
+admin doesn't define a local_replace extension, a new
+placeholder/fallback definition for ``local_replace`` is used
+automatically. The name ``local_replace`` also matched normal Python
+naming conventions. We suggest updating from ``localReplace`` to the
+``local_replace`` in your extension definition and in your templates.
+
+To make the change, search for the string ``localReplace`` in your
+tracker's ``extensions`` and ``html`` directories. Replace
+``localReplace(`` with ``local_replace(``. As an example your
+extension file may have had::
+
+ def init(instance):
+     instance.registerUtil('localReplace', local_replace)
+
+after you will have::
+
+ def init(instance):
+     instance.registerUtil('local_replace', local_replace)
+
+Similarly you would have a template with::
+
+     <pre tal:condition="python:msg.content.is_view_ok()"
+          tal:content="structure python:utils.localReplace(msg.content.hyperlinked())">content</pre>
+
+and after you should have::
+
+     <pre tal:condition="python:msg.content.is_view_ok()"
+          tal:content="structure python:utils.local_replace(msg.content.hyperlinked())">content</pre>
+
+Mark replacement strings as raw strings in local_replace.py (recommended)
+-------------------------------------------------------------------------
+
+If your tracker uses local_replace, you may see warnings about ``\g``
+is an unrecognized escape character. This bug was fixed in the 2.7.0
+devel and responsive templates by prefixing the string with the ``r``
+character to mark it as a raw string.
+
+An example diff (with spacing reformatted) looks like::
+
+       # matching hg revison number or hash
+       (re.compile(r'(?P<prews>(^|\s+))(?P<revstr>(revision|rev|r)\>
+       -      r'\g<prews><a href="' + hg_url_base + '\g<revision>">\g<rev>
+       +      r'\g<prews><a href="' + hg_url_base + r'\g<revision>">\g<re>
+
+Note the second string on the changed line is marked with an ``r``.
+These warning started showing up on newer Python versions.  It is
+possible it will be an error on future Python versions, so best check
+for and fix it now.
+
+Update userauditor to ignore substring matches (recommended)
+------------------------------------------------------------
+
+In Roundup, users are linked to one primary address and can be linked
+to one or more secondary addresses. If any address changes, the
+userauditor verifies that the changed address is not used by another
+user. Mattias Reuterskiöld (matre) fixed a bug in the userauditor that
+caused incorrect address matching when one address was a substring of
+another. For example, the address ``ed@example.org`` would wrongly
+match ``fred@example.or``.
+
+The simplest way to fix this in your trackers is to copy and replace
+``detectors/userauditor.py`` in your tracker's home directory with an
+updated ``userauditor.py`` from a 2.7 tracker template.
+
+If you have changed your userauditor you can apply the following
+change to your current userauditor. In ``detectors/userauditor.py``
+find the following code::
+
+     # make sure none of the alts are owned by anyone other than us (x!=nodeid)
+     check_alts = [x for x in db.user.filter(None, {'alternate_addresses' : address}) if x != nodeid]
+
+and replace it with this::
+
+     # make sure none of the alts are owned by anyone other than us (x!=nodeid)
+     check_alts = [
+         x for x in db.user.filter(None, {'alternate_addresses': address})
+         if x != nodeid
+         and address in db.user.get(x, 'alternate_addresses').split('\n')
+     ]
+
+(make sure to match the indentation of the existing code). This adds
+an extra check to the list comprehension. The extra check compares the
+new address against each full address in the alternate_addresses list.
+
+Update classhelper.js (optional)
+--------------------------------
+
+There is a new release of ``classhelper.js`` that adds a modern
+classhelper interface (usually invoked by the ``(list)`` link in your
+issue.item.html template).
+
+This release supports the classhelper parameter ``inputtype='radio'``.
+It generates a classhelper where only one element can be selected. It
+is meant for use with link type properties. The default is the
+``checkbox`` inputtype which is used for multilink type properties.
+
+Also there is an option to allow the names of linked items to include
+a comma when you are using the radio type input. E.G. if you had a
+link to customers where the names were something like ``a cust omer,
+LTD.``. Without the option, only the text before the comma would be
+sent to the parent form. Also when storing the value on the parent
+form, that changed field is focused to allow the user to verify the
+value.
+
+If you have already adopted the ``<roundup-classhelper>`` web
+component, you can copy the ``classhelper.js`` file from the Roundup
+classic template directory into your tracker replacing the existing
+``classhelper.js`` file. If you would like to adopt the
+``<roundup-classhelper>`` web component, see the section `Add new
+classhelper to your templates (optional)`_.
+
 .. index:: Upgrading; 2.5.0 to 2.6.0
 
 Migrating from 2.5.0 to 2.6.0
 =============================
+
+Incomplete CSRF protection fixed (required)
+--------------------------------------------
+
+This release fixes cross site request forgery (CSRF) protection for
+the PATCH method. You do not have to change anything if you are
+running release 2.6.0 or newer. This bug was introduced in version
+2.0.0 when the REST interface that implements the PATCH method was
+added.
+
+The ``PATCH`` method is used with the rest interface and allows
+partial modification of a Roundup object/document. If you have REST
+turned off for your tracker, you are not vulnerable.
+
+This release also returns a 405 Method not allowed error for all
+methods except GET, HEAD, and POST when querying the main (HTML)
+interface. Previously, other methods acted like GET was specified.
+
+.. _CVE-2026-csrfL:
+
+Remediating missing PATCH CSRF protections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are using the REST API, there are two ways to fix this issue
+with releases 2.0.0 through 2.5.0:
+
+  1. if you are not using PATCH in your workflow, disable the PATCH
+     method in your tracker,
+
+  2. patch the cgi/client.py file to include the PATCH method in csrf
+     protections.
+
+Disable PATCH
+^^^^^^^^^^^^^
+
+To disable the PATCH method for your tracker add the following code to
+the file ``interfaces.py`` in your tracker's home directory::
+
+    from roundup.cgi.client import UsageError
+    from roundup.cgi.client import Client
+
+    original_handle_csrf = Client.handle_csrf
+
+    def csrf_wrapper_deny_patch(self, api=False):
+	method = self.env['REQUEST_METHOD']
+	if method == 'PATCH':
+	    raise UsageError("Blocked Request: %s" % method)
+	return original_handle_csrf(self, api)
+
+    Client.handle_csrf = csrf_wrapper_deny_patch
+
+then restart your tracker. You can test it using::
+
+    curl -u user:password -X PATCH \
+	-H "Origin: <origin>" <origin>/rest/data/issue/1
+
+and you should receive::
+
+    { "error": { "status": 400, "msg": "Blocked Request: PATCH"}}
+
+This will disable the use of PATCH in all web requests.  When you
+upgrade to release 2.6, remember to re-enable ``PATCH`` you can
+re-enable it by deleting the code above from ``interfaces.py``.
+
+Apply CSRF Protections
+^^^^^^^^^^^^^^^^^^^^^^
+
+However, if you need to use PATCH request, you can change the
+installed Roundup source and apply CSRF protections to the PATCH
+command.
+
+Make a backup copy of the file before changing it. Find the lines in
+cgi/client.py that look like::
+
+    # Assume: never allow changes via GET
+    if method not in ['POST', 'PUT', 'DELETE']:
+	if (self.form.list is not None) and ("@csrf" in self.form):
+
+Change the middle line so it looks like::
+
+    if method not in ['POST', 'PUT', 'DELETE', 'PATCH']:
+
+.. comment: end of CVE include marker
+
+
+Correct property permission check in history display (recommended)
+------------------------------------------------------------------
+
+If you are upgrading to 2.6, you don't have to do anything and you can
+skip this section.
+
+If you are running versions 1.6.0 to version 2.5 the filtering of
+history/journal items does not work correctly if the property is
+protected by a check function.
+
+.. _CVE-2026-history_propL:
+
+Remediating incomplete property permission check
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To fix this, you need to find the ``View`` and ``Edit`` checks in the
+history method in the ``roundup/hyperdb.py`` file.  Make a backup copy
+of the file before making a change. (Note that the 1.6 releases only
+checked for ``View`` permissions.)  In the 1.6 release it looks
+something like::
+
+      if enforceperm and not perm("View",
+              self.db.getuid(),
+              self.classname,
+              property=k ):
+      logger.debug("skipping unViewable property %s in >
+                   k, j_repr)
+      del j[4][k]
+      continue
+
+Add::
+
+  itemid=nodeid
+
+to the View (and Edit check if present) so it looks like::
+
+      if enforceperm and not perm("View",
+              self.db.getuid(),
+              self.classname,
+	      itemid=nodeid,
+              property=k )
+
+In the 2.5 and newer releases this code block includes a check for
+Edit permissions and when fixed looks like::
+
+    if enforceperm and not (perm("View",
+                                 uid,
+                                 self.classname,
+                                 itemid=nodeid,
+                                 property=key) or
+                            perm("Edit",
+                                 uid,
+                                 self.classname,
+                                 itemid=nodeid,
+                                 property=key)):
+        logger.debug("skipping unaccessible property "
+                     "%s::%s seen by user%s in %s",
+                     self.classname, key, uid, j_repr)
+        del args[key]
+        continue
+
+.. comment: end of CVE include marker
+
+Default Logs Include Unique Request Identifier (info)
+-----------------------------------------------------
+
+The default logging format has been changed from::
+
+  %(asctime)s %(levelname)s %(message)s
+
+to::
+
+  %(asctime)s %(trace_id)s %(levelname)s %(message)s
+
+So logs now look like::
+
+    2025-08-20 03:25:00,308 f6RPbT2s70vvJ2jFb9BQNF DEBUG get user1 cached
+
+which in the previous format would look like::
+
+    2025-08-20 03:25:00,308 DEBUG get user1 cached
+
+The new format includes ``trace_id`` which is a thread and process
+unique identifier for a single request. So you can link together all
+of the log lines and determine where a slow down or other
+problem occurred.
+
+The logging format is now a ``config.ini`` parameter in the
+``logging`` section with the name ``format``. You can change it if you
+would like the old logging format without having to create a logging
+configuration file. See :ref:`rounduplogging` for details.
+
+Make Pagination Links Keep Search Name (optional)
+-------------------------------------------------
+
+When displaying a named search, index templates don't preserve
+the name when using the pagination (Next/Prev) links. This is
+fixed in the 2.6.0 templates for issues/bugs/tasks. To make the
+change to your templates, look for the pagination links (look for
+prev or previous case insensitive) in your tracker's html
+subdirectory and change::
+
+   request.indexargs_url(request.classname,
+         {'@startwith':prev.first, '@pagesize':prev.size})"
+
+to read::
+
+   request.indexargs_url(request.classname,
+                     dict({'@dispname': request.dispname}
+                     if request.dispname
+                     else {},
+                     **{'@startwith':prev.first, '@pagesize':prev.size}))"
+
+This code will be embedded in templating markup that is not shown
+above. The change above is for your previous/prev link. The
+change for the next pagination link is similar with::
+
+   {'@startwith':next.first, '@pagesize':next.size}
+
+replacing::
+
+    {'@startwith':prev.first, '@pagesize':prev.size}
+
+in the example.
+
+This moves the existing dictionary used to override the URL
+arguments to the second argument inside a ``dict()`` call. It
+also adds ``**`` before it. This change creates a new override
+dictionary that includes an ``@dispname`` parameter if it is set
+in the request. If ``@dispname`` is not set, the existing
+dictionary contents are used.
 
 Support authorized changes in your tracker (optional)
 -----------------------------------------------------
@@ -133,12 +582,296 @@ date, text etc.) do not need JavaScript to work.
 
 See :ref:`Confirming the User` in the reference manual for details.
 
+Support for dictConfig Logging Configuration (optional)
+-------------------------------------------------------
+
+Roundup's basic log configuration via config.ini has always had the
+ability to use an ini style logging configuration to set levels per
+log channel, control output file rotation etc.
+
+With Roundup 2.6 you can use a JSON like file to configure logging
+using `dictConfig
+<https://docs.python.org/3/library/logging.config.html#logging.config.dictConfig>`_. The
+JSON file format as been enhanced to support comments that are
+stripped before being processed by the logging system.
+
+You can read about the details in the :ref:`admin manual <dictLogConfig>`.
+
+Fix user.item.html template producing invalid Javascript (optional)
+-------------------------------------------------------------------
+
+The html template ``page.html`` in the classic, devel, minimal, and
+responsive tracker templates define a ``user_src_input`` macro. This
+macro produces invalid javascript for the ``onblur`` event when used
+by ``user.item.html``. The only effect from this bug is a javascript
+error reported in the user's browser when the user does not have edit
+permissions on the page. It doesn't have any user visible impact. 
+
+If you want to fix this, replace::
+
+  tal:attributes="onblur python:edit_ok and 'split_name(this)';
+
+with::
+
+  tal:attributes="onblur python:'split_name(this)' if edit_ok else '';
+  
+in the ``html/page.html`` file in your tracker.
+
+Allow users without a password to log in (optional)
+---------------------------------------------------
+
+You can configure a tracker to allow a login without a password.
+However the default html templates require the password field to
+be filled in. This prevents a login with an empty password.
+
+If you don't want to allow a login without a password, you can
+skip this section.
+
+This change automatically removes the required attribute if the
+``config.ini`` ``login_empty_passwords`` setting is enabled
+(true). The default is disabled with the value ``no``).
+
+This change is the default for the tracker templates in 2.6 and
+newer.
+
+To add this to your tracker, change the ``page.html`` (for TAL
+based trackers) or ``layout/navigation.html`` (for jinja2 trackers).
+
+For TAL trackers, replace the ``required`` parameter by finding
+the following password input in the tracker's ``html/page.html``
+file::
+
+  <input size="10" spellcheck="false" type="password" required name="__login_password"><br>
+
+and modifying it to look like::
+
+  <input size="10" spellcheck="false" type="password"
+         tal:attributes="required python: 'required'
+               if not db.config.WEB_LOGIN_EMPTY_PASSWORDS else nothing"
+         name="__login_password"><br>
+
+The equivalent change for jinja2's
+``html/layout/navigation.html`` based template starts with::
+
+  <input class="form-control form-control-sm" spellcheck="false" type="password" required name="__login_password" placeholder='password'>
+
+and changes to::
+
+  <input class="form-control form-control-sm" spellcheck="false" type="password" name="__login_password" placeholder='password' {{ "required" if not db.config.WEB_LOGIN_EMPTY_PASSWORDS }}>
+
+REST interface changes (info)
+-----------------------------
+
+The default type of a message file (the msg class) is now
+``text/plain``.  This can be changed to a different mime type using
+`the interfaces.py file`_. See `the rest documentation on getting file
+content for details <rest.html#getting-message-and-files-content>`_.
+
+Roundup supports a wildcard mime type. So ``text/*`` would match any
+text resource. The response to this request should have a full mime
+type like ``text/plain`` or ``text/csv`` etc. However Roundup used to
+return ``text/*`` which makes it difficult for the client to interpret
+the data. This release should do a better job of returning a proper
+subtype replacing the ``*``.
+
+The mime type of ``application/*`` resolves to ``application/json`` by
+default. Using it before resulted in an error.
+
+Malformed mime types assigned to files/messages could cause a crash,
+now they are just ignored.
+
+There have been some internal refactorings and improvements in the
+REST code that will make it a bit faster.
+
+Make File Contents Immutable for Everybody (optional)
+-----------------------------------------------------
+
+The HTML based interface for files and messages doesn't provide a way
+to change file content. However it is possible for privileged people
+to modify the content via the web. In most cases, this change will not
+be recorded in the audit log. It can be detected by looking at the
+change time of the file. Then compare it to the change time of files
+before and after it. Since files are created in order, the file
+``msg50`` should have a change timestamp after ``msg49`` and before
+``msg51``.
+
+The 2.6.0 release includes an immutable_file_contents.py
+detector.  If you copy the detector into your tracker's detector
+directory nobody, including users with admin rights, can change
+file/msg contents via Roundup. Changes to files would have to be
+done by logging into the Roundup server and editing the files
+locally.
+
+For non-admin user's the following edit permission for FileClass based
+classes will prevent regular users from changing file content via
+Roundup. Remove the existing ``Edit`` permission from your FileClass
+based classes. Then add your classname to the loop. The permission
+strips ``content`` from the list of editable properties and permits
+editing of the other properties::
+
+  for cl in 'file', 'msg':
+    properties = list(x for x in
+                   db.getclass(cl).getprops(protected=False).keys()
+                   if x != 'content')
+
+    file_edit_perm = db.security.addPermission(
+        name='Edit', klass=cl,
+        properties=properties,
+        description="User is allowed to edit all %s props except content" % cl)
+
+    db.security.addPermissionToRole('User', file_edit_perm)
+
+Enable tokenless/nonceless CSRF protection (optional)
+-----------------------------------------------------
+
+This version implements CSRF protection using `Cross-Site Request
+Forgery by Filippo Valsorda <https://words.filippo.io/csrf/>`_.
+This is an effective method for CSRF protection and is much
+simpler as well. There are no configurable options unlike the 8
+options for the older method.
+
+It is off by default and must be manually enabled. You can enable
+it on a per-tracker basis using ``config.ini``. In the ``[web]``
+section of ``config.ini`` set ``use_tokenless_csrf_protection`` to
+``yes`` to enable it. This also disable validation using the older
+nonce and header based CSRF settings.
+
+When enabled, calls to ``utils.anti_csrf_nonce()`` will always
+return ``"0"``. As a result, you do not have to change your
+templates. Performance should be better since the random nonce is
+not generated nor saved to the otks database.
+
+Additional details can be found in the :ref:`nonceless CSRF` section of
+the reference guide.
+
+Make Query Edit Page Queries Display Query Name (optional)
+----------------------------------------------------------
+
+When queries are started from the main ``Your Queries`` menu section,
+the window shows the query name for TAL based trackers.  Users can
+pick which queries/searches appear in the main menu's ``Your Queries``
+section by clicking the ``edit`` link to go to the edit screen.  The
+``edit`` screen also lets users run the queries that aren't in the
+main section.
+
+Before this update, the query name wasn't shown when running queries
+from the ``edit`` screen.  This update fixes that for all the included
+templates.  It also makes the jinja2 issue index template show the
+query name.
+
+You can add this to your tracker. If you are not using a jinja2 based
+tracker, open your tracker's ``html/query.edit.html`` file.  Find and
+change the line that includes::
+
+    <a tal:attributes="href string:${query/klass}?${query/url}"
+
+to look like::
+
+    <a tal:attributes="href string:${query/klass}?${query/url}&@dispname=${query/name/url_quote}"
+
+If you are using the jinja2 template, a similar change is needed to
+``html/query.edit.html`` replacing::
+
+    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}">{{ query.name.plain() }}</a>
+
+with::
+
+    <a href="{{ query.klass.plain()|u }}?{{ query.url.plain()|u }}&@dispname={{ query.name.url_quote()|u }}">{{ query.name.plain() }}</a>
+
+Then in the ``html/issue.index.html`` you will add::
+
+    {% if request.form['@dispname'] %}
+    - {{  request.form['@dispname'].value|u }}
+    {% endif %}
+
+to the ``head_title`` and ``page_header`` blocks so they look like::
+
+    {% block head_title %}
+      {% trans %}List of issues{% endtrans %}
+      {% if request.form['@dispname'] %}
+      - {{  request.form['@dispname'].value|u }}
+      {% endif %}
+    {% endblock %}
+
+    {% block page_header %}
+      {% trans %}List of issues{% endtrans %}
+      {% if request.form['@dispname'] %}
+      - {{  request.form['@dispname'].value|u }}
+      {% endif %}
+    {% endblock %}
+
+
+Modernizing Classic Tracker HTML (optional)
+-------------------------------------------
+
+This update improves the classic tracker by changing the page layout
+to use modern HTML and CSS instead of the old table layout from
+2001. All the updates are done by changing the ``page.html`` and the
+``style.css`` files.
+
+Among the fixes are:
+
+* HTML5 landmarks like header, main, search, and nav replace the
+  table that was used for layout.
+* a meta viewport tag was added for mobile devices.
+* the sidebar and main columns now use flexbox. They will stack and
+  turn into one column when the screen size is less than 600px.
+* The sidebar will change from 6 blocks in a column to 6 blocks in a
+  responsive grid when the screen size is under 600px.
+* Text in the nav/sidebar will have wrapped lines indented making it
+  easier to identify individual queries with long names.
+* The other templates in your tracker should not need any changes. If
+  they are too wide the updated ``page.html`` enables keyboard or
+  touch horizontal scrolling to see all of a table or other content.
+* A line now appears under a link when you hover over it.
+* The header uses flexbox to arrange the left side (logo/page
+  description) and right side (search) components.
+  
+The most noticable change is that the page title now lines up with the
+edge of the screen instead of the edge of the main column. Other than
+that your tracker should look pretty much the same as before.
+
+Two files were changed to provide this basic responsiveness:
+``page.html`` and ``style.css``.
+
+Most local changes to ``page.html`` are done to add javascript. You
+should be able to copy the new page.html from the classic tracker
+template and put your ``script`` tags back in to benefit from this
+upgrade.
+
+You should also copy ``style.css`` into your tracker home's html
+directory and merge any local changes you made. At the top of the new
+``style.css`` are directions for two adjustments. Long query names
+that wrap in the sidebar will have their wrapped lines indented by
+0.5em. You can control this by uncommenting and adjusting the value of
+the css custom property ``--long-query-indent``. Additionally you can
+change the 600px viewport breakpoint by following the directions at
+the top of ``style.css``.
+
+Jinja Template Bootstrap Dependency Updated (optional)
+------------------------------------------------------
+
+A dependency for the jinja template has been updated.  This is an
+upgrade to the latest 4.x stable release.
+
+bootstrap:
+  Upgraded from 4.4.1 to 4.6.2
+
+Copy the files: ``bootstrap.min.css`` and ``bootstrap.min.js`` from
+the jinja2 ``static`` :term:`template` directory (meaning 3) to your
+tracker's ``static`` directory.
+
+This change did not show any issues in testing, but you might want to
+hold onto your original files in case of an issue. If you experience
+and issue you should report it on the `roundup-users mailing list
+<https://roundup-tracker.org/contact.html>`_.
+
 .. index:: Upgrading; 2.4.0 to 2.5.0
 
 Migrating from 2.4.0 to 2.5.0
 =============================
 
-.. _CVE-2025-53865:
+.. _CVE-2025-53865L:
 
 XSS security issue with devel and responsive templates (recommended)
 --------------------------------------------------------------------
@@ -375,6 +1108,30 @@ references that use user supplied content
    work and the context appears to use the database's title not the one
    in the url. Also its not positional @sort=1 can appear anywhere in
    the url.
+
+Modify Custom Rest Endpoints (required)
+---------------------------------------
+
+If there is no interfaces.py file in your tracker home, you can
+skip this section.
+
+In the course of code maintenance and cleanup, the variable
+``input`` used when defining new REST endpoints was renamed to
+``input_payload``. The ``input`` variable was renamed because it
+was shadowing the ``input`` built-in function.
+
+If you defined a custom REST endpoint in interfaces.py that looks
+like::
+
+  def summary2(self, input):
+
+you should change it to::
+
+  def summary2(self, input_payload):
+
+Then change any references to ``input`` inside the function to
+``input_payload``. The section :ref:`adding_new_rest_endpoints`
+has been updated if you need additional examples.
 
 Deprecation Notices (required)
 ------------------------------
@@ -721,22 +1478,32 @@ request (tu.client.request), the translator for the current language
 
 You can find an example in :ref:`dynamic_csp`.
 
-Directions for installing gpg (optional)
-----------------------------------------
+.. _gpginstall:
 
-In this release a new version of the gpg module was needed for Ubuntu
-24.04 and python 3.13. Paul Schwabauer produced a new version of the
-gpg module. However it is only on the test instance of pypi. If you
-run into issues installing gpg with pip, you can use::
+:del:`Directions for installing gpg (obsolete)`
+-----------------------------------------------
 
-    pip install --index-url https://test.pypi.org/simple/ \
-                --extra-index-url https://pypi.org/simple gpg;
+.. note::
+   issue2551368 was closed in May 2026. Running ``pip install
+   gpg`` will install gpg 2.0.0 on all versions of Python supported by
+   Roundup. If you installed the test version use ``pip install -U
+   gpg`` to upgrade.
 
-to installed version 2.0 of gpg from test.pypi.org obtaining it's
-requirements from pypi.org.
+.. container:: del
 
-When `issue2551368 <https://issues.roundup-tracker.org/issue2551368>`_
-is closed, you should be able to use ``pip install gpg`` again.   
+    In this release a new version of the gpg module was needed for Ubuntu
+    24.04 and python 3.13. Paul Schwabauer produced a new version of the
+    gpg module. However it is only on the test instance of pypi. If you
+    run into issues installing gpg with pip, you can use::
+
+	pip install --index-url https://test.pypi.org/simple/ \
+		    --extra-index-url https://pypi.org/simple gpg;
+
+    to installed version 2.0 of gpg from test.pypi.org obtaining it's
+    requirements from pypi.org.
+
+    When `issue2551368 <https://issues.roundup-tracker.org/issue2551368>`_
+    is closed, you should be able to use ``pip install gpg`` again.   
 
 .. index:: Upgrading; 2.3.0 to 2.4.0
 
@@ -763,7 +1530,7 @@ This will insert the bad API login rate limiting settings.
 Also if you have ``html_version`` set to ``xhtml``, you will get
 an error.
 
-.. _CVE-2024-39124:
+.. _CVE-2024-39124L:
 
 Fix for CVE-2024-39124 in help/calendar popups (recommended)
 ------------------------------------------------------------
@@ -934,9 +1701,9 @@ bug. Splitting the large script into two parts:
 allows use of ``structure`` on the script with no replaced
 strings should it be required for your tracker.
 
-.. [#markdown-note] If you are using markdown formatting for your tracker's notes,
-   the user will see the markdown label rather than the long
-   (suspicious) URL. You may want to add something like::
+.. [#markdown-note] If you are using markdown formatting for your
+   tracker's notes, the user will see the markdown label rather than
+   the long (suspicious) URL. You may want to add something like::
 
      a[href*=\@template]::after {
          content: ' [' attr(href) ']';
@@ -955,7 +1722,7 @@ section. These fixes are already present in 2.4.0.
 This section is for people who can not upgrade yet, and want
 to fix the issues.
 
-.. _CVE-2024-39125:
+.. _CVE-2024-39125L:
 
 Referer value not escaped CVE-2024-39125
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -983,7 +1750,7 @@ to::
 This escapes the Referer value and prevents it from being
 executed.
 
-.. _CVE-2024-39126:
+.. _CVE-2024-39126L:
 
 Stop JavaScript execution from attached files CVE-2024-39126
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1254,30 +2021,35 @@ attributes and installation instructions can be found in the
 `classhelper documentation`_ in the admin guide.
 
 
-Disable performance improvement for wsgi mode (optional)
---------------------------------------------------------
+:del:`Disable performance improvement for wsgi mode (obsolete)`
+---------------------------------------------------------------
 
-In Roundup version 2.2.0, an experimental feature was introduced to
-enhance performance while operating in wsgi mode. Initially, this
-feature was disabled. Over the past two years, it has been used at a
-few sites without any reported problems.
+This performance improvement is turned on always and can't be
+disabled as of Roundup 2.7.0.
 
-As a result, the default setting now enables this performance
-improvement, encouraging a wider adoption of the feature. In the
-event that an undiscovered bug arises, it can still be disabled
-if you experience problems. To disable it, modify your wsgi
-startup script and add the feature_flags to the RequestDispatcher
-as below::
+.. container:: del
 
-   feature_flags = { "cache_tracker": False }
-   app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+    In Roundup version 2.2.0, an experimental feature was introduced to
+    enhance performance while operating in wsgi mode. Initially, this
+    feature was disabled. Over the past two years, it has been used at a
+    few sites without any reported problems.
 
-Then restart your wsgi instance. If you have to disable this
-feature, send email to the roundup-users mailing list
-(roundup-users at lists.sourceforge.net) so we can help you
-diagnose the cause and fix it for everybody.
+    As a result, the default setting now enables this performance
+    improvement, encouraging a wider adoption of the feature. In the
+    event that an undiscovered bug arises, it can still be disabled
+    if you experience problems. To disable it, modify your wsgi
+    startup script and add the feature_flags to the RequestDispatcher
+    as below::
 
-In the future, support for disabling this improvement will be removed.
+       feature_flags = { "cache_tracker": False }
+       app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+
+    Then restart your wsgi instance. If you have to disable this
+    feature, send email to the roundup-users mailing list
+    (roundup-users at lists.sourceforge.net) so we can help you
+    diagnose the cause and fix it for everybody.
+
+    In the future, support for disabling this improvement will be removed.
 
 Fix duplicate id for confirm password in user.item.html (optional)
 ------------------------------------------------------------------
@@ -2173,7 +2945,7 @@ running::
     roundup-admin -i <tracker_home> table password,id,username
 
 Look for lines starting with ``{CRYPT}``. You can reset the user's
-password using::
+password using [#history-pragma]_ ::
 
     roundup-admin -i <tracker_home>
     roundup> set user16 password=somenewpassword
@@ -2184,25 +2956,38 @@ prompt). This prevents the new password from showing up in the output
 of ps or shell history. The new password will be encrypted using the
 default encryption method (usually pbkdf2).
 
-Enable performance improvement for wsgi mode (optional)
--------------------------------------------------------
+.. [#history-pragma] If your version of roundup-admin provides history
+  support, you should add ``-P history_features=2`` to the command
+  line or run ``pragma history_features=2`` at the ``roundup>``
+  prompt. This will prevent the command line (and password) from being
+  saved to your history file (usually ``.roundup_admin_history`` in
+  your user's home directory.  You can use ``roundup-admin -i
+  <tracker_home> pragma list`` to see if pragmas are supported.
 
-There is an experimental wsgi performance improvement mode that caches
-the loaded roundup instance. This eliminates disk reads that are
-incurred on each connection. In one report it improves speed by a
-factor of 2 to 3 times. To enable this you should add a feature flag
-to your Roundup wsgi wrapper (see the file
-``.../share/frontends/wsgi.py``) so it looks like::
 
-   feature_flags = { "cache_tracker": "" }
-   app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+:del:`Enable performance improvement for wsgi mode (obsolete)`
+--------------------------------------------------------------
 
-to enable this mode. Note that this is experimental and was added
-during the 2.2.0 beta period, so it is enabled using a feature flag.
-If you use this and it works for you please followup with an email to
-the roundup-users at lists.sourceforge.net mailing list so we can
-enable it by default in a future release.
+This performance improvement is turned on always and can't be
+disabled as of Roundup 2.7.0.
 
+.. container:: del
+
+    There is an experimental wsgi performance improvement mode that caches
+    the loaded roundup instance. This eliminates disk reads that are
+    incurred on each connection. In one report it improves speed by a
+    factor of 2 to 3 times. To enable this you should add a feature flag
+    to your Roundup wsgi wrapper (see the file
+    ``.../share/frontends/wsgi.py``) so it looks like::
+
+       feature_flags = { "cache_tracker": "" }
+       app =  RequestDispatcher(tracker_home, feature_flags=feature_flags)
+
+    to enable this mode. Note that this is experimental and was added
+    during the 2.2.0 beta period, so it is enabled using a feature flag.
+    If you use this and it works for you please followup with an email to
+    the roundup-users at lists.sourceforge.net mailing list so we can
+    enable it by default in a future release.
 
 Hide submit button during readonly use of _generic.item.html (optional)
 -----------------------------------------------------------------------
@@ -3575,56 +4360,6 @@ your tracker if you wish. It will create a new file in the
 current working directory called 'httpd.log' and will rotate
 the log file at 500K and keep two old copies of the file.
 
-.. index:: Upgrading; 1.5.0 to 1.5.1
-
-Migrating from 1.5.0 to 1.5.1
-=============================
-
-User data visibility
---------------------
-
-For security reasons you should change the permissions on the user
-class. We previously shipped a configuration that allowed users to see
-too many of other users details, including hashed passwords under
-certain circumstances. In schema.py in your tracker, replace the line::
-
-   db.security.addPermissionToRole('User', 'View', 'user')
-
-with::
-
-   p = db.security.addPermission(name='View', klass='user',
-       properties=('id', 'organisation', 'phone', 'realname',
-       'timezone', 'username'))
-   db.security.addPermissionToRole('User', p)
-
-Note that this removes visibility of user emails, if you want emails to
-be visible you can add 'address' and 'alternate_addresses' to the list
-above.
-
-XSS protection for custom actions
----------------------------------
-
-If you have defined your own cgi actions in your tracker instance
-(e.g. in a custom ``extensions/spambayes.py`` file) you need to modify
-all cases where client.error_message or client.ok_message are modified
-directly. Instead of::
-
-  self.client.ok_message.append(...)
-
-you need to call::
-
-  self.client.add_ok_message(...)
-
-and the same for::
-
-  self.client.error_message.append(...)
-
-vs.::
-
-  self.client.add_error_message(...)
-
-The new calls escape the passed string by default and avoid XSS security
-issues.
 
 
 Migrating from older versions

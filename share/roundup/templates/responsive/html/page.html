@@ -1,12 +1,8 @@
 <tal:block metal:define-macro="frame">
 <!doctype html>
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<html class="no-js" lang="en">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title metal:define-slot="head_title">title goes here</title>
     <meta name="description" content="Roundup is a python-based, MIT licensed issue-tracking system with command-line, web and e-mail interfaces">
     <meta name="viewport" content="width=device-width">
@@ -178,7 +174,9 @@
                 <fieldset>
                   <legend><i class='icon-user'></i>Login form</legend>
                   <input name="__login_name" type='text' placeholder='Username' i18n:attributes="placeholder" required>
-                  <input spellcheck="false" type="password" name="__login_password" placeholder='Password' i18n:attributes="placeholder" required>
+                  <input spellcheck="false" type="password" name="__login_password" placeholder='Password' i18n:attributes="placeholder"
+			 tal:attributes="required python: 'required'
+		 if not db.config.WEB_LOGIN_EMPTY_PASSWORDS else nothing">
 		  <input name="@csrf" type="hidden"
 			 tal:attributes="value python:utils.anti_csrf_nonce()">
                   <input type="hidden" name="@action" value="Login"/>
@@ -439,7 +437,7 @@ See user.item.html in the classic template for examples.
 
 <!-- src: value will be re-used for other input fields -->
 <input metal:define-macro="user_src_input"
-    type="text" tal:attributes="onblur python:edit_ok and 'split_name(this)';
+    type="text" tal:attributes="onblur python:'split_name(this)' if edit_ok else '';
     id name; name name; value value; readonly not:edit_ok"
     value="heinz.kunz"/>
 <!-- normal: no re-using -->

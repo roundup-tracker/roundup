@@ -1281,6 +1281,33 @@ class TestCase():
                          results['data']['collection'])
         self.assertEqual(len(results['data']['collection']), 2)
 
+    def testBrokenPaginationParam(self):
+        """
+        Test error if @page... is not @page_size or @page_index.
+        """
+        # create sample data
+        for i in range(0, random.randint(8,15)):
+            self.db.issue.create(title='foo' + str(i))
+
+        base_url="http://tracker.example/cgi-bin/roundup.cgi/" \
+                 "bugs/rest/data/issue"
+
+        # Get error retrieving page 1 using @page_foo
+        form = cgi.FieldStorage()
+
+        # Make sure we accept good params. Keep good params first.
+        form.list = [
+            cgi.MiniFieldStorage('@page_size', '10'),
+            cgi.MiniFieldStorage('@page_index', '1'),
+            cgi.MiniFieldStorage('@page_foo', '1')
+        ]
+        results = self.server.get_collection('issue', form)
+        print(results)
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertIn('Invalid query parameter @page_foo.',
+                      results['error']['msg'].args[0])
+
+        
     def testPagination(self):
         """
         Test pagination. page_size is required and is an integer
@@ -1318,8 +1345,8 @@ class TestCase():
         # Retrieve page 1
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@page_size', page_size),
-            cgi.MiniFieldStorage('@page_index', 1)
+            cgi.MiniFieldStorage('@page_size', str(page_size)),
+            cgi.MiniFieldStorage('@page_index', '1')
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -1339,8 +1366,8 @@ class TestCase():
         # Retrieve page 2
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@page_size', page_size),
-            cgi.MiniFieldStorage('@page_index', 2)
+            cgi.MiniFieldStorage('@page_size', str(page_size)),
+            cgi.MiniFieldStorage('@page_index', '2')
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -1365,8 +1392,8 @@ class TestCase():
         # Retrieve page 3
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@page_size', page_size),
-            cgi.MiniFieldStorage('@page_index', 3)
+            cgi.MiniFieldStorage('@page_size', str(page_size)),
+            cgi.MiniFieldStorage('@page_index', '3')
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -1384,7 +1411,7 @@ class TestCase():
         # Should start at page 1
         form = cgi.FieldStorage()
         form.list = [
-            cgi.MiniFieldStorage('@page_size', page_size),
+            cgi.MiniFieldStorage('@page_size', str(page_size)),
         ]
         results = self.server.get_collection('issue', form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -1909,7 +1936,7 @@ class TestCase():
         (output_type, uri, error) = dof("/rest/data/issue")
 
         self.assertEqual(self.server.client.response_code, 406)
-        self.assertIn(b"Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/json",
+        self.assertIn(b"Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/*, application/json",
                       s2b(error['error']['msg']))
 
         # simulate: /rest/data/issue works, multiple acceptable output, one
@@ -1985,7 +2012,7 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 400)
         self.assertEqual(output_type, None)
         self.assertEqual(uri, "/rest/data/issue")
-        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/json', error['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/*, application/json', error['error']['msg'])
 
         # test 5 accept mimetype is ok, param is not
         headers={"accept": "*/*; foo",
@@ -2007,7 +2034,7 @@ class TestCase():
         self.assertEqual(self.server.client.response_code, 400)
         self.assertEqual(output_type, None)
         self.assertEqual(uri, "/rest/data/issue")
-        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', error['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/*, application/json', error['error']['msg'])
 
         # test 6: test paths:
         #
@@ -2144,7 +2171,7 @@ class TestCase():
                  "output_type": None,
                  "uri": "/rest/data/file/1/binary_content",
                  "error": {'error': 
-                           {'status': 406, 'msg': "Requested content type(s) 'image/svg+html' not available.\nAcceptable mime types are: */*, application/octet-stream, image/png"}},
+                           {'status': 406, 'msg': "Requested content type(s) 'image/svg+html' not available.\nAcceptable mime types are: */*, application/octet-stream, image/*, image/png"}},
                  "has_nosniff": False,
                 }),
             (# use wildcard accept and get back msg's actual mime type
@@ -2199,16 +2226,16 @@ class TestCase():
                 {"path": "/rest/data/msg/2/binary_content",
                  "accept": "*/*",
                  "response_code": "",
-                 "output_type": "text/*",
+                 "output_type": "text/plain",
                  "uri": "/rest/data/msg/2/binary_content",
                  "error": None,
                  "has_nosniff": True,
                 }),
-            (# use text/* and get back text/*
+            (# use text/* and get back text/plain
                 {"path": "/rest/data/msg/2/binary_content",
                  "accept": "text/*",
                  "response_code": "",
-                 "output_type": "text/*",
+                 "output_type": "text/plain",
                  "uri": "/rest/data/msg/2/binary_content",
                  "error": None,
                  "has_nosniff": True,
@@ -2221,7 +2248,7 @@ class TestCase():
                  "uri": "/rest/data/msg/2/binary_content",
                  "error": {'error': 
                            {'status': 406, 'msg':
-                            "Requested content type(s) 'text/markdown' not available.\nAcceptable mime types are: */*, application/octet-stream, text/*"}},
+                            "Requested content type(s) 'text/markdown' not available.\nAcceptable mime types are: */*, application/octet-stream, text/*, text/plain"}},
                  "has_nosniff": False,
                 }),
             (# use error accept and get back error
@@ -2232,7 +2259,7 @@ class TestCase():
                  "uri": "/rest/data/msg/1/binary_content",
                  "error": {'error':
                            {'status': 400, 'msg':
-                            'Unable to parse Accept Header. Invalid media type: q=2. Acceptable types: */*, application/json'}},
+                            'Unable to parse Accept Header. Invalid media type: q=2. Acceptable types: */*, application/*, application/json'}},
                  "has_nosniff": False,
                  }),
             (# use text/* but override with extension of .json get back json
@@ -2308,6 +2335,10 @@ class TestCase():
             "REQUEST_METHOD": "GET"
         }
 
+        # inject the caplog 'roundup' logger into client.
+        # otherwise this test fails.
+        # client logger instance was initialized without caplog
+        client.logger = logging.getLogger('roundup')
 
         with self._caplog.at_level(logging.ERROR, logger="roundup"):
             with self.assertRaises(AttributeError) as exc:
@@ -2322,6 +2353,7 @@ class TestCase():
         #       'Invalid self.form found (please report to the '
         #       'roundup-users mailing list): []')]
         log = self._caplog.record_tuples[:]
+        print(log)
         self.assertIn("Invalid self.form found", log[0][2])
 
     def testDispatchBadAccept(self):
@@ -2358,7 +2390,7 @@ class TestCase():
         print(results)
         json_dict = json.loads(b2s(results))
         self.assertEqual(self.server.client.response_code, 406)
-        self.assertIn("Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/json",
+        self.assertIn("Requested content type(s) 'application/zot; version=1; q=0.5' not available.\nAcceptable mime types are: */*, application/*, application/json",
                       json_dict['error']['msg'])
 
         # simulate: /rest/data/issue works, multiple acceptable output, one
@@ -2439,7 +2471,7 @@ class TestCase():
         print(results)
         self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
-        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/json', json_dict['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid media type: Xyzzy I am not a mime. Acceptable types: */*, application/*, application/json', json_dict['error']['msg'])
 
         # test 5 accept mimetype is ok, param is not
         headers={"accept": "*/*; foo",
@@ -2463,7 +2495,7 @@ class TestCase():
         print(results)
         self.assertEqual(self.server.client.response_code, 400)
         json_dict = json.loads(b2s(results))
-        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/json', json_dict['error']['msg'])
+        self.assertIn('Unable to parse Accept Header. Invalid param: foo. Acceptable types: */*, application/*, application/json', json_dict['error']['msg'])
 
     @skip_on_py2
     def testBadJson(self):
@@ -2693,6 +2725,10 @@ class TestCase():
         # invalid origin, no credentials allowed.
         self.assertNotIn("Access-Control-Allow-Credentials",
                          self.server.client.additional_headers)
+        self.assertIn("ETag",
+                         self.server.client.additional_headers)
+        self.assertIn('@etag', json.loads(results)['data'])
+
         self.assertEqual(self.server.client.response_code, 200)
         results = self.server.get_element('user', self.joeid, self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
@@ -4147,6 +4183,27 @@ class TestCase():
         results = self.server.patch_element('issue', issue_id, form)
         expected= {'error': {'status': 400,
                              'msg': KeyError('"creator", "actor", "creation" and "activity" are reserved',)}}
+        print(results)
+        self.assertEqual(results['error']['status'],
+                         expected['error']['status'])
+        self.assertEqual(type(results['error']['msg']),
+                         type(expected['error']['msg']))
+        self.assertEqual(str(results['error']['msg']),
+                         str(expected['error']['msg']))
+        self.assertEqual(self.dummy_client.response_code, 400)
+
+        # try to set a id prop. It should fail.
+        etag = calculate_etag(self.db.issue.getnode(issue_id),
+                              self.db.config['WEB_SECRET_KEY'])
+        form = cgi.FieldStorage()
+        form.list = [
+            cgi.MiniFieldStorage('@op', 'replace'),
+            cgi.MiniFieldStorage('id', '99'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        results = self.server.patch_element('issue', issue_id, form)
+        expected= {'error': {'status': 400,
+                             'msg': KeyError('"id" is reserved',)}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])

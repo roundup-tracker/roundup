@@ -3,16 +3,14 @@ Zope.
 """
 __docformat__ = 'restructuredtext'
 
-import errno
 import mimetypes
 import os
-import os.path
 import stat
 
-from roundup.cgi.templating import StringIO, context, TALLoaderBase
 from roundup.cgi.PageTemplates import PageTemplate
 from roundup.cgi.PageTemplates.Expressions import getEngine
 from roundup.cgi.TAL import TALInterpreter
+from roundup.cgi.templating import StringIO, TALLoaderBase, context
 
 
 class Loader(TALLoaderBase):
@@ -32,9 +30,8 @@ class Loader(TALLoaderBase):
         # has it changed?
         try:
             stime = os.stat(src)[stat.ST_MTIME]
-        except os.error as error:
-            if error.errno != errno.ENOENT:
-                raise
+        except FileNotFoundError:
+            pass
 
         if src in self.templates and \
                 stime <= self.templates[src].mtime:

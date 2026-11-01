@@ -6,19 +6,19 @@ along with an _tsv tsvector column. The _tsv column is searched using
 
 import re
 
-from roundup.backends.indexer_common import Indexer as IndexerBase
-from roundup.i18n import _
-from roundup.cgi.exceptions import IndexerQueryError
+from psycopg2.errors import InFailedSqlTransaction, SyntaxError, UndefinedObject  # noqa: A004
 
-from psycopg2.errors import InFailedSqlTransaction, SyntaxError, \
-                            UndefinedObject
+from roundup.backends.indexer_common import Indexer as IndexerBase
+from roundup.cgi.exceptions import IndexerQueryError
+from roundup.i18n import _
 
 
 class Indexer(IndexerBase):
     def __init__(self, db):
         IndexerBase.__init__(self, db)
         self.db = db
-        if db.conn.server_version < 110000:
+        min_fts_server_version = 110000
+        if db.conn.server_version < min_fts_server_version:
             db.sql("select version()")
             server_descr = db.cursor.fetchone()
             raise ValueError("Postgres native_fts indexing requires postgres "
@@ -79,11 +79,11 @@ class Indexer(IndexerBase):
                 # we get a ValueError. For right now ignore it.
                 pass
         else:
-            id = r[0]
+            row_id = r[0]
             sql = 'update __fts set _tsv=to_tsvector(%s, %s) where ctid=%s' % \
                   (a, a, a)
             self.db.cursor.execute(sql, (self.db.config['INDEXER_LANGUAGE'],
-                                         text, id))
+                                         text, row_id))
 
     def find(self, wordlist):
         """look up all the words in the wordlist.
@@ -106,21 +106,21 @@ class Indexer(IndexerBase):
             sql = ('select _class, _itemid, _prop from __fts '
                    'where _tsv @@ to_tsquery(%s, %s)' % (a, a))
 
-        else:
-            if re.search(r'[<>!&|()*]', " ".join(wordlist)):
-                # assume this is a ts query processed by websearch_to_tsquery.
-                # since it has operator characters in it.
-                raise IndexerQueryError(_('You have non-word/operator '
+        elif re.search(r'[<>!&|()*]', " ".join(wordlist)):
+            # assume this is a ts query processed by websearch_to_tsquery.
+            # since it has operator characters in it.
+            raise IndexerQueryError(_(
+                'You have non-word/operator '
                 'characters "<>!&|()*" in your query. Did you want to '
                 'do a tsquery search and forgot to start it with "ts:"?'))
-            else:
-                sql = 'select _class, _itemid, _prop from __fts '\
-                      'where _tsv @@ websearch_to_tsquery(%s, %s)' % (a, a)
+        else:
+            sql = 'select _class, _itemid, _prop from __fts '\
+                'where _tsv @@ websearch_to_tsquery(%s, %s)' % (a, a)
 
         try:
             # tests supply a multi element word list. Join them.
             self.db.cursor.execute(sql, (self.db.config['INDEXER_LANGUAGE'],
-                                         " ".join(wordlist),))
+                                         " ".join(wordlist)))
         except SyntaxError as e:
             # reset the cursor as it's invalid currently
             # reuse causes an InFailedSqlTransaction
@@ -145,7 +145,6 @@ class Indexer(IndexerBase):
                 raise ValueError(_("Check tracker config.ini for a bad "
                                    "indexer_language setting. Error is: %s") %
                                  e)
-            else:
-                raise
+            raise
 
         return self.db.cursor.fetchall()

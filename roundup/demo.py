@@ -2,8 +2,6 @@
 #
 # Copyright (c) 2003 Richard Jones (richard@mechanicalcat.net)
 #
-from __future__ import print_function
-
 import errno
 import getopt
 import os
@@ -11,12 +9,8 @@ import shutil
 import socket
 import sys
 
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
-
 from roundup import configuration
+from roundup.anypy import urllib_
 from roundup.scripts import roundup_server
 
 # Path where demo instance files will be stored
@@ -71,16 +65,6 @@ def install_demo(home, backend, template, use_port=None, use_host=None):
             sys.exit(1)
 
     init.install(home, template_dir)
-    # Remove config_ini.ini file from tracker_home (not template dir).
-    # Ignore file not found - not all templates have
-    #   config_ini.ini files.
-    try:
-        os.remove(home + "/config_ini.ini")
-    except OSError as e:  # FileNotFound exception under py3
-        if e.errno == 2:
-            pass
-        else:
-            raise
 
     # don't have email flying around
     nosyreaction = os.path.join(home, 'detectors', 'nosyreaction.py')
@@ -95,7 +79,7 @@ def install_demo(home, backend, template, use_port=None, use_host=None):
     # pick a fairly odd, random port
     port = use_port or 8917
     while 1:
-        print('Trying to set up web server on port %d ...' % port,)
+        print('Trying to set up web server on port %d ...' % port)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
@@ -145,10 +129,16 @@ def run_demo(home, bind_addr=None, bind_port=None):
 
     print("\nDemo Tracker Home:", home)
 
-    cfg = configuration.CoreConfig(home)
+    try:
+        cfg = configuration.CoreConfig(home)
+    except configuration.ConfigurationError as e:
+        print(e)
+        print("when processing: %s", os.path.join(home, "config.ini"))
+        sys.exit(2)
+
     url = cfg["TRACKER_WEB"]
     try:
-        hostname, port = urlparse.urlparse(url)[1].split(':')
+        hostname, port = urllib_.urlsplit(url)[1].split(':')
     except ValueError:
         print("\nThe TRACKER_WEB url:\n\n  %(url)s\n\nin\n\n"
               "  %(home)s/config.ini"
@@ -157,7 +147,7 @@ def run_demo(home, bind_addr=None, bind_port=None):
               "Try running\ndemo mode with a different directory. "
               "Use roundup-server to serve\nproduction trackers. "
               "Exiting.\n" % {'home': home, 'url': url})
-        exit(1)
+        sys.exit(1)
 
     bind_addr = bind_addr or hostname
     port = int(bind_port or port)
@@ -174,7 +164,7 @@ edit "%(datadir)s/config.ini"
 and set the "web" option in section "[tracker]" to your host name,
 then restart demo. If you want to change backend types, you must use "nuke".
 
-''' % dict(url=url, script=sys.argv[0], datadir=TRACKER_HOME)
+''' % {"url": url, "script": sys.argv[0], "datadir": TRACKER_HOME}
 
     # disable command line processing in roundup_server
     sys.argv = sys.argv[:1] + ['-p', str(port), '-n', bind_addr, 'demo=' + home]
@@ -198,7 +188,7 @@ Options:
  -h                -- print this help message
  -t template       -- specify the tracker template to use
  -b backend        -- specify the database backend to use
-""" % dict(script=sys.argv[0], datadir=TRACKER_HOME+os.sep))
+""" % {"script": sys.argv[0], "datadir": TRACKER_HOME + os.sep})
 
 
 def main():
@@ -239,7 +229,7 @@ def main():
         print("       Use the 'nuke' command to start over.")
         sys.exit(1)
 
-    run_demo(home)
+    return run_demo(home)
 
 
 if __name__ == '__main__':

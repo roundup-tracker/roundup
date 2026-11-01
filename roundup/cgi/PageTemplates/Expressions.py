@@ -117,7 +117,7 @@ class SubPathExpr:
         dp.reverse()
 
     def _eval(self, econtext,
-              list=list, isinstance=isinstance, StringType=type('')):
+              list=list, isinstance=isinstance, StringType=str):
         vars = econtext.vars
         path = self._path
         if self._dp:
@@ -171,7 +171,7 @@ class PathExpr:
         return 0
 
     def _eval(self, econtext,
-              isinstance=isinstance, StringType=type(''), render=render):
+              isinstance=isinstance, StringType=str, render=render):
         for expr in self._subexprs[:-1]:
             # Try all but the last subexpression, skipping undefined ones.
             try:

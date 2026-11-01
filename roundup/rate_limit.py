@@ -4,7 +4,7 @@
 # set/get_tat and marshaling as string, support for testonly
 # and status method.
 
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 try:
     # used by python 3.11 and newer use tz aware dates
@@ -19,12 +19,15 @@ except ImportError:
     dt_epoch = datetime(1970, 1, 1)
     def fromisoformat(date):
         # only for naive dates
-        return datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")        
+        return datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")
 
 from roundup.anypy.datetime_ import utcnow
 
 
 class RateLimit:  # pylint: disable=too-few-public-methods
+
+    __slots__ = ("count", "period")
+
     def __init__(self, count, period):
         self.count = count
         self.period = period
@@ -35,6 +38,9 @@ class RateLimit:  # pylint: disable=too-few-public-methods
 
 
 class Gcra:
+
+    __slots__ = ("memory",)
+
     def __init__(self):
         self.memory = {}
 
@@ -124,7 +130,7 @@ class Gcra:
             # One item is dequeued every limit.inverse seconds.
             ret['Retry-After'] = str(int(limit.inverse))
             ret['Retry-After-Timestamp'] = "%s" % \
-                    (now + timedelta(seconds=limit.inverse))  # noqa: E127
+                    (now + timedelta(seconds=limit.inverse))
         else:
             # if we are not rejected, the user can post another
             # attempt immediately.

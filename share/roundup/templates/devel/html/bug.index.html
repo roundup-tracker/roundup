@@ -93,7 +93,10 @@
      <th>
       <a tal:define="prev batch/previous" tal:condition="prev"
          tal:attributes="href python:request.indexargs_url(request.classname,
-         {'@startwith':prev.first, '@pagesize':prev.size})"
+                     dict({'@dispname': request.dispname}
+                     if request.dispname
+                     else {},
+                     **{'@startwith':prev.first, '@pagesize':prev.size}))"
          i18n:translate="">&lt;&lt; previous</a>
       &nbsp;
      </th>
@@ -104,7 +107,10 @@
      <th>
       <a tal:define="next batch/next" tal:condition="next"
          tal:attributes="href python:request.indexargs_url(request.classname,
-         {'@startwith':next.first, '@pagesize':next.size})"
+                     dict({'@dispname': request.dispname}
+                     if request.dispname
+                     else {},
+                     **{'@startwith':next.first, '@pagesize':next.size}))"
          i18n:translate="">next &gt;&gt;</a>
       &nbsp;
      </th>

@@ -78,14 +78,14 @@ Trackers have the following structure:
 Tracker Configuration
 =====================
 
-The ``config.ini`` located in your tracker home contains the basic
-configuration for the web and e-mail components of Roundup's interfaces.
-
 The `tracker schema`_ defines the data captured by your tracker. It
 also defines the permissions used when accessing the data: see the
 `security / access controls`_ section. For example, you must grant the
 "Anonymous" Role the "Email Access" Permission to allow users to
 automatically register through the email interface,.
+
+The ``config.ini`` located in your tracker home contains the basic
+configuration for the web and e-mail components of Roundup's interfaces.
 
 .. index::
    single: config.ini; sections
@@ -95,8 +95,8 @@ The following is taken from the `Python Library Reference`__ (July 18, 2018)
 section "ConfigParser -- Configuration file parser":
 
  The configuration file consists of sections, led by a [section] header
- and followed by name: value entries, with continuations in the style
- of RFC 822 (see section 3.1.1, “LONG HEADER FIELDS”); name=value is
+ and followed by ``name: value`` entries, with continuations in the style
+ of RFC 822 (see section 3.1.1, “LONG HEADER FIELDS”); ``name=value`` is
  also accepted. Note that leading whitespace is removed from
  values. The optional values can contain format strings which refer to
  other values in the same section, or values in a special DEFAULT
@@ -113,8 +113,9 @@ section "ConfigParser -- Configuration file parser":
  would resolve the "%(dir)s" to the value of "dir" ("frob" in this case)
  resulting in "foodir" being "frob/whatever".
 
-The reference above discusses using the ``[DEFAULT]`` section and
-interpolation. For example::
+The Python reference above discusses defining names in the
+``[DEFAULT]`` section to provide tokens to substitute
+(interpolate) in values of other sections. For example::
 
    [DEFAULT]
    local_admin_email = admin@example.com
@@ -122,12 +123,13 @@ interpolation. For example::
    [main]
    admin_email = %(local_admin_email)s
 
-will set the admin_email setting. This works when running the
-tracker. When upgrading Roundup using ``updateconfig`` to create
-a new ``config.ini``, the ``DEFAULT`` section is not preserved
-and interpolation tokens (e.g. ``%(local_admin_email)s`` are
-replaced with their values (``admin@example.com``). This may be
-fixed in a future release of Roundup.
+will set the admin_email setting.  Roundup's ``config.ini``
+structure is predefined, While you can add undefined
+``name=value`` pairs, they are not preserved across config file
+upgrades. As of Roundup 2.7, the ``DEFAULT`` section and
+interpolation tokens (e.g. ``%(local_admin_email)s`` **are**
+preserved on update. Only the ``DEFAULT`` section can define
+arbitrary names that survive a version upgrade.
 
 Note that you can not reference settings in the ``DEFAULT``
 section from Roundup. They are only useful when interpolated into
@@ -479,8 +481,9 @@ Properties have attributes to change the default behaviour:
 
   - ``required``: see `design documentation`_. Adds the property to
     the list returned by calling get_required_props for the class.
-  - ``default_value``: see `design documentation`_ Sets the default
-    value if the property is not set.
+  - ``default_value``: see `design documentation`_ Sets the
+    value returned by ``get_default_value()``. MultiLink types
+    do not support ``default_value``.
   - ``quiet``: see `design documentation`_. Suppresses reporting user
     visible changes to this property. The property change is not reported:
 
@@ -753,7 +756,14 @@ IssueClass
 ~~~~~~~~~~
 
 IssueClass automatically includes the "messages", "files", "nosy", and
-"superseder" properties.
+"superseder" properties. You can override the default configuration of
+these properties by defining them in your IssueClass. For example::
+
+  issue = IssueClass(..., nosy=Multilink("user",
+                     try_id_parsing="no"), ...)
+
+would disable id parsing forcing lookup by username even if the
+username is numeric.
 
 The messages and files properties list the links to the messages and
 files related to the issue. The nosy property is a list of links to
@@ -1307,7 +1317,7 @@ is added to the db object. As a result, the ``hasattr`` call shown
 above will return True and the Reauth exception is not raised. (Note
 that the value of the ``reauth_done`` attribute is True, so
 ``getattr(db, "reauth_done", False)`` will return True when reauth is
-done and the defaul value of False if the attribute is missing. If the
+done and the default value of False if the attribute is missing. If the
 default is not set, `getattr` raises an ``AttributeError`` which might
 be useful for flow control.)
 
@@ -1320,6 +1330,12 @@ user to submit each sensitive property separately.  For example::
       raise Reject('Changing the username and the realname '
 		   'at the same time is not allowed. Please '
 		   'submit two changes.')
+
+   if db.tx_Source not in ("web"):
+      # the user is using rest, xmlrpc, command line,
+      # email (unlikely) which don't support interactive
+      # verification
+      return
 
    if 'password' in newvalues and not hasattr(db, 'reauth_done'):
       raise Reauth()
@@ -1362,14 +1378,13 @@ from this directory, at which point it calls ``init(instance)`` from
 each file supplying itself as a first argument.
 
 Note that at this point web interface is not loaded, but
-extensions still can register actions for it in the tracker
-instance. This may be fixed in Roundup 1.6 by introducing
-``init_web(client)`` callback or a more flexible extension point
-mechanism.
+extensions can register actions for it in the tracker
+instance.
 
 * ``instance.registerUtil`` is used for adding `templating utilities`_
   (see `adding a time log to your issues
-  <customizing.html#adding-a-time-log-to-your-issues-4>`_ for an example)
+  <customizing.html#adding-a-time-log-to-your-issues-4>`_ or
+  `enhancing message display <customizing/enhance>`_ for an example)
 
 * ``instance.registerUtilMethod`` is also used for adding `templating
   utilities`_, and provides a TemplatingUtils instance by default to
@@ -1378,8 +1393,13 @@ mechanism.
 
 * ``instance.registerAction`` is used to add more actions to the
   instance and to web interface. See `Defining new web actions`_
-  for details.  Generic action can be added by inheriting from
-  ``action.Action`` instead of ``cgi.action.Action``.
+  for details.  Generic action (used by xmlrpc or rest interfaces) can
+  be added by inheriting from ``action.Action`` instead of
+  ``cgi.action.Action``.
+
+Note that the names of templating utilities must be unique. If you try
+to define two utilities with the same name, an error will be reported
+when the tracker is started.
 
 .. _interfaces.py:
 .. _modifying the core of Roundup:
@@ -1815,15 +1835,15 @@ The ``addPermission`` method takes a four optional parameters:
   ``issue`` class and the ``user`` class include a reference to an
   ``organization`` class. Users are permitted to view only those
   issues that are associated with their respective organizations. A
-  check function or this could look like::
+  check function for this could look like::
 
     def view_issue(db, userid, itemid):
         user  = db.user.getnode(userid)
         if not user.organisation:
             return False
         issue = db.issue.getnode(itemid)
-        if user.organisation == issue.organisation:
-            return True
+        return user.organisation == issue.organisation
+
 
   The corresponding ``filter`` function::
 
@@ -2226,15 +2246,48 @@ for each action are:
 **search**
  Determine whether the user has permission to view this class.
 
+.. _`nonceless CSRF`:
+
 Protecting users from web application attacks
 ---------------------------------------------
 
-There is a class of attacks known as Cross Site Request Forgeries
-(CSRF). Malicious code running in the browser can making a
-request to Roundup while you are logged into Roundup. The
-malicious code piggy backs on your existing Roundup session to
-make changes without your knowledge. Roundup 1.6 has support for
-defending against this by analyzing the
+There is a type of attack known as Cross Site Request Forgeries
+(CSRF). Malicious code running in the browser can send a request
+to Roundup while you are logged in. The malicious code takes
+advantage of your active Roundup session to make changes without
+your knowledge.
+
+Roundup 2.6 added support for tokenless (nonceless) protection.
+This is based on `Cross-Site Request Forgery by Filippo Valsorda
+<https://words.filippo.io/csrf/>`_. Currently you must manually
+enable it. At some point in the future, it will be the default
+CSRF protection method.
+
+You can enable it for each tracker using ``config.ini``. In the
+``[web]`` section of ``config.ini`` setting
+``use_tokenless_csrf_protection`` to ``yes`` enables it. Since
+this is a replacement for the prior anti-CSRF protections, it
+turns off the older nonce and header-based CSRF settings.
+
+The Origin header is checked against the value of the
+``allowed_api_origins`` option. You can use it to allow access to
+Roundup from other web sites. For example your homepage at
+www.example.com displays the 10 most recently updated issues from
+Roundup running at issues.example.com. To allow this, you would
+set the ``allowed_api_origins`` to ``https://www.example.com``.
+
+If your users have older browsers (pre 2023) you may need to
+continue using the older token/nonce based CSRF protection method.
+See Valsorda's page for details.
+
+With this mode enabled, the ``utils.anti_csrf_nonce()`` function
+always returns ``"0"``. It does not generate a nonce nor store it to
+the otks database which should improve response times.
+
+Token/nonce based CSRF protection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Roundup 1.6 has support for defending against this by analyzing the
 
 * Referer,
 * Origin, and
@@ -3764,10 +3817,9 @@ The same can be done using a path expression::
 The utils variable
 ~~~~~~~~~~~~~~~~~~
 
-This is implemented by the
-``roundup.cgi.templating.TemplatingUtils`` class. New methods can
-be added to the variable by using extensions_.
-
+This is implemented by the ``roundup.cgi.templating.TemplatingUtils``
+class. New functions and methods can be added to the variable by using
+extensions_.
 -----
 
 .. list-table:: TemplatingUtils Methods
@@ -3777,9 +3829,9 @@ be added to the variable by using extensions_.
 
    * - Method
      - Description
-   * - Batch
+   * - :meth:`Batch <roundup.cgi.templating.TemplatingUtils.Batch>`
      - return a batch object using the supplied list
-   * - anti_csrf_nonce
+   * - :meth:`anti_csrf_nonce <roundup.cgi.templating.TemplatingUtils.anti_csrf_nonce>`
      - returns the random nonce generated for this session
    * - :meth:`expandfile <roundup.cgi.templating.TemplatingUtils.expandfile>`
      - load a file into a template and expand
@@ -3791,6 +3843,12 @@ be added to the variable by using extensions_.
        method
    * - :meth:`html_quote <roundup.cgi.templating.TemplatingUtils.html_quote>`
      - quote some text as safe in HTML (ie. <, >, ...)
+   * - :meth:`local_replace <roundup.cgi.templating.TemplatingUtils.local_replace>`
+     - this function (staticmethod) is a placeholder function that
+       returns the text passed to it. It allows the default templates
+       to enhanced the display of messages by writing a new extension
+       without having to modify the templates. See :ref:`Enhancing
+       message display<customizing/enhance>` for an example.
    * - :meth:`readfile <roundup.cgi.templating.TemplatingUtils.readfile>`
      - read JavaScript or other content in an external file
        into the template.
@@ -3801,7 +3859,7 @@ be added to the variable by using extensions_.
    * - :meth:`embed_form_fields <roundup.cgi.templating.TemplatingUtils.embed_form_fields>`
      - Creates a hidden input for each of the client's form fields. It
        also embeds base64 encoded file contents into pre tags and
-       processes that informtion back into a file input control.
+       processes that information back into a file input control.
 
 
 -----

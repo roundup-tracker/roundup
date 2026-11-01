@@ -60,6 +60,8 @@ class ExpressionError(RoundupException):
 
 class Binary:
 
+    __slots__ = ("x", "y")
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -70,6 +72,8 @@ class Binary:
 
 
 class Unary:
+
+    __slots__ = ("x",)
 
     def __init__(self, x):
         self.x = x
@@ -83,6 +87,8 @@ class Unary:
 
 class Equals(Unary):
 
+    __slots__ = ()
+
     def evaluate(self, v):
         return self.x in v
 
@@ -94,6 +100,8 @@ class Equals(Unary):
 
 
 class Empty(Unary):
+
+    __slots__ = ()
 
     def evaluate(self, v):
         return not v
@@ -107,6 +115,8 @@ class Empty(Unary):
 
 class Not(Unary):
 
+    __slots__ = ()
+
     def evaluate(self, v):
         return not self.x.evaluate(v)
 
@@ -118,6 +128,8 @@ class Not(Unary):
 
 
 class Or(Binary):
+
+    __slots__ = ()
 
     def evaluate(self, v):
         return self.x.evaluate(v) or self.y.evaluate(v)
@@ -132,6 +144,8 @@ class Or(Binary):
 
 
 class And(Binary):
+
+    __slots__ = ()
 
     def evaluate(self, v):
         return self.x.evaluate(v) and self.y.evaluate(v)
@@ -184,6 +198,8 @@ def compile_expression(opcodes):
 
 
 class Expression:
+
+    __slots__ = ("evaluate",)
 
     def __init__(self, v, is_link=False):
         try:

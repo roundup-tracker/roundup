@@ -17,7 +17,6 @@
 
 """Command-line script that runs a server over roundup.cgi.client.
 """
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import base64   # decode icon
@@ -75,6 +74,7 @@ from roundup.anypy.strings import s2b, StringIO            # noqa: E402
 from roundup.cgi import cgitb, client                      # noqa: E402
 from roundup.cgi.PageTemplates.PageTemplate import PageTemplate  # noqa: E402
 from roundup.i18n import _                                 # noqa: E402
+from roundup.logcontext import gen_trace_id, get_context_dict  # noqa: E402
 
 # "default" favicon.ico
 # generate by using "icotool" and tools/base64
@@ -268,6 +268,7 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             self.TRACKERS[name] = tracker
         return tracker
 
+    @gen_trace_id()
     def run_cgi(self):
         """ Execute the CGI command. Wrap an innner call in an error
             handler so all errors can be caught.
@@ -278,6 +279,10 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
             self.send_error(404, self.path)
         except client.Unauthorised as message:
             self.send_error(403, '%s (%s)' % (self.path, message))
+        except ValueError as e:
+            self.send_error(400,
+                            "Invalid value: %s" % str(e.args[0]),
+                            "The value for the header is unacceptable")
         except Exception:
             exc, val, tb = sys.exc_info()
             if hasattr(socket, 'timeout') and isinstance(val, socket.timeout):
@@ -319,6 +324,19 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                 self.send_header('Content-Length', len(output))
                 self.end_headers()
                 self.wfile.write(output)
+
+    def handle_method_wrapper(self):
+        """Capture a ConnectionAbortedError exception when client
+           fails to cleanly shut down HTTP 1.1 or higher connection.
+        """
+        try:
+            http_.server.BaseHTTPRequestHandler.handle(self)
+        except ConnectionAbortedError:
+            # client has gone away, nothing we can do about it.
+            pass
+
+    # override handle() to capture the exception.
+    handle = handle_method_wrapper
 
     do_GET = do_POST = do_HEAD = do_PUT = do_DELETE = \
         do_PATCH = do_OPTIONS = run_cgi
@@ -455,6 +473,9 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
         env['PATH_INFO'] = urllib_.unquote(rest)
         if query:
             env['QUERY_STRING'] = query
+        problem_header = client.are_header_values_safe(self.headers)
+        if problem_header:
+            raise ValueError(problem_header)
         if hasattr(self.headers, 'get_content_type'):
             # Python 3.  We need the raw header contents.
             content_type = self.headers.get('content-type')
@@ -583,9 +604,12 @@ class RoundupRequestHandler(http_.server.BaseHTTPRequestHandler):
                          self.log_date_time_string(),
                          format % args))
         else:
+            log_context = get_context_dict()
             try:
-                http_.server.BaseHTTPRequestHandler.log_message(self,
-                                                                format, *args)
+                http_.server.BaseHTTPRequestHandler.log_message(
+                    self,
+                    format + " " + str(log_context['trace_id']),
+                    *args)
             except IOError:
                 # stderr is no longer viable
                 pass
@@ -1223,7 +1247,14 @@ ERROR: -c is not available because roundup couldn't import
         httpd = config.get_server()
     except Exception as e:
         # capture all exceptions and pretty print them
-        print(e)
+        # with file name, line numbers and function
+        exception_source = traceback.extract_tb(e.__traceback__)[-1]
+        print(_("\nException: %(exception)s generated in file \n"
+                "   %(file)s\n at line %(lineno)s in function/method "
+                "%(name)s()\n") % { "exception": str(e),
+                               "file": exception_source.filename,
+                               "lineno": exception_source.lineno,
+                               "name": exception_source.name} )
         sys.exit(2)
 
     if success_message:

@@ -5,7 +5,6 @@ Usage: %s <tracker home> <N>
 Load up the indicated tracker with N issues and N/100 users.
 '''
 
-from __future__ import print_function
 import sys, os, random
 from roundup import instance
 
@@ -55,7 +54,7 @@ Quis ultricies urna odio sed orci.'''.splitlines()
 try:
     try:
         db.user.lookup('alpha0')
-    except:
+    except Exception:
         # add some users
         M = N//100
         for i in range(M):

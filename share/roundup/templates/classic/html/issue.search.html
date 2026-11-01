@@ -5,7 +5,7 @@
  i18n:translate="">Issue searching</span>
 <td class="content" metal:fill-slot="content">
 
-<form method="GET" name="itemSynopsis"
+<form method="POST" name="itemSynopsis"
       tal:attributes="action request/classname">
       
 <table class="form" tal:define="
@@ -214,6 +214,8 @@
   <td>
    &nbsp;
    <input type="hidden" name="@action" value="search">
+   <input name="@csrf" type="hidden"
+          tal:attributes="value python:utils.anti_csrf_nonce()">
   </td>
   <td><input type="submit" value="Search" i18n:attributes="value"></td>
 </tr>

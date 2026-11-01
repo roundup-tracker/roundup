@@ -2,15 +2,19 @@
 places in Roundup code.
 """
 
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
-import os, time, sys
+import os
+import sys
+import time
 
 
 class TruthDict:
     '''Returns True for valid keys, False for others.
     '''
+
+    __slots__ = ('keys',)
+
     def __init__(self, keys):
         if keys:
             self.keys = {}
@@ -20,8 +24,7 @@ class TruthDict:
     def __getitem__(self, name):
         if hasattr(self, 'keys'):
             return name in self.keys
-        else:
-            return True
+        return True
 
 
 def ensureParentsExist(dest):
@@ -49,6 +52,9 @@ class PrioList:
     7
 
     '''
+
+    __slots__ = ('key', 'list', 'sorted')
+
     def __init__(self, key=None):
         self.list = []
         self.key = key
@@ -85,7 +91,7 @@ class Progress:
         self.num += 1
 
         if self.num > self.total:
-            print(self.info, 'done', ' '*(75-len(self.info)-6))
+            print(self.info, 'done', ' ' * (75 - len(self.info) - 6))
             sys.stdout.flush()
             return next(self.sequence)
 
@@ -106,7 +112,7 @@ class Progress:
             self.steptimes.pop()
         steptime = sum(self.steptimes) / len(self.steptimes)
         self.now = now
-        eta = steptime * ((self.total - self.num)/self.stepsize)
+        eta = steptime * ((self.total - self.num) / self.stepsize)
 
         # tell it like it is (or might be)
         if now - self.start > 3:
@@ -123,7 +129,7 @@ class Progress:
             s = '%s %2d%%' % (self.info, self.num * 100. / self.total)
         else:
             s = '%s %d done' % (self.info, self.num)
-        sys.stdout.write(s + ' '*(75-len(s)) + '\r')
+        sys.stdout.write(s + ' ' * (75 - len(s)) + '\r')
         sys.stdout.flush()
 
 # vim: set et sts=4 sw=4 :

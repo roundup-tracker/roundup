@@ -1,11 +1,12 @@
-Roundup, exclusive of the Zope page templates, is `MIT licensed`_.
+Roundup, exclusive of the Zope page templates and vendored cgi.py, is
+`MIT licensed`_.
 
 .. _MIT licensed: https://opensource.org/license/mit
 
 Roundup Licensing
 -----------------
 
-| Copyright (c) 2009-2025 Roundup-Team (https://opensource.org/license/mit)
+| Copyright (c) 2009-2026 Roundup-Team (https://opensource.org/license/mit)
 | Copyright (c) 2003-2009 Richard Jones  (richard@mechanicalcat.net)
 | Copyright (c) 2002 eKit.com Inc
 | Copyright (c) 2001 Bizar Software Pty Ltd
@@ -117,8 +118,12 @@ Note link for http://www.zope.com/Marks is dead.
 Vendored cgi.py module
 ----------------------
 
-This module is licensed under the Python Software Foundation License
-Version 2 as it was extracted from the 3.12 Python distribution.
+This module is licensed under the `Python Software Foundation License
+Version 2`_ as it was extracted from the 3.12 Python distribution.
+
+.. _Python Software Foundation License Version 2:
+   https://opensource.org/license/Python-2.0
+
 
 PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 --------------------------------------------

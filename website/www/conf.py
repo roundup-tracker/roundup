@@ -9,15 +9,18 @@
 # Roundup documentation build configuration file, created by
 # sphinx-quickstart on Tue Jan 20 17:33:20 2009.
 #
-# This file is execfile()d with the current directory set to its containing dir.
+# This file is execfile()d with the current directory set to its
+# containing dir.
 #
-# The contents of this file are pickled, so don't put values in the namespace
-# that aren't pickleable (module imports are okay, they're removed automatically).
+# The contents of this file are pickled, so don't put values in the
+# namespace that aren't pickleable (module imports are okay, they're
+# removed automatically).
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys
+import os
 
 # Read Roundup version by importing it from root of checkout.
 # this ensures that 'unknown version' is inserted even if
@@ -46,7 +49,8 @@ finally:
 # ---------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
-#  extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
+# ones.
 extensions = ['sphinx.ext.autodoc', 'sphinxext.opengraph',
               'sphinx_sitemap', 'sphinx_tabs.tabs']
 
@@ -56,7 +60,10 @@ ogp_site_url = "https://www.roundup-tracker.org"
 ogp_image = "_images/index_logged_out.png"
 ogp_image_alt = "The front page of a tracker showing a table of issues and their properties."
 # ogp_description_length = 200
-
+ogp_social_cards = {
+    "enable": True,
+    "line_color": "#f00"
+}
 # for sitemap default: "{lang}{version}subdir/{link}"
 sitemap_url_scheme = "{link}"
 
@@ -74,7 +81,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'Roundup'
-copyright = u'2009-2025, Richard Jones, Roundup-Team'
+copyright = u'2009-2026, Roundup-Team, Richard Jones'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -102,10 +109,10 @@ exclude_patterns = ['docs/index.txt',
                     'robots.txt',
                     'docs/tracker_config.txt',
                     'COPYING.txt',
-                    'docs/CVE.txt',
                     '_tmp']
 
-# The reST default role (used for this markup: `text`) to use for all documents.
+# The reST default role (used for this markup: `text`) to use for all
+# documents.
 #default_role = None
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
@@ -129,7 +136,7 @@ pygments_style = 'borland'
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = ''
+html_style = 'style.css'
 # 'default.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to

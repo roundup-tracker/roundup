@@ -1,6 +1,6 @@
 # This detector sends notification on IRC through an irker daemon
-# (http://www.catb.org/esr/irker/) when issues are created or messages
-#  are added.
+# (https://gitlab.com/esr/irker formerly http://www.catb.org/esr/irker/)
+# when issues are created or messages are added.
 #
 # Written by Ezio Melotti
 #
@@ -14,7 +14,6 @@
 #   channels = irc://chat.freenode.net/channelname
 #
 
-from __future__ import print_function
 import re
 import json
 import socket

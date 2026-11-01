@@ -14,8 +14,6 @@
 # Note that the calls are interleaved, but the proper
 # tx_Source is associated with the same ticket.
 
-from __future__ import print_function
-
 
 def tx_SourceCheckAudit(db, cl, nodeid, newvalues):
     ''' An auditor to print the value of the source of the

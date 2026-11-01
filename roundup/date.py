@@ -17,7 +17,6 @@
 
 """Date, time and time interval handling.
 """
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import calendar
@@ -107,7 +106,10 @@ class SimpleTimezone(datetime.tzinfo):
             self.name = "Etc/GMT%+d" % self.offset
 
     def utcoffset(self, dt):
-        return datetime.timedelta(hours=self.offset)
+        offset = self.offset
+        # preserve sign. -3.5 should provide -3 hours and -30 minutes
+        minutes = int((offset - int(offset)) * 60) if int(offset) != offset else 0
+        return datetime.timedelta(hours=int(self.offset), minutes=minutes)
 
     def tzname(self, dt):
         return self.name
@@ -136,9 +138,10 @@ def get_timezone(tz):
     # XXX should we return UTC for None?
     if tz is None:
         return None
-    # try integer offset first for backward compatibility
+
+    # try integer/float offset first for backward compatibility
     try:
-        utcoffset = int(tz)
+        utcoffset = float(tz)
     except (TypeError, ValueError):
         pass
     else:
@@ -324,6 +327,9 @@ class Date:
         >>> test_fin(u)
     '''
 
+    __slots__ = ("year", "month", "day", "hour", "minute", "second",
+                 "_", "ngettext", "translator")
+    
     def __init__(self, spec='.', offset=0, add_granularity=False,
                  translator=i18n):
         """Construct a date given a specification and a time zone offset.
@@ -355,7 +361,7 @@ class Date:
             self.second += spec.microsecond/1000000.
             return
 
-        if isinstance(spec, type('')):
+        if isinstance(spec, str):
             self.set(spec, offset=offset, add_granularity=add_granularity)
             return
         elif hasattr(spec, 'tuple'):
@@ -399,7 +405,7 @@ class Date:
         if m is None:
             raise ValueError(self._('Not a date spec: %r '
                 '("yyyy-mm-dd", "mm-dd", "HH:MM", "HH:MM:SS" or '
-                '"yyyy-mm-dd.HH:MM:SS.SSS")' % spec))
+                '"yyyy-mm-dd.HH:MM:SS.SSS")') % spec)
 
         info = m.groupdict()
 
@@ -845,8 +851,8 @@ class Interval:
             m = interval_re.match(spec)
             if not m:
                 raise ValueError(self._('Not an interval spec: "%s"'
-                    ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec])'
-                    % spec))
+                    ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS] [date spec])')
+                    % spec)
         else:
             allowdate = 0
 
@@ -868,8 +874,8 @@ class Interval:
         # make sure it's valid
         if not valid and not info['D']:
             raise ValueError(self._('Not an interval spec: "%s"'
-                ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS])'
-                % spec))
+                ' ([+-] [#y] [#m] [#w] [#d] [[[H]H:MM]:SS])')
+                % spec)
 
         if self.week:
             self.day = self.day + self.week*7
@@ -962,7 +968,7 @@ class Interval:
             asgn = a[0]
             b = other.get_tuple()
             bsgn = b[0]
-            i = [asgn*x + bsgn*y for x, y in zip(a[1:], b[1:])]
+            i = [asgn*x + bsgn*y for x, y in zip(a[1:], b[1:], strict=True)]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
             return Interval(i, translator=self.translator)
@@ -982,7 +988,7 @@ class Interval:
             asgn = a[0]
             b = other.get_tuple()
             bsgn = b[0]
-            i = [asgn*x - bsgn*y for x, y in zip(a[1:], b[1:])]
+            i = [asgn*x - bsgn*y for x, y in zip(a[1:], b[1:], strict=True)]
             i.insert(0, 1)
             i = fixTimeOverflow(i)
             return Interval(i, translator=self.translator)

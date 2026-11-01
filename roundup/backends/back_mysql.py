@@ -583,7 +583,7 @@ class Database(rdbms_common.Database):
             self.sql(sql)
 
     # old-skool id generation
-    def newid(self, classname):
+    def newid(self, classname: str) -> str:
         ''' Generate a new id for the given class
         '''
         # get the next ID - "FOR UPDATE" will lock the row for us

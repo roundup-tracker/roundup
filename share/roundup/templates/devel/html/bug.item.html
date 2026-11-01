@@ -309,7 +309,7 @@
   <tr>
    <td colspan="4" class="content">
     <pre tal:condition="python:msg.content.is_view_ok()"
-         tal:content="structure python:utils.localReplace(msg.content.hyperlinked())">content</pre>
+         tal:content="structure python:utils.local_replace(msg.content.hyperlinked())">content</pre>
    </td>
   </tr>
  </tal:block>

@@ -19,6 +19,7 @@
 """
 __docformat__ = 'restructuredtext'
 
+import hmac
 import os
 import re
 import string
@@ -101,7 +102,7 @@ except ImportError:
     def xor_bytes(left, right):
         "perform bitwise-xor of two byte-strings"
         return _bjoin(bchr(bord(l) ^ bord(r))
-                      for l, r in zip(left, right))  # noqa: E741
+                      for l, r in zip(left, right, strict=True))  # noqa: E741
 
     def _pbkdf2(password, salt, rounds, keylen, sha=sha1):
         if sha not in [sha1, sha512]:
@@ -359,16 +360,15 @@ class JournalPassword:
         if isinstance(other, self.__class__):
             if self.scheme != other.scheme:
                 return False
-            return self.password == other.password
+            return hmac.compare_digest(self.password,other.password)
 
         # assume password is plaintext
         if self.password is None:
             raise ValueError('Password not set')
-        return self.password == encodePassword(other, self.scheme,
-                                               self.password or None)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
+        return hmac.compare_digest(self.password,
+                                   encodePassword(other, self.scheme,
+                                                  self.password or None)
+                                   )
 
 
 class Password(JournalPassword):
@@ -430,21 +430,10 @@ class Password(JournalPassword):
 
         if rounds < 1000:
             return True
-
-        if (self.scheme == "PBKDF2"):
+        if self.scheme in ["PBKDF2S5", "PBKDF2"]:
             new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
-            if ("pytest" in sys.modules and
-                "PYTEST_CURRENT_TEST" in os.environ):
-                if ("PYTEST_USE_CONFIG" in os.environ):
-                    new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
-                else:
-                    # for testing
-                    new_rounds = 1000
-            if rounds < int(new_rounds):
-                return True
-
-        if (self.scheme == "PBKDF2S5"):
-            new_rounds = config.PASSWORD_PBKDF2_DEFAULT_ROUNDS
+            # PYTEST_CURRENT_TEST is set when pytest is running
+            # a test case.
             if ("pytest" in sys.modules and
                 "PYTEST_CURRENT_TEST" in os.environ):
                 if ("PYTEST_USE_CONFIG" in os.environ):

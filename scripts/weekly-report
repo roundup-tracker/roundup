@@ -22,8 +22,6 @@
 #2 - 491: Can you help me with Sanity
 #1 - 1995: Where is my Power plugs
 
-from __future__ import print_function
-
 import sys
 
 from roundup import date, instance

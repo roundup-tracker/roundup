@@ -18,19 +18,24 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-from __future__ import print_function
-
 import os
 import sys
 from glob import glob
 from sysconfig import get_path
 
+import setuptools
 from setuptools import setup
 
 from roundup.dist.command.bdist_rpm import bdist_rpm
 from roundup.dist.command.build import build, list_message_files
 from roundup.dist.command.build_doc import build_doc
 from roundup.dist.command.install_lib import install_lib
+
+# verify we have a version of setuptools that implnts version 2.4 of metadata
+if not tuple(int(x) for x in setuptools.__version__.split('.')) > (77, 0, 0):
+    raise Exception('Install a version of setuptools > 77.0.0 that supports '
+           'metadata\n   version 2.4 or newer. Installed version is: %s' %
+                    setuptools.__version__)
 
 
 def include(d, e):
@@ -61,8 +66,8 @@ def make_data_files_absolute(data_files, prefix, enable=False):
        like: /usr/local/share/man, docs in /usr/local/share/doc/roundup,
        templates in /usr/local/share/roundup/templates.
     """
-    new_data_files = [ (os.path.join(prefix,df[0]),df[1])
-                       for df in data_files ]
+    new_data_files = [(os.path.join(prefix, df[0]), df[1])
+                       for df in data_files]
     if enable:
         return new_data_files
     return data_files
@@ -161,7 +166,7 @@ def main():
     templates = [t['path']
                  for t in listTemplates('share/roundup/templates').values()]
     for tdir in templates:
-        for idir in '. detectors extensions html html/layout static'.split():
+        for idir in ['.', 'detectors', 'extensions', 'html', 'html/layout', 'static']:
             data_files.append(include(os.path.join(tdir, idir), '*'))
 
     # add message files
@@ -222,22 +227,17 @@ def main():
                        'Intended Audience :: End Users/Desktop',
                        'Intended Audience :: Developers',
                        'Intended Audience :: System Administrators',
-                       'License :: OSI Approved',
-                       'License :: OSI Approved :: MIT License',
-                       'License :: OSI Approved :: Zope Public License',
-                       'License :: OSI Approved :: Python Software Foundation License',
                        'Operating System :: MacOS :: MacOS X',
                        'Operating System :: Microsoft :: Windows',
                        'Operating System :: POSIX',
                        'Programming Language :: Python',
                        'Programming Language :: Python :: 3',
-                       'Programming Language :: Python :: 3.7',
-                       'Programming Language :: Python :: 3.8',
-                       'Programming Language :: Python :: 3.9',
                        'Programming Language :: Python :: 3.10',
                        'Programming Language :: Python :: 3.11',
                        'Programming Language :: Python :: 3.12',
                        'Programming Language :: Python :: 3.13',
+                       'Programming Language :: Python :: 3.14',
+                       'Programming Language :: Python :: 3.15',
                        'Programming Language :: Python :: Implementation :: CPython',
                        'Topic :: Communications :: Email',
                        'Topic :: Office/Business',
@@ -246,10 +246,10 @@ def main():
                        ],
           # Override certain command classes with our own ones
           cmdclass={'build_doc': build_doc,
-                     'build': build,
-                     'bdist_rpm': bdist_rpm,
-                     'install_lib': install_lib,
-                     },
+                    'build': build,
+                    'bdist_rpm': bdist_rpm,
+                    'install_lib': install_lib,
+                    },
           data_files=data_files,
           description="A simple-to-use and -install issue-tracking system"
             " with command-line, web and e-mail interfaces. Highly"
@@ -264,8 +264,7 @@ def main():
               "extras": ['brotli', 'pytz'],
               "test": ['pytest > 7.0.0'],
               },
-          license="OSI Approved: MIT License, Zope Public License,"
-                  " Python Software Foundation License",
+          license_expression="MIT AND ZPL-2.0 AND PSF-2.0",
           long_description=long_description,
           long_description_content_type='text/x-rst',
           maintainer="Ralf Schlatterbeck",
@@ -280,7 +279,7 @@ def main():
               "Licenses": "https://roundup-tracker.org/docs/license.html",
               "Wiki": "https://wiki.roundup-tracker.org/",
     },
-          python_requires=">=3.7",
+          python_requires=">=3.10",
           url='https://www.roundup-tracker.org',
           version=__version__,
 )

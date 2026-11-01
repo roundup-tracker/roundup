@@ -14,9 +14,7 @@ Future development may cover:
 [ ] lossless dump/restore cycle
 [ ] data dump and filtering with preserved
 
-Works in Python 2 as well.
 """
-from __future__ import print_function
 
 __license__ = "Public Domain"
 __version__ = "1.1"

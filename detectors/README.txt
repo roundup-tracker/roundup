@@ -19,6 +19,10 @@ creator_resolution.py - only allow the creator of the issue to resolve it
 emailauditor.py - Rename .eml files (from email multi-part bodies) to
                   .mht so they can be downloaded/viewed in Internet Explorer.
 
+immutable_file_contents.py - prevent changes to the contents property
+                             of file and msg classes including by
+                             people with the admin role.
+
 irker.py - communicate with irkerd to allow roundtup to send announcements
            to an IRC channel.
 

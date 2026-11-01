@@ -4,7 +4,6 @@
 
 """Extended CGI traceback handler by Ka-Ping Yee, <ping@lfw.org>.
 """
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 import inspect

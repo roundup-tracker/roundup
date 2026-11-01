@@ -14,6 +14,7 @@ import re
 import socket
 import stat
 import sys
+import tempfile
 import time
 from email.mime.multipart import MIMEMultipart
 from traceback import format_exc
@@ -24,7 +25,6 @@ except ImportError:
     class SysCallError(Exception):
         pass
 
-import roundup.anypy.email_  # noqa: F401  -- patches for email library code
 from roundup import hyperdb, rest, xmlrpc
 
 # quality of random checked below
@@ -56,9 +56,9 @@ from roundup.exceptions import (
     UsageError,
 )
 
-from roundup.mlink_expr import ExpressionError
-
+from roundup.logcontext import gen_trace_id, store_trace_reason
 from roundup.mailer import Mailer, MessageSendError
+from roundup.mlink_expr import ExpressionError
 
 logger = logging.getLogger('roundup')
 
@@ -105,6 +105,7 @@ def add_message(msg_list, msg, escape=True):
     msg_list.append(msg)
     return msg_list  # for unittests
 
+
 # if set to False via interfaces.py do not log a warning when
 # xmlrpc is used and defusedxml is not installed.
 WARN_FOR_MISSING_DEFUSEDXML = True
@@ -130,6 +131,12 @@ def seed_pseudorandom():
     import random
     random.seed()
 
+_safe_char_set = {chr(x) for x in range(32,127)}
+def are_header_values_safe(header_list):
+    for header, value in header_list.items():
+        if (set(value) - _safe_char_set):
+            return header, value
+    return None
 
 class LiberalCookie(SimpleCookie):
     """ Python's SimpleCookie throws an exception if the cookie uses invalid
@@ -278,7 +285,6 @@ class BinaryFieldStorage(cgi.FieldStorage, object):
     '''
     def make_file(self, mode=None):
         ''' work around https://bugs.python.org/issue27777 '''
-        import tempfile
         if self.length >= 0:
             return tempfile.TemporaryFile("wb+")
         return super(BinaryFieldStorage, self).make_file()
@@ -434,6 +440,8 @@ class Client:
     # content-type.
     precompressed_mime_types = ["image/png", "image/jpeg"]
 
+    @gen_trace_id()
+    @store_trace_reason('client', extract="args[3]['PATH_INFO']")
     def __init__(self, instance, request, env, form=None, translator=None):
         # re-seed the random number generator. Is this is an instance of
         # random.SystemRandom it has no effect.
@@ -449,9 +457,12 @@ class Client:
         self.env = env
         if translator is not None:
             self.setTranslator(translator)
-            # XXX we should set self.language to "translator"'s language,
-            # but how to get it ?
-            self.language = ""
+            # set self.language to "translator"'s language
+            try:
+                self.language = translator.info()["language"]
+            except (AttributeError, KeyError):
+                # info() missing or no language key
+                self.language = ""
         else:
             self.setTranslator(TranslationService.NullTranslationService())
             self.language = ""  # as is the default from determine_language
@@ -477,7 +488,7 @@ class Client:
 
         # this is the "cookie path" for this tracker (ie. the path part of
         # the "base" url)
-        self.cookie_path = urllib_.urlparse(self.base)[2]
+        self.cookie_path = urllib_.urlsplit(self.base)[2]
         # cookies to set in http responce
         # {(path, name): (value, expire)}
         self._cookies = {}
@@ -581,6 +592,8 @@ class Client:
         self._ = self.gettext = translator.gettext
         self.ngettext = translator.ngettext
 
+    @gen_trace_id()
+    @store_trace_reason('client_main', extract="args[0].env['PATH_INFO']")
     def main(self):
         """ Wrap the real main in a try/finally so we always close off the db.
         """
@@ -803,13 +816,18 @@ class Client:
             # Must check supplied Origin header for bad value first.
             csrf_ok = self.handle_csrf(api=True)
         except (Unauthorised, UsageError) as msg:
+            response_code = self.response_code
+            if response_code < 400:
+                # set the code to a 400 error as this is an error
+                # condition.
+                response_code = 400
             # FIXME should format return value according to
             # client's accept header, so application/xml, text/plain etc..
-            output = s2b('{ "error": { "status": 400, "msg": "%s"}}' %
-                         str(msg))
+            output = s2b('{ "error": { "status": %s, "msg": "%s"}}' %
+                         (response_code, str(msg)))
             self.reject_request(output,
                                 message_type="application/json",
-                                status=400)
+                                status=response_code)
             csrf_ok = False  # we had an error, failed check
             return
 
@@ -949,12 +967,40 @@ class Client:
                 self.serve_file(designator)
             except SendStaticFile as file:
                 self.serve_static_file(str(file))
-            except IOError:
-                # IOErrors here are due to the client disconnecting before
-                # receiving the reply.
+            except ConnectionAbortedError:
+                # ConnectionAbortedError (subclass of IOErrors which
+                # is alias for OSError as of python 3.3) here are due
+                # to the client disconnecting before receiving the
+                # reply.
                 pass
+            except IOError as e:
+                # We report this so other IOErrors aren't silenced.
+                # https://issues.roundup-tracker.org/issue2551405
+                if self.response_code == http_.client.OK:
+                    self.response_code = http_.client.INTERNAL_SERVER_ERROR
+                # Help the administrator work out what went wrong.
+                try:
+                    html = ("<h1>Traceback</h1>"
+                        + cgitb.html(i18n=self.translator)
+                        + ("<h1>Environment Variables</h1><table>%s</table>"
+                           % cgitb.niceDict("", self.env)))
+                except Exception as e:
+                    # something broke getting a nice formatted traceback.
+                    # use logger.exception to dump something useful to the log.
+                    logger.exception("Unexpected IOError exception %s", e)
+                    # then assign html default value so we return
+                    # something to the client/admin.
+                    html = self._(default_err_msg)
+                if not self.instance.config.WEB_DEBUG:
+                    exc_info = sys.exc_info()
+                    subject = "Error: %s" % exc_info[1]
+                    self.send_error_to_admin(subject, html, format_exc())
+                    self.write_html(self._(default_err_msg))
+                else:
+                    self.write_html(html)
             except SysCallError:
-                # OpenSSL.SSL.SysCallError is similar to IOError above
+                # OpenSSL.SSL.SysCallError is similar to
+                # ConnectionAbortedError (IOError) above
                 pass
             except RateLimitExceeded:
                 raise
@@ -1026,9 +1072,11 @@ class Client:
         except RateLimitExceeded as e:
             self.add_error_message(str(e))
             self.write_html(self.renderContext())
-        except IOError:
-            # IOErrors here are due to the client disconnecting before
-            # receiving the reply.
+        except ConnectionAbortedError:
+            # ConnectionAbortedError (subclass of IOErrors which
+            # is alias for OSError as of python 3.3) here are due
+            # to the client disconnecting before receiving the
+            # reply.
             # may happen during write_html and serve_file, too.
             pass
         except SysCallError:
@@ -1050,10 +1098,19 @@ class Client:
             if self.response_code == http_.client.OK:
                 self.response_code = http_.client.INTERNAL_SERVER_ERROR
             # Help the administrator work out what went wrong.
-            html = ("<h1>Traceback</h1>"
-                    + cgitb.html(i18n=self.translator)
-                    + ("<h1>Environment Variables</h1><table>%s</table>"
-                       % cgitb.niceDict("", self.env)))
+            try:
+                html = ("<h1>Traceback</h1>"
+                        + cgitb.html(i18n=self.translator)
+                        + ("<h1>Environment Variables</h1><table>%s</table>"
+                           % cgitb.niceDict("", self.env)))
+            except Exception:
+                # something broke getting a nice formatted traceback.
+                # use logger.exception to dump something useful to the log.
+                logger.exception("Last Resort Exception handler %s", e)
+                # then assign html default value so we return
+                # something to the client/admin.
+                html = self._(default_err_msg)
+                
             if not self.instance.config.WEB_DEBUG:
                 exc_info = sys.exc_info()
                 subject = "Error: %s" % exc_info[1]
@@ -1391,8 +1448,9 @@ class Client:
 
         # allow Anonymous to view the "user" "register" template if they're
         # allowed to register
-        if (self.db.security.hasPermission('Register', self.userid, 'user')
-                and self.classname == 'user' and self.template == 'register'):
+        if (self.template == 'register' and self.classname == 'user'
+            and self.db.security.hasPermission('Register',
+                                               self.userid, 'user')):
             return
 
         # otherwise for everything else
@@ -1422,7 +1480,7 @@ class Client:
         try:
             origin = self.env['HTTP_ORIGIN']
         except KeyError:
-            return self.env['REQUEST_METHOD'] == 'GET'
+            return self.env['REQUEST_METHOD'] in {"GET", "OPTIONS", "HEAD"}
 
         # note base https://host/... ends host with with a /,
         # so add it to origin.
@@ -1450,7 +1508,7 @@ class Client:
     def is_referer_header_ok(self, api=False):
         referer = self.env['HTTP_REFERER']
         # parse referer and create an origin
-        referer_comp = urllib_.urlparse(referer)
+        referer_comp = urllib_.urlsplit(referer)
 
         # self.base always has trailing /, so add trailing / to referer_origin
         referer_origin = "%s://%s/" % (referer_comp[0], referer_comp[1])
@@ -1476,8 +1534,170 @@ class Client:
                 return True
         return False
 
+    def expire_exposed_keys(self, method):
+        """A nonce is used with a method it should not be. If the
+           nonce exists, report to admin so they can fix the nonce
+           leakage and destroy it. (Nonces used in a get are more
+           exposed than those used in a post.) If nonce exists in the
+           database, report the referer and origin headers to try to
+           find where this comes from so it can be fixed.  If nonce
+           doesn't exist just ignore it. If we reported invalid
+           nonces, somebody could spam us with a ton of invalid keys
+           and fill up the logs.
+
+           Use ?@csrf=key in a GET, HEAD, or OPTIONS request to
+           test this code. Python's http server library will not parse
+           Content sent via one of these methods. So smuggle it
+           via a query string when testing.
+        """
+        came_from = []
+        otks = self.db.getOTKManager()
+
+        if 'HTTP_REFERER' in self.env:
+            came_from.append("Referer(%s)" % self.env['HTTP_REFERER'])
+        if 'HTTP_ORIGIN' in self.env:
+            came_from.append("Origin(%s)" % self.env['HTTP_ORIGIN'])
+        if not came_from:
+            came_from.append(self._("Request source headers not available."))
+        key = self.form['@csrf'].value
+        if otks.exists(key):
+            logger.error(
+                self._("csrf key used with method %(method)s from: %(source)s"),
+                {"method": method, "source": ", ".join(came_from)})
+            otks.destroy(key)
+            otks.commit()
+
+    def handle_csrf_tokenless(self):
+        r'''Modern way to handle csrf prevention quoted from:
+
+                https://words.filippo.io/csrf/
+
+           and is reformatted with added commentary in []'s:
+
+           "In summary, to protect against CSRF applications (or,
+           rather, libraries and frameworks) should reject
+           cross-origin non-safe browser requests. The most
+           developer-friendly way to do so is using primarily Fetch
+           metadata, which requires no extra instrumentation or
+           configuration.
+
+           1. Allow all GET, HEAD, or OPTIONS requests.  These are
+              safe methods, and are assumed not to change state at
+              various layers of the stack already.
+
+           2. If the Origin header matches an allow-list [see \*1 below]
+              of trusted origins, allow the request.
+
+              Trusted origins should be configured as full origins
+              (e.g. https://example.com) and compared by simple
+              equality with the header value.
+
+           3. If the Sec-Fetch-Site header is present: if its value is
+              same-origin or none, allow the request; otherwise,
+              reject the request.
+
+              This secures all major up-to-date browsers for sites
+              hosted on trustworthy (HTTPS or localhost) origins.
+
+           4. If neither the Sec-Fetch-Site nor the Origin headers are
+              present, allow the request.
+
+              These requests are not from (post-2020) browsers, and
+              can't be affected by CSRF.
+
+           5. If the Origin header's host (including the port) matches
+              the Host header, allow the request, otherwise reject it.
+
+              This is either a request to an HTTP origin, or by an
+              out-of-date browser.
+
+            The only false positives (unnecessary blocking) of this
+            algorithm are requests to non-trustworthy (plain HTTP)
+            origins that go through a reverse proxy that changes the
+            Host header. That edge case can be worked around by adding
+            the origin [see \*2 below] to the allow-list.
+
+            There are no false negatives in modern browsers, but
+            pre-2023 browsers will be vulnerable to HTTP→HTTPS
+            requests, because the Origin fallback is
+            scheme-agnostic. HSTS can be used to mitigate that (in
+            post-2020 browsers), but note that out-of-date browsers
+            are likely to have more pressing security issues."
+
+            **Local Notes**
+
+            \*1. The allow list of trusted origins is obtained from
+            the tracker's config.ini file in two places:
+
+               1. the web setting of the tracker section
+               2. the allowed_api_origins setting in the web section
+
+            \*2. I am not sure what is meant in this section. If the
+            reverse proxy changes the ORIGIN header, then setting
+            allowed_api_origins is a remedy. However the HOST header
+            is only used in step 5 and is compared to the ORIGIN
+            header not to a list of possible origins so....
+
+            The GET/HEAD/OPTIONS requests are scanned for @csrf
+            tokens.  If any are found, they are removed from the
+            database. The @csrf token removal code can be deleted when
+            @csrf token support is removed.
+        '''
+        found_origin = found_fetch = False
+
+        method = self.env['REQUEST_METHOD']
+        if method in {'GET', 'OPTIONS', 'HEAD'}:   # list item 1
+            # query arguments are mapped into form.list
+            # so ?@csrf=..... will pass this test.
+            if (self.form.list is not None) and ("@csrf" in self.form):
+                self.expire_exposed_keys(method)
+            # do return here. Keys have been obsoleted.
+            # we didn't do a expire cycle of session keys,
+            # but that's ok.
+            return True
+
+        # local addition to fail fast if invalid method.
+        if method not in {'POST', 'PUT', 'DELETE', 'PATCH'}:
+            self.response_code = 405  # bad method
+            raise UsageError("Bad method: %s" % method)
+
+        if 'HTTP_ORIGIN' in self.env:  # list item 2
+            found_origin = True
+            origin = self.env['HTTP_ORIGIN']
+
+            tracker_web = self.db.config['TRACKER_WEB']
+            allowed_api_origins = self.db.config['WEB_ALLOWED_API_ORIGINS']
+
+            # tracker_web always ends with a /, so include it in
+            # the find.
+            if tracker_web.find(origin + '/') == 0:
+                return True
+            if origin in allowed_api_origins:
+                return True
+
+        if 'HTTP_SEC_FETCH_SITE' in self.env:  # list item 3
+            if self.env['HTTP_SEC_FETCH_SITE'] in ['same-origin', 'none']:
+                return True
+
+            raise UsageError(self._("Unable to authorize request"))
+
+        if not (found_origin or found_fetch):  # list item 4
+            # not a browser request so not a CSRF by definition
+            return True
+
+        parsed_origin = urllib_.urlsplit(self.env['HTTP_ORIGIN'])
+        if self.env['HTTP_HOST'] == parsed_origin.netloc:  # list item 5
+            return True
+
+        raise UsageError(self._("Unable to authorize request"))
+
     def handle_csrf(self, api=False):
         '''Handle csrf token lookup and validate current user and session
+
+            If the config.ini setting:
+            WEB_USE_TOKENLESS_CSRF_PROTECTION is enabled, this routine
+            returns the result from handle_csrf_tokenless()
+            and doesn't use Nonces at all.
 
             This implements (or tries to implement) the
             Session-Dependent Nonce from
@@ -1523,40 +1743,35 @@ class Client:
             debugging seems to be an advantage.
 
         '''
+
+        method = self.env['REQUEST_METHOD']
+
+        # reject api methods used with non-api endpoint.
+        if not api and method not in {"HEAD", "GET", "POST"}:
+            self.response_code = 405
+            self.additional_headers['Allow'] = "HEAD, GET, POST"
+            raise UsageError("Bad method: %s" % method)
+
+        if self.db.config['WEB_USE_TOKENLESS_CSRF_PROTECTION']:
+            return self.handle_csrf_tokenless()
+
         # Create the otks handle here as we need it almost immediately.
         # If this is perf issue, set to None here and check below
         # once all header checks have passed if it needs to be opened.
         otks = self.db.getOTKManager()
 
-        # Assume: never allow changes via GET
-        if self.env['REQUEST_METHOD'] not in ['POST', 'PUT', 'DELETE']:
+        # Assume: never allow changes via GET/OPTIONS/HEAD
+        if method in {'GET', 'OPTIONS', 'HEAD'}:
             if (self.form.list is not None) and ("@csrf" in self.form):
-                # We have a nonce being used with a method it should
-                # not be. If the nonce exists, report to admin so they
-                # can fix the nonce leakage and destroy it. (nonces
-                # used in a get are more exposed than those used in a
-                # post.) Note, I don't attempt to validate here since
-                # existence here is the sign of a failure.  If nonce
-                # exists try to report the referer header to try to
-                # find where this comes from so it can be fixed.  If
-                # nonce doesn't exist just ignore it. Maybe we should
-                # report, but somebody could spam us with a ton of
-                # invalid keys and fill up the logs.
-                if 'HTTP_REFERER' in self.env:
-                    referer = self.env['HTTP_REFERER']
-                else:
-                    referer = self._("Referer header not available.")
-                key = self.form['@csrf'].value
-                if otks.exists(key):
-                    logger.error(
-                        self._("csrf key used with wrong method from: %s"),
-                        referer)
-                    otks.destroy(key)
-                    otks.commit()
+                self.expire_exposed_keys(method)
             # do return here. Keys have been obsoleted.
             # we didn't do a expire cycle of session keys,
             # but that's ok.
             return True
+
+        if method not in {'POST', 'PUT', 'DELETE', 'PATCH'}:
+            self.response_code = 405
+            raise UsageError("Bad method: %s" % method)
 
         config = self.instance.config
         current_user = self.db.getuid()
@@ -1615,7 +1830,7 @@ class Client:
                         'userid': current_user, 'origin': origin}
                 if enforce in ('required', 'yes'):
                     logger.error(logmsg)
-                    raise Unauthorised(self._("Invalid Origin %s" % origin))
+                    raise Unauthorised(self._("Invalid Origin %s") % origin)
                 if enforce == 'logfailure':
                     logger.warning(logmsg)
             else:
@@ -1817,10 +2032,10 @@ class Client:
         is generally only one entry long.
 
         - if there is no path, then we are in the "home" context.
-        - if the path is "_file", then the additional path entry
-          specifies the filename of a static file we're to serve up
-          from the instance "html" directory. Raises a SendStaticFile
-          exception.(*)
+        - if the path is "@@file" (or "_file", then the additional
+          path entry specifies the filename of a static file we're to
+          serve up from the instance "html" directory. Raises a
+          SendStaticFile exception.(*)
         - if there is something in the path (eg "issue"), it identifies
           the tracker class we're to display.
         - if the path is an item designator (eg "issue123"), then we're
@@ -1882,7 +2097,7 @@ class Client:
             else:
                 self.template = ''
             return
-        if path[0] in ('_file', '@@file'):
+        if path[0] in ('@@file', '_file'):
             raise SendStaticFile(os.path.join(*path[1:]))
 
         self.classname = path[0]
@@ -1926,19 +2141,19 @@ class Client:
 
            Can be overridden by code in tracker's interfaces.py.
         """
-        
-        from roundup.anypy.vendored.cgi import MiniFieldStorage
+
+        from roundup.anypy.cgi_ import MiniFieldStorage
 
         original_action = self.form['@action'].value if '@action' \
             in self.form else ""
         original_template = self.template
 
         self.template = 'reauth'
-        self.form.list = [ x for x in self.form.list
-                           if x.name not in ('@action',
-                                             '@csrf',
-                                             '@template'
-                                             )]
+        self.form.list = [x for x in self.form.list
+                          if x.name not in ('@action',
+                                            '@csrf',
+                                            '@template'
+                                            )]
 
         # save the action and template used when the Reauth as
         # triggered. Will be used to resolve the change by the reauth
@@ -2307,22 +2522,33 @@ class Client:
 
             if 'Content-Type' not in self.additional_headers:
                 self.additional_headers['Content-Type'] = pt.content_type
-            if self.env.get('CGI_SHOW_TIMING', ''):
+
+            show_timing = self.env.get('CGI_SHOW_TIMING', '').upper()
+
+            # check content_type so we don't calculate timing if
+            # we can't display it. This also prevents matching
+            # '</body>' in js, css, svg or comment strings in
+            # images that will mangle result.
+            content_type = (self.additional_headers.get('Content-Type', "")
+                            or pt.content_type)
+            if (show_timing in ('COMMENT', 'INLINE') and
+                content_type == "text/html"):
+                timings = {}
                 if self.env['CGI_SHOW_TIMING'].upper() == 'COMMENT':
-                    timings = {'starttag': '<!-- ', 'endtag': ' -->'}
+                    delims = {'starttag': '<!-- ', 'endtag': ' -->'}
                 else:
-                    timings = {'starttag': '<p>', 'endtag': '</p>'}
+                    delims = {'starttag': '<p>', 'endtag': '</p>'}
                 timings['seconds'] = time.time() - self.start
                 s = self._(
                     '%(starttag)sTime elapsed: %(seconds)fs%(endtag)s\n'
-                ) % timings
+                ) % {**timings, **delims}
                 if hasattr(self.db, 'stats'):
                     timings.update(self.db.stats)
-                    s += self._("%(starttag)sCache hits: %(cache_hits)d,"
-                                " misses %(cache_misses)d."
-                                " Loading items: %(get_items)f secs."
-                                " Filtering: %(filtering)f secs."
-                                "%(endtag)s\n") % timings
+                    allstats = ", ".join(["{}: {:.6g}".format(key, value)
+                                         for key, value in timings.items()
+                                         if key != 'seconds'])
+                    s += '%(starttag)s %(allstats)s %(endtag)s\n' % {
+                        'allstats': allstats, **delims}
                 s += '</body>'
                 result = result.replace('</body>', s)
             return result
@@ -2348,9 +2574,7 @@ class Client:
                 # receive an error message, and the adminstrator will
                 # receive a traceback, albeit with less information
                 # than the one we tried to generate above.
-                if sys.version_info[0] > 2:
-                    raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
-                exec('raise exc_info[0], exc_info[1], exc_info[2]')  # nosec
+                raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
 
     def renderError(self, error, response_code=400, use_template=True):
         self.response_code = response_code
@@ -2445,7 +2669,7 @@ class Client:
             action_klass = self.get_action_class(action)
 
             # call the mapped action
-            if isinstance(action_klass, type('')):
+            if isinstance(action_klass, str):
                 # old way of specifying actions
                 return getattr(self, action_klass)()
 
@@ -2861,9 +3085,9 @@ class Client:
                                 "Cache failure: "
                                 "compressed file %(compressed)s is "
                                 "older than its source file "
-                                "%(filename)s" % {
+                                "%(filename)s") % {
                                     'filename': filename,
-                                    'compressed': trial_filename}))
+                                    'compressed': trial_filename})
 
                             continue
                         filename = trial_filename

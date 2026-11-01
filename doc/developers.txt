@@ -66,13 +66,13 @@ Other project rules:
 - write unit tests for changes you make (where possible),
   and ensure that all unit tests run before committing
   changes.
-- run flake8_ or pylint_ over changed code.
+- run ruff_, flake8_ or pylint_ over changed code.
 - if you have direct commit access to the repository,
   subscribe to roundup-checkins to receive checkin
   notifications from the other developers with write access
   to the source-code repository.
 
-The goal is to have no flake8 issues. Current code has
+The goal is to have no ruff/flake8 issues. Current code has
 complex functions, some long lines and use of mutable
 objects in function signatures. Some third party code
 (e.g. ZPT) vendored into the codebase has more issues.
@@ -114,10 +114,10 @@ See https://www.roundup-tracker.org/code.html for URL's and
 directions on getting read write access which allows pushing
 to the repository.
 
-Once you have your clone, you can run ``python3 ./demo -b
-sqlite`` and get a working Roundup server. This will start
-the server using the ``sqlite`` backend. The code is in the
-``roundup`` subdirectory.
+Once you have your clone, change to the root of the tree and 
+run ``python3 ./demo.py -b sqlite`` to get a working Roundup
+server. This will start the server using the ``sqlite`` backend. The
+code is in the ``roundup`` subdirectory.
 
 To test internationalization in your environment, you have to
 process the locale sub-directory into a form that roundup's
@@ -228,6 +228,15 @@ html``.
 Testing Notes
 -------------
 
+Use ``python -m pip install -r test/requirements.txt`` to get the
+minimal packages needed to run tests.
+
+With the requirements installed, run the test suite using ``python -m
+pytest test`` from the top level directory. This can take a while. In
+CI it takes 15 minutes. On a 15 year old laptop it can take over an
+hour and a half testing only anydbm and sqlite backends (not
+including mysql/postgres).
+
 Create tests for your changes. Also run the tests in reverse to try to
 identify test dependencies. You can do this by creating a
 ``conftest.py`` in the top of the source tree and include the
@@ -248,16 +257,6 @@ test suite. Use it by running::
 
 once over the whole test suite. Then subsequent calls will analyze the
 changed files/functions and run tests that cover those changes.
-
-To run some tests (test_liveserver.py, test_indexer.py, ...) you need
-to have some additional modules installed. These include:
-
-  * requests
-  * mock
-  
-If you are working with a docker container that is set up to execute
-Python application and not for development, you will need to install
-pytest.
 
 Internationalization Notes
 --------------------------
@@ -373,34 +372,8 @@ is shown in the .po file as::
 allowing the translator to see the replaced string so they can
 understand how name and value are used.
 
-Command Line Interfaces
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Scripts and routines run from the command line use "static" language
-defined by environment variables recognized by ``gettext`` module
-from Python library (``LANGUAGE``, ``LC_ALL``, ``LC_MESSAGES``, and
-``LANG``).  Primarily, these are ``roundup-admin`` script and
-``admin.py`` module, but also help texts and startup error messages
-in other scripts and their supporting modules.
-
-For these interfaces, Python ``gettext`` engine must be initialized
-to use Roundup message catalogs.  This is normally done by including
-the following line in the module imports::
-
-  from i18n import _, ngettext
-
-Simple translations are automatically marked by calls to builtin
-message translation function ``_()``::
-
-  print(_("This message is translated"))
-
-Translations for messages whose grammatical depends on a number
-must be done by ``ngettext()`` function::
-
-  print(ngettext("Nuked %i file", "Nuked %i files", number_of_files_nuked))
-
 Deferred Translations
-~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes translatable strings appear in the source code in untranslated
 form [#note_admin.py]_ and must be translated elsewhere.
@@ -427,7 +400,7 @@ types of string quotes::
    as help messages.
 
 Web User Interface
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 
 For Web User Interface, translation services are provided by Client
 object.  Action classes have methods ``_()`` and ``gettext()``,
@@ -517,7 +490,7 @@ this::
      see: localization; i18n
 
 Extracting Translatable Messages
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The most common tool for message extraction is ``xgettext`` utility
 from `GNU gettext package`_.  Unfortunately, this utility has no means
@@ -536,18 +509,48 @@ make sure that you have both ``xpot`` and ``xgettext`` installed and
 just run ``gmake`` (or ``make``, if you are on a `GNU`_ system like
 `linux`_ or `cygwin`_) in the ``locale`` directory.
 
+On-site Tracker Translation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 For on-site i18n, Roundup provides command-line utility::
 
   roundup-gettext <tracker_home>
 
 extracting translatable messages from tracker's html templates and
-detectors / extensions (assuming `polib`_ is installed) [2]_.
+detectors / extensions (assuming `polib`_ is installed).
 This utility creates message template file ``messages.pot`` in
 ``locale`` subdirectory of the tracker home directory.  Translated
 messages may be put in *locale*.po files (where *locale* is the two
 character locale name) in the same directory, e.g.: ``locale/ru.po``.
 These message catalogs are searched prior to system-wide translations
 kept in the ``share`` directory.
+
+Note that ``roundup-gettext`` only works with trackers using TAL based
+templates. It supports the markup used for deferred translations and
+supports hint comments by starting the comment with ``.hint``.
+
+If you are using a jinja2 based template, it looks like the
+`jinja-i18n-tools`_ package might be helpful. It can be installed
+using ``pip``.
+
+After creating the ```locale`` subdirectory in my tracker home, I was
+able to use::
+  
+  pybabel extract -F babel.cfg --add-comments ".Hint' \
+  --output locale/messages.po .
+
+with the following ``babel.cfg``::
+
+  [python: **.py]
+  [jinja2: html/**.html]
+  extensions=jinja2.ext.i18n
+
+Note that extracting deferred translations using a concatenated empty
+string does not seem to work.
+
+If you are successful at using local translations with your jinja2
+template based tracker, please contact the Roundup authors (see
+Contact on the main web page) so we can add more detailed directions.
 
 If you are creating your own ``.po`` file from scratch rather than
 using ``roundup-gettext``, you must have the minimal preamble
@@ -563,12 +566,9 @@ If you use ``roundup-gettext`` it will add a full preamble including
 of the ASCII range will cause Roundup to crash with a
 UnicodeDecodeError.
 
-.. [2] Note that it will not extract `deferred translations`_
-         from detectors or extensions. Those have to be manually
-         added to messages.pot.
 
 Translating Messages
-^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~
 
 Gettext Message File (`PO`_ file) is a plain text file, that can be created
 by simple copying ``roundup.pot`` to new .po file, like this::
@@ -634,6 +634,31 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. [1] Roundup is written in Python and we believe in using tools in
    the Python ecosystem whenever possible.
 
+Command Line Interfaces
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Scripts and routines run from the command line use "static" language
+defined by environment variables recognized by ``gettext`` module
+from Python library (``LANGUAGE``, ``LC_ALL``, ``LC_MESSAGES``, and
+``LANG``).  Primarily, these are ``roundup-admin`` script and
+``admin.py`` module, but also help texts and startup error messages
+in other scripts and their supporting modules.
+
+For these interfaces, Python ``gettext`` engine must be initialized
+to use Roundup message catalogs.  This is normally done by including
+the following line in the module imports::
+
+  from i18n import _, ngettext
+
+Simple translations are automatically marked by calls to builtin
+message translation function ``_()``::
+
+  print(_("This message is translated"))
+
+Translations for messages whose grammatical depends on a number
+must be done by ``ngettext()`` function::
+
+  print(ngettext("Nuked %i file", "Nuked %i files", number_of_files_nuked))
 
 
 .. _`Customising Roundup`: customizing.html
@@ -654,13 +679,14 @@ At run time, Roundup automatically compiles message catalogs whenever
 .. _emacs: https://www.gnu.org/software/emacs/
 .. _flake8: https://flake8.pycqa.org/en/latest/
 .. _gettext package: https://www.gnu.org/savannah-checkouts/gnu/gettext/manual/gettext.html
-.. _gettext module: https://docs.python.org/2/library/gettext.html
+.. _gettext module: https://docs.python.org/3.14/library/gettext.html
 .. _GitHub Actions: https://github.com/roundup-tracker/roundup/actions
 .. _GNU: https://www.gnu.org/
 .. _GNU mirror sites: https://www.gnu.org/prep/ftp.html
 .. _hosted at sourceforge:
    https://sourceforge.net/p/roundup/code/ci/default/tree/
 .. _issue tracker: https://issues.roundup-tracker.org/
+.. _jinja-i18n-tools: https://pypi.org/project/jinja-i18n-tools/-i
 .. _Lokalize: https://apps.kde.org/lokalize/
 .. _KDE: https://kde.org/
 .. _linux: https://www.linux.org/
@@ -681,6 +707,7 @@ At run time, Roundup automatically compiles message catalogs whenever
     https://sourceforge.net/projects/roundup/files/
 .. _roundup-devel mailing list:
    https://sourceforge.net/projects/roundup/lists/roundup-devel
+.. _ruff: https://docs.astral.sh/ruff/installation/
 .. _StarterTicket on https://issues.roundup-tracker.org:
    https://issues.roundup-tracker.org/issue?@columns=title,id,activity,status&@sort=activity&@filter=status,keywords&status=-1,1,2&keywords=15&@dispname=Starter%20tickets
 .. _TAL:

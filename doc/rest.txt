@@ -945,12 +945,13 @@ with ``Content-Type: application/json`` and a (4x larger) json encoded
 representation of the binary data.
 
 If you want it returned with a ``Content-Type: image/png`` header,
-you can use ``image/png`` or ``*/*`` in the Accept header.
+you can use ``image/png``, ``image/*``, or ``*/*`` in the Accept header.
 
 For message files, you can use
 ``https://.../demo/rest/data/msg/23/binary_content`` with ``Accept:
 application/octet-stream; q=0.5, application/json; q=0.4, image/png;
-q=0.495, text/*``. It will return the plain text of the message.
+q=0.495, text/*``. It will return the plain text (text/plain mime
+type) of the message.
 
 Most message files are not stored with a mime type. Getting
 ``https://.../demo/rest/data/msg/23/type`` returns::
@@ -972,10 +973,16 @@ Messages are meant to be human readable, so the mime type ``text/*``
 can be used to access any text style mime type (``text/plain``,
 ``text/x-rst``, ``text/markdown``, ``text/html``, ...) or an empty
 mime type. If the item's type is not empty, it will be used as the
-Content-Type (similar to ``*/*``). Otherwise ``text/*`` will be the
-Content-Type. If your tracker supports markup languages
-(e.g. markdown), you should set the mime type (e.g. ``text/markdown``)
-when storing your message.
+Content-Type (similar to ``*/*``). Otherwise the default mime type
+``text/plain`` will be the Content-Type. The default mime type can be
+changed using ``interfaces.py`` in your tracker. So you can change the
+default ``text/plain`` to ``text/markdown`` using::
+
+   from roundup.rest import RestfulInstance
+   RestfulInstance.default_text_file_mimetype = "text/markdown"
+
+If your tracker supports markup languages (e.g. markdown), you should
+set the mime type (e.g. ``text/markdown``) when storing your message.
 
 Note that the header ``X-Content-Type-Options: nosniff`` is returned
 with a non javascript or xml binary_content response to prevent the
@@ -1396,9 +1403,11 @@ The method ``PUT`` is allowed on individual items, e.g.
 ``/data/issue/42`` On success it returns a data structure similar to
 the respective ``GET`` method. However it is only concerned with the
 changes that have occurred. Since it is not a full ``GET`` request, it
-doesn't include an etag or unchanged attributes. Note that for ``PUT``
-an Etag has to be supplied, either in the request header or as an
-@etag parameter. An example::
+doesn't include unchanged attributes. As of Roundup version 2.7 it
+includes ``@etag`` in the data element as well as an ``ETag``
+header. Note that for ``PUT`` an Etag has to be supplied, either in
+the request header (via ``If-Match``) or as an @etag
+parameter. An example::
 
   curl -u admin:admin -X PUT \
      --header 'Referer: https://example.com/demo/' \
@@ -1419,7 +1428,8 @@ an Etag has to be supplied, either in the request header or as an
           },
           "type": "issue",
           "link": "https://example.com/demo/rest/data/issue/23",
-          "id": "23"
+          "id": "23",
+          "@etag": "\"370510512b2d8fc3f98aac3d762cc7b1\""
       }
   }
 
@@ -1578,12 +1588,12 @@ rest/data/msg/11/content to obtain::
 
   {
     "data": {
-    "id": "11",
-    "type": "<class 'str'>",
-    "link": "https://.../demo/rest/data/msg/11/content",
-    "data": "of has to who pleasure. or of account give because the
-              reprehenderit\neu to quisquam velit, passage, was or...",
-            "@etag": "\"584f82231079e349031bbb853747df1c\""
+       "id": "11",
+       "type": "<class 'str'>",
+       "link": "https://.../demo/rest/data/msg/11/content",
+       "data": "of has to who pleasure. or of account give because the
+		 reprehenderit\neu to quisquam velit, passage, was or...",
+       "@etag": "\"584f82231079e349031bbb853747df1c\""
     }
   }
 
@@ -1877,6 +1887,8 @@ You can extend the rest api for a tracker. This describes how to add
 new rest end points. At some point it will also describe the rest.py
 structure and implementation.
 
+.. _adding_new_rest_endpoints:
+
 Adding new rest endpoints
 -------------------------
 
@@ -1892,7 +1904,7 @@ In that file add::
 
         @Routing.route("/summary2")
         @_data_decorator
-        def summary2(self, input):
+        def summary2(self, input_payload):
             result = { "hello": "world" }
             return 200, result
 
@@ -1909,7 +1921,7 @@ Similarly appending this to interfaces.py after summary2::
 
     # handle more endpoints
         @Routing.route("/data/<:class_name>/@schema", 'GET')
-        def get_element_schema(self, class_name, input):
+        def get_element_schema(self, class_name, input_payload):
             result = { "schema": {} }
             uid = self.db.getuid ()
             if not self.db.security.hasPermission('View', uid, class_name) :
@@ -1959,7 +1971,7 @@ endpoints. Adding this as described above::
 
     @Routing.route("/summary")
     @_data_decorator
-    def summary2(self, input):
+    def summary2(self, input_payload):
         result = { "hello": "world" }
         return 200, result
 
@@ -1976,7 +1988,7 @@ In addition to overriding existing endpoints, you can move existing
 endpoints to new locations. Adding::
 
     @Routing.route("/data2/<:classname>")
-    def get_collection2(self, classname, input):
+    def get_collection2(self, classname, input_payload):
         """ Remap existing function in rest.py to a new endpoint
 
             Existing function is decorated with:
@@ -1987,7 +1999,7 @@ endpoints to new locations. Adding::
             so we need to drop @_data_decorator from this function since
             we can't apply @_data_decorator twice.
         """
-        return self.get_collection(classname, input)
+        return self.get_collection(classname, input_payload)
 
 will make the response at /rest/data2/<class> be the same as what is
 normally at /rest/data/<class>.
@@ -2024,7 +2036,7 @@ that returns a list of users with the developer role::
     class RestfulInstance(object):
 
         @Routing.route("/data/@permission/Developer")
-        def get_role_Developer(self, input):
+        def get_role_Developer(self, input_payload):
             '''An endpoint to return a list of users with Developer
                role who can be assigned to an issue.
 
@@ -2065,14 +2077,14 @@ that returns a list of users with the developer role::
                 # deny all other url parmeters
                 return False
 
-            # Cleanup input.list to prevent user from probing roles
+            # Cleanup input_payload.list to prevent user from probing roles
             # or viewing things the user should not be able to view.
-            input.list[:] = [ fs for fs in input.list
-                              if allowed_field(fs) ]
+            input_payload.list[:] = [ fs for fs in input_payload.list
+                                      if allowed_field(fs) ]
 
             # Add the role filter required to implement the permission
             # search
-            input.list.append(MiniFieldStorage("roles", "Developer"))
+            input_payload.list.append(MiniFieldStorage("roles", "Developer"))
 
             # change user to acquire permission to search roles
             self.db.setCurrentUser('admin')
@@ -2080,7 +2092,7 @@ that returns a list of users with the developer role::
             # Once we have cleaned up the request, pass it to
             # get_collection as though /rest/data/users?... has been called
             # to get @verbose and other args supported.
-            return self.get_collection('user', input)
+            return self.get_collection('user', input_payload)
 
 Calling this with::
 
@@ -2203,7 +2215,7 @@ only been tested with python3)::
     class RestfulInstance(object):
         @Routing.route("/jwt/issue", 'POST')
         @_data_decorator
-        def generate_jwt(self, input):
+        def generate_jwt(self, input_payload):
         """Create a JSON Web Token (jwt)
         """
             import datetime
@@ -2230,7 +2242,7 @@ only been tested with python3)::
                 raise Unauthorised(denialmsg)
 
             # verify we have input data.
-            if not input:
+            if not input_payload:
                 raise UsageError("Missing data payload. "
                              "Verify Content-Type is sent")
 
@@ -2250,13 +2262,13 @@ only been tested with python3)::
                    }
 
             lifetime = 0
-            if 'lifetime' in input:
-                if input['lifetime'].value != 'unlimited':
+            if 'lifetime' in input_payload:
+                if input_payload['lifetime'].value != 'unlimited':
                     try:
-                        lifetime = datetime.timedelta(seconds=int(input['lifetime'].value))
+                        lifetime = datetime.timedelta(seconds=int(input_payload['lifetime'].value))
                     except ValueError:
                         raise UsageError("Value 'lifetime' must be 'unlimited' or an integer to specify" +
-                                         " lifetime in seconds. Got %s."%input['lifetime'].value)
+                                         " lifetime in seconds. Got %s."%input_payload['lifetime'].value)
             else:
                 lifetime = datetime.timedelta(seconds=86400) # 1 day by default
 
@@ -2264,8 +2276,8 @@ only been tested with python3)::
                 claim['exp'] = utcnow() + lifetime
 
             newroles = []
-            if 'roles' in input:
-                for role in [ r.lower() for r in input['roles'].value ]:
+            if 'roles' in input_payload:
+                for role in [ r.lower() for r in input_payload['roles'].value ]:
                     if role not in rolenames:
                         raise UsageError("Role %s is not valid."%role)
                     if role in user_roles:
@@ -2295,12 +2307,12 @@ only been tested with python3)::
 
         @Routing.route("/jwt/validate", 'GET')
         @_data_decorator
-        def validate_jwt(self,input):
+        def validate_jwt(self,input_payload):
             import jwt
-            if not 'jwt' in input:
+            if not 'jwt' in input_payload:
                 raise UsageError("jwt key must be specified")
 
-            myjwt = input['jwt'].value
+            myjwt = input_payload['jwt'].value
 
             secret = self.db.config.WEB_JWT_SECRET[0]
 

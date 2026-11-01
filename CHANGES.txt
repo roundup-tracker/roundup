@@ -6,14 +6,96 @@ and template changes not listed here.
 Each entry has the developer who committed the change in brackets.
 Many entries without name were done by Richard Jones.
 
-**IMPORTANT** The v1.5.x releases of Roundup were the last to support
-Python v2.5 and v2.6.  Starting with the v1.6 releases of Roundup
-v2.7.2 or later are required to run newer releases of Roundup.
-Roundup 2.0 supports Python 3.4 and later. Roundup 2.1.0 supports
-python 3.6 or newer (3.4/3.5 might work, but they are not tested).
-Roundup 2.4.0 is the last release to support Python 2.
+**IMPORTANT** Roundup 2.6 supports Python 3.10 or newer.
+Roundup 2.4.0 was the last release to support Python 2.
 
-2026-XX-XX 2.6.0
+2026-XX-XX 2.7.0
+
+Fixed:
+
+- issue2551420 - add radio button support to classhelper.js to handle
+  link relations. (John Rouillard)
+- issue2550580 - Missing support for radio buttons in
+  user.help.html. Superseded by fix in 2551420. (John Rouillard)
+- issue2550879 - Cleanup/removal of roundup.anypy.email_ module
+  (jerrykan, Joseph Myers, final removal by John Rouillard)
+- issue2551419 - remove trival re-def of __ne__ from security.py
+  password.py (John Rouillard)
+- fix local_replace.py in devel/responsive templates. Missing raw
+  string markers for parts of replacement strings. Newer versions of
+  Python raise warnings on the \g accessing named components or a
+  regular expression in replacement strings. (John Rouillard)
+- issue2551342 - Upgrade jquery supplied with templates. Upgraded
+  jinja2 to jquery-1.12.4 minimized. Upgraded devel/responsive to
+  jquery-3.7.1 minimized - was not minimized in earlier
+  releases. (John Rouillard)
+- issue2551161 - fix ResourceWarnings open logging files when
+  configuring logging from an invalid .ini or .json file. Possible
+  leak under a running wsgi or other framework. (John Rouillard)
+- issue2551161 - fix ResourceWarnings from open read-only references
+  to dbm databases. This affects core and session databases using dbm
+  back end (which is really dbm.sqlite3 in python > 3.13). The
+  references were local to a function, read only, and did not trigger
+  a long running transaction. Most likely this was just a file handle
+  and memory leak, (John Rouillard)
+- issue2551332 - roundup-admin updateconfig does not preserve DEFAULT
+  section or interpolation tokens. Documented how to use DEFAULT
+  section and interpolation on reference page. (John Rouillard)
+- issue2551425 - userauditor rejects valid alternate_addresses that
+  are substrings of existing ones. (Mattias Reuterskiöld (matre),
+  w/doc by John Rouillard).
+- fractional simple timezone offsets like "3.5" are now supported.
+  Fixed timezones like Tehran Iran is 3.5 hours off from GMT.
+  If you need this, you should probably be using named timezones
+  with pytz. (John Rouillard)
+- removing more python2 compatability, refactoring some methods,
+  remove/reduce divergence of duplicate code in different code
+  paths. (John Rouillard)
+- remove Internet Explorer specific html meta tag and conditional
+  comments from templates. (John Rouillard)
+- use .isnumeric() rather than int() when checking values for
+  @verbose, @page_* in rest interface. Verify @page param name is
+  valid. (John Rouillard)
+- use hmac.compare_digest() to make timing attacks on passwords more
+  difficult. This is only a problem when the password is stored with
+  plaintext "hashing". To my best knowledge when the equality
+  operation is done between hashed salted secrets (the normal case),
+  deriving the original secret requires effort similar to brute
+  force. (John Rouillard)
+- issue2551229 - Implement CSRF protection for issue.search. The POST
+  method (not get) must be used with the search action and csrf
+  protection should be added. See upgrading instructions for details
+  on the required and recommended changes. (John Rouillard)
+- replaced 'except Exception' with 'except BaseException' in TAL and
+  PageTemplates. Turns out the exceptions generated in
+  TAL/PageTemplates inherit from BaseException not Exception. So
+  change done in 2.6.0 to replace bare except by except exception was
+  incorrect and made handling templating errors difficult and caused
+  to hanging clients on templating errors. (John Rouillard).
+
+Features:
+
+- issue2550930 - add support for local_replace to classic
+  template. Created placeholder implementation for
+  utils.local_replace() and add call to classic template. Change devel
+  and responsive templates to use local_replace not
+  localReplace. Add docs. (John Rouillard)
+- issue2551327 - Track removal of non-caching code path through
+  wsgi.py. The performance improvement for wsgi mode that always uses
+  a cached tracker is on and unable to be disabled. The improvement
+  has been available since 2022 and has been the default since
+  2024. (John Rouillard)
+- update pygettext.py to: extract implicit string concatenation where
+  first string is empty; include comment extraction for translator
+  hints; support testing and add tests. Module used by
+  roundup-gettext. (John Rouillard)
+- added 'checkconfig' command to roundup-admin to find settings
+  in the main config.ini that are typed incorrectly or in the wrong
+  section. (John Rouillard)
+- Add ETag HTTP header and @etag data property to json payload
+  returned by PUT rest request. (John Rouillard)
+
+2026-07-13 2.6.0
 
 Fixed:
 
@@ -23,12 +105,161 @@ Fixed:
   roundup.cgi.exceptions. Also it now inherits from HTTPException
   rather than Exception since it is an HTTP exception. (John
   Rouillard)
+- cleaned up repo. Close obsolete branches and close a split head due
+  to an identical merge in two different working copies. (John
+  Rouillard)
+- in roundup-admin, using 'pragma history_length interactively now
+  sets readline history length. Using -P history_length=10 on the
+  command line always worked. (John Rouillard)
+- enhanced error reporting for errors in ini style logging
+  configuration. (John Rouillard)
+- fix bogus javascript emitted by user_src_input macro. (John
+  Rouillard)
+- replaced hostname localhost with 127.0.0.1 in docker healthcheck
+  script. Found/patch by Norbert Schlemmer. (John Rouillard)
+- change some internal classes to use __slots__ for hopefully a small
+  performance improvement. (John Rouillard)
+- issue2551413 - Broken MultiLink columns in CSV export. CSV export of
+  a multilink link "messages" that does not have a 'name' property
+  causes a crash. (found/fix by cmeerw; commit and better handling of
+  non-labeled multilink by John Rouillard)
+- in cgi/client.py, set self.language attribute when translator passed
+  into Client(). (John Rouillard)
+- issue2551393 -  Named searches lose their name in title when next
+  page is selected. (John Rouillard)
+- code cleanup replace bare except: with except Exception:. (patch by
+  Sense_wang (haosenwang1018) applied by John Rouillard)
+- handle "null" values in json objects sent to a rest endpoint by
+  filtering them from the object before processing. A "null" value
+  will not unset an attribute. The 'remove' action using the
+  PATCH verb can unset the value. Before this change "null" values
+  retrieved from the REST interface would cause errors when sent
+  using POST or PUT verbs. Also guard against password being set to
+  None. (John Rouillard)
+- change the html templates so that the password is not required if
+  the ``login_empty_passwords`` setting is enabled in ``config.ini``.
+  Directions for your tracker are in upgrading.txt. (John Rouillard)
+- fix traceback displayed when roundup-admin install was used with
+  invalid settings for config.ini. It now reports the error and
+  provides the usage output. Also usage output starts with a newline
+  to provide a blank line between the command and the output to
+  improve readability. (John Rouillard)
+- fix bug in 2.5.0 where roundup-admin import (or importtable) fails
+  to properly set the next available id for the class. (John Rouillard
+  broke it and fixed it 8-))
+- refactor mime detection/handling in the rest interface. Better
+  supports some mime types, ads default mime type for files without a
+  mime type (e.g. message contents). Cleaner code. (John Rouillard)
+- run hexora and mitigate/fix some medium sev and above. (John Rouillard)
+- Return 400 if environment or header variables 
+  have values with characters outside of the printable ascii range
+  (32-127). Applies to  roundup-server and roundup-cgi. wsgi and Zope
+  depend on the hosting server for sanitizing. Se waitress wsgi server
+  bug:
+  https://github.com/Pylons/waitress/security/advisories/GHSA-m5ff-3wj3-8ph4
+  (John Rouillard)
+- Cleanups/minor enhancements to roundup.cgi script. (John Rouillard)
+- fix back_anydm::Class::get() method to properly return default value
+  if requested property is set to None. This should fix missing text
+  indexing for the anydbm backend. (John Rouillard)
+- ruff driven cleanups/refactor of indexer* files. (John Rouillard)
+- remove ``roundup.anypy.scandir_`` which was needed for python 2 support.
+  (John Rouillard)
+- roundup-server no longer logs connection aborted when a client
+  disconnects and is using HTTP 1.1 or newer. (John Rouillard)
+- replace isinstance(..., type(X)) where X is an instance of a type
+  (1, {}, [], '', u"") with the type itself (int, dict, list, str,
+  str). This is a leftover construct from early Python 2. Replacing
+  them speeds up code (e.g. type({}) vs dict). (John Rouillard)
+- issue2551405 - Missing locale .mo files create 500 error on uwsgi
+  without further info. Added more specific ConnectionAbortedError
+  and changed IOError handling. Case in issue now logs the exception
+  for diagnosis. (Reported by Ralf Schlatterbeck; John Rouillard)
+- Make queries selected from query edit screen include the query
+  name/display name. This makes it work the same as invoking a query
+  from the main "Your Queries" menu. (John Rouillard)
+- Fix SearchAction to not clobber a saved search when a new search of
+  the same name is created.  Assume a search named "asearch"
+  exists. Create a new search (not editing the existing
+  "asearch"). Set new query params and name it "asearch". Roundup will
+  warn you that "asearch" already exists and you need to choose a new
+  name. In the warning form, you rename it to "bsearch" and
+  save/execute. Before this would overwrite "asearch" as it set the
+  "@old-queryname" of the warning form to "asearch". So it looked like
+  you were trying to edit the existing query. This fix modifies the
+  queryname before generating the error form. So when submitted it
+  doesn't overwrite "asearch". (John Rouillard)
+- update the classic tracker's page.html to remove table based
+  layout. It now uses html5 landmarks like header, main, search,
+  nav. It also uses flexbox and grid layouts and includes a viewport
+  meta tag for use on mobile devices.  It can be navigated with the
+  keyboard. Parts of the page that are too wide for the viewport can
+  be scrolled horizontally with the keyboard or touch. Some other CSS
+  changes make it easier to use. This is a first step to making the
+  classic template more responsive. (John Rouillard)
+- jinja2 template dependencies updated: bootstrap 4.4.1 -> 4.6.2.
+  (John Rouillard)
+- issue2551377 - Disabled submit button UI issues. When the submit
+  button is clicked (triggering submit_once) but client side
+  validation blocks the submission, the submit button no longer
+  submits the form. Clicking it says the form has been submitted
+  please wait. This change allows the submit button to submit the form
+  again after 5 seconds.  (John Rouillard)
+- Fix developers.txt doc bug (discovered by Ross Boylan, change by
+  John Rouillard)
+- Handle ConfigurationErrors in demo.py cleanly. Used to dump a full
+  traceback. Now prints error and exits. (John Rouillard)
+- Do not display journal/history fields when user does not have access
+  to the property being changed. (John Rouillard)
+- Fix missing CSRF protection for PATCH method (John Rouillard)
 
 Features:
 
 - add support for authorized changes. User can be prompted to enter
   their password to authorize a change. If the user's password is
   properly entered, the change is committed. (John Rouillard)
+- add support for dictConfig style logging configuration. Ini/File
+  style configs will still be supported. (John Rouillard)
+- add 'q' as alias for quit in roundup-admin interactive mode. (John
+  Rouillard)
+- add readline command to roundup-admin to list history, control input
+  mode etc. Also support bang (!) commands to rerun commands in history
+  or put them in the input buffer for editing. (John Rouillard)
+- add format to logging section in config.ini. Used to set default
+  logging format. (John Rouillard)
+- the default logging format template includes an identifier unique
+  for a request. This identifier (trace_id) can be use to identify
+  logs for a specific transaction. Will use nanoid if installed, uses
+  uuid.uuid4 otherwise. Logging also supports a trace_reason log token
+  with the url for a web request. The logging format can be changed in
+  config.ini. (John Rouillard)
+- issue2551152 - added basic PGP setup/use info to admin_guide. (John
+  Rouillard)
+- add support for the 'justhtml' html 5 parser library for python >=
+  3.10. It is written in pure Python. Used to convert html emails into
+  plain text. Faster then beautifulsoup4 and it passes the html 5
+  standard browser test suite. Beautifulsoup is still supported. (John
+  Rouillard)
+- add a new detector: immutable_file_contents.py that prevents
+  changes to file contents. By default, the permissions assigned
+  to FileClass based classes (files, msgs) do not prevent editing
+  of file contents.  While the usual HTML templates don't provide
+  a way to modify files, the REST interface allows changing file
+  contents without an audit trail. Manually driving the HTML
+  interface (via curl for example) also allows content
+  changes. The new detector prevents changes to file contents via
+  Roundup even by a user with admin rights. (John Rouillard)
+- Added documentation on doing an in place database migration. This is
+  faster for large databases. (John Rouillard)
+- Added installation.txt docs on setting up SCGI support with the
+  althttpd web server. (John Rouillard)
+- add support for tokenless/nonceless CSRF prevention following
+  https://words.filippo.io/csrf/. (John Rouillard)
+- standardize use of ``roundup.anypy.urllib_``. Replace urlparse() with
+  urlsplit() (recommended) for some speedup. (John Rouillard)
+- issue2551368 - version 2.0.0 of the pgp module was published by
+  Bernhard Reiter.  Updated documentation and tests. (Bernhard Reiter,
+  John Rouillard)
 
 2025-07-13 2.5.0
 

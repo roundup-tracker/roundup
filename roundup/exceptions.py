@@ -27,7 +27,8 @@ class Reject(RejectBase):
     It is up to the specific interface invoking the create or set to
     handle this exception sanely. For example:
 
-    - mailgw will trap and ignore Reject for file attachments and messages
+    - mailgw will trap and ignore Reject for file attachments
+      Will return error message if message is rejected.
     - cgi will trap and present the exception in a nice format
     """
     pass

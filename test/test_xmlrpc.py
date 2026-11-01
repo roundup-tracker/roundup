@@ -4,7 +4,6 @@
 # For license terms see the file COPYING.txt.
 #
 
-from __future__ import print_function
 import unittest, os, shutil, errno, pytest, sys, difflib, re
 
 from contextlib import contextmanager 
@@ -228,7 +227,6 @@ class XmlrpcTest(object):
 
     def testAuthFilter(self):
         # this checks if we properly check for search permissions
-        self.db.security.permissions = {}
         # self.db.security.set_props_only_default(props_only=False)
         self.db.security.addRole(name='User')
         self.db.security.addRole(name='Project')

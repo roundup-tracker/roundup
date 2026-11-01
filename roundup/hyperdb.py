@@ -16,6 +16,9 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
+# ruff: noqa: ARG002  don't report unused args.
+# ruff: noqa: B011, S101  don't report use of assert or assert False
+
 """Hyperdatabase implementation, especially field types.
 """
 __docformat__ = 'restructuredtext'
@@ -29,22 +32,33 @@ import shutil
 import sys
 import traceback
 import weakref
-
 from hashlib import md5
+
+from roundup.anypy.cmp_ import NoneAndDictComparable
+from roundup.anypy.strings import b2s, bs2b, eval_import
+from roundup.cgi.exceptions import DetectorError
+from roundup.i18n import _
+from roundup.mlink_expr import Expression
 
 # roundup modules
 from . import date, password
-from .support import ensureParentsExist, PrioList
-from roundup.mlink_expr import Expression
-from roundup.i18n import _
-from roundup.cgi.exceptions import DetectorError
-from roundup.anypy.cmp_ import NoneAndDictComparable
-from roundup.anypy.strings import b2s, bs2b, eval_import
+from .support import PrioList, ensureParentsExist
 
 logger = logging.getLogger('roundup.hyperdb')
 
 # marker used for an unspecified keyword argument
 _marker = []
+
+
+# We use assert internally. Exit if assert is disabled with -O.
+# Use RuntimeError to indicate it's a runtime configuration
+# setting that is wrong.
+try:
+    assert False
+except AssertionError:
+    pass
+else:
+    raise RuntimeError("Assert is disabled. Remove -O flag from python command.")
 
 
 #
@@ -205,7 +219,9 @@ class Date(_Type):
        field method of the DateHTMLProperty (for rendering html).
     """
     def __init__(self, offset=None, required=False, default_value=None,
-                 quiet=False, display_time='yes', format=None):
+                 quiet=False, display_time='yes', format=None): # noqa: A002
+        # ^^ ignore format argument shadowing format(). It's part of API
+        # and format() unlikely to be used in this method.
         super(Date, self).__init__(required=required,
                                    default_value=default_value,
                                    quiet=quiet)
@@ -313,11 +329,10 @@ class Link(_Pointer):
     def from_raw(self, value, db, propname, **kw):
         if (self.try_id_parsing and value == '-1') or not value:
             value = None
+        elif self.try_id_parsing:
+            value = convertLinkValue(db, propname, self, value)
         else:
-            if self.try_id_parsing:
-                value = convertLinkValue(db, propname, self, value)
-            else:
-                value = convertLinkValue(db, propname, self, value, None)
+            value = convertLinkValue(db, propname, self, value, None)
         return value
 
     def sort_repr(self, cls, val, name):
@@ -405,7 +420,7 @@ class Multilink(_Pointer):
             curvalue = []
 
         # if the value is a comma-separated string then split it now
-        if isinstance(value, type('')):
+        if isinstance(value, str):
             value = value.split(',')
 
         # handle each add/remove in turn
@@ -415,8 +430,8 @@ class Multilink(_Pointer):
         # list with A,B)
         do_set = 1
         newvalue = []
-        for item in value:
-            item = item.strip()
+        for value_item in value:
+            item = value_item.strip()
 
             # skip blanks
             if not item: continue                                # noqa: E701
@@ -454,17 +469,13 @@ class Multilink(_Pointer):
 
         # that's it, set the new Multilink property value,
         # or overwrite it completely
-        if do_set:
-            value = newvalue
-        else:
-            value = curvalue
+        value = newvalue if do_set else curvalue
 
         # TODO: one day, we'll switch to numeric ids and this will be
         # unnecessary :(
         value = [int(x) for x in value]
         value.sort()
-        value = [str(x) for x in value]
-        return value
+        return [str(x) for x in value]
 
     def register(self, cls, propname):
         super(Multilink, self).register(cls, propname)
@@ -485,8 +496,7 @@ class Boolean(_Type):
     def from_raw(self, value, **kw):
         value = value.strip()
         # checked is a common HTML checkbox value
-        value = value.lower() in ('checked', 'yes', 'true', 'on', '1')
-        return value
+        return value.lower() in ('checked', 'yes', 'true', 'on', '1')
 
 
 class Number(_Type):
@@ -693,7 +703,7 @@ class Proptree(object):
                 if getattr(p.propclass, 'rev_property', None):
                     pn = p.propclass.rev_property.name
                     cl = p.propclass.rev_property.cls
-                    if not isinstance(p.val, type([])):
+                    if not isinstance(p.val, list):
                         p.val = [p.val]
                     nval = [int(i) for i in p.val]
                     pval = [str(i) for i in nval if i >= 0]
@@ -702,17 +712,17 @@ class Proptree(object):
                         if -1 in nval:
                             s1 = set(self.cls.getnodeids(retired=False))
                             s2 = set()
-                            for id in cl.getnodeids(retired=False):
-                                node = cl.getnode(id)
+                            for node_id in cl.getnodeids(retired=False):
+                                node = cl.getnode(node_id)
                                 if node[pn]:
-                                    if isinstance(node[pn], type([])):
+                                    if isinstance(node[pn], list):
                                         s2.update(node[pn])
                                     else:
                                         s2.add(node[pn])
                             items |= s1.difference(s2)
                         if isinstance(p.propclass.rev_property, Link):
-                            items |= set(cl.get(x, pn) for x in pval
-                                         if not cl.is_retired(x))
+                            items |= {cl.get(x, pn) for x in pval
+                                         if not cl.is_retired(x)}
                         else:
                             items |= set().union(*(cl.get(x, pn) for x in pval
                                                    if not cl.is_retired(x)))
@@ -721,21 +731,21 @@ class Proptree(object):
                         # expression on them
                         expr = Expression(nval)
                         by_id = {}
-                        for id in self.cls.getnodeids(retired=False):
-                            by_id[id] = set()
+                        for node_id in self.cls.getnodeids(retired=False):
+                            by_id[node_id] = set()
                         items = set()
-                        for id in cl.getnodeids(retired=False):
-                            node = cl.getnode(id)
+                        for node_id in cl.getnodeids(retired=False):
+                            node = cl.getnode(node_id)
                             if node[pn]:
                                 v = node[pn]
-                                if not isinstance(v, type([])):
+                                if not isinstance(v, list):
                                     v = [v]
                                 for x in v:
                                     if x not in by_id:
                                         continue
-                                    by_id[x].add(id)
-                        for k in by_id:
-                            if expr.evaluate(by_id[k]):
+                                    by_id[x].add(node_id)
+                        for k, value in by_id.items():
+                            if expr.evaluate(value):
                                 items.add(k)
 
                     # The subquery has found nothing. So it doesn't make
@@ -743,8 +753,8 @@ class Proptree(object):
                     if not items:
                         self.set_val([], force=True)
                         return self.val
-                    filterspec[p.name] = list(sorted(items, key=int))
-                elif isinstance(p.val, type([])):
+                    filterspec[p.name] = sorted(items, key=int)
+                elif isinstance(p.val, list):
                     exact = []
                     subst = []
                     for v in p.val:
@@ -762,8 +772,7 @@ class Proptree(object):
                             # it doesn't make sense to search further.
                             self.set_val([], force=True)
                             return self.val
-                        else:
-                            filterspec[p.name] = ['-1']  # no match was found
+                        filterspec[p.name] = ['-1']  # no match was found
                 else:
                     assert not isinstance(p.val, Exact_Match)
                     filterspec[p.name] = p.val
@@ -879,10 +888,10 @@ class Proptree(object):
             return
         if self.has_values:
             v = self.val
-            if not isinstance(self.val, type([])):
+            if not isinstance(self.val, list):
                 v = [self.val]
             vals = set(v)
-            if not isinstance(val, type([])):
+            if not isinstance(val, list):
                 val = [val]
         if self.has_result:
             assert result
@@ -892,33 +901,31 @@ class Proptree(object):
             else:
                 vals.update(val)
             self.val = list(vals)
-        else:
-            # If a subquery found nothing we don't care if there is an
-            # expression
-            if not self.has_values or not val:
+        # If a subquery found nothing we don't care if there is an
+        # expression
+        elif not self.has_values or not val:
                 self.val = val
                 if result:
                     self.has_result = True
+        elif not result:
+            assert not self.cls
+            vals.update(val)
+            self.val = list(vals)
+        else:
+            assert self.cls
+            is_expression = \
+                self.val and min(int(i) for i in self.val) < -1
+            if is_expression:
+                # Tag on the ORed values with an AND
+                l = val
+                for _i in range(len(val) - 1):
+                    l.append('-4')
+                l.append('-3')
+                self.val = self.val + l
             else:
-                if not result:
-                    assert not self.cls
-                    vals.update(val)
-                    self.val = list(vals)
-                else:
-                    assert self.cls
-                    is_expression = \
-                        self.val and min(int(i) for i in self.val) < -1
-                    if is_expression:
-                        # Tag on the ORed values with an AND
-                        l = val
-                        for _i in range(len(val)-1):
-                            l.append('-4')
-                        l.append('-3')
-                        self.val = self.val + l
-                    else:
-                        vals.intersection_update(val)
-                        self.val = list(vals)
-                    self.has_result = True
+                vals.intersection_update(val)
+                self.val = list(vals)
+            self.has_result = True
         self.has_values = True
 
     def _sort(self, val):
@@ -956,11 +963,13 @@ class Proptree(object):
                 dir_idx.append(idx)
                 directions.append(sa.sort_direction)
                 curdir = sa.sort_direction
-            idx += 1
+            # Using timeit, increment is faster for list < 20 items
+            # so don't use enumerate().
+            idx += 1  # noqa: SIM113
         sortattr.append(val)
-        sortattr = zip(*sortattr)
-        for dir, i in reversed(list(zip(directions, dir_idx))):
-            rev = dir == '-'
+        sortattr = zip(*sortattr, strict=True)
+        for direction, i in reversed(list(zip(directions, dir_idx, strict=True))):
+            rev = direction == '-'
             sortattr = sorted(sortattr,
                               key=lambda x: NoneAndDictComparable(x[i:idx]),
                               reverse=rev)
@@ -981,8 +990,7 @@ class Proptree(object):
 
     def __repr__(self):
         r = ["proptree:" + self.name]
-        for n in self:
-            r.append("proptree:" + "    " * n.depth + n.name)
+        r.extend("proptree:" + "    " * n.depth + n.name for n in self)
         return '\n'.join(r)
     __str__ = __repr__
 
@@ -1085,7 +1093,20 @@ All methods except __repr__ must be implemented by a concrete backend Database.
     def addclass(self, cl):
         """Add a Class to the hyperdatabase.
         """
-        raise NotImplementedError
+        cn = cl.classname
+        if cn in self.classes:
+            raise ValueError(_('Class "%s" already defined.') % cn)
+        self.classes[cn] = cl
+
+        # add default Edit and View permissions
+        self.security.addPermission(name="Create", klass=cn,
+            description="User is allowed to create " + cn)
+        self.security.addPermission(name="Edit", klass=cn,
+            description="User is allowed to edit " + cn)
+        self.security.addPermission(name="View", klass=cn,
+            description="User is allowed to access " + cn)
+        self.security.addPermission(name="Retire", klass=cn,
+            description="User is allowed to retire " + cn)
 
     def getclasses(self):
         """Return a list of the names of all existing classes."""
@@ -1149,7 +1170,7 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         """
         raise NotImplementedError
 
-    def storefile(self, classname, nodeid, property, content):
+    def storefile(self, classname, nodeid, property_, content):
         """Store the content of the file in the database.
 
            The property may be None, in which case the filename does not
@@ -1157,7 +1178,7 @@ All methods except __repr__ must be implemented by a concrete backend Database.
         """
         raise NotImplementedError
 
-    def getfile(self, classname, nodeid, property):
+    def getfile(self, classname, nodeid, property_):
         """Get the content of the file in the database.
         """
         raise NotImplementedError
@@ -1242,7 +1263,7 @@ class Class:
         The keyword arguments in 'properties' must map names to property
         objects, or a TypeError is raised.
         """
-        for name in 'creation activity creator actor'.split():
+        for name in ['creation', 'activity', 'creator', 'actor']:
             if name in properties:
                 raise ValueError('"creation", "activity", "creator" and '
                                  '"actor" are reserved')
@@ -1256,8 +1277,8 @@ class Class:
         self.classname = classname
         self.properties = properties
         # Make the class and property name known to the property
-        for p in properties:
-            properties[p].register(self, p)
+        for prop_name, prop_class in properties.items():
+            prop_class.register(self, prop_name)
         self.db = weakref.proxy(db)       # use a weak ref to avoid circularity
         self.key = ''
 
@@ -1267,10 +1288,13 @@ class Class:
         # do the db-related init stuff
         db.addclass(self)
 
-        actions = "create set retire restore".split()
+        actions = ['create', 'set', 'retire', 'restore']
+        # format of items in priolist:
+        # tuple(priority: int, detector_name: str, detector: callable)
+        # so [:2] is (priority, detector_name)
         skey = lambda x: x[:2]
-        self.auditors = dict([(a, PrioList(key=skey)) for a in actions])
-        self.reactors = dict([(a, PrioList(key=skey)) for a in actions])
+        self.auditors = {a: PrioList(key=skey) for a in actions}
+        self.reactors = {a: PrioList(key=skey) for a in actions}
 
     def __repr__(self):
         """Slightly more useful representation
@@ -1300,7 +1324,29 @@ class Class:
         If an id in a link or multilink property does not refer to a valid
         node, an IndexError is raised.
         """
-        raise NotImplementedError
+        # This is first since r/o database is a bigger issue
+        if self.db.journaltag is None:
+            raise DatabaseError(_('Database open read-only'))
+
+        self.fireAuditors('create', None, propvalues)
+
+        # sanity checks on propvalues, include mods by auditors.
+        #   FIXME: Unlike set() we don't check to see if propvalues is
+        #          empty why? Need to define what happens when no
+        #          propvalues. If class has key prop, ValueError is
+        #          raised.
+
+        if 'id' in propvalues:
+            raise KeyError('"id" is reserved')
+
+        if ('creator' in propvalues or 'actor' in propvalues or
+                'creation' in propvalues or 'activity' in propvalues):
+            raise KeyError('"creator", "actor", "creation" and '
+                           '"activity" are reserved')
+
+        newid = self.create_inner(**propvalues)
+        self.fireReactors('create', newid, None)
+        return newid
 
     def get(self, nodeid, propname, default=_marker, cache=1, allow_abort=True):
         """Get the value of a property on an existing node of this class.
@@ -1331,23 +1377,92 @@ class Class:
         """
         raise NotImplementedError
 
+    def initialize_missing_props(self, oldvalues):
+        """If backend doesn't have a schema to intialize props, do it here.
+        """
+        for name, prop in self.getprops(protected=0).items():
+            if name in oldvalues:
+                continue
+            if isinstance(prop, Multilink):
+                oldvalues[name] = []
+            else:
+                oldvalues[name] = None
+
     def set(self, nodeid, **propvalues):
         """Modify a property on an existing node of this class.
 
-        'nodeid' must be the id of an existing node of this class or an
-        IndexError is raised.
+        The set operation triggers detectors and can be vetoed.
 
-        Each key in 'propvalues' must be the name of a property of this
-        class or a KeyError is raised.
+        self.set_inner() is called between auditors and reactors and
+        requires:
 
-        All values in 'propvalues' must be acceptable types for their
-        corresponding properties or a TypeError is raised.
+          'nodeid' must be the id of an existing node of this class or
+          an IndexError is raised.
 
-        If the value of the key property is set, it must not collide with
-        other key strings or a ValueError is raised.
+          Each key in 'propvalues' must be the name of a property of
+          this class or a KeyError is raised.  Attempts to modify
+          restricted properties like "creation", "activity", ...
+          cause a KeyError.
 
-        If the value of a Link or Multilink property contains an invalid
-        node id, a ValueError is raised.
+          All values in 'propvalues' must be acceptable types for
+          their corresponding properties or a TypeError is raised.
+
+          If the value of the key property is set, it must not collide
+          with other key strings or a ValueError is raised.
+
+          If the value of a Link or Multilink property contains an
+          invalid node id, a ValueError is raised.
+
+        """
+        # This is first since r/o database is a bigger issue
+        if self.db.journaltag is None:
+            raise DatabaseError(_('Database open read-only'))
+
+        self.fireAuditors('set', nodeid, propvalues)
+
+        # sanity checks on propvalues, include mods by auditors.
+        if not propvalues:
+            return propvalues
+
+        if 'id' in propvalues:
+            raise KeyError('"id" is reserved')
+
+        if ('creator' in propvalues or 'actor' in propvalues or
+                'creation' in propvalues or 'activity' in propvalues):
+            raise KeyError('"creator", "actor", "creation" and '
+                           '"activity" are reserved')
+
+        oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
+
+        # fill in any missing values - method can be replaced if
+        # backend has a schema that fills in missing values.
+        self.initialize_missing_props(oldvalues)
+
+        propvalues = self.set_inner(nodeid, **propvalues)
+        self.fireReactors('set', nodeid, oldvalues)
+        return propvalues
+
+    def set_inner(self, nodeid, **propvalues):
+        """Change the database values for an existing node of this class.
+
+        Database must be in read write mode before calling set_inner().
+
+        'nodeid' must be the id of an existing node of this class or
+        an IndexError is raised.
+
+        Each key in 'propvalues' must be the name of a property of
+        this class or a KeyError is raised.  Attempts to modify
+        restricted properties like "creation", "activity", ...
+        cause a KeyError.
+
+        All values in 'propvalues' must be acceptable types for
+        their corresponding properties or a TypeError is raised.
+
+        If the value of the key property is set, it must not collide
+        with other key strings or a ValueError is raised.
+
+        If the value of a Link or Multilink property contains an
+        invalid node id, a ValueError is raised.
         """
         raise NotImplementedError
 
@@ -1439,12 +1554,14 @@ class Class:
             #   property is quiet
             #   property is not (viewable or editable)
             #   property is obsolete and not allow_obsolete
-            id, evt_date, user, action, args = j
+            _id, _evt_date, _user, action, args = j
             if logger.isEnabledFor(logging.DEBUG):
                 j_repr = "%s" % (j,)
             else:
                 j_repr = ''
-            if args and isinstance(args, type({})):
+            if args and isinstance(args, dict):
+                # must create copy of args.keys() using list
+                # we modify args inside loop.
                 for key in list(args.keys()):
                     if key not in self.properties:
                         if enforceperm and not allow_obsolete:
@@ -1456,13 +1573,18 @@ class Class:
                                      self.classname, key, j_repr)
                         del args[key]
                         continue
+                    # check if user can access the property on the
+                    # item. This allows the check function in the
+                    # property to deny access.
                     if enforceperm and not (perm("View",
                                                  uid,
                                                  self.classname,
+                                                 itemid=nodeid,
                                                  property=key) or
                                             perm("Edit",
                                                  uid,
                                                  self.classname,
+                                                 itemid=nodeid,
                                                  property=key)):
                         logger.debug("skipping unaccessible property "
                                      "%s::%s seen by user%s in %s",
@@ -1475,7 +1597,7 @@ class Class:
                                  self.classname, nodeid, j_repr)
                     continue
                 journal.append(j)
-            elif action in ['link', 'unlink'] and isinstance(args, type(())):
+            elif action in ['link', 'unlink'] and isinstance(args, tuple):
                 # definitions:
                 # myself - object whose history is being filtered
                 # linkee - object/class whose property is changing to
@@ -1490,66 +1612,67 @@ class Class:
                 #      (viewable or editable) to user be included?? ]
                 #   linkee object (linkcl, linkid) is not
                 #       (viewable or editable) to user
-                if len(args) == 3:
-                    # e.g. for issue3 blockedby adds link to issue5 with:
-                    # j = id, evt_date, user, action, args
-                    # 3|20170528045201.484|5|link|('issue', '5', 'blockedby')
-                    linkcl, linkid, key = args
-                    cls = None
-                    try:
-                        cls = self.db.getclass(linkcl)
-                    except KeyError:
-                        pass
-                    # obsolete property or class
-                    if not cls or key not in cls.properties:
-                        if not enforceperm or allow_obsolete:
-                            journal.append(j)
-                        continue
-                    # obsolete linked-to item
-                    try:
-                        cls.get(linkid, key)  # does linkid exist
-                    except IndexError:
-                        if not enforceperm or allow_obsolete:
-                            journal.append(j)
-                        continue
-                    # is the updated property quiet?
-                    if skipquiet and cls.properties[key].quiet:
-                        logger.debug("skipping quiet property: "
-                                     "%s %sed %s%s",
-                                     j_repr, action, self.classname, nodeid)
-                        continue
-                    # can user view the property in linkee class
-                    if enforceperm and not (perm("View",
-                                                 uid,
-                                                 linkcl,
-                                                 property=key) or
-                                            perm("Edit",
-                                                 uid,
-                                                 linkcl,
-                                                 property=key)):
-                        logger.debug("skipping unaccessible property: "
-                                     "%s with uid %s %sed %s%s",
-                                     j_repr, uid, action,
-                                     self.classname, nodeid)
-                        continue
-                    # check access to linkee object
-                    if enforceperm and not (perm("View",
-                                                 uid,
-                                                 cls.classname,
-                                                 itemid=linkid) or
-                                            perm("Edit",
-                                                 uid,
-                                                 cls.classname,
-                                                 itemid=linkid)):
-                        logger.debug("skipping unaccessible object: "
-                                     "%s uid %s %sed %s%s",
-                                     j_repr, uid, action,
-                                     self.classname, nodeid)
-                        continue
-                    journal.append(j)
-                else:
+                if len(args) != 3:
                     logger.error("Invalid %s journal entry for %s%s: %s",
                                  action, self.classname, nodeid, j)
+                    continue
+
+                # e.g. for issue3 blockedby adds link to issue5 with:
+                # j = id, evt_date, user, action, args
+                # 3|20170528045201.484|5|link|('issue', '5', 'blockedby')
+                linkcl, linkid, key = args
+                cls = None
+                try:
+                    cls = self.db.getclass(linkcl)
+                except KeyError:
+                    pass
+                # obsolete property or class
+                if not cls or key not in cls.properties:
+                    if not enforceperm or allow_obsolete:
+                        journal.append(j)
+                    continue
+                # obsolete linked-to item
+                try:
+                    cls.get(linkid, key)  # does linkid exist
+                except IndexError:
+                    if not enforceperm or allow_obsolete:
+                        journal.append(j)
+                    continue
+                # is the updated property quiet?
+                if skipquiet and cls.properties[key].quiet:
+                    logger.debug("skipping quiet property: "
+                                 "%s %sed %s%s",
+                                 j_repr, action, self.classname, nodeid)
+                    continue
+                # can user view the property in linkee class
+                if enforceperm and not (perm("View",
+                                             uid,
+                                             linkcl,
+                                             property=key) or
+                                        perm("Edit",
+                                             uid,
+                                             linkcl,
+                                             property=key)):
+                    logger.debug("skipping unaccessible property: "
+                                 "%s with uid %s %sed %s%s",
+                                 j_repr, uid, action,
+                                 self.classname, nodeid)
+                    continue
+                # check access to linkee object
+                if enforceperm and not (perm("View",
+                                             uid,
+                                             cls.classname,
+                                             itemid=linkid) or
+                                        perm("Edit",
+                                             uid,
+                                             cls.classname,
+                                             itemid=linkid)):
+                    logger.debug("skipping unaccessible object: "
+                                 "%s uid %s %sed %s%s",
+                                 j_repr, uid, action,
+                                 self.classname, nodeid)
+                    continue
+                journal.append(j)
             elif action in ['create', 'retired', 'restored']:
                 journal.append(j)
             else:
@@ -1612,7 +1735,7 @@ class Class:
         props = self.getprops()
         if 'name' in props:
             return 'name'
-        elif 'title' in props:
+        if 'title' in props:
             return 'title'
         if default_to_id:
             return 'id'
@@ -1695,15 +1818,13 @@ class Class:
                     if isinstance(p.propclass, Multilink):
                         mlseen = True
                     isnull = v == '-1' or v is None
-                    islist = isinstance(v, type([]))
+                    islist = isinstance(v, list)
                     nullin = islist and ('-1' in v or None in v)
                     r = retr and not mlseen and not isnull and not nullin
                     p = p.append(k, retr=r)
                 if exact:
-                    if isinstance(v, type([])):
-                        vv = []
-                        for x in v:
-                            vv.append(Exact_Match(x))
+                    if isinstance(v, list):
+                        vv = [Exact_Match(x) for x in v]
                         p.set_val(vv, result=False)
                     else:
                         p.set_val([Exact_Match(v)], result=False)
@@ -1727,7 +1848,7 @@ class Class:
                 continue
             p.sort_direction = s[0]
             proptree.sortattr.append(p)
-        for p in multilinks.keys():
+        for p in multilinks:
             sattr = {}
             for c in p:
                 if c.sort_direction:
@@ -1760,6 +1881,8 @@ class Class:
         """Build a single list of sort attributes in the correct order
         with sanity checks (no duplicate properties) included. Always
         sort last by id -- if id is not already in sortattr.
+
+        return: list(tuple(sort_direction_char, prop_name), ...)
         """
         if sort is None:
             sort = [(None, None)]
@@ -1863,11 +1986,10 @@ class Class:
         if offset is not None or limit is not None:
             items = proptree.sort()
             if limit and offset:
-                return items[offset:offset+limit]
-            elif offset is not None:
+                return items[offset:offset + limit]
+            if offset is not None:
                 return items[offset:]
-            else:
-                return items[:limit]
+            return items[:limit]
         return proptree.sort()
 
     # non-optimized filter_iter, a backend may chose to implement a
@@ -1898,7 +2020,7 @@ class Class:
         item_ids = self.filter(search_matches, filterspec, sort, group,
                                retired, exact_match_spec, limit, offset)
         check = sec.hasPermission
-        if check(permission, userid, cn, skip_permissions_with_check = True):
+        if check(permission, userid, cn, skip_permissions_with_check=True):
             allowed = item_ids
         else:
             debug = self.db.config.RDBMS_DEBUG_FILTER
@@ -1926,10 +2048,9 @@ class Class:
                 allowed = self.filter(confirmed, {}, sort=sort, group=group,
                                       retired=None)
             else: # Last resort: filter in python
-                allowed = [id for id in item_ids
-                           if check(permission, userid, cn, itemid=id)]
+                allowed = [item_id for item_id in item_ids
+                           if check(permission, userid, cn, itemid=item_id)]
         return allowed
-
 
     def count(self):
         """Get the number of nodes in this class.
@@ -1957,7 +2078,7 @@ class Class:
         if propnames is None:
             propnames = []
         props = self.getprops(protected=False)
-        pdict = dict([(p, props[p]) for p in propnames])
+        pdict = {p: props[p] for p in propnames}
         pdict.update([(k, v) for k, v in props.items() if v.required])
         return pdict
 
@@ -1969,11 +2090,19 @@ class Class:
         may collide with the names of existing properties, or a ValueError
         is raised before any properties have been added.
         """
-        raise NotImplementedError
+        for key in properties:
+            if key in self.properties:
+                raise ValueError(key)
+        self.properties.update(properties)
 
     def index(self, nodeid):
         """Add (or refresh) the node to search indexes"""
-        raise NotImplementedError
+        # find all the String properties that have indexme
+        for prop, propclass in self.getprops().items():
+            if isinstance(propclass, String) and propclass.indexme:
+                # index them under (classname, nodeid, property)
+                self.db.indexer.add_text((self.classname, nodeid, prop),
+                                         str(self.get(nodeid, prop)))
 
     #
     # Detector interface
@@ -2031,23 +2160,29 @@ class Class:
         initial implementation which stored everything in a big hash by
         id and then proceeded to import journals for each id."""
         properties = self.getprops()
-        a = []
-        for entry in entries:
-            # first element in sorted list is the (numeric) id
-            # in python2.4 and up we would use sorted with a key...
-            a.append((int(entry[0].strip("'")), entry))
-        a.sort()
 
-        last = 0
-        r = []
-        for n, l in a:
-            nodeid, jdate, user, action, params = map(eval_import, l)
-            assert (str(n) == nodeid)
-            if n != last:
-                if r:
-                    self.db.setjournal(self.classname, str(last), r)
-                last = n
-                r = []
+        # entries is an iterator (csv reader() of journal item that look
+        # like:
+        # ["'2'", '(2026, 9, 9, 1, 54, 33.957, 0, 0, 0)', "'1'",
+        #    "'create'", '{}'])
+        # sort by first element as an int. Since int is a native type
+        # it speeds up sort operations and sorts in proper numeric order.
+        all_journals = list(entries)
+        all_journals.sort(key=lambda x: int(x[0].strip("'")))
+
+        last = ""
+        journals = []
+
+        for journal_data in all_journals:
+            nodeid, jdate, user, action, params = map(eval_import, journal_data)
+            clean_nodeid = nodeid.strip("'")
+            if clean_nodeid != last:
+                # we are done with all journal entries for nodeid
+                # flush them
+                if journals:
+                    self.db.setjournal(self.classname, last, journals)
+                last = clean_nodeid
+                journals = []
 
             if action == 'set':
                 for propname, value in params.items():
@@ -2064,9 +2199,10 @@ class Class:
             elif action == 'create' and params:
                 # old tracker with data stored in the create!
                 params = {}
-            r.append((nodeid, date.Date(jdate), user, action, params))
-        if r:
-            self.db.setjournal(self.classname, nodeid, r)
+            journals.append((nodeid, date.Date(jdate), user, action, params))
+        # reached end of journals flush anything pending.
+        if journals:
+            self.db.setjournal(self.classname, clean_nodeid, journals)
 
     #
     # convenience methods
@@ -2092,7 +2228,7 @@ class Class:
            In standard schemas only a user has a roles property but
            this may be different in customized schemas.
         '''
-        roles = dict.fromkeys([r.strip().lower() for r in roles])
+        roles = {r.strip().lower() for r in roles}
         for role in self.get_roles(nodeid):
             if role in roles:
                 return True
@@ -2162,7 +2298,7 @@ def rawToHyperdb(db, klass, itemid, propname, value, **kw):
                 'classname': klass.classname})
 
     # if we got a string, strip it now
-    if isinstance(value, type('')):
+    if isinstance(value, str):
         value = value.strip()
 
     # convert the input value to a real property value
@@ -2214,7 +2350,7 @@ class FileClass:
         # *did* update the index) so this is probably a bug-fix for anydbm
         if self.properties['content'].indexme:
             index_content = content
-            if bytes != str and isinstance(content, bytes):
+            if bytes is not str and isinstance(content, bytes):
                 index_content = content.decode('utf-8', errors='ignore')
             self.db.indexer.add_text((self.classname, newid, 'content'),
                                      index_content, mime_type)
@@ -2242,7 +2378,7 @@ class FileClass:
             the <class>-files subdirectory
         """
         subdir_filename = self.db.subdirFilename(self.classname, nodeid)
-        return os.path.join(dirname, self.classname+'-files', subdir_filename)
+        return os.path.join(dirname, self.classname + '-files', subdir_filename)
 
     def export_files(self, dirname, nodeid):
         """ Export the "content" property as a file, not csv column
@@ -2278,19 +2414,19 @@ class FileClass:
                 return ('%s%s is not text, retrieve using '
                         'binary_content property. mdsum: %s') % (
                             self.classname, nodeid,
-                            md5(self.db.getfile(
+                            md5(self.db.getfile(   # noqa: S324 md5 use ok
                                 self.classname,
                                 nodeid,
-                                None)).hexdigest())  # nosec - bandit md5 use ok
+                                None)).hexdigest())
         elif propname == 'binary_content':
             return self.db.getfile(self.classname, nodeid, None)
 
         if default is not _marker:
             return self.subclass.get(self, nodeid, propname, default,
                                      allow_abort=allow_abort)
-        else:
-            return self.subclass.get(self, nodeid, propname,
-                                     allow_abort=allow_abort)
+
+        return self.subclass.get(self, nodeid, propname,
+                                 allow_abort=allow_abort)
 
     def import_files(self, dirname, nodeid):
         """ Import the "content" property as a file
@@ -2309,7 +2445,7 @@ class FileClass:
             mime_type = self.default_mime_type
         if props['content'].indexme:
             index_content = self.get(nodeid, 'binary_content')
-            if bytes != str and isinstance(index_content, bytes):
+            if bytes is not str and isinstance(index_content, bytes):
                 index_content = index_content.decode('utf-8', errors='ignore')
             # indexer will only index text mime type. It will skip
             # other types. So if mime type of file is correct, we
@@ -2327,7 +2463,7 @@ class FileClass:
             if prop == 'content' and propclass.indexme:
                 mime_type = self.get(nodeid, 'type', self.default_mime_type)
                 index_content = self.get(nodeid, 'binary_content')
-                if bytes != str and isinstance(index_content, bytes):
+                if bytes is not str and isinstance(index_content, bytes):
                     index_content = index_content.decode('utf-8',
                                                          errors='ignore')
                 self.db.indexer.add_text((self.classname, nodeid, 'content'),
@@ -2373,7 +2509,7 @@ class FileClass:
             self.db.storefile(self.classname, itemid, None, bs2b(content))
             if self.properties['content'].indexme:
                 index_content = content
-                if bytes != str and isinstance(content, bytes):
+                if bytes is not str and isinstance(content, bytes):
                     index_content = content.decode('utf-8', errors='ignore')
                 mime_type = self.get(itemid, 'type', self.default_mime_type)
                 self.db.indexer.add_text((self.classname, itemid, 'content'),
@@ -2383,6 +2519,7 @@ class FileClass:
         # fire reactors
         self.fireReactors('set', itemid, oldvalues)
         return propvalues
+
 
 class Node:
     """ A convenience wrapper for the given node
@@ -2395,16 +2532,12 @@ class Node:
         return list(self.cl.getprops(protected=protected).keys())
 
     def values(self, protected=1):
-        value_list = []
-        for name in self.cl.getprops(protected=protected).keys():
-            value_list.append(self.cl.get(self.nodeid, name))
-        return value_list
+        return [self.cl.get(self.nodeid, name)
+                for name in self.cl.getprops(protected=protected)]
 
     def items(self, protected=1):
-        item_list = []
-        for name in self.cl.getprops(protected=protected).keys():
-            item_list.append((name, self.cl.get(self.nodeid, name)))
-        return item_list
+        return [(name, self.cl.get(self.nodeid, name))
+                for name in self.cl.getprops(protected=protected)]
 
     def has_key(self, name):
         return name in self.cl.getprops()
@@ -2412,18 +2545,17 @@ class Node:
     def get(self, name, default=None):
         if name in self:
             return self[name]
-        else:
-            return default
+        return default
 
     def __getattr__(self, name):
         if name in self.__dict__:
             return self.__dict__[name]
         try:
             return self.cl.get(self.nodeid, name)
-        except KeyError as value:
+        except KeyError as e:
             # we trap this but re-raise it as AttributeError - all other
             # exceptions should pass through untrapped
-            raise AttributeError(str(value))
+            raise AttributeError(str(e))
 
     def __getitem__(self, name):
         return self.cl.get(self.nodeid, name)
@@ -2431,10 +2563,10 @@ class Node:
     def __setattr__(self, name, value):
         try:
             return self.cl.set(self.nodeid, **{name: value})
-        except KeyError as value:
+        except KeyError as e:
             # we trap this but re-raise it as AttributeError - all other
             # exceptions should pass through untrapped
-            raise AttributeError(str(value))
+            raise AttributeError(str(e))
 
     def __setitem__(self, name, value):
         self.cl.set(self.nodeid, **{name: value})
@@ -2452,6 +2584,6 @@ def Choice(name, db, *options):
     """Quick helper to create a simple class with choices
     """
     cl = Class(db, name, name=String(), order=String())
-    for i in range(len(options)):
-        cl.create(name=options[i], order=i)
+    for i, option in enumerate(options):
+        cl.create(name=option, order=i)
     return Link(name)

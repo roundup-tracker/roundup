@@ -1,14 +1,10 @@
 <tal:block metal:define-macro="frame">
 <!doctype html>
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
-<!--[if gt IE 8]><!--> <html tal:define="what python:request.form.getvalue('property', request.classname);
+<html tal:define="what python:request.form.getvalue('property', request.classname);
                   form request/form/form/value;
-                  field request/form/property/value"> <!--<![endif]-->
+                  field request/form/property/value">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <title i18n:translate="">
     <tal:x i18n:name="what" tal:content="what" i18n:translate="" />
     help - <span i18n:name="tracker" tal:replace="config/TRACKER_NAME" />

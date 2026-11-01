@@ -50,6 +50,8 @@ roundup.pot: $(SOURCES) $(TEMPLATES)
 	  --msgid-bugs-address=roundup-devel@lists.sourceforge.net \
 	  --copyright-holder="See Roundup README.txt" \
 	  -o $(TEMPLATE) $(SOURCES)
+	msggrep -v -K -e '###' $(TEMPLATE) > $(TEMPLATE).new && \
+	  mv $(TEMPLATE).new $(TEMPLATE)
 
 ## QA commands
 diff: ## see template file (roundup.pot) differences

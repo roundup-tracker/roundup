@@ -281,6 +281,8 @@ required=False:
         if set to True, the property name is returned when calling
         get_required_props(self, propnames = []). Any additional props
         specified in propnames is merged with the required props.
+        An auditor is required to reject the submission if it is
+        unset/empty.
 
 default_value=None or [] depending on object type:
         this sets the default value if none is specified. The default

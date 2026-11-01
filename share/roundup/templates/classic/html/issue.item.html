@@ -203,7 +203,7 @@
   </tr>
   <tr>
    <td colspan="4" class="content">
-    <pre tal:content="structure msg/content/hyperlinked">content</pre>
+    <pre tal:content="structure python:utils.local_replace(msg.content.hyperlinked())">content</pre>
    </td>
   </tr>
  </tal:block>

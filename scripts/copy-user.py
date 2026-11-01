@@ -15,8 +15,6 @@ Example:
     (copies users 3, 4, 5, 6, 7, 8, 9, 10, 14 and 16)
 """
 
-from __future__ import print_function
-
 import sys
 
 import roundup.instance
@@ -31,14 +29,14 @@ def copy_user(home1, home2, *userids):
     try:
         instance1 = roundup.instance.open(home1)
         print("Opened source instance: %s" % home1)
-    except:
+    except Exception:
         print("Can't open source instance: %s" % home1)
         sys.exit(1)
 
     try:
         instance2 = roundup.instance.open(home2)
         print("Opened target instance: %s" % home2)
-    except:
+    except Exception:
         print("Can't open target instance: %s" % home2)
         sys.exit(1)
 

@@ -11,9 +11,6 @@
     Custom layout template for Roundup.
 
 #}
-{%- block doctype -%}
-<!DOCTYPE html>
-{%- endblock %}
 {%- macro relbar(class) %}
     <div class="related {{ class }}">
       <ul>
@@ -78,39 +75,18 @@
   {%- endblock %}
 {%- endmacro %}
 
-{%- macro css() %}
-    <link rel="stylesheet" href="{{ pathto('_static/NO_basic.css', 1) }}" type="text/css" />
-    <link rel="stylesheet" href="{{ pathto('_static/' + styles[-1], 1) }}" type="text/css" />
-    <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
-    {%- for cssfile in css_files %}
-    <link rel="stylesheet" href="{{ pathto(cssfile, 1) }}" type="text/css" />
-    {%- endfor %}
-{%- endmacro %}
 
-{#
- In newer sphinx styles is an array and style does not exist
- In older sphinx (1.x) style is the style set in conf.py.
-
- If style exists, assume styles doesn't exist and make styles
- exist with style as the only value.
-
- So we can use styles[-1] in the css() macro.
- When sourceforge lets me build docs with something newer than sphinx 1,
- we can delete this.
-#}
-{% if style %}
-{% set styles = [] %}
-{{ styles.append( style ) }}
-{% endif %}
-
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {%- if builder != 'htmlhelp' %}
-      {%- set titlesuffix = " &mdash; "|safe + docstitle|e %}
+      {%- set titlesuffix = docstitle|e %}
+      {%- set titlesuffix = " - " + titlesuffix %}
     {%- endif %}
     <title>{{ title|striptags }}{{ titlesuffix }}</title>
+
     {%- if builder != 'htmlhelp' %}
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -123,6 +99,7 @@
     {%- for scriptfile in script_files %}
     <script type="text/javascript" src="{{ pathto(scriptfile, 1) }}"></script>
     {%- endfor %}
+
     {%- if builder == 'web' %}
     <link rel="stylesheet" href="{{ pathto('index') }}?do=stylesheet{%
       if in_admin_panel %}&admin=yes{% endif %}" type="text/css" />
@@ -130,7 +107,8 @@
     <link rel="alternate" type="{{ type|e(true) }}" title="{{ title|e(true) }}" href="{{ link|e(true) }}" />
     {%- endfor %}
     {%- else %}
-    {{ css() }}
+    <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
+    <link rel="stylesheet" href="{{ pathto('_static/style.css', 1) }}" type="text/css" />
     {%- endif %}
     <!-- https://github.com/sphinx-doc/sphinx/issues/11699 means a
          duplicate viewport tag -->
@@ -171,7 +149,8 @@
 {%- block extrahead %} {% endblock %}
   </head>
   <body>
-    <div class="header"><div class="label">Roundup</div>
+    <header class="header">
+	<div class="label non_mobile">Roundup</div>
       {%- if pagename != "search" %}
         <script id="documentation_options" data-url_root="{{ url_root }}"
 	      src="{{ pathto('_static/documentation_options.js', 1) }}">
@@ -187,11 +166,13 @@
         </div>
         <script type="text/javascript">$('#searchbox').show(0);</script>
       {%- endif %}
-    </div>
+    </header>
     <div class="navigation">
+      <nav aria-label="primary navigation">
       <div class="menu">
        {{ sidebar() }}
       </div>
+      </nav>
     </div>
 {%- block content %}
     <main id="main" role="main" class="content">
@@ -199,15 +180,15 @@
        {% block body %} {% endblock %}
        {{ relbar('related-bottom') }}
     </main>
-  {%- endblock %}
+{%- endblock %}
 {%- block footer %}
-    <div class="footer">
+    <footer class="footer">
       {%- if hasdoc('copyright') %}
         {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
       {%- else %}
         {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
       {%- endif %}
-    </div>
+    </footer>
 {%- endblock %}
   </body>
 </html>

@@ -16,15 +16,18 @@
 
 """Command-line script stub that calls the roundup.mailgw.
 """
-from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 
-# --- patch sys.path to make sure 'import roundup' finds correct version
-import sys
+import netrc
+import os
 import os.path as osp
+import re
+import socket
+import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
+# --- patch sys.path to make sure 'import roundup' finds correct version
 thisdir = osp.dirname(osp.abspath(__file__))
 rootdir = osp.dirname(osp.dirname(thisdir))
 if (osp.exists(thisdir + '/__init__.py') and
@@ -33,16 +36,13 @@ if (osp.exists(thisdir + '/__init__.py') and
     sys.path.insert(0, rootdir)
 # --/
 
+# Python version check run for side effect.
+# Aborts program if Python version too old.
+from roundup import version_check  # noqa: E402 F401 I001
 
-# python version check
-from roundup import version_check
-from roundup import __version__ as roundup_version
-
-import sys, os, re, getopt, socket, netrc
-
-from roundup import mailgw
-from roundup.i18n import _
-
+from roundup import __version__ as roundup_version  # noqa: E402
+from roundup import mailgw   # noqa: E402
+from roundup.i18n import _   # noqa: E402
 
 usage_epilog = """
 The roundup mail gateway may be called in one of the following ways:
@@ -140,6 +140,7 @@ IMAPS_OAUTH:
 
 """
 
+
 def parse_arguments(argv):
     '''Handle the arguments to the program
     '''
@@ -153,16 +154,18 @@ def parse_arguments(argv):
     cmd.add_argument('-c', '--default-class', default='',
         help="Default class of item to create (else the tracker's "
         "MAILGW_DEFAULT_CLASS)")
-    cmd.add_argument('-O', '--oauth-directory',
-        help='Directory with OAUTH credentials, default "oauth" in '
-        'tracker home')
     cmd.add_argument('-S', '--set-value', action='append',
-        help="Set additional properties on some classes", default=[])
+        help="Set additional properties for classes. Format of SET_VALUE: '[class.]property=value[;property=value]'. Class defaults to DEFAULT_CLASS.", default=[])
+    cmd.add_argument('-O', '--oauth-directory',
+        help='Directory with OAUTH credentials, default "oauth/" in '
+        'tracker home')
     cmd.add_argument('-T', '--oauth-token-endpoint',
-        help="OAUTH token endpoint for access_token renew, default=%(default)s",
+        help="URL of the OAUTH token endpoint when renewing access_token, "
+            "default=%(default)s",
         default='https://login.microsoftonline.com/'
             'organizations/oauth2/v2.0/token')
     return cmd, cmd.parse_args(argv)
+
 
 def main(argv):
     '''Handle the arguments to the program and initialise environment.
@@ -170,7 +173,7 @@ def main(argv):
     cmd, args = parse_arguments(argv)
     if args.version:
         print('%s (python %s)' % (roundup_version, sys.version.split()[0]))
-        return
+        return None
 
     # figure the instance home
     if len(args.args) > 0:
@@ -211,15 +214,20 @@ def main(argv):
 
     # the source will be a network server, so obtain the credentials to
     # use in connecting to the server
+    authenticator = None
     try:
         # attempt to obtain credentials from a ~/.netrc file
+        # returns None if host not found
         authenticator = netrc.netrc().authenticators(specification)
+    except FileNotFoundError:
+        # FileNotFoundError if no ~/.netrc file
+        pass
+
+    if authenticator:
         username = authenticator[0]
         password = authenticator[2]
         server = specification
-        # IOError if no ~/.netrc file, TypeError if the hostname
-        # not found in the ~/.netrc file:
-    except (IOError, TypeError):
+    else:
         match = re.match(r'((?P<user>[^:]+)(:(?P<pass>.+))?@)?(?P<server>.+)',
                          specification)
         if match:
@@ -234,17 +242,17 @@ def main(argv):
     if source.startswith('pop'):
         ssl = source.endswith('s')
         return handler.do_pop(server, username, password, ssl)
-    elif source == 'apop':
+    if source == 'apop':
         return handler.do_apop(server, username, password)
-    elif source.startswith('imap'):
+    if source.startswith('imap'):
         d = {}
         if source.endswith('s'):
-            d.update(ssl = 1)
+            d.update(ssl=1)
         elif source.endswith('s_cram'):
-            d.update(ssl = 1, cram = 1)
+            d.update(ssl=1, cram=1)
         elif source == 'imaps_oauth':
-            d.update(ssl = 1, oauth = 1, oauth_path = args.oauth_directory)
-            d.update(token_endpoint = args.oauth_token_endpoint)
+            d.update(ssl=1, oauth=1, oauth_path=args.oauth_directory)
+            d.update(token_endpoint=args.oauth_token_endpoint)
         mailbox = ''
         if len(args.args) > 3:
             mailbox = args.args[3]
@@ -257,7 +265,7 @@ def main(argv):
 
 
 def run():
-    sys.exit(main(sys.argv [1:]))
+    sys.exit(main(sys.argv[1:]))
 
 
 # call main

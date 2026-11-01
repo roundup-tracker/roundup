@@ -362,13 +362,13 @@ class FormParser:
                 assert isinstance(proptype, hyperdb.Multilink)
                 # value is a file upload... we *always* handle multiple
                 # files here (html5)
-                if not isinstance(value, type([])):
+                if not isinstance(value, list):
                     value = [value]
             elif isinstance(proptype, hyperdb.Multilink):
                 value = self.extractFormList(value)
             else:
                 # multiple values are not OK
-                if isinstance(value, type([])):
+                if isinstance(value, list):
                     raise FormError(self._(
                         'You have submitted more than one '
                         'value for the %s property') % propname)
@@ -397,7 +397,7 @@ class FormParser:
                 else:
                     raise FormError(self._('Password and confirmation text '
                                            'do not match'))
-                if isinstance(confirm, type([])):
+                if isinstance(confirm, list):
                     raise FormError(self._(
                         'You have submitted more than one '
                         'value for the %s property') % propname)
@@ -657,7 +657,7 @@ class FormParser:
              MiniFieldStorage('value')
         '''
         # multiple values are OK
-        if isinstance(value, type([])):
+        if isinstance(value, list):
             # it's a list of MiniFieldStorages - join then into
             values = ','.join([i.value.strip() for i in value])
         else:

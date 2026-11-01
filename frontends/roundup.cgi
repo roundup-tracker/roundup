@@ -16,13 +16,17 @@
 # BASIS, AND THERE IS NO OBLIGATION WHATSOEVER TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-# python version check
-from __future__ import print_function
-from roundup import version_check
-from roundup.i18n import _
+import os
+import sys
+import time
+
+# If roundup is not on your normal path, add it here.
+# sys.path.append('/home/username/develop/roundup_dev')
+from roundup import version_check  # noqa: F401
+from roundup.anypy import http_
 from roundup.anypy.html import html_escape
-from roundup.anypy.strings import s2b, StringIO
-import sys, time
+from roundup.anypy.strings import StringIO, s2b
+from roundup.i18n import _
 
 #
 ##  Configuration
@@ -31,17 +35,17 @@ import sys, time
 # Configuration can also be provided through the OS environment (or via
 # the Apache "SetEnv" configuration directive). If the variables
 # documented below are set, they _override_ any configuation defaults
-# given in this file. 
+# given in this file.
 
 # TRACKER_HOMES is a list of trackers, in the form
 # "NAME=DIR<sep>NAME2=DIR2<sep>...", where <sep> is the directory path
-# separator (";" on Windows, ":" on Unix). 
+# separator (";" on Windows, ":" on Unix).
 
-# Make sure the NAME part doesn't include any url-unsafe characters like 
+# Make sure the NAME part doesn't include any url-unsafe characters like
 # spaces, as these confuse the cookie handling in browsers like IE.
 
 # ROUNDUP_LOG is the name of the logfile; if it's empty or does not exist,
-# logging is turned off (unless you changed the default below). 
+# logging is turned off (unless you changed the default below).
 
 # DEBUG_TO_CLIENT specifies whether debugging goes to the HTTP server (via
 # stderr) or to the web client (via cgitb).
@@ -52,15 +56,27 @@ TRACKER_HOMES = {
 #    'example': '/path/to/example',
 }
 
+# print timing at bottom of web page
+#TIMING = "INLINE"
+# print timing inside web page comments
+#TIMING = "COMMENT"
+# disable timing
+TIMING = ""
+
+
 # Where to log debugging information to. Use an instance of DevNull if you
 # don't want to log anywhere.
 class DevNull:
     def write(self, info):
         pass
+
     def close(self):
         pass
+
     def flush(self):
         pass
+
+
 #LOG = open('/var/log/roundup.cgi.log', 'a')
 LOG = DevNull()
 
@@ -68,14 +84,16 @@ LOG = DevNull()
 ##  end configuration
 #
 
+DEFAULT_ERROR_MESSAGE = http_.server.DEFAULT_ERROR_MESSAGE
 
 #
 # Set up the error handler
-# 
+#
 try:
     import traceback
+
     from roundup.cgi import cgitb
-except:
+except ImportError:
     print("Content-Type: text/plain\n")
     print(_("Failed to import cgitb!\n\n"))
     s = StringIO()
@@ -87,7 +105,6 @@ except:
 # Check environment for config items
 #
 def checkconfig():
-    import os
     global TRACKER_HOMES, LOG
 
     # see if there's an environment var. ROUNDUP_INSTANCE_HOMES is the
@@ -100,13 +117,13 @@ def checkconfig():
         TRACKER_HOMES = {}
         for home in homes.split(os.pathsep):
             try:
-                name, dir = home.split('=', 1)
+                name, dir_ = home.split('=', 1)
             except ValueError:
                 # ignore invalid definitions
                 continue
-            if name and dir:
-                TRACKER_HOMES[name] = dir
-                
+            if name and dir_:
+                TRACKER_HOMES[name] = dir_
+
     logname = os.environ.get('ROUNDUP_LOG', '')
     if logname:
         LOG = open(logname, 'a')
@@ -123,29 +140,66 @@ class RequestWrapper:
     def __init__(self, wfile):
         self.rfile = sys.stdin
         self.wfile = wfile
+        self.headers = {}
+
     def write(self, data):
         self.wfile.write(data)
+
     def send_response(self, code):
-        self.write(s2b('Status: %s\r\n'%code))
+        self.write(s2b('Status: %s\r\n' % code))
+
     def send_header(self, keyword, value):
         self.write(s2b("%s: %s\r\n" % (keyword, value)))
+
     def end_headers(self):
         self.write(b"\r\n")
+
     def start_response(self, headers, response):
         self.send_response(response)
         for key, value in headers:
             self.send_header(key, value)
         self.end_headers()
 
+
 #
 # Main CGI handler
 #
 def main(out, err):
-    import os
+    import roundup.cgi.client
     import roundup.instance
-    path = os.environ.get('PATH_INFO', '/').split('/')
+
+    if TIMING:
+        os.environ["CGI_SHOW_TIMING"] = TIMING
+
     request = RequestWrapper(out)
+    problem_header = roundup.cgi.client.are_header_values_safe(os.environ)
+    if problem_header:
+        error_body = """<!DOCTYPE HTML>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <title>Error response</title>
+        </head>
+        <body>
+          <h1>Error response</h1>
+          <p>Error code: 400</p>
+          <p>Message: Invalid value: %s.</p>
+          <p>Error code explanation: 400 - The value for the header is unacceptable.</p>
+        </body>
+        </html>
+        """ % problem_header
+
+        request.send_response(400)
+        request.send_header('Content-Type', 'text/html')
+        request.send_header('Content-Length', '%s' % len(error_body))
+        request.end_headers()
+        out.write(s2b(error_body))
+        return
+
     request.path = os.environ.get('PATH_INFO', '/')
+    if not request.path:  # missing trailing /
+        request.path = "/"
+    path = request.path.split('/')
     tracker = path[1]
     os.environ['TRACKER_NAME'] = tracker
     os.environ['PATH_INFO'] = '/'.join(path[2:])
@@ -158,7 +212,7 @@ def main(out, err):
                 protocol = 'https'
             else:
                 protocol = 'http'
-            absolute_url = '%s://%s%s/'%(protocol, os.environ['HTTP_HOST'],
+            absolute_url = '%s://%s%s/' % (protocol, os.environ['HTTP_HOST'],
                 os.environ.get('REQUEST_URI', ''))
             request.send_header('Location', absolute_url)
             request.end_headers()
@@ -166,23 +220,46 @@ def main(out, err):
         else:
             tracker_home = TRACKER_HOMES[tracker]
             tracker = roundup.instance.open(tracker_home)
-            import roundup.cgi.client
-            if hasattr(tracker, 'Client'):
-                client = tracker.Client(tracker, request, os.environ)
-            else:
-                client = roundup.cgi.client.Client(tracker, request, os.environ)
+            try:
+                if hasattr(tracker, 'Client'):
+                    client = tracker.Client(tracker, request, os.environ)
+                else:
+                    client = roundup.cgi.client.Client(tracker,
+                                                       request, os.environ)
+            except ValueError as e:
+                code = 400
+                message = str(e)
+                explain = "The value for the header is unacceptable"
+                body = DEFAULT_ERROR_MESSAGE % locals()
+                request.send_response(code)
+                request.send_header('Content-Type', 'text/html')
+                request.send_header('Content-Length', '%s' % len(body))
+                request.end_headers()
+                out.write(s2b(body))
+
             try:
                 client.main()
             except roundup.cgi.client.Unauthorised:
+                body = b'Unauthorised'
                 request.send_response(403)
                 request.send_header('Content-Type', 'text/html')
+                request.send_header('Content-Length', '%s' % len(body))
                 request.end_headers()
-                out.write(b'Unauthorised')
+                out.write(body)
             except roundup.cgi.client.NotFound:
+                body = s2b('Not found: %s' % html_escape(client.path))
                 request.send_response(404)
                 request.send_header('Content-Type', 'text/html')
+                request.send_header('Content-Length', '%s' % len(body))
                 request.end_headers()
-                out.write(s2b('Not found: %s'%html_escape(client.path)))
+                out.write(body)
+            except Exception as e:
+                body = s2b('Error: %s' % html_escape(e))
+                request.send_response(400)
+                request.send_header('Content-Type', 'text/html')
+                request.send_header('Content-Length', '%s' % len(body))
+                request.end_headers()
+                out.write(body)
 
     else:
         from roundup.anypy import urllib_
@@ -194,11 +271,12 @@ def main(out, err):
         w(s2b(_('<body><h1>Roundup trackers index</h1><ol>\n')))
         homes = sorted(TRACKER_HOMES.keys())
         for tracker in homes:
-            w(s2b(_('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n')%{
-                'tracker_url': os.environ['SCRIPT_NAME']+'/'+
+            w(s2b(_('<li><a href="%(tracker_url)s/index">%(tracker_name)s</a>\n') % {
+                'tracker_url': os.environ['SCRIPT_NAME'] + '/' +
                                urllib_.quote(tracker),
                 'tracker_name': html_escape(tracker)}))
         w(s2b(_('</ol></body></html>')))
+
 
 #
 # Now do the actual CGI handling
@@ -207,7 +285,7 @@ out, err = sys.stdout, sys.stderr
 try:
     # force input/output to binary (important for file up/downloads)
     if sys.platform == "win32":
-        import os, msvcrt
+        import msvcrt
         msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
         msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
     checkconfig()
@@ -219,7 +297,7 @@ try:
     main(out_buf, err)
 except SystemExit:
     pass
-except:
+except Exception as e:
     sys.stdout, sys.stderr = out, err
     out.write('Content-Type: text/html\n\n')
     if DEBUG_TO_CLIENT:
@@ -228,7 +306,7 @@ except:
         out.write(cgitb.breaker())
         ts = time.ctime()
         out.write('''<p>%s: An error occurred. Please check
-            the server log for more information.</p>'''%ts)
+            the server log for more information.</p>''' % ts)
         print('EXCEPTION AT', ts, file=sys.stderr)
         traceback.print_exc(0, sys.stderr)
 
