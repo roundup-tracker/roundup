@@ -430,7 +430,7 @@ class SearchAction(Action):
         # getCurrentURL calls a method that url quotes all data.
         dispname = {"@dispname": queryname} if queryname else None
         query =  self.getCurrentURL(req, dispname)
-        
+
         raise exceptions.Redirect("%s%s?%s" %( self.base,
                                                self.classname, query))
 
@@ -491,7 +491,7 @@ class SearchAction(Action):
         """
         if addl_qargs is None:
             addl_qargs = {}
-            
+
         template = self.getFromForm('template')
         if template and template not in ['index', 'index|search']:
             addl_qargs.update({'@template': template})

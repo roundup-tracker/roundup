@@ -25,14 +25,15 @@ def db_open(client, journaltag):
     """
     if not client.db.isCurrentUser(journaltag):
         client.db.setCurrentUser(journaltag)
-    
+
 class ActionTestCase(unittest.TestCase):
     def setUp(self):
         self.form = FieldStorage(environ={'QUERY_STRING': ''})
         self.client = MockNull()
 
-        self.client.opendb = lambda journaltag: db_open(self.client, journaltag)
-        
+        self.client.opendb = lambda journaltag: db_open(self.client,
+                                                        journaltag)
+
         self.client.db = memorydb.create('admin')
         self.client.classname = "issue"
 
@@ -167,7 +168,7 @@ class RestoreActionTestCase(ActionTestCase):
                           'clashes with existing one (fred)')
 
         RetireAction(self.client).handle()
-        
+
         self.client.template = 'index'
         self.client._ok_message = []
         RestoreAction(self.client).handle()
@@ -199,7 +200,7 @@ class SearchActionTestCase(ActionTestCase):
 
         self.action = SearchAction(self.client)
 
-       
+
 class StandardSearchActionTestCase(SearchActionTestCase):
     def testNoPermission(self):
         self.client.userid = "2"
@@ -224,11 +225,11 @@ class StandardSearchActionTestCase(SearchActionTestCase):
 
         self.assertEqual(ctx.exception.args[0],
                          "http://whoami.com/path/issue?@pagesize=10&@startwith=0")
-        
+
 
         self.form.value.append(MiniFieldStorage('@queryname', 'myq<script>'))
         self.form.value.append(MiniFieldStorage('@template', 'kanban<script>'))
-        
+
         with self.assertRaises(Redirect) as ctx:
             self.action.execute()
 
@@ -385,7 +386,7 @@ class LoginTestCase(ActionTestCase):
             username="blank",
             roles='User',
             address='blank_password@example.com')
-        
+
         self.uids['foo'] = self.client.db.user.create(
             username="foo",
             roles='User',

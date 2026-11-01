@@ -153,7 +153,7 @@ class HTMLDatabaseTestCase(TemplatingTestCase):
 
         self.assertEqual([d._nodeid for d in l],
                          ['23', 'a', 'b'])
-        
+
 class FunctionsTestCase(TemplatingTestCase):
     def test_lookupIds(self):
         db = HTMLDatabase(self.client)
