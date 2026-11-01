@@ -22,7 +22,8 @@ serious bugs, and is not available)
 """
 __docformat__ = 'restructuredtext'
 
-import copy
+# ruff: noqa: S302 - allow use of marshal
+
 import logging
 import marshal
 import os
@@ -30,16 +31,13 @@ import re
 import shutil
 import time
 
+from roundup import date, hyperdb, password, roundupdb, security, support
 from roundup.anypy.dbm_ import anydbm, whichdb
-from roundup.anypy.strings import b2s, repr_export, eval_import, is_us
-
-from roundup import hyperdb, date, password, roundupdb, security, support
-from roundup.mlink_expr import Expression, ExpressionError
-from roundup.backends import locking
-from roundup.i18n import _
-
+from roundup.anypy.strings import b2s, eval_import, is_us, repr_export
+from roundup.backends import locking, sessions_dbm
 from roundup.backends.blobfiles import FileStorage
-from roundup.backends import sessions_dbm
+from roundup.i18n import _
+from roundup.mlink_expr import Expression, ExpressionError
 
 try:
     from roundup.backends import sessions_redis
@@ -226,14 +224,14 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                 path = os.path.join(self.dir, '%s.%s' % (data_type, cn))
                 if os.path.exists(path):
                     os.remove(path)
-                elif os.path.exists(path+'.db'):    # dbm appends .db
-                    os.remove(path+'.db')
+                elif os.path.exists(path + '.db'):    # dbm appends .db
+                    os.remove(path + '.db')
         # reset id sequences
         path = os.path.join(os.getcwd(), self.dir, '_ids')
         if os.path.exists(path):
             os.remove(path)
-        elif os.path.exists(path+'.db'):    # dbm appends .db
-            os.remove(path+'.db')
+        elif os.path.exists(path + '.db'):    # dbm appends .db
+            os.remove(path + '.db')
 
     def getclassdb(self, classname, mode='r'):
         """ grab a connection to the class db that will be used for
@@ -249,7 +247,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             db_type = whichdb(path)
             if not db_type:
                 raise hyperdb.DatabaseError(_("Couldn't identify database type"))
-        elif os.path.exists(path+'.db'):
+        elif os.path.exists(path + '.db'):
             # if the path ends in '.db', it's a dbm database, whether
             # anydbm says it's dbhash or not!
             db_type = 'dbm'
@@ -270,7 +268,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             if __debug__:
                 logging.getLogger('roundup.hyperdb.backend').debug(
                     "opendb anydbm.open(%(path)r, 'c')",
-                    {"path": path,})
+                    {"path": path})
             return anydbm.open(path, 'c')
 
         # in Python <3 it anydbm was a little dumb so manually open the
@@ -291,7 +289,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     "required module '%s' is not available") % db_type)
         if __debug__:
             logging.getLogger('roundup.hyperdb.backend').debug(
-                "opendb %r.open(%r, %r)" % (db_type, path, mode))
+                "opendb %r.open(%r, %r)", db_type, path, mode)
         return dbm.open(path, mode)
 
     #
@@ -306,7 +304,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             newid = db[classname] = str(int(db[classname]) + 1)
         else:
             # the count() bit is transitional - older dbs won't start at 1
-            newid = str(self.getclass(classname).count()+1)
+            newid = str(self.getclass(classname).count() + 1)
             db[classname] = newid
         db.close()
         return newid
@@ -352,7 +350,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         if __debug__:
             logging.getLogger('roundup.hyperdb.backend').debug(
-                'save %s%s %r' % (classname, nodeid, node))
+                'save %s%s %r', classname, nodeid, node)
         self.transactions.append((self.doSaveNode, (classname, nodeid, node)))
 
     def getnode(self, classname, nodeid, db=None, cache=1, allow_abort=True):
@@ -368,7 +366,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         if nodeid in cache_dict:
             if __debug__:
                 logging.getLogger('roundup.hyperdb.backend').debug(
-                    'get %s%s cached' % (classname, nodeid))
+                    'get %s%s cached', classname, nodeid)
                 self.stats['cache_hits'] += 1
             return cache_dict[nodeid]
 
@@ -376,7 +374,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             self.stats['cache_misses'] += 1
             start_t = time.time()
             logging.getLogger('roundup.hyperdb.backend').debug(
-                'get %s%s' % (classname, nodeid))
+                'get %s%s', classname, nodeid)
 
         # close db if opened locally before returning without error
         must_close = False
@@ -422,7 +420,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
            destroy() method on Class.
         """
         logging.getLogger('roundup.hyperdb.backend').info(
-            'destroy %s%s' % (classname, nodeid))
+            'destroy %s%s', classname, nodeid)
 
         # remove from cache and newnodes if it's there
         if (classname in self.cache and nodeid in self.cache[classname]):
@@ -551,8 +549,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """
         if __debug__:
             logging.getLogger('roundup.hyperdb.backend').debug(
-                'addjournal %s%s %s %r %s %r' % (
-                    classname, nodeid, action, params, creator, creation))
+                'addjournal %s%s %s %r %s %r', classname, nodeid,
+                action, params, creator, creation)
         if creator is None:
             creator = self.getuid()
         self.transactions.append((self.doSaveJournal, (
@@ -562,7 +560,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """Set the journal to the "journal" list."""
         if __debug__:
             logging.getLogger('roundup.hyperdb.backend').debug(
-                'setjournal %s%s %r' % (classname, nodeid, journal))
+                'setjournal %s%s %r', classname, nodeid, journal)
         self.transactions.append((self.doSetJournal, (classname, nodeid,
                                                       journal)))
 
@@ -576,7 +574,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
             return journal
         for j in journal:
             if j[3] == 'set':
-                for k in j[4].keys():
+                for k in j[4]:
                     if k in pwprops and j[4][k]:
                         j[4][k] = password.JournalPassword(j[4][k])
         return journal
@@ -661,9 +659,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
                     else:
                         packed += 1
                 db[key] = marshal.dumps(kept_entries)
-
                 logging.getLogger('roundup.hyperdb.backend').info(
-                    'packed %d %s items' % (packed, classname))
+                    'packed %d %s items', packed, classname)
 
             if db_type == 'gdbm':
                 db.reorganize()
@@ -679,7 +676,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         last commit() or rollback().
         """
         logging.getLogger('roundup.hyperdb.backend').info(
-            'commit %s transactions' % (len(self.transactions)))
+            'commit %s transactions', len(self.transactions))
 
         # keep a handle to all the database files opened
         self.databases = {}
@@ -749,9 +746,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
     def doSaveJournal(self, classname, nodeid, action, params, creator,
                       creation):
         # serialise the parameters now if necessary
-        if isinstance(params, dict):
-            if action in ('set', 'create'):
-                params = self.serialise(classname, params)
+        if isinstance(params, dict) and action in ('set', 'create'):
+            params = self.serialise(classname, params)
 
         # handle supply of the special journalling parameters (usually
         # supplied on importing an existing database)
@@ -781,9 +777,8 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         l = []
         for nodeid, journaldate, journaltag, action, params in journal:
             # serialise the parameters now if necessary
-            if isinstance(params, dict):
-                if action in ('set', 'create'):
-                    params = self.serialise(classname, params)
+            if isinstance(params, dict) and action in ('set', 'create'):
+                params = self.serialise(classname, params)
             journaldate = journaldate.serialise()
             l.append((nodeid, journaldate, journaltag, action, params))
         db = self.getCachedJournalDB(classname)
@@ -804,7 +799,7 @@ class Database(FileStorage, hyperdb.Database, roundupdb.Database):
         """ Reverse all actions from the current transaction.
         """
         logging.getLogger('roundup.hyperdb.backend').info(
-            'rollback %s transactions' % (len(self.transactions)))
+            'rollback %s transactions', len(self.transactions))
 
         for method, args in self.transactions:
             # delete temporary files
@@ -2121,14 +2116,17 @@ class FileClass(hyperdb.FileClass, Class):
     # Use for explicit upcalls in generic code, for py2 compat we cannot
     # use super() without making everything a new-style class.
     subclass = Class
+
     def __init__(self, db, classname, **properties):
         self._update_properties(properties)
         Class.__init__(self, db, classname, **properties)
+
 
 class IssueClass(Class, roundupdb.IssueClass):
     # Use for explicit upcalls in generic code, for py2 compat we cannot
     # use super() without making everything a new-style class.
     subclass = Class
+
     def __init__(self, db, classname, **properties):
         self._update_properties(classname, properties)
         Class.__init__(self, db, classname, **properties)
