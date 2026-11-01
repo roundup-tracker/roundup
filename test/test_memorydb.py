@@ -61,10 +61,8 @@ class memorydbSessionTest(memorydbOpener, SessionTest, unittest.TestCase):
     def setUp(self):
         self.db = self.module.Database(config, 'admin')
         setupSchema(self.db, 1, self.module)
-        self.sessions = self.db.sessions
-        self.db.Session = self.sessions
-        self.otks = self.db.otks
-        self.db.Otk = self.otks
+        self.sessions = self.db.Session
+        self.otks = self.db.Otk
 
     def get_ts(self):
         return (self.sessions.get('random_session', '__timestamp'),)

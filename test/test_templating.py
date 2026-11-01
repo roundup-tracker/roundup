@@ -147,10 +147,13 @@ class HTMLDatabaseTestCase(TemplatingTestCase):
         # Make db.getclass return something that has a sensible 'get' method
         def get(x, y, allow_abort=True):
             return None
-        mock = MockNull(get = get)
+        mock = MockNull(get = get, orderprop = lambda : None)
         db.issue._db.getclass = lambda x : mock
         l = db.issue.list()
 
+        self.assertEqual([d._nodeid for d in l],
+                         ['23', 'a', 'b'])
+        
 class FunctionsTestCase(TemplatingTestCase):
     def test_lookupIds(self):
         db = HTMLDatabase(self.client)
