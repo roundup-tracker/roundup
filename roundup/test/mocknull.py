@@ -16,7 +16,11 @@ class MockNull:
         self.__dict__[name] = MockNull()
         return getattr(self, name)
 
-    def __getitem__(self, key): return self
+    def __getitem__(self, key):
+        try:
+            return self.__dict__[key]
+        except KeyError:
+            return self
 
     def __bool__(self): return False
     # Python 2 compatibility:

@@ -6,6 +6,8 @@ from roundup.cgi.actions import *
 from roundup.cgi.client import add_message
 from roundup.cgi.exceptions import RateLimitExceeded, Redirect, Unauthorised, SeriousError, FormError
 from roundup.exceptions import Reject
+from roundup.password import Password
+from roundup.test import memorydb
 
 from roundup.anypy.cgi_ import FieldStorage, MiniFieldStorage
 from roundup.anypy.cmp_ import NoneAndDictComparable
@@ -17,16 +19,27 @@ from roundup.test.mocknull import MockNull
 def true(*args, **kwargs):
     return 1
 
+def db_open(client, journaltag):
+    """Change the journal tag. The db is always open in testing.
+       Make db_open only change the journaltag.
+    """
+    if not client.db.isCurrentUser(journaltag):
+        client.db.setCurrentUser(journaltag)
+
 class ActionTestCase(unittest.TestCase):
     def setUp(self):
         self.form = FieldStorage(environ={'QUERY_STRING': ''})
         self.client = MockNull()
-        self.client.db.Otk = MockNull()
-        self.client.db.Otk.data = {}
-        self.client.db.Otk.getall = self.data_get
-        self.client.db.Otk.set = self.data_set
+
+        self.client.opendb = lambda journaltag: db_open(self.client,
+                                                        journaltag)
+
+        self.client.db = memorydb.create('admin')
+        self.client.classname = "issue"
+
         self.client.db.config.WEB_LOGIN_ATTEMPTS_MIN = 20
         self.client.db.config.WEB_LOGIN_EMPTY_PASSWORDS = 0
+
         self.client._ok_message = []
         self.client._error_message = []
         self.client.add_error_message = lambda x, escape=True: add_message(
@@ -39,11 +52,6 @@ class ActionTestCase(unittest.TestCase):
             pass
         self.client.instance.interfaces.TemplatingUtils = TemplatingUtils
 
-    def data_get(self, key):
-        return self.client.db.Otk.data[key]
-
-    def data_set(self, key, **value):
-        self.client.db.Otk.data[key] = value
 
 class ShowActionTestCase(ActionTestCase):
     def assertRaisesMessage(self, exception, callable, message, *args,
@@ -96,6 +104,8 @@ class RetireActionTestCase(ActionTestCase):
     def testRetireAction(self):
         self.client.db.security.hasPermission = true
         self.client._ok_message = []
+        self.client.classname = "user"
+        self.client.nodeid = "3"
         RetireAction(self.client).handle()
         self.assertTrue(len(self.client._ok_message) == 1)
         self.assertTrue(not self.client.nodeid == None)
@@ -113,7 +123,9 @@ class RetireActionTestCase(ActionTestCase):
 
 
     def testNoPermission(self):
+        self.client.userid = "2"  # anon user can't do anything
         self.client.classname='user'
+        self.client.nodeid = "3"  # retire user fred
         self.assertRaises(Unauthorised, RetireAction(self.client).execute)
 
     def testDontRetireAdminOrAnonymous(self):
@@ -134,10 +146,28 @@ class RestoreActionTestCase(ActionTestCase):
     # db_test_base as part of retire.
     def testRestoreAction(self):
         self.client.db.security.hasPermission = true
+        self.client.userid = "1"
+        self.client.classname='user'
+        self.client.nodeid = "3"  # retire user fred
+        RetireAction(self.client).handle()
+
         self.client._ok_message = []
         RestoreAction(self.client).handle()
         self.assertTrue(len(self.client._ok_message) == 1)
         self.assertTrue(not self.client.nodeid == None)
+
+        # note no preceding RetireAction so we get a clash
+        # on the 'fred' username key field as we try to restore
+        # 'fred' when fred isn't retired.
+        # reusing userid,classname,nodeid from above. Do not set template.
+        with self.assertRaises(KeyError) as e:
+            RestoreAction(self.client).handle()
+
+        self.assertEqual(e.exception.args[0],
+                          'Key property (username) of retired node '
+                          'clashes with existing one (fred)')
+
+        RetireAction(self.client).handle()
 
         self.client.template = 'index'
         self.client._ok_message = []
@@ -151,15 +181,31 @@ class RestoreActionTestCase(ActionTestCase):
         self.assertRaises(Reject, RestoreAction(self.client).execute)
 
     def testNoPermission(self):
+        self.client.userid = "1"  # admin for the retire
+        self.client.classname='user'
+        self.client.nodeid = "3"  # retire user fred maybe
+
+        RetireAction(self.client).handle()
+
+        self.client.userid = "2"  # anon user can't do anything
+
         self.assertRaises(Unauthorised, RestoreAction(self.client).execute)
+
 
 class SearchActionTestCase(ActionTestCase):
     def setUp(self):
         ActionTestCase.setUp(self)
+        self.client.userid = "1"
+        self.client.classname = "issue"
+
         self.action = SearchAction(self.client)
+
 
 class StandardSearchActionTestCase(SearchActionTestCase):
     def testNoPermission(self):
+        self.client.userid = "2"
+        self.client.classname = "user"
+
         self.assertRaises(Unauthorised, self.action.execute)
 
     def testQueryName(self):
@@ -168,10 +214,36 @@ class StandardSearchActionTestCase(SearchActionTestCase):
         self.form.value.append(MiniFieldStorage('@queryname', 'foo'))
         self.assertEqual(self.action.getQueryName(), 'foo')
 
+    def testSearchRedirect(self):
+        # let me do it.
+        self.client.db.security.hasPermission = true
+
+        self.form.value.append(MiniFieldStorage('@pagesize', '10'))
+
+        with self.assertRaises(Redirect) as ctx:
+            self.action.execute()
+
+        self.assertEqual(ctx.exception.args[0],
+                         "http://whoami.com/path/issue?@pagesize=10&@startwith=0")
+
+
+        self.form.value.append(MiniFieldStorage('@queryname', 'myq<script>'))
+        self.form.value.append(MiniFieldStorage('@template', 'kanban<script>'))
+
+        with self.assertRaises(Redirect) as ctx:
+            self.action.execute()
+
+        # verify that it is url escaped.
+        self.assertEqual(ctx.exception.args[0],
+                         "http://whoami.com/path/issue?"
+                         "@dispname=myq%3Cscript%3E&"
+                         "@template=kanban%3Cscript%3E&"
+                         "@pagesize=10&@startwith=0")
+
 class FakeFilterVarsTestCase(SearchActionTestCase):
     def setUp(self):
         SearchActionTestCase.setUp(self)
-        self.client.db.classes.get_transitive_prop = lambda x: \
+        self.client.db.classes['issue'].get_transitive_prop = lambda x: \
             hyperdb.Multilink('foo')
 
     def assertFilterEquals(self, expected):
@@ -199,14 +271,14 @@ class FakeFilterVarsTestCase(SearchActionTestCase):
         self.assertFilterEquals('foo')
 
     def testStringKey(self):
-        self.client.db.classes.getprops = lambda: {'foo': hyperdb.String()}
+        self.client.db.classes['issue'].getprops = lambda: {'foo': hyperdb.String()}
         self.form.value.append(MiniFieldStorage('foo', 'hello'))
         self.assertFilterEquals('foo')
 
     def testNumKey(self): # testing patch: http://hg.python.org/tracker/roundup/rev/98508a47c126
         for val in [ "-1000a", "test", "o0.9999", "o0", "1.00/10" ]:
             print("testing ", val)
-            self.client.db.classes.get_transitive_prop = lambda x: hyperdb.Number()
+            self.client.db.classes['issue'].get_transitive_prop = lambda x: hyperdb.Number()
             self.form.value.append(MiniFieldStorage('foo', val)) # invalid numbers
             self.assertRaises(FormError, self.action.fakeFilterVars)
             del self.form.value[:]
@@ -220,19 +292,19 @@ class FakeFilterVarsTestCase(SearchActionTestCase):
     def testIntKey(self): # testing patch: http://hg.python.org/tracker/roundup/rev/98508a47c126
         for val in [ "-1000a", "test", "-5E-5", "0.9999", "0.0", "1.000", "0456", "1E4" ]:
             print("testing ", val)
-            self.client.db.classes.get_transitive_prop = lambda x: hyperdb.Integer()
+            self.client.db.classes['issue'].get_transitive_prop = lambda x: hyperdb.Integer()
             self.form.value.append(MiniFieldStorage('foo', val))
             self.assertRaises(FormError, self.action.fakeFilterVars)
             del self.form.value[:]
 
         for val in [ "-1000", "-512", "0", "1", "100", "248" ]: # no scientific notation apparently
-            self.client.db.classes.get_transitive_prop = lambda x: hyperdb.Integer()
+            self.client.db.classes['issue'].get_transitive_prop = lambda x: hyperdb.Integer()
             self.form.value.append(MiniFieldStorage('foo', val))
             self.action.fakeFilterVars() # this should run and return. No errors, nothing to check.
             del self.form.value[:]
 
     def testTokenizedStringKey(self):
-        self.client.db.classes.get_transitive_prop = lambda x: hyperdb.String()
+        self.client.db.classes['issue'].get_transitive_prop = lambda x: hyperdb.String()
         self.form.value.append(MiniFieldStorage('foo', 'hello world'))
 
         self.assertFilterEquals('foo')
@@ -300,12 +372,34 @@ class LoginTestCase(ActionTestCase):
         ActionTestCase.setUp(self)
         self.client._error_message = []
 
-        # set the db password to 'right'
-        self.client.db.user.get = lambda a,b: 'right'
+        self.client.mock_opendb = self.client.opendb
 
         # unless explicitly overridden, we should never get here
+        # for all login test cases, abort if opendb is called
+        # unless overridden with the mock_opendb
         self.client.opendb = lambda a: self.fail(
             "Logged in, but we shouldn't be.")
+
+        self.uids = {}
+        # user with empty/blank password
+        self.uids['blank'] = self.client.db.user.create(
+            username="blank",
+            roles='User',
+            address='blank_password@example.com')
+
+        self.uids['foo'] = self.client.db.user.create(
+            username="foo",
+            roles='User',
+            password=Password('right',
+                              config=self.client.db.config),
+            address='foo@example.com')
+
+        self.uids['noweb'] = self.client.db.user.create(
+            username="noweb",
+            roles='',
+            password=Password('right',
+                              config=self.client.db.config),
+            address='noweb@example.com')
 
     def assertRaisesMessage(self, exception, callable, message, *args,
                             **kwargs):
@@ -360,7 +454,7 @@ class LoginTestCase(ActionTestCase):
 
     def testNoWebAccess(self):
         self.assertLoginLeavesMessages(['You do not have permission to login'],
-                                        'foo', 'right')
+                                        'noweb', 'right')
 
     def testCorrectLogin(self):
         self.client.db.security.hasPermission = lambda *args, **kwargs: True
@@ -372,24 +466,22 @@ class LoginTestCase(ActionTestCase):
         self.assertLoginLeavesMessages([], 'foo', 'right')
 
     def testBlankPasswordLogin(self):
-        self.client.db.security.hasPermission = lambda *args, **kwargs: True
-
-        self.client.db.user.get = lambda a,b: None
-
-        def opendb(username):
-            self.assertEqual(username, 'blank')
-        self.client.opendb = opendb
+        opendb_orig = self.client.opendb
 
         self.assertEqual(self.client.db.config.WEB_LOGIN_EMPTY_PASSWORDS, 0)
         self.assertLoginLeavesMessages(['Invalid login'], 'blank', '' )
 
+
+        # override opendb so we can verify getuid() returns the blank user.
+        self.client.opendb = self.client.mock_opendb
         self.client.db.config.WEB_LOGIN_EMPTY_PASSWORDS = 1
         self.form.value[:] = []  # reset form
         self.client._error_message = [] # reset errors
         self.assertLoginLeavesMessages([], 'blank', '' )
+        self.assertEqual(self.client.db.getuid(), self.uids['blank'])
 
         # reset
-        self.client.db.user.get = lambda a,b: 'right'
+        self.client.opendb = opendb_orig
         self.client.db.config.WEB_LOGIN_EMPTY_PASSWORDS = 0
 
     def testCorrectLoginRedirect(self):
@@ -504,9 +596,17 @@ class EditItemActionTestCase(ActionTestCase):
         self.client.base = 'http://tracker/'
         self.client.nodeid = '4711'
         self.client.template = 'item'
-        self.client.db.classes.create = AppendResult('create')
-        self.client.db.classes.set = AppendResult('set')
-        self.client.db.classes.getprops = lambda: \
+
+        # AppendResult doesn't change anything in the db.
+        # Using it prevents a failure because node issue4711
+        # doesn't exist. ....classes['issue'].get for the tests
+        # return the list or other property needed to make the
+        # test pass.
+        self.client.db.classes['file'].create = AppendResult('create')
+        self.client.db.classes['issue'].create = AppendResult('create')
+        self.client.db.classes['msg'].create = AppendResult('create')
+        self.client.db.classes['issue'].set = AppendResult('set')
+        self.client.db.classes['issue'].getprops = lambda: \
             ({'messages':hyperdb.Multilink('msg')
              ,'content':hyperdb.String()
              ,'files':hyperdb.Multilink('file')
@@ -519,7 +619,7 @@ class EditItemActionTestCase(ActionTestCase):
             [ ('create',(),{'content':'t'})
             , ('set',('4711',), {'messages':['23','42','17']})
             ]
-        self.client.db.classes.get = lambda a, b:['23','42']
+        self.client.db.classes['issue'].get = lambda a, b:['23','42']
         self.client.parsePropsFromForm = lambda: \
             ( {('msg','-1'):{'content':'t'},('issue','4711'):{}}
             , [('issue','4711','messages',[('msg','-1')])]
@@ -536,7 +636,7 @@ class EditItemActionTestCase(ActionTestCase):
             , ('create',(),{'content':'t'})
             , ('set',('4711',), {'messages':['23','42','17','18']})
             ]
-        self.client.db.classes.get = lambda a, b:['23','42']
+        self.client.db.classes['issue'].get = lambda a, b:['23','42']
         self.client.parsePropsFromForm = lambda: \
             ( {('msg','-1'):{'content':'t'},('msg','-2'):{'content':'t2'}
               , ('issue','4711'):{}}
@@ -553,8 +653,8 @@ class EditItemActionTestCase(ActionTestCase):
         expect = \
             [('create',(),{'content':'t','type':'text/plain','name':'t.txt'})
             ,('set',('4711',),{'files':['23','42','17']})
-            ]
-        self.client.db.classes.get = lambda a, b:['23','42']
+            ] 
+        self.client.db.classes['issue'].get = lambda a, b:['23','42']
         self.client.parsePropsFromForm = lambda: \
             ( {('file','-1'):{'content':'t','type':'text/plain','name':'t.txt'}
               ,('issue','4711'):{}
@@ -572,7 +672,7 @@ class EditItemActionTestCase(ActionTestCase):
 
     def testLinkExisting(self):
         expect = [('set',('4711',),{'messages':['23','42','1']})]
-        self.client.db.classes.get = lambda a, b:['23','42']
+        self.client.db.classes['issue'].get = lambda a, b:['23','42']
         self.client.parsePropsFromForm = lambda: \
             ( {('issue','4711'):{},('msg','1'):{}}
             , [('issue','4711','messages',[('msg','1')])]
@@ -585,7 +685,7 @@ class EditItemActionTestCase(ActionTestCase):
 
     def testLinkNewToExisting(self):
         expect = [('create',(),{'msg':'1','title':'TEST'})]
-        self.client.db.classes.get = lambda a, b:['23','42']
+        self.client.db.classes['issue'].get = lambda a, b:['23','42']
         self.client.parsePropsFromForm = lambda: \
             ( {('issue','-1'):{'title':'TEST'},('msg','1'):{}}
             , [('issue','-1','msg',[('msg','1')])]

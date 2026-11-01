@@ -19,7 +19,7 @@ qs request/env/QUERY_STRING;
 qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])"
 >
     <pre tal:content="request/env/QUERY_STRING" tal:condition=false />
-    <form method="get" name="itemSynopsis"
+    <form method="POST" name="itemSynopsis"
       target="list"
       tal:attributes="action request/classname"
       tal:define="
@@ -67,6 +67,8 @@ qs python:'&'.join([a for a in qs.split('&') if not a.startswith('@template=')])
   <td>&nbsp;</td>
   <td>
     <input type="hidden" name="@action" value="search">
+    <input name="@csrf" type="hidden"
+           tal:attributes="value python:utils.anti_csrf_nonce()">
     <input type="submit" value="Search" i18n:attributes="value">
     <input type="reset">
     <input type="hidden" tal:attributes="value python:','.join(cols)" name="properties">

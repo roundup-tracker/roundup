@@ -38,7 +38,7 @@
   </tal:block>
   <tal:block metal:fill-slot="content">
     <div name="search">
-      <form method="get" name="itemSynopsis" target="list"
+      <form method="POST" name="itemSynopsis" target="list"
             tal:attributes="action request/classname" 
             tal:define="property request/form/property/value;
                         cols python:request.columns or 'id username address realname roles'.split();
@@ -74,6 +74,8 @@
          <td>&nbsp;</td>
          <td>
           <input type="hidden" name="@action" value="search"/>
+          <input name="@csrf" type="hidden"
+                 tal:attributes="value python:utils.anti_csrf_nonce()">
           <input type="submit" value="Search" i18n:attributes="value"/>
           <input type="reset"/>
           <input type="hidden" value="username,realname,phone,organisation,roles" name="properties"/>

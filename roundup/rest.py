@@ -25,7 +25,7 @@ except ImportError:
 from roundup import actions, date, hyperdb
 from roundup.anypy.strings import b2s, bs2b, is_us, u2s
 from roundup.anypy.urllib_ import urlsplit
-from roundup.cgi.exceptions import NotFound, PreconditionFailed, Unauthorised
+from roundup.cgi.exceptions import NotFound, PreconditionFailed, Reauth, Unauthorised
 from roundup.exceptions import Reject, UsageError
 from roundup.i18n import _
 from roundup.rate_limit import Gcra, RateLimit
@@ -70,7 +70,7 @@ def _data_decorator(func):
         except IndexError as msg:
             code = 404
             data = msg
-        except Unauthorised as msg:
+        except (Unauthorised, Reauth) as msg:
             code = 403
             data = msg
         except (UsageError, KeyError) as msg:
@@ -1445,12 +1445,19 @@ class RestfulInstance(object):
             # and changing invalid keys
             raise UsageError(message)
 
+        etag = calculate_etag(class_obj.getnode(item_id),
+                              self.db.config.WEB_SECRET_KEY,
+                              class_name, item_id, repr_format="json")
+
         result = {
             'id': item_id,
             'type': class_name,
             'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
-            'attribute': result
+            'attribute': result,
+            '@etag': etag
         }
+
+        self.client.setHeader("ETag", etag)
         return 200, result
 
     @Routing.route("/data/<:class_name>/<:item_id>/<:attr_name>", 'PUT')
@@ -1500,13 +1507,19 @@ class RestfulInstance(object):
             # and changing invalid keys
             raise AttributeError(message)
 
+        etag = calculate_etag(class_obj.getnode(item_id),
+                              self.db.config.WEB_SECRET_KEY,
+                              class_name, item_id, repr_format="json")
+
         result = {
             'id': item_id,
             'type': class_name,
             'link': '%s/%s/%s' % (self.data_path, class_name, item_id),
-            'attribute': result
+            'attribute': result,
+            '@etag': etag
         }
 
+        self.client.setHeader("ETag", etag)
         return 200, result
 
     @Routing.route("/data/<:class_name>", 'DELETE')

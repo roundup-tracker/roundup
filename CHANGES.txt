@@ -56,6 +56,22 @@ Fixed:
 - use .isnumeric() rather than int() when checking values for
   @verbose, @page_* in rest interface. Verify @page param name is
   valid. (John Rouillard)
+- use hmac.compare_digest() to make timing attacks on passwords more
+  difficult. This is only a problem when the password is stored with
+  plaintext "hashing". To my best knowledge when the equality
+  operation is done between hashed salted secrets (the normal case),
+  deriving the original secret requires effort similar to brute
+  force. (John Rouillard)
+- issue2551229 - Implement CSRF protection for issue.search. The POST
+  method (not get) must be used with the search action and csrf
+  protection should be added. See upgrading instructions for details
+  on the required and recommended changes. (John Rouillard)
+- replaced 'except Exception' with 'except BaseException' in TAL and
+  PageTemplates. Turns out the exceptions generated in
+  TAL/PageTemplates inherit from BaseException not Exception. So
+  change done in 2.6.0 to replace bare except by except exception was
+  incorrect and made handling templating errors difficult and caused
+  to hanging clients on templating errors. (John Rouillard).
 - issue2551433 - Restrict values in reactor oldvalues to changed
   values only.  The last parameter passed to a reactor (usually named
   oldvalues/olddata) should only have keys for properties that have
@@ -80,7 +96,9 @@ Features:
 - added 'checkconfig' command to roundup-admin to find settings
   in the main config.ini that are typed incorrectly or in the wrong
   section. (John Rouillard)
-  
+- Add ETag HTTP header and @etag data property to json payload
+  returned by PUT rest request. (John Rouillard)
+
 2026-07-13 2.6.0
 
 Fixed:
