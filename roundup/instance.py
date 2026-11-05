@@ -297,13 +297,27 @@ class Tracker:
         return {"filename": caller.filename,
                 "lineno": caller.lineno}
 
-    def registerUtil(self, name: str, function: Callable):
-        """Register a function that can be called using:
-           `utils.<name>(...)`.
+    def registerUtil(self, name: str, util):
+        """Register a utility object that can be referenced using:
+           `utils.<name>`.
 
-           The function is defined as:
+           The util can be a function::
 
                def function(...):
+
+           a class or class instance::
+
+               SomeClass
+               SomeClass(...)
+
+           if the object has a __call__ method it will be registered
+           as a static method callable like a function. Otherwise the
+           __str__ method will be called on it.
+
+           a string or other native object::
+
+               "my value", 1, ['a list', 1], ('a tuple', 4),
+               {"dicts work": too}
 
            The name parameter must be unique among all registered
            utils. That is enforced when registering.
@@ -312,15 +326,15 @@ class Tracker:
            (filename, lineno) where it it was registered in case of
            name collisions.
 
-           If your templating utility needs access to the client,
-           database, form or other item, you have to pass it
-           explicitly::
+           If your templating utility is a callable and needs access
+           to the client, database, form or other item, you have to
+           pass it explicitly::
 
-               utils.name(request.client, ...)
+               python:utils.name(request.client, ...)
 
-           Or you can consider using registerUtilMethod(self, ....),
-           Where self is an automatically supplied TemplatingUtils
-           instance.
+           Or for simple functions you can consider using
+           registerUtilMethod(self, ....), Where self is an
+           automatically supplied TemplatingUtils instance.
         """
 
         # get location of registration call.
@@ -347,9 +361,16 @@ class Tracker:
                 "   %(filename)s:%(lineno)d\n"
                 % {**register_location, "name": name, **conflict_loc})
 
-        self.templating_utils[name] = function
-        if hasattr(function, "__self__"):
-            # Handle case where function is an instance method.  Which
+        self.templating_utils[name] = util
+
+        # Try to store location of original definition.
+        # registerUtil can be used to register strings, or other
+        # objects (int, list) etc. We don't try to store location
+        # info for plain objects, but do report an attempt to
+        # register a duplicate utility name.
+        
+        if hasattr(util, "__self__"):
+            # Handle case where util is an instance method.  Which
             # is a R/O bound method of a class. Can't attach attribute
             # to the method, so attach to underlying function.
             #
@@ -357,13 +378,9 @@ class Tracker:
             # if classmethod will work properly as templateutil or not.
             self.templating_utils[name].__func__._registered_at = (
                 register_location['filename'], register_location['lineno'])
-        elif hasattr(function, "__dict__"):
-            # If the "function" has a __dict__, it can store info
-            # about the location where it was defined. However
-            # registerUtil has been used to register strings, or other
-            # objects (int, list) etc. We don't try to store location
-            # info for plain objects, but do report an attempt to
-            # register a duplicate utility name.
+        elif hasattr(util, "__dict__"):
+            # If util has a __dict__, it can store info
+            # about the location where it was defined.
             self.templating_utils[name]._registered_at = (
                 register_location['filename'], register_location['lineno'])
 

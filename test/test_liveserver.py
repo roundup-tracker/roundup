@@ -129,7 +129,7 @@ class WsgiSetup(LiveServerTestCase):
         # a link and a module form that looks up username in @username
         # and links it if name exists in db.
         with open("%s/extensions/extension_text.py" % cls.dirname, "w") as f:
-            auditor = dedent(r"""
+            extension = dedent(r"""
               import re
 
               substitutions = [(
@@ -168,13 +168,19 @@ class WsgiSetup(LiveServerTestCase):
                   instance.registerUtil('local_replace', local_replace)
                   instance.registerUtilMethod('username', link_username)
              """)
-            f.write(auditor)
+            f.write(extension)
 
         # set up template file to call util.username
         replace_in_file("%s/html/msg.item.html" % cls.dirname,
                         "utils.local_replace(context.content.hyperlinked())",
                         "utils.username(utils.local_replace(context.content.hyperlinked()))")
 
+        # install testing for different types of templating utils
+        # including classes, strings, lists....
+        shutil.copy2("test/resources/home.utils_testing.html",
+                     "%s/html/home.utils_testing.html" % cls.dirname)
+        shutil.copy2("test/resources/utils_testing.py",
+                     "%s/extensions/utils_testing.py" % cls.dirname)
 
         # open the database
         cls.db = cls.instance.open('admin')
@@ -1413,6 +1419,54 @@ class BaseTestCases(WsgiSetup, ClientSetup):
         self.assertIn(b'@foo', f.content)
         self.assertNotIn(b'FOUND:@foo', f.content)
         self.assertEqual(f.status_code, 200)
+
+    def test_utils_types(self):
+        f = requests.get(self.url_base() + '?@template=utils_testing',
+                         headers = { 'Accept-Encoding': 'gzip',
+                                     'Accept': '*/*'})
+
+        # test all path accessors
+        path = [  # tuples of description and expected value
+            ("dict", b"{'a': 'b', 'c': 'd'}"),
+            ("dict/element", b"b"),
+            ("int", b"1"),
+            ("list", b"['this', 'is', 'a', ' util.list', 1]"),
+            ("string", b"this is a util.string"),
+            ("tuple", b"('this', 'is', 'a', ' util.tuple', 1)"),
+            ("callable instance", b"__call__() CallableUtilObject ",),
+            ("instance", b"__str__() string named='foo'"),
+            ("class", b"__str__() string named=''"),
+        ]
+
+        for label, expected in path:
+            with self._subtests.test(entry="path:%s" % label):
+                self.assertIn(b'path:<span>%s<' % expected, f.content)
+
+
+        python = [
+            ("dict", b"{'a': 'b', 'c': 'd'}"),
+            ("dict/element", b"b"),
+            ("int", b"1"),
+            ("list", b"['this', 'is', 'a', ' util.list', 1]"),
+            ("string", b"this is a util.string"),
+            ("tuple", b"('this', 'is', 'a', ' util.tuple', 1)"),
+            ("callable instance", b"__call__() CallableUtilObject ",),
+            ("instance", b"__str__() string named='foo'"),
+            ("class callable",
+             b"&lt;staticmethod(&lt;class 'UtilObject'&gt;)&gt;"),
+            ("class called", b"__str__() string named='me'"),
+            ("class called __str__", b"__str__() string named='string'"),
+        ]            
+        for label, expected in python:
+            with self._subtests.test(entry="python:%s" % label):
+                self.assertIn(b'python:<span>%s<' % expected, f.content)
+
+        # output include address of object. So use assertIn not
+        # assertEqual like the others.
+        with self._subtests.test(entry="callable"):
+            self.assertIn(
+                b"python:<span>&lt;staticmethod(&lt;CallableUtilObject object at ",
+                f.content)
 
     def test_bad_path(self):
         f = requests.get(self.url_base() + '/_bad>',

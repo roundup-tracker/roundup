@@ -1,0 +1,31 @@
+      <div>
+	<h2>via path expression</h2>
+	<div style="background-color: red"> path:<span tal:content="utils/dict_val"></span></div>
+	<div style="background-color: red"> path:<span tal:content="utils/dict_val/a"></span></div>
+	<div style="background-color: red"> path:<span tal:content="utils/int_val"></span></div>
+        <div style="background-color: red"> path:<span tal:content="utils/list_val"></span></div>
+	<div style="background-color: red"> path:<span tal:content="utils/string_val"></span></div>
+	<div style="background-color: red"> path:<span tal:content="utils/tuple_val"></span></div>
+
+        <div style="background-color: red"> path:<span tal:content="utils/callable_instance_val"></span></div>
+	
+	<div style="background-color: red"> path:<span tal:content="utils/instance_val"></span></div>
+	<div style="background-color: red"> path:<span tal:content="utils/class_val"></span></div>
+      </div>
+
+            <div>
+	<h2>via python:</h2>
+	<div style="background-color: red"> python:<span tal:content="python:utils.dict_val"></span></div>
+	<div style="background-color: red"> python:<span tal:content="python:utils.dict_val['a']"></span></div>
+	<div style="background-color: red"> python:<span tal:content="python:utils.int_val"></span></div>
+        <div style="background-color: red"> python:<span tal:content="python:utils.list_val"></span></div>
+	<div style="background-color: red"> python:<span tal:content="python:utils.string_val"></span></div>
+	<div style="background-color: red"> python:<span tal:content="python:utils.tuple_val"></span></div>
+	
+        <div style="background-color: red"> python:<span tal:content="python:utils.callable_instance_val()"></span></div>
+        <div style="background-color: red"> python:<span tal:content="python:utils.callable_instance_val"></span></div>
+	<div style="background-color: red"> python:<span tal:content="python:utils.instance_val"></span></div>
+	<div style="background-color: red"> python:<span tal:content="python:utils.class_val"></span></div>
+	<div style="background-color: red"> python:<span tal:content="python:utils.class_val('me')"></span></div>
+	<div style="background-color: red"> python:<span tal:content="python:utils.class_val('string').__str__()"></span></div>
+      </div>

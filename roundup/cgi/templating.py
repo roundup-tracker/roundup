@@ -3638,8 +3638,11 @@ class TemplatingUtils:
 
         # set up tracker templating utils functions defined with
         # instance.registerUtils
-        for name, func in self.client.instance.templating_utils.items():
-            setattr(self, name, staticmethod(func))
+        for name, util in self.client.instance.templating_utils.items():
+            if callable(util):
+                setattr(self, name, staticmethod(util))
+            else:
+                setattr(self, name, util)
 
         # set up tracker defined utils methods defined with
         # instance.registerUtilMethods
