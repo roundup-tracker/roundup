@@ -3442,15 +3442,32 @@ env: %(env)s
         return """
 <script nonce="%s" type="text/javascript">
 submitted = false;
-function submit_once() {
+submitted_restore = "";
+
+function submit_reset() {
+    $("#submit_overlay").hide();
+    if (typeof(submitted)!=typeof(true)) {
+        submitted.value = submitted.textContent = submitted_restore;
+        submitted.disabled = false;
+    }
+    submitted = false;
+}
+
+function submit_once(e) {
     if (submitted) {
         alert("Your request is being processed.\\nPlease be patient.");
         return false;
     }
 
-    window.setTimeout("submitted = false;", 5000)
+    window.setTimeout(submit_reset, 5000);
 
-    submitted = true;
+    if (e) {
+        submitted = e;
+        submitted_restore = e.value ? e.value : e.textContent;
+        e.value = e.textContent = "Submitting...";
+        e.disabled = true;
+    } else submitted = true;
+    $("#submit_overlay").show();
     return true;
 }
 
@@ -3782,7 +3799,7 @@ class TemplatingUtils:
 
     const transfer = new DataTransfer();
     file_list = document.querySelectorAll('pre[data-mimetype]');
-    file_list.forEach( file => 
+    file_list.forEach( file =>
         transfer.items.add(
            new File([window.atob(file.textContent)],
            file.dataset.filename,

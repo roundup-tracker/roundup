@@ -28,6 +28,9 @@
                    milestone_columns string:id,activity,title,creator,status;
                    milestone_columns_showall string:id,activity,title,creator,assignee,status;
                    milestone_status_notclosed string:-1,1,2,4;">
+  <div id="submit_overlay">
+   <div id="status_overlay_content">&#9203; Please wait...</div>
+  </div>
   <div class="navbar navbar-fixed-top">
     <div class='navbar-inner'>
       <div class='container'>
@@ -224,7 +227,7 @@
               <a tal:attributes="href string:user${request/user/id}" i18n:translate="">Your Details</a>
             </li>
             <li>
-              <a tal:attributes="href python:request.indexargs_url('', {'@action':'logout'})" 
+              <a tal:attributes="href python:request.indexargs_url('', {'@action':'logout'})"
                  i18n:translate="">Logout</a>
            </li>
            <li class="" tal:condition="python:request.user.hasPermission('View', 'query')">
