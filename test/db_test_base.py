@@ -3880,6 +3880,21 @@ class SchemaTest(MyTestCase):
         self.assertRaises(ValueError, self.module.Class, self.db, "a",
             actor=String())
 
+    def test_reservedPropErrorFormat(self):
+        err = self.module.Class.format_reserved_prop_error({'actor'})
+        self.assertEqual(err, "Found property 'actor': activity, actor, creation, creator, and id property names are reserved.")
+        
+    def test_addReservedProperty(self):
+        self.open_database()
+        a = self.module.Class(self.db, "a", name=String())
+        # adding a protected property should fail.
+        with self.assertRaises(ValueError) as e:
+            self.db.a.addprop(actor=Link("user"),
+                              creator=Link("user"),
+                              value=String())
+        self.assertIn("'actor', 'creator':", e.exception.args[0])
+        self.assertNotIn("value", e.exception.args[0])
+
     def init_a(self):
         self.open_database()
         a = self.module.Class(self.db, "a", name=String())

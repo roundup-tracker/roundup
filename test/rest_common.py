@@ -36,7 +36,7 @@ except ImportError:
     myutc = UTC()
 
 from roundup.cgi.exceptions import *
-from roundup.hyperdb import HyperdbValueError
+from roundup.hyperdb import HyperdbValueError, Class
 from roundup.exceptions import *
 from roundup import password, hyperdb
 from roundup.rest import RestfulInstance, calculate_etag
@@ -3778,8 +3778,8 @@ class TestCase():
             'user', self.joeid, 'creator', form
         )
         expected= {'error': {'status': 405, 'msg': 
-                             AttributeError('\'"creator", "actor", "creation" and '
-                                        '"activity" are reserved\'')}}
+                             AttributeError(Class.format_reserved_prop_error(
+                                 ('creator',)))}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])
@@ -4182,7 +4182,8 @@ class TestCase():
         ]
         results = self.server.patch_element('issue', issue_id, form)
         expected= {'error': {'status': 400,
-                             'msg': KeyError('"creator", "actor", "creation" and "activity" are reserved',)}}
+                             'msg': KeyError(Class.format_reserved_prop_error(
+                                 ('creator',)))}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])
@@ -4203,7 +4204,8 @@ class TestCase():
         ]
         results = self.server.patch_element('issue', issue_id, form)
         expected= {'error': {'status': 400,
-                             'msg': KeyError('"id" is reserved',)}}
+                             'msg': KeyError(Class.format_reserved_prop_error(
+                                 ('id',)))}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])
@@ -4292,7 +4294,8 @@ class TestCase():
         ]
         results = self.server.patch_element('issue', issue_id, form)
         expected= {'error': {'status': 400,
-                             'msg': KeyError('"creator", "actor", "creation" and "activity" are reserved',)}}
+                             'msg': KeyError(Class.format_reserved_prop_error(
+                                 ('creator',)))}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])

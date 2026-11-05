@@ -36,6 +36,7 @@ from roundup import date, hyperdb, password
 from roundup.anypy import random_
 from roundup.anypy.strings import b2s, s2u
 from roundup.hyperdb import iter_roles
+from roundup.hyperdb import Class
 from roundup.i18n import RoundupNullTranslations, _
 from roundup.mailer import Mailer, MessageSendError, nice_sender_header
 
@@ -44,6 +45,9 @@ try:
     import gpg.core
 except ImportError:
     gpg = None
+
+
+hyperdb_reserved_props = Class.hyperdb_reserved_props
 
 
 class Database(object):
@@ -843,7 +847,7 @@ class IssueClass:
         for key in oldvalues:
             if key in ['files', 'messages']:
                 continue
-            if key in ('actor', 'activity', 'creator', 'creation'):
+            if key in hyperdb_reserved_props:
                 continue
             # not all keys from oldvalues might be available in database
             # this happens when property was deleted

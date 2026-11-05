@@ -72,6 +72,11 @@ Fixed:
   change done in 2.6.0 to replace bare except by except exception was
   incorrect and made handling templating errors difficult and caused
   to hanging clients on templating errors. (John Rouillard).
+- define reserved property names in one location, use in multiple
+  locations. Add method to produce more detailed error messages when
+  they are used. Add reserved property check to addprop(). (Possible
+  minor performance regression but better DRY and error reporting.)
+  (John Rouillard)
 
 Features:
 

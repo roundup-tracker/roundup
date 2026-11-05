@@ -696,4 +696,61 @@ class EditItemActionTestCase(ActionTestCase):
             pass
         self.assertEqual(expect, self.result)
 
+class ClassUseWithReservedProps(ActionTestCase):
+    def setUp(self):
+        ActionTestCase.setUp(self)
+
+        self.client.base = 'http://tracker/'
+
+        self.client.userid = "1"
+        self.client.classname = 'issue'
+        self.client.nodeid = None
+
+        self.Editaction = EditItemAction(self.client)
+        self.Newaction = NewItemAction(self.client)
+
+    def testCreateIssueWithReservedProp(self):
+        expect = ("Error: \"%s\"" %
+                  hyperdb.Class.format_reserved_prop_error({'creator',}))
+
+        self.client.parsePropsFromForm = lambda create: \
+            ( {('issue', None): {'creator': '1', "title": "TEST"}}, ())
+
+        self.Newaction.handle()
+        self.assertEqual(self.client._error_message[0], expect)
+
+    def testSetIssueWithReservedProp(self):
+        expect = ("Edit Error: \"%s\"" %
+                  hyperdb.Class.format_reserved_prop_error(
+                      {'creator', 'activity'}))
+
+        # add tx_Source string property required by an auditor
+        self.client.db.classes['issue'].addprop(tx_Source=hyperdb.String())
+        self.client.db.tx_Source = "web"
+
+        self.client.template = 'item'
+        self.Newaction.template = 'item'
+        self.Editaction.template = 'item'
+
+        self.client.parsePropsFromForm = lambda **kwargs: \
+            ( {('issue', None): {"title": "TEST"}}, ())
+
+        with self.assertRaises(Redirect) as e:
+            self.Newaction.handle()
+
+        # verify issue 1 was created.
+        self.assertIn("/issue1?@ok_message=issue%201%20", e.exception.args[0])
+        print(e.exception.args[0])
+
+        nodeid = self.Newaction.nodeid
+        self.Editaction.nodeid = nodeid
+        self.client.nodeid = nodeid
+
+        self.client.parsePropsFromForm = lambda: \
+            ( {('issue', nodeid): {'activity': '1', "creator": "2",
+                                   "title": "TEST"}}, ())
+
+        self.Editaction.handle()
+        self.assertEqual(self.client._error_message[0], expect)
+
 # vim: set et sts=4 sw=4 :

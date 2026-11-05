@@ -1187,6 +1187,17 @@ class Class:
 
     class_re = r'^([A-Za-z](?:[A-Za-z_0-9]*[A-Za-z_]+)?)$'
 
+    # FIXME: possible better performance by replacing:
+    #  hyperdb_reserved_props with a tuple
+    #
+    #  Then swap out hyperdb_reserved_props.intersect(dict)
+    #  with a call to (commented out) def check_reserved(props) defined
+    #  below. Also swap hyperdb_reserved_props.union(props_list) with:
+    #  hyperdb_reserved_props + props_list in rest of code.
+
+    hyperdb_reserved_props = frozenset(('id', 'creation', 'activity',
+                                        'creator', 'actor'))
+
     def __init__(self, db, classname, **properties):
         """Create a new class with a given name and property specification.
 
@@ -1198,10 +1209,10 @@ class Class:
         The keyword arguments in 'properties' must map names to property
         objects, or a TypeError is raised.
         """
-        for name in ['creation', 'activity', 'creator', 'actor']:
-            if name in properties:
-                raise ValueError('"creation", "activity", "creator" and '
-                                 '"actor" are reserved')
+
+        bad_props = Class.hyperdb_reserved_props.intersection(properties)
+        if bad_props:
+            raise ValueError(self.format_reserved_prop_error(bad_props))
 
         if not re.match(self.class_re, classname):
             raise ValueError('Class name %s is not valid. It must start '
@@ -1271,14 +1282,9 @@ class Class:
         #          propvalues. If class has key prop, ValueError is
         #          raised.
 
-        if 'id' in propvalues:
-            raise KeyError('"id" is reserved')
-
-        if ('creator' in propvalues or 'actor' in propvalues or
-                'creation' in propvalues or 'activity' in propvalues):
-            raise KeyError('"creator", "actor", "creation" and '
-                           '"activity" are reserved')
-
+        bad_props = Class.hyperdb_reserved_props.intersection(propvalues)
+        if bad_props:
+            raise KeyError(self.format_reserved_prop_error(bad_props))
         newid = self.create_inner(**propvalues)
         self.fireReactors('create', newid, None)
         return newid
@@ -1359,13 +1365,9 @@ class Class:
         if not propvalues:
             return propvalues
 
-        if 'id' in propvalues:
-            raise KeyError('"id" is reserved')
-
-        if ('creator' in propvalues or 'actor' in propvalues or
-                'creation' in propvalues or 'activity' in propvalues):
-            raise KeyError('"creator", "actor", "creation" and '
-                           '"activity" are reserved')
+        bad_props = Class.hyperdb_reserved_props.intersection(propvalues)
+        if bad_props:
+            raise KeyError(self.format_reserved_prop_error(bad_props))
 
         oldvalues = copy.deepcopy(self.db.getnode(self.classname, nodeid))
 
@@ -2025,6 +2027,10 @@ class Class:
         may collide with the names of existing properties, or a ValueError
         is raised before any properties have been added.
         """
+        bad_props = Class.hyperdb_reserved_props.intersection(properties)
+        if bad_props:
+            raise ValueError(self.format_reserved_prop_error(bad_props))
+
         for key in properties:
             if key in self.properties:
                 raise ValueError(key)
@@ -2038,6 +2044,46 @@ class Class:
                 # index them under (classname, nodeid, property)
                 self.db.indexer.add_text((self.classname, nodeid, prop),
                                          str(self.get(nodeid, prop)))
+
+    # @classmethod
+    # def check_reserved(cls, props):
+    #     """Alternate way to check for reserved prop use rather than
+    #        Class.hyperdb_reserved_props.intersection(properties)
+    #        if the intersection turns out to be a bottleneck.
+    #        This method also returns a list of reserved props.
+    #     """
+    #     r = []
+    #     if not ("id" in props or "activity" in props or \
+    #             "actor" in props or "creation" in props or "creator" in props):
+    #         return r
+    #     hrp = cls.hyperdb_reserved_props
+    #     for p in props:
+    #         if p in hrp:
+    #             r.append(p)
+    #     return r
+
+    @classmethod
+    def format_reserved_prop_error(cls, bad_prop=()):
+        """Generate an error message with details on reserved props
+           and which were used.
+        """
+        # FIXME: make the output message translatable since it is
+        #  user visible.  Not sure if creating a list of bad props:
+        #  "a, b" makes it untranslatable.  "a" and "b" could be
+        #  translated separately to A, B but what does "A, B" parse
+        #  like in a rtl language or in Chinese/Japanese? Probably
+        #  need babel, but not ready to make that a requirement yet.
+
+        # consistent order for properties and bad_prop
+        # makes testing easier.
+        pp = sorted(cls.hyperdb_reserved_props)
+        found_props = ", ".join(["'%s'" % p for p in sorted(bad_prop)])
+
+        # with multiple properties, the word 'property' is incorrect
+        # but usual case is one property.
+        found = "Found property %s: " % found_props
+        return '%s%s, and %s property names are reserved.' % (
+            found, ', '.join(pp[:-1]), pp[-1])
 
     #
     # Detector interface
