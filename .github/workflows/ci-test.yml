@@ -238,8 +238,9 @@ jobs:
           # pygments for markdown2 to highlight code blocks
           pip install markdown2 pygments
           # docutils for ReStructuredText
-          pip install beautifulsoup4 docutils gpg jinja2 \
+          pip install beautifulsoup4 docutils jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
+          ## pip install gpg
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
