@@ -195,7 +195,7 @@ jobs:
           #sleep 10
           #ps -ef | grep mysqld
           #sudo netstat -anp | grep mysqld
-          sudo mysql -u root -proot -e 'CREATE USER "rounduptest"@"localhost" IDENTIFIED WITH mysql_native_password BY "rounduptest"; GRANT ALL on rounduptest.* TO "rounduptest"@"localhost";'
+          sudo mysql -u root -proot -e 'CREATE USER "rounduptest"@"localhost" IDENTIFIED BY "rounduptest"; GRANT ALL on rounduptest.* TO "rounduptest"@"localhost";'
 
       - name: Install postgres
         run: |
