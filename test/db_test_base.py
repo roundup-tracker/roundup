@@ -3881,6 +3881,7 @@ class SchemaTest(MyTestCase):
             actor=String())
 
     def test_reservedPropErrorFormat(self):
+        self.open_database()
         err = self.module.Class.format_reserved_prop_error({'actor'})
         self.assertEqual(err, "Found property 'actor': activity, actor, creation, creator, and id property names are reserved.")
         
