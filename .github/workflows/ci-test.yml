@@ -240,7 +240,8 @@ jobs:
           # docutils for ReStructuredText
           pip install beautifulsoup4 docutils jinja2 \
             mistune==0.8.4 pyjwt pytz whoosh
-          ## pip install gpg
+      # issue2551436 - gpg not installing
+          pip install --no-build-isolation gpg
 
       - name: Install aux packages that need versions differences
         # if zstd fails install, keep going with test, don't abort
