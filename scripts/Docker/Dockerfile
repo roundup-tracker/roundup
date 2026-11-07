@@ -27,8 +27,8 @@ ARG source=local
 # The index digest is shared across archetectures (amd64, arm64 etc.)
 # while the manifest digest is unique per platform/arch.
 #     xapian install fails on 3.15.1-alpine3.24 aka 3-alpine.
-# this is the SHA for 3.14.10-alpine3.24 
-ARG SHA256=eb2c62658b8d51bff0acc408504b76521d02030de56a8a3c1e830083e89b89d2
+# this is the SHA for a newer 3.14.10-alpine3.24 
+ARG SHA256=a18b20ad69e74df6cf6d2e1b1a260d7a1ecf5380fd83b310f83ba88c461cf894
 
 # Set to any non-empty value to enable shell debugging for troubleshooting
 ARG VERBOSE=
