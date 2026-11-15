@@ -77,6 +77,13 @@ Fixed:
   they are used. Add reserved property check to addprop(). (Possible
   minor performance regression but better DRY and error reporting.)
   (John Rouillard)
+- issue2551437 - Clean up REST API handling of reserved or Password
+  hyperdb props. Reject changed reserved props (as returned by a GET
+  request) when submitted. Before it used to always ignore reserved
+  props even when being set to a different value. This improves
+  feedback to the user (e.g. in kanban system). Also Password
+  placeholders returned on a GET were not recognized and could be
+  installed as the item's (usually a user) password.
 
 Features:
 

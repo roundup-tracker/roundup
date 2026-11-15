@@ -22,7 +22,7 @@ except ImportError:
     JSONDecodeError = ValueError
 
 
-from roundup import actions, date, hyperdb
+from roundup import actions, date, hyperdb, password
 from roundup.anypy.strings import b2s, bs2b, is_us, u2s
 from roundup.anypy.urllib_ import urlsplit
 from roundup.cgi.exceptions import NotFound, PreconditionFailed, Reauth, Unauthorised
@@ -499,14 +499,14 @@ class RestfulInstance(object):
 
         """
         unprotected_class_props = cl.properties.keys()
-        protected_class_props = [p for p in
-                                 list(cl.getprops(protected=True))
-                                 if p not in unprotected_class_props]
+        protected_class_props = hyperdb.Class.hyperdb_reserved_props
         props = {}
         # props = dict.fromkeys(class_props, None)
 
         if not args:
             raise UsageError("No properties found.")
+
+        node = None
 
         for arg in args:
             key = arg.name
@@ -529,10 +529,34 @@ class RestfulInstance(object):
                 # I am not positive.
                 if skip_protected:
                     continue
+
+                if not node:
+                    node = cl.getnode(itemid)
+
+                prop_klass = node.cl.getprops()[key]
+                # note use all keyword args for everything but `value`
+                # as the from_raw(...) positional params are different
+                # and all from_raw() match from_raw(...,**kw).
+                prop_cooked_val = prop_klass.from_raw(
+                        value, db=cl.db, propname=cl.labelprop())
+
+                if node[key] != prop_cooked_val:
+                    # user trying to set prop, reject it.
+                    raise UsageError(
+                        hyperdb.Class.format_reserved_prop_error((key,)))
+
+                # prop is the same so remove it.
+                continue
             elif key not in unprotected_class_props:
                 # report bad props as this is an error.
                 raise UsageError("Property %s not found in class %s" % (key,
                                         cl.classname))
+            elif (value and value[0] == '[' and # char test for placeholder
+                  password.Password.is_placeholder(value)):
+                    # remove any property with a value that looks like a
+                    # password placeholder so we don't set a password to
+                    # the placeholder value.
+                    continue
             props[key] = self.prop_from_arg(cl, key, value, itemid)
 
         return props
@@ -551,7 +575,9 @@ class RestfulInstance(object):
             value: value of validated properties
 
         """
-        prop = None
+        # if value is an empty list, return an empty list not None
+        # otherwise a value with an empty list is turned into None.
+        prop = value if isinstance(value, list) else None
         # note 'str' was 'unicode'. Is this check needed?        
         if isinstance(key, str): 
             try:
@@ -770,11 +796,11 @@ class RestfulInstance(object):
                         result[pn] = v
                 elif isinstance(prop, hyperdb.Password):
                     if v is not None:  # locked users like anonymous have None
-                        result[pn] = "[password hidden scheme %s]" % v.scheme
+                        result[pn] = v.placeholder()
                     else:
                         # Don't divulge it's a locked account. Choose most
                         # secure as default.
-                        result[pn] = "[password hidden scheme PBKDF2]"
+                        result[pn] = password.Password.none_placeholder
                 else:
                     result[pn] = v
         except KeyError as msg:
@@ -1425,10 +1451,13 @@ class RestfulInstance(object):
             raise NotFound('Class %s not found' % class_name)
         class_obj = self.db.getclass(class_name)
 
-        props = self.props_from_args(class_obj, input_payload.value, item_id)
+        props = self.props_from_args(class_obj, input_payload.value, item_id,
+                                     skip_protected=False)
+
+        db_uid = self.db.getuid()
         for p in props:
             if not self.db.security.hasPermission(
-                'Edit', self.db.getuid(), class_name, p, item_id
+                'Edit', db_uid, class_name, p, item_id
             ):
                 raise Unauthorised(
                     'Permission to edit %s of %s%s denied' %

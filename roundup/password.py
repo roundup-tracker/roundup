@@ -402,6 +402,12 @@ class Password(JournalPassword):
     known_schemes = ["PBKDF2S5"] + experimental_schemes + \
         deprecated_schemes
 
+    # centralize all placeholder values for passwords. Code in
+    # other files requires '[' as first char of placeholder_tmpl.
+    placeholder_tmpl = "[password hidden scheme %s]"
+    # provide a value when the password is None
+    none_placeholder = placeholder_tmpl % known_schemes[0]
+
     def __init__(self, plaintext=None, scheme=None, encrypted=None,
                  strict=False, config=None):
         """Call setPassword if plaintext is not None."""
@@ -418,6 +424,16 @@ class Password(JournalPassword):
 
     def __repr__(self):
         return self.__str__()
+
+    @classmethod
+    def is_placeholder(cls, value):
+        for scheme in cls.known_schemes:
+            if value == cls.placeholder_tmpl % scheme:
+                return True
+        return False
+
+    def placeholder(self):
+        return self.placeholder_tmpl % self.scheme
 
     def needs_migration(self, config):
         """ Password has insecure scheme or other insecure parameters
