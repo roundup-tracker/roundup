@@ -105,7 +105,9 @@ for cl in 'priority', 'status':
 # if you don't want them to
 p = db.security.addPermission(name='View', klass='user',
     properties=('id', 'organisation', 'phone', 'realname', 'timezone',
-    'username'))
+                'username'),
+    description="User is allowed limited view of other users"
+                              )
 db.security.addPermissionToRole('User', p)
 
 
@@ -116,6 +118,7 @@ def own_record(db, userid, itemid):
     return userid == itemid
 
 
+# read access to activity is needed to detect a change to the user info.
 p = db.security.addPermission(name='View', klass='user', check=own_record,
     description="User is allowed to view their own user details")
 db.security.addPermissionToRole('User', p)

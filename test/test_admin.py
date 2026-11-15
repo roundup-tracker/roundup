@@ -1555,7 +1555,7 @@ class AdminTest(object):
  User is allowed to view their own and public queries (View for "query" only)
  User is allowed to access status (View for "status" only)
  User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
-  (View for "user": ('id', 'organisation', 'phone', 'realname', 'timezone', 'username') only)
+ User is allowed limited view of other users (View for "user": ('id', 'organisation', 'phone', 'realname', 'timezone', 'username') only)
  User is allowed to view their own user details (View for "user" only)
 """
         print(out.getvalue())
@@ -1650,7 +1650,7 @@ Role "user":
  User is allowed to view their own and public queries (View for "query" only)
  User is allowed to access status (View for "status" only)
  User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
-  (View for "user": ('id', 'organisation', 'phone', 'realname', 'timezone', 'username') only)
+ User is allowed limited view of other users (View for "user": ('id', 'organisation', 'phone', 'realname', 'timezone', 'username') only)
  User is allowed to view their own user details (View for "user" only)
 """
         print(out.getvalue())
@@ -1733,7 +1733,7 @@ Role "user":
  User is allowed to view their own and public queries (View for "query" only)
  User is allowed to access status (View for "status" only)
  User is allowed to edit their own user details (Edit for "user": ('username', 'password', 'address', 'realname', 'phone', 'organisation', 'alternate_addresses', 'queries', 'timezone') only)
-  (View for "user": ('id', 'organization', 'phone', 'realname', 'timezone', 'username') only)
+ User is allowed limited view of other users (View for "user": ('id', 'organization', 'phone', 'realname', 'timezone', 'username') only)
 
   **Invalid properties for user: ['organization']
 
