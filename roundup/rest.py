@@ -518,8 +518,8 @@ class RestfulInstance(object):
                 # Skip protected props as a convenience.
                 # Allows user to get object with all props,
                 # change one prop, submit entire object
-                # without having to remove any protected props
-                # FIXME: Enhancement: raise error if value of prop
+                # without having to remove protected props.
+                # We raise error if value of prop
                 # doesn't match db entry. In this case assume user
                 # is really trying to set value. Another possibility is
                 # they have an old copy of the data and it has been
