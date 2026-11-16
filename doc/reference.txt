@@ -436,13 +436,48 @@ The actual data entered into the database, using ``class.create()``, are
 called items. They have a special immutable property called ``'id'``. We
 sometimes refer to this as the *itemid*.
 
-
-.. index:: schema; property types
+.. _properties:
 
 Properties
 ~~~~~~~~~~
 
-A Class consists of one or more properties of the following types:
+.. index:: triple: schema; class property; creator
+   triple: schema; class property; creation
+   triple: schema; class property; actor
+   triple: schema; class property; activity
+
+All Classes automatically have five properties by default:
+
+*id*
+  The id number that uniquely identifies the item.
+*creator*
+  Link to the user that created the item.
+*creation*
+  Date the item was created.
+*actor*
+  Link to the user that last modified the item.
+*activity*
+  Date the item was last modified.
+
+These property names can not be used in your class definitions.
+Also these properties are read only and can not be set or changed
+on request.
+
+Property names should start with a letter and consist of letters,
+numbers and underscores.
+
+You should also not name a property ``link`` as that name is used by
+the REST interface. Roundup does block the property name ``link`` but
+using it can cause confusion. ``link_2``, ``alink`` etc. are all valid
+property names. Also while you can use Unicode letters in property
+names, it is not recommended. We have not tested all back end
+databases for use with Unicode property names. So using Unicode
+characters in your property names may cause problems if you try to
+change databases or export/import the tracker.
+
+.. index:: schema; property types
+
+Classes have one or more properties of the following types:
 
 Boolean
      properties store on/off, yes/no, true/false values.
@@ -652,22 +687,6 @@ Properties have attributes to change the default behaviour:
 
     If this property is set to the empty string "", no header will be
     generated on outgoing mail.
-
-.. index:: triple: schema; class property; creator
-   triple: schema; class property; creation
-   triple: schema; class property; actor
-   triple: schema; class property; activity
-
-All Classes automatically have four properties by default:
-
-*creator*
-  Link to the user that created the item.
-*creation*
-  Date the item was created.
-*actor*
-  Link to the user that last modified the item.
-*activity*
-  Date the item was last modified.
 
 
 .. index:: double: schema; class methods
