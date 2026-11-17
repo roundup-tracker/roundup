@@ -1188,6 +1188,9 @@ class RestfulInstance(object):
                 protected = value.lower() == "true"
             elif key == "@verbose":
                 try:
+                    # don't accept "0 ", "-0" for example
+                    if not value.isdecimal():
+                        raise ValueError(_("value is not numeric: %s") % value)
                     verbose = int(value)
                 except ValueError as e:
                     raise UsageError("When using @verbose: %s" %

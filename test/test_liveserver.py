@@ -325,10 +325,15 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
         query = '%s=%s'  % (param, value)
         f = session.get(url, params=query)
 
-        try:
-            if value != "" and value.isdecimal():
+        if value == "":
+            self.assertEqual(f.status_code, 200)
+        elif value.isdecimal():
+            #page_size is capped at 10M rows.
+            if not (param == "@page_size" and int(value) > 10000000):
                 self.assertEqual(f.status_code, 200)
-        except ValueError:
+            else:
+                self.assertEqual(f.status_code, 400)
+        else:
             # invalid value for param
             self.assertEqual(f.status_code, 400)
 
@@ -340,7 +345,10 @@ class FuzzGetUrls(WsgiSetup, ClientSetup):
     @example("@verbose", "0 #stuff")
     @example("@verbose", "&=0")
     @example("@verbose", "0+")
+    @example("@verbose", "100000230")
     @example("@page_size", '\u00bc')  # character 1/4
+    @example("@page_size", '1')
+    @example("@page_size", '10000001')
     @settings(max_examples=_max_examples,
               deadline=fuzz_deadline) # in ms
     def test_class_url_param_accepting_integer_values(self, param, value):
