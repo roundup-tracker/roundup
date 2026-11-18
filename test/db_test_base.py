@@ -193,6 +193,7 @@ class MyTestCase(object):
 
     def open_database(self, user='admin'):
         self.db = self.module.Database(config, user)
+        self.db.tx_Source = "web"
 
 
 if 'LOGGING_LEVEL' in os.environ:

@@ -275,7 +275,7 @@ class TestCase():
                 self.claim['user:emailnorest'], self.old_secret,
                 algorithm='HS256'))
 
-        self.db.tx_Source = 'web'
+        self.db.tx_Source = 'rest'
 
         self.db.issue.addprop(tx_Source=hyperdb.String())
         self.db.issue.addprop(anint=hyperdb.Integer())
@@ -3835,6 +3835,32 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['realname'], 'Joe Doe')
 
+    def testPutQuietElement(self):
+        """Verify that a quiet element changed via PUT is returned in the
+           response.
+        """
+        self.db.user.properties['phone'].quiet = True
+
+        form = cgi.FieldStorage()
+        etag = calculate_etag(self.db.user.getnode(self.joeid),
+                              self.db.config['WEB_SECRET_KEY'])
+
+        form.list = [
+            cgi.MiniFieldStorage('phone', '+44 mi5'),
+            cgi.MiniFieldStorage('roles', 'User , Anonymous'),
+            cgi.MiniFieldStorage('@etag', etag)
+        ]
+        # have to be admin to set Roles
+        self.db.setCurrentUser('admin') # must be admin to change user
+
+        results = self.server.put_element('user', self.joeid, form)
+
+        print(results)
+
+        self.assertEqual(self.dummy_client.response_code, 200)
+        self.assertEqual(results['data']['attribute']['phone'], '+44 mi5')
+        self.assertEqual(results['data']['attribute']['roles'], 'User , Anonymous')
+
     def testPutAttribute(self):
         # put protected property
         # make sure we don't have permission issues
@@ -3897,7 +3923,7 @@ class TestCase():
         results = self.server.get_element('issue', issueid, self.empty_form)
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['title'], 'foo')
-        self.assertEqual(self.db.issue.get(issueid, "tx_Source"), 'web')
+        self.assertEqual(self.db.issue.get(issueid, "tx_Source"), 'rest')
 
     def testPostFile(self):
         """

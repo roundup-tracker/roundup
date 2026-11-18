@@ -69,6 +69,8 @@ class _Type(object):
     def __init__(self, required=False, default_value=None, quiet=False):
         self.required = required
         self.__default_value = default_value
+        # See Class.get_quiet_props() for details on how this may be
+        # extended in the future.
         self.quiet = quiet
         # We do not allow updates if self.computed is True
         # For now only Multilinks (using the rev_multilink) can be computed
@@ -1382,13 +1384,24 @@ class Class:
         # filter oldvalues to only changed values
         oldvalues = {prop: val for prop, val in oldvalues.items() if
                      prop in propvalues}
-        
+
+        # Pass all changed props here, even quiet ones so the reactors
+        # can react. Note: roundupdb.py:generateChangeNote implements
+        # it's own filter for quiet props.
         self.fireReactors('set', nodeid, oldvalues)
 
-        # filter out quiet props so they are not announced to the user
-        # in the web interface.
-        for k in self.get_quiet_props():
-            propvalues.pop(k, None)
+        # Return all changed props if the request arrived via API:
+        # "rest" or "xmlrpc". Otherwise filter out quiet props so they
+        # are not announced to the user in the web interface.
+
+        # FIXME: see get_quiet_props() docstring for future possible
+        # return value. We may have to move if statment inside for
+        # loop if need to enforce quiet on a per prop level for rest
+        # or xmlrpc.
+        api_source = self.db.tx_Source in ["rest", "xmlrpc"]
+        if not api_source:
+            for k in self.get_quiet_props():
+                propvalues.pop(k, None)
 
         return propvalues
 
@@ -2034,10 +2047,26 @@ class Class:
            For example ("web", "history") would indicate: suppress
            announcement/display in the confirmation message on the
            web, and in history/jounral output. It would allow the
-           property change to be sent via email/nosy list.
+           property change to be sent via email/nosy list. Possible
+           values:
 
-           This may be YAGNI, but I wanted get_quiet_props() to be
-           similar to get_required_props().
+             'web' - change removed in web interface
+             'changenote' - remove in email changenote
+             'history' - not shown in history/journal by default
+             'rest' - not listed in the PUT response (showing what changed)
+                      as a changed prop
+             'xmlrpc' - similar to rest if xmlrpc returns change list, but
+                        I think xmlrpc only returns a status, not change info
+                        so this may be a no-op.
+
+           Setting quiet=True acts like: ('web', 'changenote', 'history')
+
+           A prop for a returned item could look like:
+
+              dict("propname", (prop, {'web', 'changenote', 'history'}))
+
+           Returning prop may be YAGNI, but I wanted get_quiet_props() to
+           be similar to get_required_props(), hence return the prop.
         """
         if propnames is None:
             propnames = []
