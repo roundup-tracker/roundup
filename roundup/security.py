@@ -210,6 +210,11 @@ class Permission:
             self.klass, self.properties, self.check,
             self.limit_perm_to_props_only)
 
+    def pretty(self):
+        return '<Permission 0x%x name=%r,class=%r,properties=%r,check=%r,limit_to_props_only=%r>' % (id(self), self.name,
+            self.klass, self.properties, self.check,
+            self.limit_perm_to_props_only)
+
     def __eq__(self, other):
         if self.name != other.name:
             return False

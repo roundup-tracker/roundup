@@ -70,9 +70,11 @@ Roundup Glossary
       circumstances.
 
    property
-      one element of data that makes up an item. In Roundup, the set 
-      of item properties may be changed as needed - even after the 
-      tracker has been initialized and used in production.
+      one element of data that makes up an item. In Roundup, the set
+      of item properties may be changed as needed - even after the
+      tracker has been initialized and used in production. Some
+      property names are restricted. See :ref:`properties` for
+      details.
 
    schema
       the definition of all the classes and properties that make up a

@@ -907,8 +907,8 @@ class HTMLClass(HTMLInputMixin, HTMLPermissions):
         properties indicated by "properties" of the class named by
         "classname". The "properties" should be a comma-separated list
         (eg. 'id,name,description'). Properties defaults to all the
-        properties of a class (excluding id, creator, created and
-        activity).
+        properties of a class (excluding id, creator, created, actor,
+        and activity).
 
         You may optionally override the label displayed, the width,
         the height, the number of items per page and the field on which
@@ -1480,8 +1480,8 @@ class _HTMLItem(HTMLInputMixin, HTMLPermissions):
         "id" property cannot be copied.
 
         """
-        exclude = ("id", "activity", "actor", "creation", "creator") \
-            + tuple(exclude)
+        # use .union to create new set, don't modify hyperdb_reserved_props
+        exclude = hyperdb.Class.hyperdb_reserved_props.union(exclude)
         query = {
             "@template": "item",
             "@note": self._("Copy of %(class)s %(id)s") % {

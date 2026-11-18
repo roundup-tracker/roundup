@@ -36,7 +36,7 @@ except ImportError:
     myutc = UTC()
 
 from roundup.cgi.exceptions import *
-from roundup.hyperdb import HyperdbValueError
+from roundup.hyperdb import HyperdbValueError, Class
 from roundup.exceptions import *
 from roundup import password, hyperdb
 from roundup.rest import RestfulInstance, calculate_etag
@@ -284,6 +284,17 @@ class TestCase():
         self.db.issue.addprop(requireme=hyperdb.String(required=True))
         self.db.user.addprop(issue=hyperdb.Link('issue'))
         self.db.msg.addprop(tx_Source=hyperdb.String())
+
+        # add ability to View and Edit user property issue
+        for mode in ('View', 'Edit'):
+            user_issue__perms = self.db.security.addPermission(
+                name=mode,
+                klass='user',
+                properties=('issue',),
+                check=lambda db, userid, itemid: userid == itemid,
+                description="Allow user to %s issue property" % mode,
+                props_only=False)
+            self.db.security.addPermissionToRole('User', user_issue__perms)
 
         self.db.post_init()
 
@@ -3724,7 +3735,7 @@ class TestCase():
         etag = calculate_etag(self.db.user.getnode(self.joeid),
                               self.db.config['WEB_SECRET_KEY'])
         form.list = [
-            cgi.MiniFieldStorage('creator', '3'),
+            cgi.MiniFieldStorage('creator', '1'),
             cgi.MiniFieldStorage('realname', 'Joe Doe'),
             cgi.MiniFieldStorage('@etag', etag)
         ]
@@ -3734,6 +3745,67 @@ class TestCase():
         self.assertEqual(self.dummy_client.response_code, 200)
         self.assertEqual(results['data']['attributes']['realname'], 'Joe Doe')
 
+        # User can't change protected fields. If the protected field's
+        # db value is the same as the requested value, it's ignored.
+        # A put with a protected field that is a no-op is accepted but
+        # a change is rejected.  This test tries to change the
+        # creator.
+
+        # Do a GET request with @verbose=0 to get attributes in a
+        # format we can put.
+        form_w_protected_get = cgi.FieldStorage()
+        form_w_protected_get.list = [
+            cgi.MiniFieldStorage('@protected', 'true'),
+            cgi.MiniFieldStorage('@verbose', '0'),
+        ]
+        original_value = self.server.get_element('user', self.joeid,
+                                                 form_w_protected_get)
+        # FIXME: in web interface, user is blocked from seeing their
+        # roles. In API, (REST/XMLrpc) they can. There is no write
+        # access to roles for user. If we reflect the GET, it will
+        # error. How to handle when read and write perms ae different
+        # is an open question.  For testing, remove roles.
+        del original_value['data']['attributes']['roles']
+
+        form_protected = cgi.FieldStorage()
+        etag = original_value['data']['@etag']
+
+        # password is an issue, can't round trip it as it has the value
+        # '[password hidden scheme PBKDF2S5]'
+        # remove creator as we will add our own later.
+        form_protected.list = [cgi.MiniFieldStorage(k, v)
+                     for k,v in original_value['data']['attributes'].items()
+                     if k not in {'creator'}]
+
+        form_protected.list = (form_protected.list +
+                               [cgi.MiniFieldStorage('@etag', etag),
+                                cgi.MiniFieldStorage('creator', '3')])
+        results = self.server.put_element('user', self.joeid, form_protected)
+        print(results['error']['msg'])
+        self.assertEqual(self.dummy_client.response_code, 400)
+        self.assertEqual(results['error']['msg'].args[0],
+                         Class.format_reserved_prop_error(('creator',)))
+
+        reflect_form = cgi.FieldStorage()
+        # verify that password is the placeholder value
+        self.assertEqual(original_value['data']['attributes']['password'],
+                         "[password hidden scheme PBKDF2S5]")
+
+        # and verify that real password is in db
+        self.assertTrue(self.db.user.get(self.joeid, 'password') == 'random')
+        
+        reflect_form.list = [cgi.MiniFieldStorage(k, v)
+                     for k,v in original_value['data']['attributes'].items()]
+        reflect_form.list.append(cgi.MiniFieldStorage('@etag', etag))
+        results = self.server.put_element('user', self.joeid, reflect_form)
+        print(results)
+        self.assertEqual(self.dummy_client.response_code, 200)
+        # verify true db password is unchanged.
+        self.assertTrue(self.db.user.get(self.joeid, 'password') == 'random')
+        # we just reflected the original node so no changes.
+        self.assertEqual(results['data']['attribute'], {})
+
+        
         # We are joe, so check we can't change admin's details
         results = self.server.put_element('user', '1', form)
         self.assertEqual(self.dummy_client.response_code, 403)
@@ -3778,8 +3850,8 @@ class TestCase():
             'user', self.joeid, 'creator', form
         )
         expected= {'error': {'status': 405, 'msg': 
-                             AttributeError('\'"creator", "actor", "creation" and '
-                                        '"activity" are reserved\'')}}
+                             AttributeError(Class.format_reserved_prop_error(
+                                 ('creator',)))}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])
@@ -4182,7 +4254,8 @@ class TestCase():
         ]
         results = self.server.patch_element('issue', issue_id, form)
         expected= {'error': {'status': 400,
-                             'msg': KeyError('"creator", "actor", "creation" and "activity" are reserved',)}}
+                             'msg': UsageError(Class.format_reserved_prop_error(
+                                 ('creator',)))}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])
@@ -4203,7 +4276,8 @@ class TestCase():
         ]
         results = self.server.patch_element('issue', issue_id, form)
         expected= {'error': {'status': 400,
-                             'msg': KeyError('"id" is reserved',)}}
+                             'msg': UsageError(Class.format_reserved_prop_error(
+                                 ('id',)))}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])
@@ -4292,7 +4366,8 @@ class TestCase():
         ]
         results = self.server.patch_element('issue', issue_id, form)
         expected= {'error': {'status': 400,
-                             'msg': KeyError('"creator", "actor", "creation" and "activity" are reserved',)}}
+                             'msg': UsageError(Class.format_reserved_prop_error(
+                                 ('creator',)))}}
         print(results)
         self.assertEqual(results['error']['status'],
                          expected['error']['status'])

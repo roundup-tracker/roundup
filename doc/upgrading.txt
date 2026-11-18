@@ -440,6 +440,28 @@ classic template directory into your tracker replacing the existing
 ``<roundup-classhelper>`` web component, see the section `Add new
 classhelper to your templates (optional)`_.
 
+Changing reserved properties in the REST interface causes an error (info)
+-------------------------------------------------------------------------
+
+Starting with Roundup 2.7.0, submitting an item through the REST
+interface with PUT works differently. If a reserved property (id,
+creator, creation, actor, or activity) has a value that differs from
+the value in the database, the request returns a 400 error.
+
+If the reserved property values match the database, the PUT request
+will not be rejected just because it includes those properties.
+
+PATCH requests using the remove, add or replace operations will see a
+different error message than before. You will need to update your
+client code if you are parsing that error message rather than
+returning it to the user. The error message provides more information
+about the error.
+
+This change lets other interfaces, such as a kanban board, organize
+cards into columns or swimlanes using reserved properties. If a user
+drags a card to set a reserved property, Roundup returns a clear error
+message and lets the card return to its original spot.
+
 .. index:: Upgrading; 2.5.0 to 2.6.0
 
 Migrating from 2.5.0 to 2.6.0
