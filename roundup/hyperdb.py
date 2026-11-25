@@ -2312,9 +2312,23 @@ class FileClass:
     def create(self, **propvalues):
         """ snaffle the file propvalue and store in a file
         """
+        # This is first since r/o database is a bigger issue
+        if self.db.journaltag is None:
+            raise DatabaseError(_('Database open read-only'))
+
         # we need to fire the auditors now, or the content property won't
         # be in propvalues for the auditors to play with
         self.fireAuditors('create', None, propvalues)
+
+        # sanity checks on propvalues, include mods by auditors.
+        #   FIXME: Unlike set() we don't check to see if propvalues is
+        #          empty why? Need to define what happens when no
+        #          propvalues. If class has key prop, ValueError is
+        #          raised.
+
+        bad_props = Class.hyperdb_reserved_props.intersection(propvalues)
+        if bad_props:
+            raise KeyError(self.format_reserved_prop_error(bad_props))
 
         # now remove the content property so it's not stored in the db
         content = propvalues['content']
@@ -2458,15 +2472,9 @@ class FileClass:
                     continue
                 self.db.indexer.add_text((self.classname, nodeid, prop), value)
 
-    def set(self, itemid, **propvalues):
-        """ Snarf the "content" propvalue and update it in a file
+    def initialize_missing_props(self, oldvalues):
+        """If backend doesn't have a schema to intialize props, do it here.
         """
-        self.fireAuditors('set', itemid, propvalues)
-
-        # create the oldvalues dict - fill in any missing values
-        oldvalues = copy.deepcopy(self.db.getnode(self.classname, itemid))
-        # The following is redundant for rdbms backends but needed for anydbm
-        # the performance impact is so low we that we don't factor this.
         for name, prop in self.getprops(protected=0).items():
             if name in oldvalues:
                 continue
@@ -2474,6 +2482,30 @@ class FileClass:
                 oldvalues[name] = []
             else:
                 oldvalues[name] = None
+
+    def set(self, itemid, **propvalues):
+        """ Snarf the "content" propvalue and update it in a file
+        """
+        # This is first since r/o database is a bigger issue
+        if self.db.journaltag is None:
+            raise DatabaseError(_('Database open read-only'))
+
+        self.fireAuditors('set', itemid, propvalues)
+
+        # sanity checks on propvalues, include mods by auditors.
+        if not propvalues:
+            return propvalues
+
+        bad_props = Class.hyperdb_reserved_props.intersection(propvalues)
+        if bad_props:
+            raise KeyError(self.format_reserved_prop_error(bad_props))
+
+        # create the oldvalues dict - fill in any missing values
+        oldvalues = copy.deepcopy(self.db.getnode(self.classname, itemid))
+
+        # fill in any missing values - method can be replaced if
+        # backend has a schema that fills in missing values.
+        self.initialize_missing_props(oldvalues)
 
         # now remove the content property so it's not stored in the db
         content = None
