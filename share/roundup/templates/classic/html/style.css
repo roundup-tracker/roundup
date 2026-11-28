@@ -174,7 +174,7 @@ td.content {
   width: 100%;
 }
 
-td.date, th.date { 
+td.date, th.date {
   white-space: nowrap;
 }
 
@@ -412,7 +412,7 @@ table.classlist th {
 
 
 /* style for class help display */
-table.classhelp {      /* the table-layout: fixed;        */ 
+table.classhelp {      /* the table-layout: fixed;        */
   table-layout: fixed; /* compromises quality for speed   */
   overflow: hidden;
   font-size: .9em;
@@ -512,6 +512,23 @@ textarea:focus, select:focus {
 
 .calendar_display .today {
   background-color: #afafaf;
+}
+
+.submit_overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  place-content: center;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 9999;
+  font-size: 200%;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 2px black;
 }
 
 /* vim: sts=2 sw=2 et
